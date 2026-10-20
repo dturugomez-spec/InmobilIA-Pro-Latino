@@ -56,7 +56,7 @@ public class BusinessProfileController {
                 "contact_name","contact_email","contact_phone","website","logo_url","brand_color",
                 "business_hours","notes_invoice","receipt_footer")) {
             String v = req.getParameter(f);
-            if (v != null) data.put(f, v.isBlank() ? null : v);
+            if (v != null) data.put(f, v.isBlank() ? SupabaseService.VACIAR : v); // vaciado = se borra
         }
         String iban = AvisoCuentaBancariaService.normalizar(req.getParameter("iban"));
         if (!iban.isEmpty() && !AvisoCuentaBancariaService.cuentaValida(iban)) {

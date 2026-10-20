@@ -383,7 +383,8 @@ public class CrudController {
         for (Field f : meta.fields()) {
             String raw = request.getParameter(f.name());
             if (raw == null) continue;
-            if (raw.isBlank() && f.type() != FieldType.BOOL) { data.put(f.name(), null); continue; }
+            // Campo vaciado: al editar se borra el valor (con null a secas se quedaba el antiguo)
+            if (raw.isBlank() && f.type() != FieldType.BOOL) { data.put(f.name(), SupabaseService.VACIAR); continue; }
             switch (f.type()) {
                 case NUM  -> data.put(f.name(), safeDouble(raw));
                 case INT  -> data.put(f.name(), safeInt(raw));

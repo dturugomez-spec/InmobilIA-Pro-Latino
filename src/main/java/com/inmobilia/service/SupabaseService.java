@@ -173,7 +173,7 @@ public class SupabaseService {
             return null;
         }
         try {
-            Map<String, Object> clean = clean(data);
+            Map<String, Object> clean = clean(data, false);
             // Solo los NOMBRES de los campos: el contenido puede llevar hashes de contraseña,
             // secretos de 2FA, tokens o datos personales, y los logs no deben guardarlos.
             log.info("POST /{}  campos={}", table, clean.keySet());
@@ -215,7 +215,7 @@ public class SupabaseService {
             return false;
         }
         try {
-            Map<String, Object> clean = clean(data);
+            Map<String, Object> clean = clean(data, true);
             StringBuilder uri = new StringBuilder("/").append(table).append("?id=eq.").append(id);
             if (!isUsers && uid != null && !uid.isBlank()) uri.append("&user_id=eq.").append(uid);
             supabaseClient.patch()
@@ -311,18 +311,32 @@ public class SupabaseService {
         return delete(table, id, null);
     }
 
-    /** Limpia un map eliminando NaN / Infinity y serializando colecciones. */
-    private Map<String, Object> clean(Map<String, Object> in) {
-        return in.entrySet().stream()
-                .filter(e -> e.getValue() != null)
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> cleanValue(e.getValue()),
-                        (a, b) -> b,
-                        java.util.LinkedHashMap::new));
+    /**
+     * Valor para vaciar un campo en update(): se guarda null en la base de datos.
+     * Los null normales se ignoran (significan «no tocar», y muchos updates parciales
+     * cuentan con ello); por eso un formulario que deja un campo en blanco tiene que
+     * usar VACIAR, o el valor antiguo se quedaba. En insert se ignora (vale el DEFAULT).
+     */
+    public static final Object VACIAR = new Object() {
+        @Override public String toString() { return "VACIAR"; }
+    };
+
+    /** Limpia un map eliminando null, NaN / Infinity. VACIAR → null solo si vaciar. */
+    static Map<String, Object> clean(Map<String, Object> in, boolean vaciar) {
+        Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, Object> e : in.entrySet()) {
+            Object v = e.getValue();
+            if (v == VACIAR) {
+                if (vaciar) out.put(e.getKey(), null);
+                continue;
+            }
+            v = v == null ? null : cleanValue(v);
+            if (v != null) out.put(e.getKey(), v);
+        }
+        return out;
     }
 
-    private Object cleanValue(Object v) {
+    private static Object cleanValue(Object v) {
         if (v instanceof Double d) {
             if (Double.isNaN(d) || Double.isInfinite(d)) return null;
             return d;
