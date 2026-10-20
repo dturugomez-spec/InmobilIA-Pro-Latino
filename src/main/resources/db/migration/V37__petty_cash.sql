@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS cuentas_caja (
     iban TEXT,
     saldo_actual NUMERIC(12,2) DEFAULT 0,
     saldo_inicial NUMERIC(12,2) DEFAULT 0,
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
     activa BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

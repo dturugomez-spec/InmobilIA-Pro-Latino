@@ -258,8 +258,8 @@ public class FinancialAnalysisController {
         double cap = totValue > 0 ? noi / totValue * 100 : 0;
         model.addAttribute("page", "Optimizacion de Cartera");
         model.addAttribute("props", props);
-        model.addAttribute("totValue", FormatUtils.eur(totValue));
-        model.addAttribute("noiAnual", FormatUtils.eur(noi));
+        model.addAttribute("totValue", FormatUtils.dinero(totValue));
+        model.addAttribute("noiAnual", FormatUtils.dinero(noi));
         model.addAttribute("capCartera", cap);
         return "analisis/portfolio";
     }
@@ -287,8 +287,8 @@ public class FinancialAnalysisController {
         double paybackAnios = deltaRenta > 0 ? costeReforma / deltaRenta : 0;
         double roiReforma = costeReforma > 0 ? deltaRenta * 10 / costeReforma * 100 : 0;
         model.addAttribute("page", "Simulador Value-Add");
-        model.addAttribute("inversion", FormatUtils.eur(inversion));
-        model.addAttribute("deltaRenta", FormatUtils.eur(deltaRenta));
+        model.addAttribute("inversion", FormatUtils.dinero(inversion));
+        model.addAttribute("deltaRenta", FormatUtils.dinero(deltaRenta));
         model.addAttribute("yieldPre", yieldPre);
         model.addAttribute("yieldPost", yieldPost);
         model.addAttribute("paybackAnios", paybackAnios);
@@ -324,10 +324,10 @@ public class FinancialAnalysisController {
                 : 0;
         double valorSintesis = media(valorIngresos, valorMercado, valorComparables);
         model.addAttribute("page", "Modelos de Valoracion");
-        model.addAttribute("valorIngresos", FormatUtils.eur(valorIngresos));
-        model.addAttribute("valorMercado", FormatUtils.eur(valorMercado));
-        model.addAttribute("valorComparables", FormatUtils.eur(valorComparables));
-        model.addAttribute("valorSintesis", FormatUtils.eur(valorSintesis));
+        model.addAttribute("valorIngresos", FormatUtils.dinero(valorIngresos));
+        model.addAttribute("valorMercado", FormatUtils.dinero(valorMercado));
+        model.addAttribute("valorComparables", FormatUtils.dinero(valorComparables));
+        model.addAttribute("valorSintesis", FormatUtils.dinero(valorSintesis));
         return "analisis/valoracion";
     }
 
@@ -359,9 +359,9 @@ public class FinancialAnalysisController {
                          : "Rechazable";
         model.addAttribute("page", "Quick Check Inmobiliario");
         model.addAttribute("yieldResult", y);
-        model.addAttribute("equity", FormatUtils.eur(equity));
-        model.addAttribute("debt", FormatUtils.eur(debt));
-        model.addAttribute("cuota", FormatUtils.eur(cuota));
+        model.addAttribute("equity", FormatUtils.dinero(equity));
+        model.addAttribute("debt", FormatUtils.dinero(debt));
+        model.addAttribute("cuota", FormatUtils.dinero(cuota));
         model.addAttribute("veredicto", veredicto);
         return "analisis/quickcheck";
     }

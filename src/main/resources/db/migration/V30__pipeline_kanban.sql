@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS ofertas (
     numero_oferta TEXT,                   -- OF-2026-001
     importe NUMERIC(12,2) NOT NULL,
     importe_inicial NUMERIC(12,2),       -- antes de negociar
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
     forma_pago TEXT,                      -- hipoteca, contado, hipoteca+ahorros
     condiciones TEXT,
 

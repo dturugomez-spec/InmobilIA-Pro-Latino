@@ -7,6 +7,25 @@
 <div layout:fragment="content">
 
     <section class="form-card">
+        <h3>🌎 País de la inmobiliaria</h3>
+        <p style="color:#64748b;font-size:14px;margin-bottom:10px">
+            Define la moneda de los importes, el impuesto de las facturas, el documento fiscal
+            (<span th:text="${pais.etiquetaIdFiscal()}">RFC</span>), el prefijo telefónico y la zona horaria.
+            Actual: <strong th:text="|${pais.bandera()} ${pais.nombre()} · ${pais.moneda()} · ${pais.impuestoConTipo()}|">México</strong>
+        </p>
+        <form method="post" action="/config/pais" th:if="${esAdmin}">
+            <label class="full">País
+                <select name="pais">
+                    <option th:each="p : ${paises}" th:value="${p.codigo()}" th:selected="${p.codigo() == pais.codigo()}"
+                            th:text="|${p.bandera()} ${p.nombre()} (${p.moneda()})|">México</option>
+                </select>
+            </label>
+            <button class="btn btn-primary">Guardar país</button>
+        </form>
+        <p th:unless="${esAdmin}" style="color:#64748b;font-size:13px">Solo el administrador de la inmobiliaria puede cambiarlo.</p>
+    </section>
+
+    <section class="form-card">
         <h3>⚡ Auto-respuesta a leads (speed-to-lead)</h3>
         <p class="info-banner" th:if="${autoRespuesta}">
             <strong>Activada.</strong> Cada lead nuevo del formulario público recibe al instante un email

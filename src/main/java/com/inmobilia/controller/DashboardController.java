@@ -140,7 +140,7 @@ public class DashboardController {
 
         tenants.stream().filter(t -> "Moroso".equals(t.get("status"))).forEach(t ->
                 alertsCrit.add(alert("MOROSIDAD",
-                        str(t.get("name")) + " — " + FormatUtils.eur(num(t, "rent_amount")),
+                        str(t.get("name")) + " — " + FormatUtils.dinero(num(t, "rent_amount")),
                         "/crud/inquilinos")));
 
         for (var c : contratos) {
@@ -180,7 +180,7 @@ public class DashboardController {
         // Cashflow negativo
         if (hasData && cashflowMes < 0) {
             alertsWarn.add(alert("CASHFLOW NEGATIVO",
-                    "Mes actual: " + FormatUtils.eur(cashflowMes), "/crud/transacciones"));
+                    "Mes actual: " + FormatUtils.dinero(cashflowMes), "/crud/transacciones"));
         }
         // Vacancia alta
         if (nProps >= 3 && occRate < 70) {
@@ -276,30 +276,30 @@ public class DashboardController {
         model.addAttribute("nSeguros", seguros.size());
 
         model.addAttribute("occRate", occRate);
-        model.addAttribute("valorCartera", FormatUtils.eur(valorCartera));
-        model.addAttribute("precioCompra", FormatUtils.eur(precioCompra));
-        model.addAttribute("precioMedio", FormatUtils.eur(precioMedio));
-        model.addAttribute("plusvalia", FormatUtils.eur(plusvalia));
+        model.addAttribute("valorCartera", FormatUtils.dinero(valorCartera));
+        model.addAttribute("precioCompra", FormatUtils.dinero(precioCompra));
+        model.addAttribute("precioMedio", FormatUtils.dinero(precioMedio));
+        model.addAttribute("plusvalia", FormatUtils.dinero(plusvalia));
         model.addAttribute("plusvaliaPct", plusvaliaPct);
-        model.addAttribute("ingresosMensual", FormatUtils.eur(ingresosMensual));
-        model.addAttribute("gastosMensual", FormatUtils.eur(gastosMensual));
-        model.addAttribute("mortgageMes", FormatUtils.eur(mortgageMes));
-        model.addAttribute("noiMes", FormatUtils.eur(noiMes));
-        model.addAttribute("noiAnual", FormatUtils.eur(noiMes * 12));
-        model.addAttribute("cashflowMes", FormatUtils.eur(cashflowMes));
+        model.addAttribute("ingresosMensual", FormatUtils.dinero(ingresosMensual));
+        model.addAttribute("gastosMensual", FormatUtils.dinero(gastosMensual));
+        model.addAttribute("mortgageMes", FormatUtils.dinero(mortgageMes));
+        model.addAttribute("noiMes", FormatUtils.dinero(noiMes));
+        model.addAttribute("noiAnual", FormatUtils.dinero(noiMes * 12));
+        model.addAttribute("cashflowMes", FormatUtils.dinero(cashflowMes));
         model.addAttribute("cashflowMesNum", cashflowMes);
         model.addAttribute("capRate", capRate);
         model.addAttribute("grossYield", grossYield);
         model.addAttribute("dscr", dscr);
 
-        model.addAttribute("revMes", FormatUtils.eur(revMes));
-        model.addAttribute("expMes", FormatUtils.eur(expMes));
-        model.addAttribute("revYtd", FormatUtils.eur(revYtd));
-        model.addAttribute("expYtd", FormatUtils.eur(expYtd));
-        model.addAttribute("cashflowYtd", FormatUtils.eur(cashflowYtd));
+        model.addAttribute("revMes", FormatUtils.dinero(revMes));
+        model.addAttribute("expMes", FormatUtils.dinero(expMes));
+        model.addAttribute("revYtd", FormatUtils.dinero(revYtd));
+        model.addAttribute("expYtd", FormatUtils.dinero(expYtd));
+        model.addAttribute("cashflowYtd", FormatUtils.dinero(cashflowYtd));
         model.addAttribute("cashflowYtdNum", cashflowYtd);
-        model.addAttribute("revUlt12", FormatUtils.eur(revUlt12));
-        model.addAttribute("cashflowUlt12", FormatUtils.eur(cashflowUlt12));
+        model.addAttribute("revUlt12", FormatUtils.dinero(revUlt12));
+        model.addAttribute("cashflowUlt12", FormatUtils.dinero(cashflowUlt12));
 
         // ─── Datos oficiales en vivo ──────────────────────────────────
         try {

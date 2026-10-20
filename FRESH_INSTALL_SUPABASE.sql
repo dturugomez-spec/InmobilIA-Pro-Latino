@@ -1943,7 +1943,7 @@ CREATE TABLE IF NOT EXISTS ofertas (
     numero_oferta TEXT,                   -- OF-2026-001
     importe NUMERIC(12,2) NOT NULL,
     importe_inicial NUMERIC(12,2),       -- antes de negociar
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
     forma_pago TEXT,                      -- hipoteca, contado, hipoteca+ahorros
     condiciones TEXT,
 
@@ -2394,7 +2394,7 @@ CREATE TABLE IF NOT EXISTS cuentas_caja (
     iban TEXT,
     saldo_actual NUMERIC(12,2) DEFAULT 0,
     saldo_inicial NUMERIC(12,2) DEFAULT 0,
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
     activa BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -3287,7 +3287,7 @@ CREATE TABLE IF NOT EXISTS reservas_online (
     importe NUMERIC(10,2) NOT NULL,        -- señal/reserva
     stripe_payment_intent TEXT,
     stripe_charge_id TEXT,
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
 
     estado TEXT DEFAULT 'pendiente',       -- pendiente, pagada, cancelada, devuelta, convertida
     fecha_caducidad TIMESTAMPTZ,
@@ -4025,3 +4025,7 @@ CREATE INDEX IF NOT EXISTS idx_hojas_visita_user ON hojas_visita(user_id, create
 -- Asignación de leads a agentes (habilita reparto y panel de rendimiento del equipo)
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS asignado_a UUID;
 CREATE INDEX IF NOT EXISTS idx_leads_asignado ON leads(asignado_a);
+
+-- ===== Versión Latinoamérica (V100) =====
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pais TEXT DEFAULT 'MX';
+ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS pais TEXT;

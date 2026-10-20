@@ -18,12 +18,14 @@ public class I18nConfig implements WebMvcConfigurer {
     private final PaywallInterceptor paywallInterceptor;
     private final SubscriptionGateInterceptor subscriptionGate;
     private final SessionGuardInterceptor sessionGuard;
+    private final PaisInterceptor paisInterceptor;
 
     public I18nConfig(PaywallInterceptor paywallInterceptor, SubscriptionGateInterceptor subscriptionGate,
-                      SessionGuardInterceptor sessionGuard) {
+                      SessionGuardInterceptor sessionGuard, PaisInterceptor paisInterceptor) {
         this.paywallInterceptor = paywallInterceptor;
         this.subscriptionGate = subscriptionGate;
         this.sessionGuard = sessionGuard;
+        this.paisInterceptor = paisInterceptor;
     }
 
     @Bean
@@ -37,8 +39,16 @@ public class I18nConfig implements WebMvcConfigurer {
 
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver resolver = new CookieLocaleResolver("LANG");
-        resolver.setDefaultLocale(new Locale("es", "ES"));
+        // En español se usa el formato del país de la inmobiliaria (es-MX, es-CO…): separadores
+        // de miles y decimales correctos en #numbers.formatDecimal(..., 'DEFAULT', ...) y fechas.
+        CookieLocaleResolver resolver = new CookieLocaleResolver("LANG") {
+            @Override
+            public Locale resolveLocale(jakarta.servlet.http.HttpServletRequest request) {
+                Locale l = super.resolveLocale(request);
+                return "es".equals(l.getLanguage()) ? com.inmobilia.util.PaisActual.get().locale() : l;
+            }
+        };
+        resolver.setDefaultLocale(Locale.forLanguageTag("es-419")); // español de Latinoamérica
         return resolver;
     }
 
@@ -52,6 +62,8 @@ public class I18nConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        // País de la inmobiliaria (moneda, impuesto, documentos, zona horaria) para toda la petición
+        registry.addInterceptor(paisInterceptor).addPathPatterns("/**");
         // Guardián de sesión (cuenta activa, inquilinos, 2FA obligatorio, permisos por rol).
         // Va antes que el candado de suscripción: primero quién eres, luego si has pagado.
         // Incluye /api/**: sin sesión no hace nada (la API pública va con clave), pero con sesión

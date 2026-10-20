@@ -4,6 +4,7 @@ import com.inmobilia.service.AIService;
 import com.inmobilia.service.EmailService;
 import com.inmobilia.service.EmailService.SendResult;
 import com.inmobilia.service.EmailService.SmtpConfig;
+import com.inmobilia.service.PaisService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 
@@ -26,6 +27,7 @@ public class ConfigController {
     private final AIService ai;
     private final EmailService email;
     private final SupabaseService supabase;
+    private final PaisService paises;
 
     @GetMapping
     public String show(HttpSession session, Model model) {
@@ -35,7 +37,26 @@ public class ConfigController {
         model.addAttribute("smtp", smtp);
         model.addAttribute("platformAiEnabled", ai.hasPlatformKey());
         model.addAttribute("autoRespuesta", leerAutoRespuesta(SessionUtils.uid(session)));
+        model.addAttribute("esAdmin", "admin".equals(SessionUtils.role(session)));
         return "config";
+    }
+
+    /** 🌎 País de la inmobiliaria: moneda, impuesto, documentos fiscales, prefijo y zona horaria. */
+    @PostMapping("/pais")
+    public String savePais(@RequestParam String pais, HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (!"admin".equals(SessionUtils.role(session))) {
+            SessionUtils.flash(session, "Solo el administrador de la inmobiliaria puede cambiar el país.");
+            return "redirect:/config";
+        }
+        if (paises.guardar(SessionUtils.uid(session), pais)) {
+            com.inmobilia.util.Pais p = com.inmobilia.util.Pais.de(pais);
+            SessionUtils.flash(session, p.bandera() + " País guardado: " + p.nombre() + ". Importes en "
+                    + p.moneda() + ", " + p.impuestoConTipo() + ", " + p.etiquetaIdFiscal() + ".");
+        } else {
+            SessionUtils.flash(session, "No se pudo guardar el país.");
+        }
+        return "redirect:/config";
     }
 
     /** ⚡ Activa/desactiva la respuesta automática instantánea a leads nuevos. */

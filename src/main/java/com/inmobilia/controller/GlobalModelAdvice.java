@@ -97,6 +97,9 @@ public class GlobalModelAdvice {
                 }
             } catch (Exception ignored) {}
         }
+        // ${pais} y ${mon} los añade PaisInterceptor.postHandle (después del controlador, que en
+        // páginas públicas fija el país de la inmobiliaria dueña de la página)
+        model.addAttribute("paises", com.inmobilia.util.Pais.todos());
         model.addAttribute("flash", SessionUtils.consumeFlash(session));
         model.addAttribute("saludo", FormatUtils.saludo());
         model.addAttribute("fechaLarga", FormatUtils.fechaLarga());

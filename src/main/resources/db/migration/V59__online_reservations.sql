@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS reservas_online (
     importe NUMERIC(10,2) NOT NULL,        -- señal/reserva
     stripe_payment_intent TEXT,
     stripe_charge_id TEXT,
-    moneda TEXT DEFAULT 'EUR',
+    moneda TEXT,
 
     estado TEXT DEFAULT 'pendiente',       -- pendiente, pagada, cancelada, devuelta, convertida
     fecha_caducidad TIMESTAMPTZ,
