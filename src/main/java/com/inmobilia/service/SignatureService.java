@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * Servicio de firma electrónica con trazabilidad jurídica.
  *
- * Aplica los principios eIDAS / Ley 6/2020:
+ * Firma electrónica simple con registro de evidencias:
  *  - Identificación del firmante (email + documento de identidad + opcional OTP SMS)
  *  - Voluntad clara expresada (botón "FIRMAR")
  *  - Integridad del documento (SHA-256 inmutable)

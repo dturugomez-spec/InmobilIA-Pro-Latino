@@ -1,7 +1,30 @@
-# 🏠 InmobilIA Pro
+# 🏠 InmobilIA Pro · Latinoamérica
 
-> CRM/SaaS inmobiliario completo en español. **110 sprints** completados.
-> Superior a Witei (€89/mes) y Sooprema (€99/mes) en funcionalidades.
+> CRM/SaaS inmobiliario completo en español de Latinoamérica. Versión multipaís derivada de
+> InmobilIA Pro (España): cada inmobiliaria elige su país y la app se adapta.
+
+## 🌎 Qué cambia respecto a la versión de España
+
+- **País por inmobiliaria** (`users.pais`, en Configuración y en la solicitud de cuenta): 17 países
+  (México, Colombia, Argentina, Chile, Perú, Ecuador, Uruguay, Paraguay, Bolivia, Venezuela, Costa Rica,
+  Panamá, Guatemala, Honduras, El Salvador, Nicaragua y República Dominicana). Catálogo en `util/Pais.java`.
+- **Moneda**: todos los importes salen con la moneda del país (MXN, COP, ARS, CLP, PEN…) o en USD si la
+  inmobiliaria lo elige (`users.moneda`). Separadores de miles y decimales del país.
+- **Impuesto y documentos**: IVA/IGV/ITBIS/ITBMS/ISV con su tipo general; RFC, NIT, CUIT, RUT, RUC, cédula…
+- **Prefijo telefónico, zona horaria y ley de protección de datos** de cada país.
+- **Valoraciones** con precios de referencia por m² de ciudades latinoamericanas (`util/PreciosReferencia.java`,
+  en USD y convertidos a la moneda de la inmobiliaria).
+- **Fuera** las herramientas que solo servían en España: Verifactu/AEAT, Catastro, subastas BOE, Euríbor,
+  comparador de CCAA, IRPF, plusvalía, ITP/AJD, calendario fiscal AEAT, SEPA, Holded, certificado
+  energético y el blog de fiscalidad española.
+- **Portales**: un feed XML genérico (`/portal/{token}/feed.xml`) con moneda y país, en lugar de los
+  formatos de Idealista, Fotocasa, Habitaclia y Pisos.com.
+- **Facturación**: control de cobros con el impuesto del país. La factura electrónica con validez fiscal
+  (CFDI, DIAN, ARCA, SII, SUNAT…) se timbra en el sistema autorizado de cada país.
+- **Planes en USD** (US$78 / US$198). Hay que crear los precios en dólares en Stripe.
+
+Migración de esquema: `src/main/resources/db/migration/V100__pais_latam.sql` (también al final de
+`FRESH_INSTALL_SUPABASE.sql`).
 
 ---
 
@@ -24,11 +47,11 @@
 - Reconocimiento habitaciones por foto
 - Notas de voz con transcripción
 
-### ⚖️ Cumplimiento legal español
-- **Verifactu** (RD 1007/2023) con cadena hash AEAT
-- **Firma electrónica eIDAS** (Ley 6/2020) con OTP + auditoría blockchain
-- 10 modelos AEAT: 100, 130, 180, 184, 190, 200, 303, 347, 390, 111
-- LAU, RGPD, calendario fiscal con alertas
+### 🌎 Adaptado a cada país
+- Moneda local o USD, impuesto e identificaciones fiscales del país
+- Firma electrónica simple con OTP y registro de evidencias
+- Contratos de arrendamiento y encargo orientativos (para revisar con un abogado local)
+- Textos legales con la ley de protección de datos de cada país
 
 ### 💼 CRM completo
 - 7 roles + permisos granulares (25+ flags)
@@ -42,7 +65,7 @@
 - SMS gateway (Twilio)
 - Email campaigns con A/B testing
 - Email builder visual drag&drop
-- Newsletter RGPD
+- Newsletter con doble opt-in
 - Inbox IMAP
 
 ### 🌐 Web pública SEO
@@ -53,8 +76,7 @@
 - Reservas online con Stripe
 
 ### 💰 Finanzas
-- Verifactu facturas
-- SEPA Direct Debit (pain.008)
+- Facturación / control de cobros con el impuesto del país
 - Conciliación bancaria CSV
 - Caja chica + gastos agente
 - Extractos automáticos propietarios

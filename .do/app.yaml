@@ -4,7 +4,7 @@
 #  Los secretos (SUPABASE_URL, SMTP_PASS, etc.) se rellenan en el panel.
 # ═══════════════════════════════════════════════════════════════════
 name: inmobilia-pro
-region: fra   # Frankfurt: más cerca de España
+region: nyc   # Nueva York: la región más cercana a Latinoamérica
 services:
   - name: web
     dockerfile_path: Dockerfile
@@ -26,7 +26,7 @@ services:
       - key: PORT
         value: "8080"
       - key: TZ
-        value: Europe/Madrid
+        value: America/Mexico_City
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       # ─── Secretos: rellenar en el panel de DigitalOcean ───

@@ -26,7 +26,7 @@
             <p class="text-[10px] uppercase text-blue-700">Precio actual</p>
             <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(precioActual, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
-        <div class="rounded-xl" th:classappend="${cambioTotal >= 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-red-50 ring-1 ring-red-200'}" class="p-4">
+        <div class="rounded-xl p-4" th:classappend="${cambioTotal >= 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-red-50 ring-1 ring-red-200'}">
             <p class="text-[10px] uppercase" th:classappend="${cambioTotal >= 0 ? 'text-emerald-700' : 'text-red-700'}">Cambio total</p>
             <p class="text-xl font-bold mt-1" th:classappend="${cambioTotal >= 0 ? 'text-emerald-700' : 'text-red-700'}"
                th:text="${(cambioTotal >= 0 ? '+' : '') + #numbers.formatDecimal(cambioTotal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>

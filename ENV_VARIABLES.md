@@ -62,7 +62,8 @@ SPRING_PROFILES_ACTIVE=production
 PORT=8080
 
 # Timezone
-TZ=Europe/Madrid
+TZ=America/Mexico_City
+APP_ZONA_HORARIA=America/Mexico_City
 ```
 
 ---

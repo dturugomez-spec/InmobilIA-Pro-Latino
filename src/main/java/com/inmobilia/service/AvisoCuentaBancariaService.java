@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * Cambiar la cuenta bancaria de la empresa es la puerta de un fraude clásico (alguien pone
- * su IBAN y los clientes le pagan a él). Cada cambio queda en el registro de actividad y el
+ * su cuenta y los clientes le pagan a él). Cada cambio queda en el registro de actividad y el
  * titular de la cuenta recibe un email, aunque lo haya hecho él mismo.
  */
 @Service
@@ -28,11 +28,54 @@ public class AvisoCuentaBancariaService {
     private final EmailService emailService;
     private final AuditTrail audit;
 
-    /** Sin espacios y en mayúsculas ("es12 3456…" → "ES123456…"); null → "". */
+    /** Sin espacios ni guiones y en mayúsculas ("es12 3456…" → "ES123456…"); null → "". */
     public static String normalizar(Object iban) {
         if (iban == null) return "";
         String s = String.valueOf(iban);
-        return "null".equals(s) ? "" : s.replaceAll("\\s", "").toUpperCase();
+        return "null".equals(s) ? "" : s.replaceAll("[\\s-]", "").toUpperCase();
+    }
+
+    /**
+     * ¿Es una cuenta válida? (ya normalizada). IBAN: dígitos de control módulo 97; CLABE mexicana
+     * (18 cifras): dígito verificador; CBU argentino (22 cifras): sus dos dígitos verificadores.
+     * Otras cuentas locales (Colombia, Chile, Perú…): de 6 a 34 letras o cifras.
+     */
+    public static boolean cuentaValida(String n) {
+        if (n == null || n.isEmpty()) return false;
+        if (pareceIban(n)) return ibanValido(n);
+        if (n.matches("\\d{18}")) return digitoClabe(n) == n.charAt(17) - '0';
+        if (n.matches("\\d{22}")) return cbuValido(n);
+        return n.matches("[A-Z0-9]{6,34}");
+    }
+
+    private static boolean ibanValido(String n) {
+        String r = n.substring(4) + n.substring(0, 4);
+        StringBuilder num = new StringBuilder();
+        for (char c : r.toCharArray()) num.append(Character.isDigit(c) ? String.valueOf(c) : String.valueOf(c - 55));
+        try {
+            return new java.math.BigInteger(num.toString()).mod(java.math.BigInteger.valueOf(97)).intValue() == 1;
+        } catch (Exception e) { return false; }
+    }
+
+    private static int digitoClabe(String n) {
+        int[] pesos = {3, 7, 1};
+        int suma = 0;
+        for (int i = 0; i < 17; i++) suma += ((n.charAt(i) - '0') * pesos[i % 3]) % 10;
+        return (10 - suma % 10) % 10;
+    }
+
+    private static boolean cbuValido(String n) {
+        return verificaCbu(n.substring(0, 7), n.charAt(7)) && verificaCbu(n.substring(8, 21), n.charAt(21));
+    }
+
+    /** Dígito verificador de un bloque del CBU: pesos 3, 1, 7, 9 desde la derecha. */
+    private static boolean verificaCbu(String bloque, char dv) {
+        int[] pesos = {3, 1, 7, 9};
+        int suma = 0;
+        for (int i = 0; i < bloque.length(); i++) {
+            suma += (bloque.charAt(bloque.length() - 1 - i) - '0') * pesos[i % 4];
+        }
+        return (10 - suma % 10) % 10 == dv - '0';
     }
 
     /** "ES9121000418450200051332" → "ES91 •••• 1332" (para emails y registros). */
@@ -58,7 +101,7 @@ public class AvisoCuentaBancariaService {
 
     /**
      * Si la cuenta ha cambiado, lo registra y avisa al titular. {@code donde} describe qué
-     * cuenta es ("Mi negocio (facturas y recibos)", "Acreedor SEPA (cobro de recibos)").
+     * cuenta es ("Mi negocio (facturas y recibos)", "Cuenta de cobro de recibos").
      */
     public boolean siCambia(HttpServletRequest req, HttpSession session, String donde, String tabla,
                             Object antes, Object despues) {

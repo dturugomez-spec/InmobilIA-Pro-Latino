@@ -77,7 +77,7 @@ public class PermissionService {
         SECTION_INFO.put("calendario",       new String[]{"Agenda y visitas", "Calendario, visitas, hoja de visita, open house"});
         SECTION_INFO.put("inquilinos",       new String[]{"Inquilinos", "Fichas de inquilinos y sus solicitudes"});
         SECTION_INFO.put("contratos",        new String[]{"Contratos y firmas", "Contratos, notas de encargo, firma, plantillas"});
-        SECTION_INFO.put("transacciones",    new String[]{"Finanzas", "Facturas, recibos, cobros, SEPA, conciliación, caja, comisiones"});
+        SECTION_INFO.put("transacciones",    new String[]{"Finanzas", "Facturas, recibos, cobros, conciliación, caja, comisiones"});
         SECTION_INFO.put("seguros",          new String[]{"Seguros", "Pólizas, cargos y siniestros"});
         SECTION_INFO.put("empresa",          new String[]{"Datos de la empresa y bancarios", "Mi negocio: datos fiscales, logo e IBAN de la empresa"});
         SECTION_INFO.put("reportes",         new String[]{"Informes y analítica", "Informes, analítica, rendimiento del equipo"});

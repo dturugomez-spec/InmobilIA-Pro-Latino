@@ -2,7 +2,6 @@ package com.inmobilia.controller;
 
 import com.inmobilia.service.AvisoCuentaBancariaService;
 import com.inmobilia.service.PermissionService;
-import com.inmobilia.service.SepaService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +31,6 @@ public class BusinessProfileController {
 
     private final SupabaseService supabase;
     private final PermissionService permissions;
-    private final SepaService sepaService;
     private final AvisoCuentaBancariaService avisoCuenta;
 
     @GetMapping("/business")
@@ -61,8 +59,8 @@ public class BusinessProfileController {
             if (v != null) data.put(f, v.isBlank() ? null : v);
         }
         String iban = AvisoCuentaBancariaService.normalizar(req.getParameter("iban"));
-        if (!iban.isEmpty() && !sepaService.validarIBAN(iban)) {
-            SessionUtils.flash(session, "El IBAN no es válido. Revísalo: no se ha guardado ningún cambio.");
+        if (!iban.isEmpty() && !AvisoCuentaBancariaService.cuentaValida(iban)) {
+            SessionUtils.flash(session, "La cuenta bancaria no es válida. Revísala: no se ha guardado ningún cambio.");
             return "redirect:/business";
         }
         if (req.getParameter("iban") != null) data.put("iban", iban); // "" = quitarlo

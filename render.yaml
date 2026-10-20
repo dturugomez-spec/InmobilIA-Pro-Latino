@@ -26,7 +26,7 @@ services:
       - key: SERVER_FORWARD_HEADERS_STRATEGY
         value: native
       - key: TZ
-        value: Europe/Madrid
+        value: America/Mexico_City
       # Secretos: rellenar en el panel de Render (Environment)
       - key: SUPABASE_URL
         sync: false

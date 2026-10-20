@@ -44,12 +44,12 @@
         <h2>Reunidos</h2>
         <p><strong>De una parte, el RESPONSABLE del tratamiento</strong> (la inmobiliaria cliente):<br>
             Razón social: <span class="hueco"></span><br>
-            NIF: <span class="hueco"></span><br>
+            Identificación fiscal: <span class="hueco"></span><br>
             Domicilio: <span class="hueco"></span><br>
             Representante: <span class="hueco"></span></p>
         <p><strong>De otra parte, el ENCARGADO del tratamiento</strong> (el prestador de InmobilIA Pro):<br>
             Titular: <span th:if="${titularNombre != null}" th:text="${titularNombre}">Nombre</span><span th:unless="${titularNombre != null}" class="hueco"></span><br>
-            NIF: <span th:if="${titularNif != null}" th:text="${titularNif}">NIF</span><span th:unless="${titularNif != null}" class="hueco"></span><br>
+            Identificación fiscal: <span th:if="${titularNif != null}" th:text="${titularNif}">—</span><span th:unless="${titularNif != null}" class="hueco"></span><br>
             Domicilio: <span th:if="${titularDomicilio != null}" th:text="${titularDomicilio}">Domicilio</span><span th:unless="${titularDomicilio != null}" class="hueco"></span><br>
             Contacto de privacidad: inmobilia.support@gmail.com</p>
         <p>Ambas partes acuerdan las siguientes cláusulas, que completan los Términos de uso de InmobilIA Pro.</p>
@@ -68,7 +68,7 @@
         <h2>4. Datos y personas afectadas</h2>
         <ul>
             <li><strong>Personas:</strong> clientes compradores y vendedores, propietarios, inquilinos, interesados (leads), avalistas y empleados o colaboradores del Responsable.</li>
-            <li><strong>Datos:</strong> identificativos y de contacto (nombre, DNI/NIE, email, teléfono, dirección); económicos y de transacciones (precios, rentas, facturas, IBAN para recibos);
+            <li><strong>Datos:</strong> identificativos y de contacto (nombre, documento de identidad, email, teléfono, dirección); económicos y de transacciones (precios, rentas, facturas, IBAN para recibos);
                 datos de los inmuebles; comunicaciones; firma electrónica y documentos que el Responsable suba.</li>
             <li>El Responsable no introducirá categorías especiales de datos (salud, ideología, etc.) salvo que sea imprescindible y con base legal suficiente.</li>
         </ul>

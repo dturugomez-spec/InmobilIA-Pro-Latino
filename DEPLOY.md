@@ -152,7 +152,7 @@ Si los 7 funcionan → **listo para clientes reales**.
 - **42 migraciones SQL** unificadas
 - **~110 controllers Java**
 - **~190 templates Thymeleaf**
-- **~35 servicios** (AI, Email, WhatsApp, SEPA, Catastro...)
+- **~35 servicios** (AI, Email, WhatsApp, SMS, feeds para portales...)
 - **3 idiomas** (ES/EN/CA)
 - **App móvil** Capacitor
 - **API REST pública** v2 con OpenAPI
