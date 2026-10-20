@@ -47,8 +47,8 @@
                     <th class="text-left font-semibold px-4 py-3">Cliente</th>
                     <th class="text-left font-semibold px-4 py-3">Concepto</th>
                     <th class="text-right font-semibold px-4 py-3">Base</th>
-                    <th class="text-right font-semibold px-4 py-3">IVA</th>
-                    <th class="text-right font-semibold px-4 py-3">IRPF</th>
+                    <th class="text-right font-semibold px-4 py-3">[[${pais.impuesto()}]]</th>
+                    <th class="text-right font-semibold px-4 py-3">Retención</th>
                     <th class="text-right font-semibold px-4 py-3">Total</th>
                     <th class="text-left font-semibold px-4 py-3">Estado</th>
                     <th class="text-right font-semibold px-4 py-3">Acciones</th>
@@ -62,7 +62,7 @@
                     <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${r.get('fecha') != null ? #strings.substring(r.get('fecha'),0,10) : '—'}">—</td>
                     <td class="px-4 py-3">
                         <div class="font-medium" th:text="${r.get('cliente_nombre')}">cliente</div>
-                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('cliente_nif') ?: ''}">NIF</div>
+                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('cliente_nif') ?: ''}">—</div>
                     </td>
                     <td class="px-4 py-3 truncate max-w-[180px]" th:text="${r.get('concepto')}">concepto</td>
                     <td class="px-4 py-3 font-mono text-right" th:text="${r.get('base_imponible') != null ? #numbers.formatDecimal(r.get('base_imponible'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>

@@ -19,7 +19,7 @@
         <form th:action="@{|/email-action/rechazar/${token}|}" method="post" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold mb-2">Motivo del rechazo <span class="text-red-500">*</span></label>
-                <textarea name="motivo" required rows="4" placeholder="Ej: No estamos aceptando agencias fuera de España por ahora..."
+                <textarea name="motivo" required rows="4" placeholder="Ej: No estamos aceptando agencias fuera de los países donde operamos por ahora..."
                           class="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-slate-900 focus:outline-none"></textarea>
             </div>
             <div class="flex gap-3 justify-end">

@@ -34,7 +34,7 @@
                             </span>
                             <span class="flex items-center gap-1.5" th:if="${tenant.get('id_number')}">
                                 <i data-lucide="badge" class="h-3.5 w-3.5"></i>
-                                <span class="font-mono" th:text="${tenant.get('id_number')}">DNI</span>
+                                <span class="font-mono" th:text="${tenant.get('id_number')}">—</span>
                             </span>
                             <span class="flex items-center gap-1.5" th:if="${tenant.get('property_name')}">
                                 <i data-lucide="building" class="h-3.5 w-3.5"></i>
@@ -124,7 +124,7 @@
                 <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="user" class="h-4 w-4 text-brand-600"></i> Datos personales</h3>
                 <dl class="space-y-2.5 text-sm">
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Nombre</dt><dd class="font-medium" th:text="${tenant.get('name') ?: '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">DNI / NIE</dt><dd class="font-mono" th:text="${tenant.get('id_number') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">[[${pais.etiquetaIdPersonal()}]]</dt><dd class="font-mono" th:text="${tenant.get('id_number') ?: '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Nacionalidad</dt><dd th:text="${tenant.get('nationality') ?: '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Email</dt><dd th:text="${tenant.get('email') ?: '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Teléfono</dt><dd th:text="${tenant.get('phone') ?: '—'}">—</dd></div>

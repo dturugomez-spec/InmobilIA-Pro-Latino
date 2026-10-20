@@ -43,7 +43,7 @@
                     </div>
                     <div class="text-xs text-slate-500 dark:text-neutral-400 space-y-0.5">
                         <div class="font-semibold text-slate-700 dark:text-slate-300" th:text="${inv.get('emisor_nombre')}">Emisor</div>
-                        <div th:if="${inv.get('emisor_nif')}">NIF/CIF: <span class="font-mono" th:text="${inv.get('emisor_nif')}">B12345678</span></div>
+                        <div th:if="${inv.get('emisor_nif')}">[[${pais.etiquetaIdFiscal()}]]: <span class="font-mono" th:text="${inv.get('emisor_nif')}">—</span></div>
                         <div th:text="${inv.get('emisor_direccion')}">Dirección</div>
                         <div th:text="${inv.get('emisor_email')}">email@email.com</div>
                     </div>
@@ -71,7 +71,7 @@
                 <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-2">Facturado a</div>
                 <div class="font-semibold text-base" th:text="${inv.get('cliente_nombre')}">Cliente</div>
                 <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
-                    <div th:if="${inv.get('cliente_nif')}">NIF: <span class="font-mono" th:text="${inv.get('cliente_nif')}">12345678Z</span></div>
+                    <div th:if="${inv.get('cliente_nif')}">[[${pais.etiquetaIdFiscal()}]]: <span class="font-mono" th:text="${inv.get('cliente_nif')}">—</span></div>
                     <div th:text="${inv.get('cliente_direccion')}">Dirección</div>
                     <div th:text="${inv.get('cliente_email')}">email</div>
                 </div>
@@ -109,11 +109,11 @@
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between"><span class="text-slate-600 dark:text-slate-400">Base imponible</span><span class="font-mono" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</span></div>
                     <div class="flex justify-between" th:if="${inv.get('iva_amount') != null and inv.get('iva_amount') > 0}">
-                        <span class="text-slate-600 dark:text-slate-400">IVA (<span th:text="${inv.get('iva_pct') + '%'}">21%</span>)</span>
+                        <span class="text-slate-600 dark:text-slate-400">[[${pais.impuesto()}]] (<span th:text="${inv.get('iva_pct') + '%'}">—</span>)</span>
                         <span class="font-mono text-emerald-700 dark:text-emerald-400" th:text="${'+ ' + #numbers.formatDecimal(inv.get('iva_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">+ — [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between" th:if="${inv.get('irpf_amount') != null and inv.get('irpf_amount') > 0}">
-                        <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${inv.get('irpf_pct') + '%'}">19%</span>)</span>
+                        <span class="text-slate-600 dark:text-slate-400">Retención (<span th:text="${inv.get('irpf_pct') + '%'}">—</span>)</span>
                         <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(inv.get('irpf_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">- — [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
@@ -124,7 +124,7 @@
             </div>
         </div>
 
-        <!-- Forma de pago / IBAN -->
+        <!-- Forma de pago / cuenta bancaria -->
         <div class="px-10 py-5 bg-slate-50 dark:bg-neutral-800/40 border-t border-slate-200 dark:border-neutral-800" th:if="${inv.get('emisor_iban')}">
             <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-1">Cuenta para abono</div>
             <div class="font-mono text-base font-semibold tracking-wider" th:text="${inv.get('emisor_iban')}">ES00 0000 0000 0000 0000 0000</div>

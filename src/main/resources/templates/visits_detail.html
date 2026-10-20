@@ -37,7 +37,7 @@
             <h3 class="font-semibold text-sm mb-3"> Visitante</h3>
             <dl class="space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-slate-500">Nombre:</dt><dd class="font-medium" th:text="${visita.get('visitante_nombre')}">—</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">DNI:</dt><dd class="font-mono text-xs" th:text="${visita.get('visitante_dni') ?: '—'}">—</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">[[${pais.etiquetaIdPersonal()}]]:</dt><dd class="font-mono text-xs" th:text="${visita.get('visitante_dni') ?: '—'}">—</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Email:</dt><dd class="text-xs" th:text="${visita.get('visitante_email') ?: '—'}">—</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Teléfono:</dt><dd class="font-mono text-xs" th:text="${visita.get('visitante_telefono') ?: '—'}">—</dd></div>
             </dl>

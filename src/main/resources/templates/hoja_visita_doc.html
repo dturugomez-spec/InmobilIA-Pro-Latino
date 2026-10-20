@@ -26,7 +26,7 @@
     <table class="w-full text-sm mb-6">
         <tr><td class="py-1 w-40 text-slate-500">Agencia</td>
             <td class="py-1 font-semibold" th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '____________')}">—</td></tr>
-        <tr><td class="py-1 text-slate-500">NIF/CIF</td>
+        <tr><td class="py-1 text-slate-500">[[${pais.etiquetaIdFiscal()}]]</td>
             <td class="py-1" th:text="${agencia.get('tax_id') ?: '____________'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">Fecha de la visita</td>
             <td class="py-1" th:text="${h.get('fecha_visita') ?: '____________'}">—</td></tr>
@@ -36,7 +36,7 @@
     <table class="w-full text-sm mb-6">
         <tr><td class="py-1 w-40 text-slate-500">Nombre y apellidos</td>
             <td class="py-1 font-semibold" th:text="${h.get('visitante_nombre') ?: '____________'}">—</td></tr>
-        <tr><td class="py-1 text-slate-500">DNI/NIF</td>
+        <tr><td class="py-1 text-slate-500">[[${pais.etiquetaIdPersonal()}]]</td>
             <td class="py-1" th:text="${h.get('visitante_dni') ?: '____________'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">Teléfono</td>
             <td class="py-1" th:text="${h.get('visitante_telefono') ?: '____________'}">—</td></tr>

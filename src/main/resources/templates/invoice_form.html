@@ -6,6 +6,10 @@
 <body>
 <div layout:fragment="content">
 
+    <div class="max-w-5xl mx-auto mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-300">
+        Este documento sirve para el control de cobros de tu inmobiliaria. La <strong>factura electrónica con validez fiscal</strong>
+        se emite (timbra) en el sistema autorizado de tu país: CFDI del SAT, DIAN, ARCA, SII, SUNAT…
+    </div>
     <form action="/invoices" method="post" class="max-w-5xl mx-auto"
           x-data="{ base: __BASE__, ivaPct: __IVA__, irpfPct: __IRPF__,
                     get ivaAmt() { return this.round(this.base * this.ivaPct / 100); },
@@ -14,7 +18,7 @@
                     round(v) { return Math.round(v * 100) / 100; },
                     fmt(v) { return v.toLocaleString(window.LOC||'es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } }"
           th:attr="data-base=${inv.get('base_imponible') ?: 0}"
-          th:with="baseVal=${inv.get('base_imponible') ?: 0},ivaVal=${inv.get('iva_pct') ?: 21},irpfVal=${inv.get('irpf_pct') ?: 0}">
+          th:with="baseVal=${inv.get('base_imponible') ?: 0},ivaVal=${inv.get('iva_pct') ?: pais.tipoImpuesto()},irpfVal=${inv.get('irpf_pct') ?: 0}">
 
         <input type="hidden" name="id" th:value="${inv.get('id')}" th:if="${editing}">
 
@@ -69,13 +73,13 @@
                 <div class="space-y-3">
                     <input type="text" name="emisor_nombre" th:value="${inv.get('emisor_nombre')}" placeholder="Nombre o razón social"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
-                    <input type="text" name="emisor_nif" th:value="${inv.get('emisor_nif')}" placeholder="NIF / CIF"
+                    <input type="text" name="emisor_nif" th:value="${inv.get('emisor_nif')}" th:placeholder="${pais.etiquetaIdFiscal()}"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
                     <input type="text" name="emisor_direccion" th:value="${inv.get('emisor_direccion')}" placeholder="Dirección completa"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
                     <input type="email" name="emisor_email" th:value="${inv.get('emisor_email')}" placeholder="Email contacto"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
-                    <input type="text" name="emisor_iban" th:value="${inv.get('emisor_iban')}" placeholder="IBAN para cobro"
+                    <input type="text" name="emisor_iban" th:value="${inv.get('emisor_iban')}" placeholder="Cuenta bancaria para cobro (CLABE, CBU, número de cuenta…)"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
                 </div>
             </div>
@@ -85,7 +89,7 @@
                 <div class="space-y-3">
                     <input type="text" name="cliente_nombre" required th:value="${inv.get('cliente_nombre')}" placeholder="Nombre o razón social"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
-                    <input type="text" name="cliente_nif" th:value="${inv.get('cliente_nif')}" placeholder="NIF / CIF / NIE"
+                    <input type="text" name="cliente_nif" th:value="${inv.get('cliente_nif')}" th:placeholder="|${pais.etiquetaIdFiscal()} / ${pais.etiquetaIdPersonal()}|"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
                     <input type="text" name="cliente_direccion" th:value="${inv.get('cliente_direccion')}" placeholder="Dirección"
                            class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
@@ -115,23 +119,26 @@
                                class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono text-right">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">IVA (%)</label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">[[${pais.impuesto()}]] (%)</label>
                         <select name="iva_pct" x-model.number="ivaPct"
                                 class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
                             <option value="0"  th:selected="${inv.get('iva_pct') == 0}">0% · Exento</option>
-                            <option value="4"  th:selected="${inv.get('iva_pct') == 4}">4% · Superreducido</option>
-                            <option value="10" th:selected="${inv.get('iva_pct') == 10}">10% · Reducido</option>
-                            <option value="21" th:selected="${inv.get('iva_pct') == null or inv.get('iva_pct') == 21}">21% · General</option>
+                            <option th:value="${pais.tipoImpuesto()}" th:selected="${inv.get('iva_pct') == null or inv.get('iva_pct') == pais.tipoImpuesto()}"
+                                    th:text="|${pais.impuestoConTipo()} · General|">General</option>
+                            <option th:if="${inv.get('iva_pct') != null and inv.get('iva_pct') != 0 and inv.get('iva_pct') != pais.tipoImpuesto()}"
+                                    th:value="${inv.get('iva_pct')}" selected th:text="|${inv.get('iva_pct')}% · Otro|">Otro</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">IRPF (%)</label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Retención (%)</label>
                         <select name="irpf_pct" x-model.number="irpfPct"
                                 class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
                             <option value="0"  th:selected="${inv.get('irpf_pct') == null or inv.get('irpf_pct') == 0}">0% · Sin retención</option>
-                            <option value="7"  th:selected="${inv.get('irpf_pct') == 7}">7% · Profesional reducido</option>
-                            <option value="15" th:selected="${inv.get('irpf_pct') == 15}">15% · Profesional general</option>
-                            <option value="19" th:selected="${inv.get('irpf_pct') == 19}">19% · Alquiler</option>
+                            <option value="1"  th:selected="${inv.get('irpf_pct') == 1}">1%</option>
+                            <option value="2"  th:selected="${inv.get('irpf_pct') == 2}">2%</option>
+                            <option value="4"  th:selected="${inv.get('irpf_pct') == 4}">4%</option>
+                            <option value="10" th:selected="${inv.get('irpf_pct') == 10}">10%</option>
+                            <option value="11" th:selected="${inv.get('irpf_pct') == 11}">11%</option>
                         </select>
                     </div>
                 </div>
@@ -143,11 +150,11 @@
                         <span class="font-mono font-medium" x-text="fmt(base) + (' ' + (window.MON||''))">0,00 [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between text-sm py-1">
-                        <span class="text-slate-600 dark:text-slate-400">+ IVA <span x-text="ivaPct + '%'"></span></span>
+                        <span class="text-slate-600 dark:text-slate-400">+ [[${pais.impuesto()}]] <span x-text="ivaPct + '%'"></span></span>
                         <span class="font-mono font-medium text-emerald-700 dark:text-emerald-400" x-text="'+ ' + fmt(ivaAmt) + (' ' + (window.MON||''))">+ 0,00 [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between text-sm py-1" x-show="irpfPct > 0">
-                        <span class="text-slate-600 dark:text-slate-400">- Retención IRPF <span x-text="irpfPct + '%'"></span></span>
+                        <span class="text-slate-600 dark:text-slate-400">- Retención <span x-text="irpfPct + '%'"></span></span>
                         <span class="font-mono font-medium text-red-600 dark:text-red-400" x-text="'- ' + fmt(irpfAmt) + (' ' + (window.MON||''))">- 0,00 [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between pt-3 mt-2 border-t border-slate-200 dark:border-neutral-700">
@@ -223,7 +230,8 @@
         const form = document.querySelector('form[x-data]');
         if (!form) return;
         const baseV = parseFloat(/*[[${inv.get('base_imponible') ?: 0}]]*/ 0) || 0;
-        const ivaV  = parseFloat(/*[[${inv.get('iva_pct') ?: 21}]]*/ 21) || 21;
+        const ivaN  = parseFloat(/*[[${inv.get('iva_pct') ?: pais.tipoImpuesto()}]]*/ 16);
+        const ivaV  = isNaN(ivaN) ? 0 : ivaN;
         const irpfV = parseFloat(/*[[${inv.get('irpf_pct') ?: 0}]]*/ 0) || 0;
         const xData = form.getAttribute('x-data');
         form.setAttribute('x-data', xData

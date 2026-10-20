@@ -46,13 +46,13 @@
 </div>
 
 <h2>1. Resumen ejecutivo</h2>
-<p>Tras analizar el mercado de <strong th:text="${data.city}">ciudad</strong> y las características de su inmueble, le presentamos nuestra valoración objetiva basada en datos públicos de INE, Banco de España y operaciones recientes en la zona.</p>
+<p>Tras analizar el mercado de <strong th:text="${data.city}">ciudad</strong> y las características de su inmueble, le presentamos nuestra valoración objetiva basada en precios de referencia del mercado y operaciones recientes en la zona.</p>
 
 <div class="grid grid-3" style="margin: 16px 0;">
     <div class="card">
         <div class="card-title">Precio mercado m²</div>
         <div class="card-value" th:text="${#numbers.formatDecimal(pricePerM2,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</div>
-        <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Media zona INE 2026</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Referencia de mercado</div>
     </div>
     <div class="card">
         <div class="card-title">Estimación venta</div>
@@ -89,8 +89,8 @@
     <li><strong>Reportaje fotográfico profesional</strong> · 25-30 fotos HDR con realce de luz natural</li>
     <li><strong>Vídeo tour 360°</strong> recorrido virtual para que los compradores filtren antes de visitar</li>
     <li><strong>Plano interactivo</strong> con medidas y orientación</li>
-    <li><strong>Publicación en 6+ portales</strong>: Idealista, Fotocasa, Habitaclia, Pisos.com, Yaencontre, redes propias</li>
-    <li><strong>Anuncio destacado</strong> en Idealista durante 30 días para visibilidad máxima</li>
+    <li><strong>Publicación en los principales portales</strong>: <span th:text="${pais.portales()}">—</span> y redes propias</li>
+    <li><strong>Anuncio destacado</strong> en el portal líder de la zona durante 30 días para visibilidad máxima</li>
     <li><strong>Difusión en redes sociales</strong>: Instagram, Facebook, LinkedIn (sin ubicación exacta por seguridad)</li>
     <li><strong>Newsletter a base de datos</strong>: 500+ contactos cualificados activos en su zona</li>
     <li><strong>Cartel digital y físico</strong> en la propia finca o ventana</li>
@@ -101,15 +101,15 @@
     <li>Visitas siempre acompañadas y registradas (con feedback al propietario)</li>
     <li>Filtrado financiero del comprador antes de la oferta</li>
     <li>Negociación profesional del precio</li>
-    <li>Gestión de toda la documentación: nota simple, cédula habitabilidad, IBI, comunidad, certificado energético</li>
-    <li>Asesoramiento fiscal: ITP, AJD, plusvalía municipal, IRPF</li>
+    <li>Gestión de toda la documentación: certificado registral, libertad de gravamen, predial, cuotas de administración, planos y permisos (antes certificado energético</li>
+    <li>Asesoramiento fiscal: impuestos de la compraventa, ganancia de capital y gastos notariales</li>
     <li>Acompañamiento en notaría hasta firma de escrituras</li>
     <li>Atención post-venta durante 6 meses</li>
 </ul>
 
 <h2>5. Honorarios y condiciones</h2>
 <p style="background: #f8fafc; padding: 14px; border-radius: 8px; border-left: 4px solid #1e40af;">
-    <strong>Honorarios:</strong> 3% + IVA sobre el precio final de venta.<br>
+    <strong>Honorarios:</strong> 3% + [[${pais.impuesto()}]] sobre el precio final de venta.<br>
     <strong>Cobro:</strong> Solo si vendemos. Sin coste si no se cierra operación.<br>
     <strong>Exclusividad:</strong> 4 meses recomendados para optimizar resultados.<br>
     <strong>Sin gastos previos:</strong> Fotos, vídeos, anuncios, certificados — todo a nuestra cuenta.
@@ -126,7 +126,7 @@
 
 <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
     <p>Este informe ha sido elaborado el <span th:text="${hoy}">—</span>.</p>
-    <p>Datos basados en INE 2026, Banco de España, registros públicos y operaciones comparables en la zona.</p>
+    <p>Datos orientativos basados en precios de referencia, registros públicos y operaciones comparables en la zona.</p>
     <p style="margin-top: 12px; font-weight: 600; color: #1e40af;">InmobilIA Pro · Tu agencia de confianza</p>
 </div>
 

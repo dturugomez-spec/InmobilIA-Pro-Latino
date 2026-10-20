@@ -37,7 +37,7 @@
 const markers = /*[[${markers}]]*/ [];
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.L) return;
-    const map = L.map('propertyMap').setView([40.4168, -3.7038], 6);  // España default
+    const map = L.map('propertyMap').setView([4.6, -74.08], 3);  // Latinoamérica por defecto
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'

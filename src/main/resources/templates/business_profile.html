@@ -22,14 +22,14 @@
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium mb-1.5">Razón social *</label>
-                    <input type="text" name="legal_name" required th:value="${profile.get('legal_name')}" placeholder="Inmuebles Madrid Centro S.L." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="text" name="legal_name" required th:value="${profile.get('legal_name')}" placeholder="Inmuebles Polanco S.A. de C.V." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1.5">NIF / CIF *</label>
+                    <label class="block text-sm font-medium mb-1.5">[[${pais.etiquetaIdFiscal()}]] *</label>
                     <input type="text" name="tax_id" required th:value="${profile.get('tax_id')}" placeholder="B12345678" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1.5">IBAN para cobros</label>
+                    <label class="block text-sm font-medium mb-1.5">Cuenta bancaria para cobros</label>
                     <input type="text" name="iban" th:value="${profile.get('iban')}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
                     <p class="text-[11px] text-slate-500 dark:text-neutral-400 mt-1.5 flex items-start gap-1">
                         <i data-lucide="shield-check" class="h-3.5 w-3.5 flex-shrink-0 mt-px"></i>
@@ -54,7 +54,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1.5">País</label>
-                    <input type="text" name="country" th:value="${profile.get('country') ?: 'España'}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                    <input type="text" name="country" th:value="${profile.get('country') ?: pais.nombre()}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
             <div class="p-6 space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Notas en facturas</label>
-                    <textarea name="notes_invoice" rows="3" th:text="${profile.get('notes_invoice')}" placeholder="Plazo de pago: 30 días. Operación sujeta al régimen general de IVA..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500"></textarea>
+                    <textarea name="notes_invoice" rows="3" th:text="${profile.get('notes_invoice')}" placeholder="Plazo de pago: 30 días. Operación sujeta a los impuestos aplicables..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500"></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Pie de recibos</label>

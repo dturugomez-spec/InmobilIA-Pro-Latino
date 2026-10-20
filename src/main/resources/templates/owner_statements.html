@@ -4,7 +4,7 @@
 <body><div layout:fragment="content">
 <div class="rounded-xl bg-gradient-to-br from-emerald-700 to-green-900 p-6 mb-5 text-white">
     <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="receipt-text" class="h-6 w-6"></i> Extractos a propietarios</h2>
-    <p class="text-sm text-white/80 mt-1">Liquidaciones mensuales con cálculo automático de comisión, IVA, IRPF y gastos.</p>
+    <p class="text-sm text-white/80 mt-1">Liquidaciones mensuales con cálculo automático de comisión, impuestos, retenciones y gastos.</p>
 </div>
 
 <div class="rounded-xl bg-amber-50 border-2 border-amber-200 p-4 mb-5">
@@ -24,7 +24,7 @@
         </div>
         <div class="grid grid-cols-2 gap-2">
             <div><label class="block text-xs">Comisión %</label><input type="number" step="0.1" name="comisionPct" value="10" class="w-full px-2 py-1 text-sm border rounded"></div>
-            <div><label class="block text-xs">Retención IRPF %</label><input type="number" step="0.1" name="retencionIrpfPct" value="19" class="w-full px-2 py-1 text-sm border rounded"></div>
+            <div><label class="block text-xs">Retención %</label><input type="number" step="0.1" name="retencionIrpfPct" value="19" class="w-full px-2 py-1 text-sm border rounded"></div>
         </div>
         <button class="w-full px-4 py-2 rounded bg-emerald-700 text-white text-sm"> Generar</button>
     </form>

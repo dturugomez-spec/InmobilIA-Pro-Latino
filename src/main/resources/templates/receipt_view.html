@@ -23,7 +23,7 @@
                 <img th:if="${profile.get('logo_url')}" th:src="${profile.get('logo_url')}" class="h-12 mb-3 object-contain">
                 <div class="font-semibold text-base" th:text="${rec.get('emisor_nombre') ?: profile.get('legal_name')}">Emisor</div>
                 <div class="text-xs text-slate-500 dark:text-neutral-400 space-y-0.5 mt-1">
-                    <div th:if="${rec.get('emisor_nif')}">NIF: <span class="font-mono" th:text="${rec.get('emisor_nif')}">—</span></div>
+                    <div th:if="${rec.get('emisor_nif')}">[[${pais.etiquetaIdFiscal()}]]: <span class="font-mono" th:text="${rec.get('emisor_nif')}">—</span></div>
                     <div th:text="${rec.get('emisor_direccion') ?: profile.get('address')}">—</div>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                 <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Recibí de</div>
                 <div class="font-semibold" th:text="${rec.get('inquilino_nombre')}">—</div>
                 <div class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mt-1">
-                    <div th:if="${rec.get('inquilino_nif')}">NIF: <span class="font-mono" th:text="${rec.get('inquilino_nif')}">—</span></div>
+                    <div th:if="${rec.get('inquilino_nif')}">[[${pais.etiquetaIdFiscal()}]]: <span class="font-mono" th:text="${rec.get('inquilino_nif')}">—</span></div>
                     <div th:text="${rec.get('inquilino_direccion')}">—</div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                      <span th:text="${rec.get('property_name')}">propiedad</span>
                 </div>
                 <div class="text-xs text-slate-500" th:if="${rec.get('catastro_ref')}">
-                    Ref. catastral: <span class="font-mono" th:text="${rec.get('catastro_ref')}">—</span>
+                    Clave catastral: <span class="font-mono" th:text="${rec.get('catastro_ref')}">—</span>
                 </div>
             </div>
         </div>
@@ -64,7 +64,7 @@
                     <span class="font-mono" th:text="${#numbers.formatDecimal(rec.get('importe') ?: 0,0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</span>
                 </div>
                 <div class="flex justify-between" th:if="${rec.get('irpf_amount') != null and rec.get('irpf_amount') > 0}">
-                    <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${rec.get('irpf_pct') + '%'}">19%</span>)</span>
+                    <span class="text-slate-600 dark:text-slate-400">Retención (<span th:text="${rec.get('irpf_pct') + '%'}">—</span>)</span>
                     <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(rec.get('irpf_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</span>
                 </div>
                 <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
@@ -81,7 +81,7 @@
                 <div th:text="${rec.get('metodo_pago') ?: 'Transferencia'}">Transferencia</div>
             </div>
             <div th:if="${profile.get('iban')}">
-                <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">IBAN</span>
+                <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Cuenta bancaria</span>
                 <div class="font-mono text-xs" th:text="${profile.get('iban')}">—</div>
             </div>
             <div class="ml-auto">

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
-<head><title>OCR DNI</title></head>
+<head><title>OCR de identificaciones</title></head>
 <body><div layout:fragment="content">
 <div class="rounded-xl bg-gradient-to-br from-orange-700 to-red-900 p-6 mb-5 text-white">
-    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="scan" class="h-6 w-6"></i> OCR DNI / NIE</h2>
-    <p class="text-sm text-white/80 mt-1">Sube foto del DNI y extrae los datos automáticamente.</p>
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="scan" class="h-6 w-6"></i> OCR de documentos de identidad</h2>
+    <p class="text-sm text-white/80 mt-1">Sube una foto de la identificación (INE, cédula, DNI, RUN…) y extrae los datos automáticamente.</p>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
-        <h3 class="font-semibold text-sm mb-3"> Foto del DNI</h3>
+        <h3 class="font-semibold text-sm mb-3"> Foto del documento</h3>
         <input type="file" id="img" accept="image/*" capture="environment" class="w-full text-sm mb-3">
         <button onclick="procesar()" id="btnProc" disabled class="w-full px-4 py-2 rounded bg-orange-700 text-white text-sm disabled:opacity-50"> Procesar OCR</button>
         <div id="preview" class="mt-3"></div>

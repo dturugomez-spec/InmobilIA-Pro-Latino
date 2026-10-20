@@ -65,7 +65,7 @@
                 <textarea name="contenido_html" rows="22" required
                     th:text="${plantilla.get('contenido_html')}"
                     class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"
-                    placeholder="<h1>CONTRATO DE...</h1>&#10;<p>En {empresa.direccion}, a {hoy.completa}...</p>&#10;<p>D. {lead.nombre}, NIF {lead.dni}, ..."></textarea>
+                    placeholder="<h1>CONTRATO DE...</h1>&#10;<p>En {empresa.direccion}, a {hoy.completa}...</p>&#10;<p>{lead.nombre}, identificación {lead.dni}, ..."></textarea>
             </div>
 
             <div>

@@ -491,9 +491,9 @@
                     <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
                 </button>
                 <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
-                <a th:if="${nav.ve('/firmas')}" href="/firmas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Firmas eIDAS">
+                <a th:if="${nav.ve('/firmas')}" href="/firmas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Firma electrónica">
                     <i data-lucide="pen-tool" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Firmas eIDAS</span>
+                    <span x-show="!sidebarCollapsed" class="truncate">Firma electrónica</span>
                 </a>
                 <a th:if="${nav.ve('/plantillas-doc')}" href="/plantillas-doc" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Plantillas de documentos">
                     <i data-lucide="file-text" class="h-4 w-4 flex-shrink-0"></i>
@@ -503,9 +503,9 @@
                     <i data-lucide="layout-template" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Plantillas de email</span>
                 </a>
-                <a th:if="${nav.ve('/ocr-dni')}" href="/ocr-dni" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="OCR de DNI">
+                <a th:if="${nav.ve('/ocr-dni')}" href="/ocr-dni" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="OCR de identificaciones">
                     <i data-lucide="scan-line" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">OCR de DNI</span>
+                    <span x-show="!sidebarCollapsed" class="truncate">OCR de identificaciones</span>
                 </a>
                 <a th:if="${nav.ve('/herramientas/ocr')}" href="/herramientas/ocr" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="OCR de documentos">
                     <i data-lucide="scan-text" class="h-4 w-4 flex-shrink-0"></i>

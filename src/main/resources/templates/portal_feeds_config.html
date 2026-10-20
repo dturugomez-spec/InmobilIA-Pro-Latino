@@ -11,8 +11,9 @@
             <i data-lucide="rss" class="h-6 w-6"></i> Feeds XML para portales inmobiliarios
         </h2>
         <p class="text-sm text-white/80 mt-1">
-            Tus propiedades se sincronizan automáticamente con Idealista, Fotocasa, Habitaclia y Pisos.com.
-            Comparte estas URLs con el departamento técnico de cada portal.
+            Comparte esta URL con el área técnica de tu portal o integrador para que importe tus propiedades
+            automáticamente. Portales habituales en <span th:text="${pais.nombre()}">tu país</span>:
+            <span th:text="${pais.portales()}">—</span>.
         </p>
     </div>
 
@@ -46,56 +47,17 @@
                 </h3>
 
                 <div class="space-y-3">
-                    <!-- Idealista -->
                     <div class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
                         <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-sm flex items-center gap-1"> Idealista</p>
-                            <span th:if="${feed.get('idealista_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
-                            <span th:unless="${feed.get('idealista_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
+                            <p class="font-semibold text-sm flex items-center gap-1"> Feed XML de propiedades</p>
+                            <span th:unless="${feed.get('feed_enabled') == false}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
+                            <span th:if="${feed.get('feed_enabled') == false}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
                         </div>
                         <div class="flex gap-1">
-                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/idealista.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                            <button onclick="copy(this)" data-url="" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/idealista.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800"></button>
+                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/feed.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                            <button onclick="copy(this)" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/feed.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">Copiar</button>
                         </div>
-                    </div>
-
-                    <!-- Fotocasa -->
-                    <div class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-sm flex items-center gap-1"> Fotocasa</p>
-                            <span th:if="${feed.get('fotocasa_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
-                            <span th:unless="${feed.get('fotocasa_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/fotocasa.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                            <button onclick="copy(this)" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/fotocasa.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800"></button>
-                        </div>
-                    </div>
-
-                    <!-- Habitaclia -->
-                    <div class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-sm flex items-center gap-1"> Habitaclia</p>
-                            <span th:if="${feed.get('habitaclia_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
-                            <span th:unless="${feed.get('habitaclia_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/habitaclia.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                            <button onclick="copy(this)" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/habitaclia.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800"></button>
-                        </div>
-                    </div>
-
-                    <!-- Pisos.com -->
-                    <div class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-sm flex items-center gap-1"> Pisos.com</p>
-                            <span th:if="${feed.get('pisoscom_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
-                            <span th:unless="${feed.get('pisoscom_enabled')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/pisoscom.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                            <button onclick="copy(this)" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/pisoscom.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800"></button>
-                        </div>
+                        <p class="text-[11px] text-slate-500 mt-2">Incluye precio en <span th:text="${pais.moneda()}">MXN</span>, país, superficie, características, fotos y datos de contacto. Si un portal pide su propio formato, avísanos y lo añadimos.</p>
                     </div>
                 </div>
 
@@ -163,11 +125,8 @@
             </div>
 
             <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-1">
-                <p class="text-xs font-semibold mb-2">Portales activos</p>
-                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="idealista_enabled" th:checked="${feed.get('idealista_enabled')}" class="rounded"> Idealista</label>
-                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="fotocasa_enabled" th:checked="${feed.get('fotocasa_enabled')}" class="rounded"> Fotocasa</label>
-                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="habitaclia_enabled" th:checked="${feed.get('habitaclia_enabled')}" class="rounded"> Habitaclia</label>
-                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="pisoscom_enabled" th:checked="${feed.get('pisoscom_enabled')}" class="rounded"> Pisos.com</label>
+                <p class="text-xs font-semibold mb-2">Estado del feed</p>
+                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="feed_enabled" th:checked="${feed.get('feed_enabled') != false}" class="rounded"> Feed activo</label>
             </div>
 
             <div class="pt-3 border-t border-slate-100 dark:border-neutral-800">

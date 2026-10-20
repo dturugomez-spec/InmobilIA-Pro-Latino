@@ -39,6 +39,9 @@ public class PaisInterceptor implements HandlerInterceptor {
         Pais pais = PaisActual.get();
         mav.addObject("pais", pais);
         mav.addObject("mon", pais.moneda());
+        if (!mav.getModel().containsKey("ciudadEjemplo")) {
+            mav.addObject("ciudadEjemplo", com.inmobilia.util.PreciosReferencia.ciudadPrincipal(pais));
+        }
     }
 
     @Override

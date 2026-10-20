@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,6 +25,8 @@ import java.util.UUID;
 public class DemoDataService {
 
     private final SupabaseService supabase;
+    private final PaisService paises;
+    private final CurrencyService divisas;
 
     @Async
     public void seedDemoData(String userId) {
@@ -31,30 +34,30 @@ public class DemoDataService {
             log.info(">>> Seeding demo data para usuario {}", userId);
 
             // 3 propiedades demo
-            Map<String, Object> p1 = newProp(userId, "Piso Gran Vía 42, 3B", "Calle Gran Vía 42", "Madrid",
-                    "28013", "Residencial", "Ocupado", 85.0, 3, 2, 1998, 235000.0, 270000.0, 1100.0,
+            Map<String, Object> p1 = newProp(userId, "Depto. Reforma 222, 3B", "Paseo de la Reforma 222", "Ciudad de México",
+                    "06600", "Residencial", "Ocupado", 85.0, 3, 2, 1998, 235000.0, 270000.0, 1100.0,
                     "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80");
-            supabase.insert("propiedades", p1);
+            insertar("propiedades", p1);
 
-            Map<String, Object> p2 = newProp(userId, "Piso Malasaña 12, 2A", "Calle Fuencarral 80", "Madrid",
-                    "28004", "Residencial", "Libre", 65.0, 2, 1, 2010, 195000.0, 220000.0, 950.0,
+            Map<String, Object> p2 = newProp(userId, "Depto. Roma Norte 12, 2A", "Calle Orizaba 80", "Ciudad de México",
+                    "06700", "Residencial", "Libre", 65.0, 2, 1, 2010, 195000.0, 220000.0, 950.0,
                     "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop&q=80");
-            supabase.insert("propiedades", p2);
+            insertar("propiedades", p2);
 
-            Map<String, Object> p3 = newProp(userId, "Local Atocha 88", "Calle de Atocha 88", "Madrid",
-                    "28012", "Comercial", "Ocupado", 120.0, 0, 1, 1985, 320000.0, 380000.0, 1850.0,
+            Map<String, Object> p3 = newProp(userId, "Local Insurgentes 88", "Av. Insurgentes Sur 88", "Ciudad de México",
+                    "03100", "Comercial", "Ocupado", 120.0, 0, 1, 1985, 320000.0, 380000.0, 1850.0,
                     "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80");
-            supabase.insert("propiedades", p3);
+            insertar("propiedades", p3);
 
             // 2 inquilinos demo
             Map<String, Object> i1 = new LinkedHashMap<>();
             i1.put("user_id", userId);
             i1.put("name", "Juan Pérez García");
             i1.put("email", "juan.perez@example.com");
-            i1.put("phone", "+34 612 345 678");
-            i1.put("id_number", "12345678Z");
-            i1.put("nationality", "Española");
-            i1.put("property_name", "Piso Gran Vía 42, 3B");
+            i1.put("phone", "+52 55 1234 5678");
+            i1.put("id_number", "PEGJ800115HDFRRN05");
+            i1.put("nationality", "Mexicana");
+            i1.put("property_name", "Depto. Reforma 222, 3B");
             i1.put("rent_amount", 1100.0);
             i1.put("deposit", 2200.0);
             i1.put("lease_start", "2024-01-15");
@@ -63,15 +66,15 @@ public class DemoDataService {
             i1.put("score", 85);
             i1.put("notes", "Inquilino ejemplar. Pagos puntuales.");
             i1.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("inquilinos", i1);
+            insertar("inquilinos", i1);
 
             Map<String, Object> i2 = new LinkedHashMap<>();
             i2.put("user_id", userId);
-            i2.put("name", "Cosméticos PIO S.L.");
+            i2.put("name", "Cosméticos PIO S.A. de C.V.");
             i2.put("email", "info@cosmeticospio.com");
-            i2.put("phone", "+34 91 234 56 78");
-            i2.put("id_number", "B12345678");
-            i2.put("property_name", "Local Atocha 88");
+            i2.put("phone", "+52 55 1234 5678");
+            i2.put("id_number", "CPI150601AB1");
+            i2.put("property_name", "Local Insurgentes 88");
             i2.put("rent_amount", 1850.0);
             i2.put("deposit", 5550.0);
             i2.put("lease_start", "2023-06-01");
@@ -79,25 +82,25 @@ public class DemoDataService {
             i2.put("status", "Activo");
             i2.put("score", 78);
             i2.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("inquilinos", i2);
+            insertar("inquilinos", i2);
 
             // Lead demo
             Map<String, Object> l1 = new LinkedHashMap<>();
             l1.put("user_id", userId);
             l1.put("nombre", "Ana García López");
             l1.put("email", "ana.garcia@example.com");
-            l1.put("telefono", "+34 678 901 234");
-            l1.put("origen", "Idealista");
-            l1.put("interes", "Busca piso 2 hab en Malasaña/Chueca, presupuesto 250k");
+            l1.put("telefono", "+52 55 7890 1234");
+            l1.put("origen", "Inmuebles24");
+            l1.put("interes", "Busca depto. 2 hab en Roma Norte/Juárez, presupuesto 250k");
             l1.put("presupuesto", 250000.0);
-            l1.put("zona", "Malasaña");
+            l1.put("zona", "Roma Norte");
             l1.put("tipo_activo", "Residencial");
             l1.put("etapa", "Visita");
             l1.put("score", 75);
             l1.put("next_followup", LocalDate.now().plusDays(3).toString());
-            l1.put("notas", "Le gustó el Malasaña 12. Pidió rebajar 5%.");
+            l1.put("notas", "Le gustó el Roma Norte 12. Pidió rebajar 5%.");
             l1.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("leads", l1);
+            insertar("leads", l1);
 
             // Transacción de cobro demo (este mes)
             Map<String, Object> t1 = new LinkedHashMap<>();
@@ -106,37 +109,37 @@ public class DemoDataService {
             t1.put("category", "Alquiler");
             t1.put("amount", 1100.0);
             t1.put("date", LocalDate.now().withDayOfMonth(5).toString());
-            t1.put("property_name", "Piso Gran Vía 42, 3B");
+            t1.put("property_name", "Depto. Reforma 222, 3B");
             t1.put("description", "Cobro alquiler mensual · Juan Pérez");
             t1.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("transacciones", t1);
+            insertar("transacciones", t1);
 
             // Visita / reserva demo
             Map<String, Object> v1 = new LinkedHashMap<>();
             v1.put("user_id", userId);
             v1.put("client_name", "Ana García López");
-            v1.put("client_phone", "+34 678 901 234");
+            v1.put("client_phone", "+52 55 7890 1234");
             v1.put("client_email", "ana.garcia@example.com");
-            v1.put("property_name", "Piso Malasaña 12, 2A");
+            v1.put("property_name", "Depto. Roma Norte 12, 2A");
             v1.put("date", LocalDate.now().plusDays(2).toString());
             v1.put("time", "17:30");
             v1.put("type", "Visita");
             v1.put("status", "Confirmada");
             v1.put("agent_name", "Comercial");
             v1.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("reservas", v1);
+            insertar("reservas", v1);
 
             // Tarea demo
             Map<String, Object> task1 = new LinkedHashMap<>();
             task1.put("user_id", userId);
             task1.put("asignado_a", userId);
-            task1.put("titulo", "Revisar caldera Piso Gran Vía");
+            task1.put("titulo", "Revisar calentador Depto. Reforma");
             task1.put("descripcion", "Inquilino reporta agua tibia en ducha. Llamar al fontanero.");
             task1.put("prioridad", "media");
             task1.put("estado", "pendiente");
             task1.put("fecha_limite", LocalDate.now().plusDays(5).toString());
             task1.put("created_at", OffsetDateTime.now().toString());
-            supabase.insert("tareas", task1);
+            insertar("tareas", task1);
 
             log.info(">>> Demo data seeded para usuario {}", userId);
         } catch (Exception e) {
@@ -151,9 +154,40 @@ public class DemoDataService {
     // ------------------------------------------------------------------
 
     /** Inserta una fila y contabiliza en el informe; devuelve la fila guardada (con id) o null. */
+    /** Campos con importes: los valores demo están en euros y se pasan a la moneda de la inmobiliaria. */
+    private static final Set<String> IMPORTES = Set.of(
+            "rent_amount", "rent", "deposit", "amount", "importe", "importe_inicial", "presupuesto", "presupuesto_max",
+            "precio", "precio_min", "precio_max", "precio_estimado", "rental_income", "monthly_expenses",
+            "purchase_price", "current_value", "eur_m2", "deposito_arras", "coste", "total", "valor");
+
+    /** Factor euro → moneda de la inmobiliaria (la siembra es @Async: no hay país de la petición). */
+    private double factor(String userId) {
+        String mon = paises.deOrganizacion(userId).moneda();
+        return "EUR".equals(mon) ? 1.0 : divisas.convertir(1.0, "EUR", mon);
+    }
+
+    private Map<String, Object> enMoneda(Map<String, Object> row) {
+        Object uid = row.get("user_id");
+        if (uid == null) return row;
+        double f = factor(String.valueOf(uid));
+        if (f == 1.0) return row;
+        for (String k : IMPORTES) {
+            Object v = row.get(k);
+            if (v instanceof Number n) {
+                double x = n.doubleValue() * f;
+                row.put(k, x >= 10_000 ? Math.round(x / 100.0) * 100.0 : Math.round(x * 100.0) / 100.0);
+            }
+        }
+        return row;
+    }
+
+    private Map<String, Object> insertar(String table, Map<String, Object> row) {
+        return supabase.insert(table, enMoneda(row));
+    }
+
     private Map<String, Object> ins(Map<String, Object> report, String table, Map<String, Object> row) {
         try {
-            Map<String, Object> saved = supabase.insert(table, row);
+            Map<String, Object> saved = supabase.insert(table, enMoneda(row));
             if (saved != null && !saved.isEmpty()) {
                 report.merge(table, 1, (a, b) -> (Integer) a + (Integer) b);
                 return saved;
@@ -197,18 +231,18 @@ public class DemoDataService {
         // ---------- PROPIEDADES (7, variadas, con portal del propietario) ----------
         // {name, address, city, postal, type, status, area, beds, baths, year, purchase, current, rent, photo, propNombre, propEmail}
         Object[][] props = {
-            {"Piso Gran Vía 42, 3B", "Calle Gran Vía 42", "Madrid", "28013", "Residencial", "Ocupado", 85.0, 3, 2, 1998, 235000.0, 270000.0, 1100.0, "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80", "Carmen Ruiz Molina", "carmen.ruiz@example.com"},
-            {"Piso Malasaña 12, 2A", "Calle Fuencarral 80", "Madrid", "28004", "Residencial", "Libre", 65.0, 2, 1, 2010, 195000.0, 220000.0, 950.0, "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop&q=80", "Luis Sanz Pérez", "luis.sanz@example.com"},
-            {"Local Atocha 88", "Calle de Atocha 88", "Madrid", "28012", "Comercial", "Ocupado", 120.0, 0, 1, 1985, 320000.0, 380000.0, 1850.0, "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80", "Inversiones Atocha SL", "info@invatocha.example.com"},
-            {"Ático Velázquez 100", "Calle de Velázquez 100", "Madrid", "28006", "Residencial", "Libre", 110.0, 3, 2, 2005, 640000.0, 720000.0, 2400.0, "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80", "Familia Herrero", "herrero.familia@example.com"},
-            {"Chalet Las Rozas", "Av. de los Olivos 15", "Las Rozas de Madrid", "28232", "Residencial", "Libre", 220.0, 5, 3, 2015, 590000.0, 650000.0, 2600.0, "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80", "Marta Gil Vidal", "marta.gil@example.com"},
-            {"Estudio Lavapiés", "Calle del Amparo 22", "Madrid", "28012", "Residencial", "Libre", 38.0, 1, 1, 1972, 145000.0, 165000.0, 800.0, "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=80", "Óscar Prieto", "oscar.prieto@example.com"},
-            {"Oficina Chamberí", "Calle de Zurbano 45", "Madrid", "28010", "Comercial", "Libre", 95.0, 0, 2, 2000, 410000.0, 450000.0, 1950.0, "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&auto=format&fit=crop&q=80", "Grupo Zurbano SL", "contacto@zurbano.example.com"},
-            {"Piso Retiro, Ibiza 5", "Calle de Ibiza 5", "Madrid", "28009", "Residencial", "Libre", 95.0, 3, 2, 2008, 480000.0, 520000.0, 1800.0, "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&auto=format&fit=crop&q=80", "Julia Sáez Bravo", "julia.saez@example.com"},
-            {"Dúplex Chamartín", "Calle de Alberto Alcocer 30", "Madrid", "28036", "Residencial", "Libre", 130.0, 4, 2, 2012, 560000.0, 610000.0, 2100.0, "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=800&auto=format&fit=crop&q=80", "Ignacio Roldán", "ignacio.roldan@example.com"},
-            {"Casa Alcalá de Henares", "Calle Mayor 12", "Alcalá de Henares", "28801", "Residencial", "Ocupado", 160.0, 4, 2, 2003, 310000.0, 340000.0, 1250.0, "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=80", "Rosa Delgado", "rosa.delgado@example.com"},
-            {"Loft Arganzuela", "Paseo de las Delicias 60", "Madrid", "28045", "Residencial", "Libre", 70.0, 1, 1, 2018, 285000.0, 310000.0, 1300.0, "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=80", "Hugo Marín", "hugo.marin@example.com"},
-            {"Nave Getafe", "Polígono Los Olivos, C/ 3", "Getafe", "28906", "Comercial", "Libre", 400.0, 0, 2, 1998, 520000.0, 560000.0, 2800.0, "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&auto=format&fit=crop&q=80", "Logística GTF SL", "info@logisticagtf.example.com"},
+            {"Depto. Reforma 222, 3B", "Paseo de la Reforma 222", "Ciudad de México", "06600", "Residencial", "Ocupado", 85.0, 3, 2, 1998, 235000.0, 270000.0, 1100.0, "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80", "Carmen Ruiz Molina", "carmen.ruiz@example.com"},
+            {"Depto. Roma Norte 12, 2A", "Calle Orizaba 80", "Ciudad de México", "06700", "Residencial", "Libre", 65.0, 2, 1, 2010, 195000.0, 220000.0, 950.0, "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop&q=80", "Luis Sanz Pérez", "luis.sanz@example.com"},
+            {"Local Insurgentes 88", "Av. Insurgentes Sur 88", "Ciudad de México", "03100", "Comercial", "Ocupado", 120.0, 0, 1, 1985, 320000.0, 380000.0, 1850.0, "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80", "Inversiones Insurgentes S.A. de C.V.", "info@invatocha.example.com"},
+            {"Penthouse Masaryk 100", "Av. Presidente Masaryk 100", "Ciudad de México", "11560", "Residencial", "Libre", 110.0, 3, 2, 2005, 640000.0, 720000.0, 2400.0, "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80", "Familia Herrero", "herrero.familia@example.com"},
+            {"Casa Santa Fe", "Av. Vasco de Quiroga 15", "Ciudad de México", "01219", "Residencial", "Libre", 220.0, 5, 3, 2015, 590000.0, 650000.0, 2600.0, "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80", "Marta Gil Vidal", "marta.gil@example.com"},
+            {"Estudio Coyoacán", "Calle Francisco Sosa 22", "Ciudad de México", "03100", "Residencial", "Libre", 38.0, 1, 1, 1972, 145000.0, 165000.0, 800.0, "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=80", "Óscar Prieto", "oscar.prieto@example.com"},
+            {"Oficina Del Valle", "Calle Pilares 45", "Ciudad de México", "03100", "Comercial", "Libre", 95.0, 0, 2, 2000, 410000.0, 450000.0, 1950.0, "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&auto=format&fit=crop&q=80", "Grupo Pilares S.A. de C.V.", "contacto@zurbano.example.com"},
+            {"Depto. Condesa, Ámsterdam 5", "Calle Ámsterdam 5", "Ciudad de México", "06140", "Residencial", "Libre", 95.0, 3, 2, 2008, 480000.0, 520000.0, 1800.0, "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&auto=format&fit=crop&q=80", "Julia Sáez Bravo", "julia.saez@example.com"},
+            {"Dúplex Narvarte", "Calle Pitágoras 30", "Ciudad de México", "03020", "Residencial", "Libre", 130.0, 4, 2, 2012, 560000.0, 610000.0, 2100.0, "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=800&auto=format&fit=crop&q=80", "Ignacio Roldán", "ignacio.roldan@example.com"},
+            {"Casa Coyoacán", "Calle Higuera 12", "Ciudad de México", "04000", "Residencial", "Ocupado", 160.0, 4, 2, 2003, 310000.0, 340000.0, 1250.0, "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=80", "Rosa Delgado", "rosa.delgado@example.com"},
+            {"Loft Escandón", "Calle Patriotismo 60", "Ciudad de México", "11800", "Residencial", "Libre", 70.0, 1, 1, 2018, 285000.0, 310000.0, 1300.0, "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=80", "Hugo Marín", "hugo.marin@example.com"},
+            {"Bodega Industrial Tlalnepantla", "Parque Industrial Tlalnepantla, Calle 3", "Tlalnepantla", "54030", "Comercial", "Libre", 400.0, 0, 2, 1998, 520000.0, 560000.0, 2800.0, "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&auto=format&fit=crop&q=80", "Logística TLA S.A. de C.V.", "info@logisticagtf.example.com"},
         };
         List<String> propIds = new ArrayList<>();
         List<String> propNames = new ArrayList<>();
@@ -232,24 +266,24 @@ public class DemoDataService {
         }
 
         // ---------- INQUILINOS (3) ----------
-        ins(report, "inquilinos", inquilino(userId, "Juan Pérez García", "juan.perez@example.com", "+34 612 345 678",
-                "12345678Z", "Piso Gran Vía 42, 3B", 1100.0, 2200.0, "2024-01-15", "2029-01-14", 85, "Inquilino ejemplar. Pagos puntuales."));
-        ins(report, "inquilinos", inquilino(userId, "Cosméticos PIO S.L.", "info@cosmeticospio.com", "+34 91 234 56 78",
-                "B12345678", "Local Atocha 88", 1850.0, 5550.0, "2023-06-01", "2028-05-31", 78, "Contrato comercial. Renta revisada a IPC."));
-        ins(report, "inquilinos", inquilino(userId, "Sara López Vega", "sara.lopez@example.com", "+34 655 112 233",
-                "45612378A", "Estudio Lavapiés", 800.0, 1600.0, "2025-03-01", "2026-02-28", 72, "Estudiante. Aval de los padres."));
+        ins(report, "inquilinos", inquilino(userId, "Juan Pérez García", "juan.perez@example.com", "+52 55 1234 5678",
+                "PEGJ800115HDFRRN05", "Depto. Reforma 222, 3B", 1100.0, 2200.0, "2024-01-15", "2029-01-14", 85, "Inquilino ejemplar. Pagos puntuales."));
+        ins(report, "inquilinos", inquilino(userId, "Cosméticos PIO S.A. de C.V.", "info@cosmeticospio.com", "+52 55 1234 5678",
+                "CPI150601AB1", "Local Insurgentes 88", 1850.0, 5550.0, "2023-06-01", "2028-05-31", 78, "Contrato comercial. Renta ajustada a INPC."));
+        ins(report, "inquilinos", inquilino(userId, "Sara López Vega", "sara.lopez@example.com", "+52 55 5511 2233",
+                "LOVS020301MDFPGR08", "Estudio Coyoacán", 800.0, 1600.0, "2025-03-01", "2026-02-28", 72, "Estudiante. Aval de los padres."));
 
         // ---------- LEADS (8, todas las etapas del embudo) ----------
         // {nombre, email, tel, origen, interes, presupuesto, zona, tipo, etapa, score, followDays, notas}
         Object[][] leads = {
-            {"Ana García López", "ana.garcia@example.com", "+34 678 901 234", "Idealista", "Busca piso 2 hab en Malasaña/Chueca", 250000.0, "Malasaña", "Residencial", "Visita", 82, 3, "Le gustó el Malasaña 12. Pidió rebajar 5%."},
-            {"Roberto Díaz Nieto", "roberto.diaz@example.com", "+34 611 222 333", "Fotocasa", "Reubicación por trabajo, zona Salamanca", 700000.0, "Salamanca", "Residencial", "Nuevo", 68, 1, "Contactar mañana. Muy interesado en el ático."},
-            {"Marta Fernández Ruiz", "marta.fernandez@example.com", "+34 622 333 444", "Web propia", "Primera vivienda, presupuesto ajustado", 175000.0, "Lavapiés", "Residencial", "Contactado", 55, 2, "Enviada selección de estudios."},
-            {"Nostrum Retail SL", "expansion@nostrum.example.com", "+34 91 555 66 77", "Referido", "Local comercial 100-150 m² zona centro", 400000.0, "Centro", "Comercial", "Oferta", 88, 1, "Oferta presentada por el Local Atocha."},
-            {"Pablo Moreno Blanco", "pablo.moreno@example.com", "+34 633 444 555", "Recomendación", "Chalet familiar en Las Rozas", 650000.0, "Las Rozas", "Residencial", "Firmado", 95, 0, "¡Operación cerrada! Firma de arras realizada."},
-            {"Lucía Ramos Ortega", "lucia.ramos@example.com", "+34 644 555 666", "Idealista", "Inversión para alquilar", 220000.0, "Chamberí", "Residencial", "Contactado", 61, 4, "Busca rentabilidad >5%."},
-            {"David Torres Gómez", "david.torres@example.com", "+34 655 666 777", "Instagram", "Ático con terraza, exclusivo", 750000.0, "Salamanca", "Residencial", "Visita", 79, 2, "Visita al ático Velázquez el jueves."},
-            {"Sofía Núñez Cano", "sofia.nunez@example.com", "+34 666 777 888", "Fotocasa", "Estudio para hija universitaria", 160000.0, "Lavapiés", "Residencial", "Perdido", 30, 0, "Compró con otra agencia. Cerrar."},
+            {"Ana García López", "ana.garcia@example.com", "+52 55 7890 1234", "Inmuebles24", "Busca depto. 2 hab en Roma Norte/Juárez", 250000.0, "Roma Norte", "Residencial", "Visita", 82, 3, "Le gustó el Roma Norte 12. Pidió rebajar 5%."},
+            {"Roberto Díaz Nieto", "roberto.diaz@example.com", "+52 55 1122 2333", "Vivanuncios", "Reubicación por trabajo, zona Polanco", 700000.0, "Polanco", "Residencial", "Nuevo", 68, 1, "Contactar mañana. Muy interesado en el ático."},
+            {"Marta Fernández Ruiz", "marta.fernandez@example.com", "+52 55 2233 3444", "Web propia", "Primera vivienda, presupuesto ajustado", 175000.0, "Coyoacán", "Residencial", "Contactado", 55, 2, "Enviada selección de estudios."},
+            {"Nostrum Retail S.A. de C.V.", "expansion@nostrum.example.com", "+52 55 1555 6677", "Referido", "Local comercial 100-150 m² zona centro", 400000.0, "Centro", "Comercial", "Oferta", 88, 1, "Oferta presentada por el Local Insurgentes."},
+            {"Pablo Moreno Blanco", "pablo.moreno@example.com", "+52 55 3344 4555", "Recomendación", "Casa familiar en Santa Fe", 650000.0, "Santa Fe", "Residencial", "Firmado", 95, 0, "¡Operación cerrada! Contrato de promesa firmado."},
+            {"Lucía Ramos Ortega", "lucia.ramos@example.com", "+52 55 4455 5666", "Inmuebles24", "Inversión para alquilar", 220000.0, "Del Valle", "Residencial", "Contactado", 61, 4, "Busca rentabilidad >5%."},
+            {"David Torres Gómez", "david.torres@example.com", "+52 55 5566 6777", "Instagram", "Ático con terraza, exclusivo", 750000.0, "Polanco", "Residencial", "Visita", 79, 2, "Visita al penthouse Masaryk el jueves."},
+            {"Sofía Núñez Cano", "sofia.nunez@example.com", "+52 55 6677 7888", "Vivanuncios", "Estudio para hija universitaria", 160000.0, "Coyoacán", "Residencial", "Perdido", 30, 0, "Compró con otra agencia. Cerrar."},
         };
         for (Object[] a : leads) {
             Map<String, Object> l = new LinkedHashMap<>();
@@ -265,7 +299,7 @@ public class DemoDataService {
         }
 
         // ---------- TRANSACCIONES (ingresos + gastos, últimos 6 meses → gráficos) ----------
-        String[][] rentas = {{"Piso Gran Vía 42, 3B", "1100"}, {"Local Atocha 88", "1850"}, {"Estudio Lavapiés", "800"}};
+        String[][] rentas = {{"Depto. Reforma 222, 3B", "1100"}, {"Local Insurgentes 88", "1850"}, {"Estudio Coyoacán", "800"}};
         for (int m = 5; m >= 0; m--) {
             LocalDate mes = LocalDate.now().minusMonths(m).withDayOfMonth(5);
             for (String[] r : rentas) {
@@ -279,11 +313,11 @@ public class DemoDataService {
         }
         // Gastos variados
         Object[][] gastos = {
-            {"Gasto", "Comunidad", 95.0, 10, "Piso Gran Vía 42, 3B", "Cuota comunidad"},
-            {"Gasto", "IBI", 340.0, 20, "Local Atocha 88", "IBI trimestral"},
-            {"Gasto", "Reparación", 210.0, 12, "Piso Gran Vía 42, 3B", "Reparación caldera"},
-            {"Gasto", "Suministros", 60.0, 8, "Estudio Lavapiés", "Agua y comunidad"},
-            {"Ingreso", "Honorarios", 9750.0, 15, "Chalet Las Rozas", "Honorarios venta (comisión 1,5%)"},
+            {"Gasto", "Mantenimiento", 95.0, 10, "Depto. Reforma 222, 3B", "Cuota de mantenimiento"},
+            {"Gasto", "Predial", 340.0, 20, "Local Insurgentes 88", "Predial bimestral"},
+            {"Gasto", "Reparación", 210.0, 12, "Depto. Reforma 222, 3B", "Reparación caldera"},
+            {"Gasto", "Suministros", 60.0, 8, "Estudio Coyoacán", "Agua y mantenimiento"},
+            {"Ingreso", "Honorarios", 9750.0, 15, "Casa Santa Fe", "Honorarios venta (comisión 1,5%)"},
         };
         for (Object[] g : gastos) {
             Map<String, Object> t = new LinkedHashMap<>();
@@ -295,11 +329,11 @@ public class DemoDataService {
 
         // ---------- RESERVAS / VISITAS (agenda) ----------
         Object[][] visitas = {
-            {"Ana García López", "+34 678 901 234", "ana.garcia@example.com", "Piso Malasaña 12, 2A", 2, "17:30", "Visita", "Confirmada"},
-            {"David Torres Gómez", "+34 655 666 777", "david.torres@example.com", "Ático Velázquez 100", 4, "11:00", "Visita", "Confirmada"},
-            {"Roberto Díaz Nieto", "+34 611 222 333", "roberto.diaz@example.com", "Ático Velázquez 100", 6, "18:00", "Visita", "Pendiente"},
-            {"Lucía Ramos Ortega", "+34 644 555 666", "lucia.ramos@example.com", "Oficina Chamberí", -3, "10:30", "Visita", "Realizada"},
-            {"Nostrum Retail SL", "+34 91 555 66 77", "expansion@nostrum.example.com", "Local Atocha 88", 1, "13:00", "Reunión", "Confirmada"},
+            {"Ana García López", "+52 55 7890 1234", "ana.garcia@example.com", "Depto. Roma Norte 12, 2A", 2, "17:30", "Visita", "Confirmada"},
+            {"David Torres Gómez", "+52 55 5566 6777", "david.torres@example.com", "Penthouse Masaryk 100", 4, "11:00", "Visita", "Confirmada"},
+            {"Roberto Díaz Nieto", "+52 55 1122 2333", "roberto.diaz@example.com", "Penthouse Masaryk 100", 6, "18:00", "Visita", "Pendiente"},
+            {"Lucía Ramos Ortega", "+52 55 4455 5666", "lucia.ramos@example.com", "Oficina Del Valle", -3, "10:30", "Visita", "Realizada"},
+            {"Nostrum Retail S.A. de C.V.", "+52 55 1555 6677", "expansion@nostrum.example.com", "Local Insurgentes 88", 1, "13:00", "Reunión", "Confirmada"},
         };
         for (Object[] v : visitas) {
             Map<String, Object> r = new LinkedHashMap<>();
@@ -314,11 +348,11 @@ public class DemoDataService {
         // ---------- TAREAS (esquema real V28: titulo/descripcion/prioridad/estado/fecha_limite/propiedad_id) ----------
         // {titulo, descripcion, prioridad(baja|media|alta|urgente), estado(pendiente|en_curso|completada), diasLimite, propIndex(-1=ninguna)}
         Object[][] tareas = {
-            {"Revisar caldera Piso Gran Vía", "Inquilino reporta agua tibia. Llamar al fontanero.", "media", "pendiente", 5, 0},
-            {"Preparar dossier ático Velázquez", "Fotos pro + plano + nota de encargo para David Torres.", "alta", "en_curso", 1, 3},
-            {"Llamar a Roberto Díaz", "Primer contacto lead nuevo de Fotocasa.", "alta", "pendiente", 0, -1},
-            {"Firmar arras chalet Las Rozas", "Cita notaría con Pablo Moreno.", "urgente", "pendiente", 3, 4},
-            {"Renovar certificado energético", "Estudio Lavapiés caduca el mes que viene.", "baja", "pendiente", 12, 5},
+            {"Revisar calentador Depto. Reforma", "Inquilino reporta agua tibia. Llamar al fontanero.", "media", "pendiente", 5, 0},
+            {"Preparar dossier penthouse Masaryk", "Fotos pro + plano + nota de encargo para David Torres.", "alta", "en_curso", 1, 3},
+            {"Llamar a Roberto Díaz", "Primer contacto lead nuevo de Inmuebles24.", "alta", "pendiente", 0, -1},
+            {"Firmar promesa casa Santa Fe", "Cita en notaría con Pablo Moreno.", "urgente", "pendiente", 3, 4},
+            {"Renovar póliza de seguro", "Estudio Coyoacán caduca el mes que viene.", "baja", "pendiente", 12, 5},
         };
         for (Object[] t : tareas) {
             Map<String, Object> task = new LinkedHashMap<>();
@@ -337,9 +371,9 @@ public class DemoDataService {
 
         // ---------- VALORACIONES (imán de captación) ----------
         Object[][] vals = {
-            {"piso", "Madrid", "Madrid", "Chamberí", 90.0, 3, 2, "buen_estado", 268000.0, 250000.0, 286000.0, 2978.0, "alta", "Elena Vargas", "elena.vargas@example.com", "+34 677 001 122", "3-6m"},
-            {"chalet", "Pozuelo de Alarcón", "Madrid", "La Finca", 240.0, 5, 4, "nuevo", 1150000.0, 1080000.0, 1220000.0, 4792.0, "media", "Grupo Familiar Ríos", "rios.familia@example.com", "+34 677 003 344", "explorando"},
-            {"atico", "Madrid", "Madrid", "Salamanca", 105.0, 3, 2, "reformado", 735000.0, 690000.0, 780000.0, 7000.0, "alta", "Andrés Cano", "andres.cano@example.com", "+34 677 005 566", "ahora"},
+            {"piso", "Ciudad de México", "Ciudad de México", "Del Valle", 90.0, 3, 2, "buen_estado", 268000.0, 250000.0, 286000.0, 2978.0, "alta", "Elena Vargas", "elena.vargas@example.com", "+52 55 7700 1122", "3-6m"},
+            {"chalet", "Huixquilucan", "Ciudad de México", "La Finca", 240.0, 5, 4, "nuevo", 1150000.0, 1080000.0, 1220000.0, 4792.0, "media", "Grupo Familiar Ríos", "rios.familia@example.com", "+52 55 7700 3344", "explorando"},
+            {"atico", "Ciudad de México", "Ciudad de México", "Polanco", 105.0, 3, 2, "reformado", 735000.0, 690000.0, 780000.0, 7000.0, "alta", "Andrés Cano", "andres.cano@example.com", "+52 55 7700 5566", "ahora"},
         };
         for (Object[] v : vals) {
             Map<String, Object> val = new LinkedHashMap<>();
@@ -365,7 +399,7 @@ public class DemoDataService {
         camp1.put("user_id", userId); camp1.put("nombre", "Newsletter septiembre · Nuevas exclusivas");
         camp1.put("descripcion", "Envío mensual a base de compradores"); camp1.put("canal", "email");
         camp1.put("asunto", "🏠 3 nuevas viviendas que te van a encantar");
-        camp1.put("contenido", "<h1>Nuevas exclusivas</h1><p>Descubre el ático de Velázquez y el chalet de Las Rozas...</p>");
+        camp1.put("contenido", "<h1>Nuevas exclusivas</h1><p>Descubre el penthouse de Masaryk y la casa de Santa Fe...</p>");
         camp1.put("from_name", "InmobilIA Pro"); camp1.put("segmento_tipo", "todos_leads");
         camp1.put("estado", "enviada"); camp1.put("enviado_at", now); camp1.put("completado_at", now);
         camp1.put("destinatarios_total", 340); camp1.put("enviados", 338); camp1.put("fallidos", 2);
@@ -375,7 +409,7 @@ public class DemoDataService {
 
         Map<String, Object> camp2 = new LinkedHashMap<>();
         camp2.put("user_id", userId); camp2.put("nombre", "WhatsApp · Recordatorio open house");
-        camp2.put("canal", "whatsapp"); camp2.put("contenido", "Hola {nombre}, te esperamos el sábado en el open house del ático Velázquez 100. ¿Confirmas?");
+        camp2.put("canal", "whatsapp"); camp2.put("contenido", "Hola {nombre}, te esperamos el sábado en el open house del penthouse Masaryk 100. ¿Confirmas?");
         camp2.put("segmento_tipo", "segmentado"); camp2.put("estado", "borrador");
         camp2.put("destinatarios_total", 0); camp2.put("created_at", now);
         ins(report, "campanas", camp2);
@@ -383,9 +417,9 @@ public class DemoDataService {
         // ---------- OFERTAS formales ----------
         if (propIds.size() >= 4) {
             ins(report, "ofertas", oferta(userId, propIds.get(3), "OF-2026-014", 690000.0, 720000.0, "hipoteca+ahorros",
-                    "David Torres Gómez", "david.torres@example.com", "+34 655 666 777", "en_negociacion", 15000.0));
+                    "David Torres Gómez", "david.torres@example.com", "+52 55 5566 6777", "en_negociacion", 15000.0));
             ins(report, "ofertas", oferta(userId, propIds.get(2), "OF-2026-015", 365000.0, 380000.0, "contado",
-                    "Nostrum Retail SL", "expansion@nostrum.example.com", "+34 91 555 66 77", "nueva", 20000.0));
+                    "Nostrum Retail S.A. de C.V.", "expansion@nostrum.example.com", "+52 55 1555 6677", "nueva", 20000.0));
         }
 
         // ---------- CERTIFICADOS ENERGÉTICOS (uno por las primeras propiedades) ----------
@@ -416,7 +450,7 @@ public class DemoDataService {
             {"María Jiménez", "comprador", 5, "Encontramos casa en 3 semanas", "Trato excelente y muy profesionales. Nos guiaron en todo el proceso de compra.", true, true, "google"},
             {"Andrés Vidal", "vendedor", 5, "Vendieron mi piso por encima de precio", "En 40 días y sin complicaciones. Repetiré sin duda.", true, true, "idealista"},
             {"Patricia Losa", "inquilino", 4, "Muy atentos", "Resolvieron mis dudas rápido. El portal para ver el estado del inmueble es genial.", true, false, "directa"},
-            {"Cosméticos PIO S.L.", "inquilino", 5, "Local perfecto para nuestra tienda", "Nos asesoraron con la licencia y el traspaso. 10/10.", true, true, "directa"},
+            {"Cosméticos PIO S.A. de C.V.", "inquilino", 5, "Local perfecto para nuestra tienda", "Nos asesoraron con la licencia y el traspaso. 10/10.", true, true, "directa"},
         };
         for (Object[] r : revs) {
             Map<String, Object> rev = new LinkedHashMap<>();
@@ -433,8 +467,8 @@ public class DemoDataService {
             Map<String, Object> ne = new LinkedHashMap<>();
             ne.put("user_id", userId); ne.put("propiedad_id", propIds.get(4));
             ne.put("propietario_nombre", "Marta Gil Vidal"); ne.put("propietario_dni", "50123456K");
-            ne.put("propietario_email", "marta.gil@example.com"); ne.put("propietario_telefono", "+34 655 100 200");
-            ne.put("inmueble_texto", "Chalet 220 m² en Las Rozas · 5 dorm · 3 baños · parcela 500 m².");
+            ne.put("propietario_email", "marta.gil@example.com"); ne.put("propietario_telefono", "+52 55 5510 0200");
+            ne.put("inmueble_texto", "Casa 220 m² en Santa Fe · 5 rec · 3 baños · terreno 500 m².");
             ne.put("precio", 650000.0); ne.put("comision_pct", 3.0); ne.put("exclusiva", true);
             ne.put("duracion_meses", 6); ne.put("estado", "firmado");
             ne.put("observaciones", "Exclusiva 6 meses. Incluye home staging y reportaje fotográfico profesional.");
@@ -445,7 +479,7 @@ public class DemoDataService {
             Map<String, Object> ne2 = new LinkedHashMap<>();
             ne2.put("user_id", userId); ne2.put("propiedad_id", propIds.get(3));
             ne2.put("propietario_nombre", "Familia Herrero"); ne2.put("propietario_email", "herrero.familia@example.com");
-            ne2.put("inmueble_texto", "Ático 110 m² Velázquez 100 · 3 dorm · 2 baños · terraza 25 m².");
+            ne2.put("inmueble_texto", "Penthouse 110 m² Masaryk 100 · 3 rec · 2 baños · terraza 25 m².");
             ne2.put("precio", 720000.0); ne2.put("comision_pct", 3.5); ne2.put("exclusiva", true);
             ne2.put("duracion_meses", 4); ne2.put("estado", "borrador"); ne2.put("created_at", now);
             ins(report, "notas_encargo", ne2);
@@ -453,7 +487,7 @@ public class DemoDataService {
 
         // ---------- GASTOS DE AGENTE ----------
         Object[][] gas = {
-            {"kilometraje", "Visitas zona norte (oficina → Las Rozas)", 0.0, 42.0, "Oficina", "Las Rozas", "aprobado"},
+            {"kilometraje", "Visitas zona poniente (oficina → Santa Fe)", 0.0, 42.0, "Oficina", "Santa Fe", "aprobado"},
             {"parking", "Parking centro para reunión con inversor", 8.5, 0.0, null, null, "aprobado"},
             {"dieta_comida", "Comida de trabajo con Nostrum Retail", 34.0, 0.0, null, null, "pendiente"},
             {"combustible", "Repostaje mensual vehículo comercial", 65.0, 0.0, null, null, "pendiente"},
@@ -477,9 +511,9 @@ public class DemoDataService {
         Map<String, Object> bg = new LinkedHashMap<>();
         bg.put("user_id", userId);
         bg.put("cliente_nombre", "Roberto Díaz Nieto"); bg.put("cliente_email", "roberto.diaz@example.com");
-        bg.put("cliente_telefono", "+34 611 222 333"); bg.put("nombre_busqueda", "Ático Salamanca reformado");
-        bg.put("operacion", "venta"); bg.put("tipo", "atico"); bg.put("municipio", "Madrid");
-        bg.put("zonas", List.of("Salamanca", "Chamberí")); bg.put("precio_min", 500000.0); bg.put("precio_max", 800000.0);
+        bg.put("cliente_telefono", "+52 55 1122 2333"); bg.put("nombre_busqueda", "Penthouse Polanco remodelado");
+        bg.put("operacion", "venta"); bg.put("tipo", "atico"); bg.put("municipio", "Ciudad de México");
+        bg.put("zonas", List.of("Polanco", "Del Valle")); bg.put("precio_min", 500000.0); bg.put("precio_max", 800000.0);
         bg.put("metros_min", 90.0); bg.put("habitaciones_min", 3); bg.put("requiere_terraza", true);
         bg.put("notificar_email", true); bg.put("frecuencia", "inmediata"); bg.put("activa", true);
         bg.put("matches_count", 2); bg.put("created_at", now);
@@ -488,19 +522,19 @@ public class DemoDataService {
         Map<String, Object> bg2 = new LinkedHashMap<>();
         bg2.put("user_id", userId);
         bg2.put("cliente_nombre", "Lucía Ramos Ortega"); bg2.put("cliente_email", "lucia.ramos@example.com");
-        bg2.put("nombre_busqueda", "Inversión para alquilar en Chamberí"); bg2.put("operacion", "venta");
-        bg2.put("tipo", "piso"); bg2.put("municipio", "Madrid"); bg2.put("zonas", List.of("Chamberí", "Tetuán"));
+        bg2.put("nombre_busqueda", "Inversión para rentar en Del Valle"); bg2.put("operacion", "venta");
+        bg2.put("tipo", "piso"); bg2.put("municipio", "Ciudad de México"); bg2.put("zonas", List.of("Del Valle", "Tetuán"));
         bg2.put("precio_max", 250000.0); bg2.put("habitaciones_min", 2); bg2.put("requiere_ascensor", true);
         bg2.put("frecuencia", "diaria"); bg2.put("activa", true); bg2.put("matches_count", 1); bg2.put("created_at", now);
         ins(report, "busquedas_guardadas", bg2);
 
         // ---------- NEWSLETTER: suscriptores ----------
         Object[][] subs = {
-            {"elena.compradora@example.com", "Elena Vargas", "Chamberí"},
-            {"mario.martin@example.com", "Mario Martín", "Salamanca"},
+            {"elena.compradora@example.com", "Elena Vargas", "Del Valle"},
+            {"mario.martin@example.com", "Mario Martín", "Polanco"},
             {"clara.inversora@example.com", "Clara Ruiz", "Centro"},
-            {"tomas.jerez@example.com", "Tomás Jerez", "Retiro"},
-            {"nuria.compra@example.com", "Nuria Peña", "Las Rozas"},
+            {"tomas.jerez@example.com", "Tomás Jerez", "Condesa"},
+            {"nuria.compra@example.com", "Nuria Peña", "Santa Fe"},
         };
         for (Object[] s : subs) {
             Map<String, Object> sub = new LinkedHashMap<>();

@@ -11,7 +11,7 @@
         <input type="text" name="nombre" required placeholder="Nombre completo *" class="w-full px-4 py-3 border-2 rounded-lg">
         <input type="email" name="email" required placeholder="Email *" class="w-full px-4 py-3 border-2 rounded-lg">
         <input type="tel" name="telefono" required placeholder="Teléfono *" class="w-full px-4 py-3 border-2 rounded-lg">
-        <input type="text" name="dni" required placeholder="DNI/NIE *" class="w-full px-4 py-3 border-2 rounded-lg font-mono uppercase">
+        <input type="text" name="dni" required th:placeholder="|${pais.etiquetaIdPersonal()} *|" class="w-full px-4 py-3 border-2 rounded-lg font-mono uppercase">
         <div>
             <label class="block text-sm mb-1">Importe señal ([[${mon}]])</label>
             <input type="number" name="importe" required th:value="${importeSugerido}" min="500" step="100" class="w-full px-4 py-3 border-2 rounded-lg text-lg font-bold">

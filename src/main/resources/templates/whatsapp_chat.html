@@ -14,7 +14,7 @@
         <input type="text" name="business_account_id" placeholder="Business Account ID" th:value="${cfg?.get('business_account_id')}" class="w-full px-3 py-2 text-sm border rounded">
         <input type="text" name="access_token" placeholder="Access Token (permanent)" th:value="${cfg?.get('access_token')}" class="w-full px-3 py-2 text-sm font-mono border rounded">
         <input type="text" name="webhook_verify_token" placeholder="Webhook verify token (libre)" th:value="${cfg?.get('webhook_verify_token')}" class="w-full px-3 py-2 text-sm border rounded">
-        <input type="text" name="numero_emisor" placeholder="+34 600 000 000" th:value="${cfg?.get('numero_emisor')}" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="numero_emisor" th:placeholder="|${pais.prefijo()} …|" th:value="${cfg?.get('numero_emisor')}" class="w-full px-3 py-2 text-sm border rounded">
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" checked> Activar</label>
         <button class="px-4 py-2 rounded bg-emerald-700 text-white text-sm"> Conectar</button>
     </form>

@@ -38,10 +38,10 @@
         <!-- Panel de firma -->
         <div class="bg-white border-x border-b border-slate-200 rounded-b-2xl p-6">
 
-            <!-- Paso 1: Verificación DNI -->
+            <!-- Paso 1: Verificación del documento -->
             <div x-show="paso === 1" x-transition>
                 <h3 class="font-bold text-lg mb-3"> Verifica tu identidad</h3>
-                <p class="text-sm text-slate-600 mb-4">Introduce el DNI/NIE asociado a tu firma:</p>
+                <p class="text-sm text-slate-600 mb-4">Introduce tu [[${pais.etiquetaIdPersonal()}]] asociado a la firma:</p>
                 <input type="text" x-model="dni" placeholder="12345678A"
                        class="w-full px-4 py-3 text-lg font-mono border-2 border-slate-300 rounded-lg uppercase">
                 <button @click="paso = 2" :disabled="!dni" class="w-full mt-4 px-4 py-3 rounded-lg bg-slate-800 text-white font-medium disabled:opacity-50">Continuar →</button>
@@ -78,7 +78,7 @@
                     <ul class="mt-2 ml-4 list-disc text-xs space-y-1">
                         <li>Has leído y aceptas todo el contenido del documento</li>
                         <li>Eres la persona identificada como <strong th:text="${firmante.get('nombre')}">—</strong></li>
-                        <li>Tu firma tendrá validez jurídica según Ley 6/2020 (eIDAS simple)</li>
+                        <li>Tu firma queda registrada con evidencias (email, IP, fecha y hora) como firma electrónica simple</li>
                         <li>Queda registrada con sello de tiempo, IP, geolocalización y hash inmutable</li>
                     </ul>
                 </div>
@@ -104,7 +104,7 @@
         </div>
 
         <p class="text-center text-[10px] text-slate-400 mt-3">
-            Firma electrónica simple eIDAS · Ley 6/2020 · InmobilIA Pro
+            Firma electrónica simple · InmobilIA Pro
         </p>
     </div>
 

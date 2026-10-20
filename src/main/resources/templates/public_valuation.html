@@ -65,7 +65,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Ciudad *</label>
-                    <input type="text" x-model="city" required placeholder="Madrid"
+                    <input type="text" x-model="city" required th:placeholder="${ciudadEjemplo}"
                            class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -120,7 +120,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Teléfono</label>
-                    <input type="tel" x-model="phone" placeholder="+34 612 345 678"
+                    <input type="tel" x-model="phone" th:placeholder="|${pais.prefijo()} …|"
                            class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
                 </div>
             </div>
@@ -174,7 +174,7 @@
         </div>
     </div>
 
-    <p class="text-xs text-slate-400 text-center mt-6">© 2026 InmobilIA Pro · Datos basados en INE · <span th:replace="~{fragments/grupo :: sello(false)}"></span></p>
+    <p class="text-xs text-slate-400 text-center mt-6">© 2026 InmobilIA Pro · Estimación orientativa · <span th:replace="~{fragments/grupo :: sello(false)}"></span></p>
 </div>
 
 <script>lucide.createIcons();</script>
