@@ -179,7 +179,7 @@ public class VisitsController {
         if (rows.isEmpty()) return "redirect:/visitas";
 
         Map<String, Object> v = rows.get(0);
-        List<Map<String, Object>> prop = supabase.selectFilter("propiedades", "id=eq." + v.get("propiedad_id"));
+        List<Map<String, Object>> prop = supabase.selectFilter("propiedades", "id=eq." + v.get("propiedad_id") + "&user_id=eq." + uid);
         if (!prop.isEmpty()) v.put("propiedad", prop.get(0));
 
         model.addAttribute("visita", v);

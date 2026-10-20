@@ -63,9 +63,12 @@ public class PortalCompradorController {
         sel.put("activo", true);
 
         if (lead_id != null && !lead_id.isBlank()) {
-            sel.put("lead_id", lead_id);
-            List<Map<String, Object>> l = supabase.selectFilter("leads", "id=eq." + lead_id);
-            if (!l.isEmpty()) sel.put("comprador_nombre", l.get(0).get("nombre"));
+            // Solo leads propios: antes con el id de un lead de otra inmobiliaria se veía su nombre
+            List<Map<String, Object>> l = supabase.selectOwned("leads", lead_id, uid);
+            if (!l.isEmpty()) {
+                sel.put("lead_id", lead_id);
+                sel.put("comprador_nombre", l.get(0).get("nombre"));
+            }
         }
         sel.put("created_at", OffsetDateTime.now().toString());
         Map<String, Object> saved = supabase.insert("selecciones_comprador", sel);
@@ -83,7 +86,7 @@ public class PortalCompradorController {
 
         List<Map<String, Object>> items = supabase.selectFilter(
                 "seleccion_items", "seleccion_id=eq." + id + "&order=orden.asc&limit=100");
-        enriquecerConPropiedades(items);
+        enriquecerConPropiedades(items, uid);
 
         // Cartera disponible para añadir
         List<Map<String, Object>> cartera = supabase.selectFilter(
@@ -101,6 +104,9 @@ public class PortalCompradorController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
         if (!owns(uid, id)) return "redirect:/portal-comprador";
+        // Solo inmuebles propios: antes se podía meter uno de otra inmobiliaria y la página
+        // pública del comprador enseñaba sus datos
+        if (supabase.selectOwned("propiedades", propiedad_id, uid).isEmpty()) return "redirect:/portal-comprador/" + id;
 
         List<Map<String, Object>> existentes = supabase.selectFilter("seleccion_items", "seleccion_id=eq." + id);
         boolean yaEsta = existentes.stream().anyMatch(it -> propiedad_id.equals(String.valueOf(it.get("propiedad_id"))));
@@ -127,7 +133,7 @@ public class PortalCompradorController {
 
         double presupuesto = 0; String zona = "";
         if (sel.get("lead_id") != null) {
-            List<Map<String, Object>> l = supabase.selectFilter("leads", "id=eq." + sel.get("lead_id"));
+            List<Map<String, Object>> l = supabase.selectOwned("leads", String.valueOf(sel.get("lead_id")), uid);
             if (!l.isEmpty()) {
                 presupuesto = nd(l.get(0).get("presupuesto"));
                 zona = String.valueOf(l.get(0).getOrDefault("zona", ""));
@@ -194,7 +200,7 @@ public class PortalCompradorController {
 
         List<Map<String, Object>> items = supabase.selectFilter(
                 "seleccion_items", "seleccion_id=eq." + sel.get("id") + "&order=orden.asc&limit=100");
-        enriquecerConPropiedades(items);
+        enriquecerConPropiedades(items, uid);
 
         model.addAttribute("sel", sel);
         model.addAttribute("items", items);
@@ -231,24 +237,10 @@ public class PortalCompradorController {
     }
 
     // ── helpers ──
-    /** Enriquece los items con su propiedad en UNA sola query (evita N+1). */
-    private void enriquecerConPropiedades(List<Map<String, Object>> items) {
-        Set<String> ids = new LinkedHashSet<>();
-        for (Map<String, Object> it : items) {
-            String pid = String.valueOf(it.get("propiedad_id"));
-            if (!pid.isBlank() && !"null".equals(pid)) ids.add(pid);
-        }
-        Map<String, Map<String, Object>> porId = new HashMap<>();
-        if (!ids.isEmpty()) {
-            try {
-                List<Map<String, Object>> props = supabase.selectFilter(
-                        "propiedades", "id=in.(" + String.join(",", ids) + ")");
-                for (Map<String, Object> p : props) porId.put(String.valueOf(p.get("id")), p);
-            } catch (Exception ignored) {}
-        }
-        for (Map<String, Object> it : items) {
-            it.put("prop", porId.getOrDefault(String.valueOf(it.get("propiedad_id")), Map.of()));
-        }
+    /** Enriquece los items con su propiedad en una sola consulta; solo inmuebles de la inmobiliaria dueña. */
+    private void enriquecerConPropiedades(List<Map<String, Object>> items, String uid) {
+        supabase.enriquecer(items, "propiedad_id", "propiedades", "prop", uid);
+        for (Map<String, Object> it : items) it.putIfAbsent("prop", Map.of());
     }
     private boolean owns(String uid, String selId) {
         List<Map<String, Object>> rows = supabase.selectFilter("selecciones_comprador", "id=eq." + selId);
