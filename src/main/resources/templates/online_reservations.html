@@ -4,14 +4,14 @@
 <body><div layout:fragment="content">
 <div class="rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 p-6 mb-5 text-white">
     <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="credit-card" class="h-6 w-6"></i> Reservas online</h2>
-    <p class="text-sm text-white/80 mt-1">Cobra señal de reserva por internet con Stripe. <strong th:text="${pagadas}">0</strong> pagadas · <strong th:text="${#numbers.formatDecimal(totalCobrado, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</strong> cobrado.</p>
+    <p class="text-sm text-white/80 mt-1">Los compradores solicitan la reserva desde la ficha pública; tú cobras la señal y la marcas aquí. <strong th:text="${pagadas}">0</strong> pagadas · <strong th:text="${#numbers.formatDecimal(totalCobrado, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</strong> cobrado.</p>
 </div>
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
     <table class="w-full text-sm">
         <thead class="bg-slate-50"><tr class="text-[10px] uppercase">
             <th class="text-left px-3 py-2">Cliente</th><th class="text-left px-3 py-2">Propiedad</th>
             <th class="text-right px-3 py-2">Importe</th><th class="text-left px-3 py-2">Estado</th>
-            <th class="text-left px-3 py-2">Caduca</th>
+            <th class="text-left px-3 py-2">Caduca</th><th class="px-3 py-2"></th>
         </tr></thead>
         <tbody class="divide-y">
         <tr th:each="r : ${reservas}">
@@ -27,8 +27,19 @@
                 <span th:if="${r.get('estado') == 'cancelada'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700"> Cancelada</span>
             </td>
             <td class="px-3 py-2 font-mono text-[10px]" th:text="${#strings.substring(r.get('fecha_caducidad'),0,10)}">—</td>
+            <td class="px-3 py-2 text-right whitespace-nowrap">
+                <form th:if="${r.get('estado') == 'pendiente'}" method="post" th:action="@{|/reservas-online/${r.get('id')}/estado|}" class="inline">
+                    <input type="hidden" name="estado" value="pagada">
+                    <button class="text-[11px] px-2 py-1 rounded bg-emerald-600 text-white">Señal cobrada</button>
+                </form>
+                <form th:if="${r.get('estado') == 'pendiente'}" method="post" th:action="@{|/reservas-online/${r.get('id')}/estado|}" class="inline"
+                      onsubmit="return confirm('¿Cancelar esta reserva?')">
+                    <input type="hidden" name="estado" value="cancelada">
+                    <button class="text-[11px] px-2 py-1 rounded border border-slate-300 text-slate-600">Cancelar</button>
+                </form>
+            </td>
         </tr>
-        <tr th:if="${reservas.isEmpty()}"><td colspan="5" class="py-8 text-center text-slate-500 text-xs">Sin reservas todavía.</td></tr>
+        <tr th:if="${reservas.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500 text-xs">Sin reservas todavía.</td></tr>
         </tbody>
     </table>
 </div>

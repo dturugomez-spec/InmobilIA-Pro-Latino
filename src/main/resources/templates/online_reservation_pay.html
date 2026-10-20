@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><title>Pagar reserva</title><script src="https://cdn.tailwindcss.com"></script></head>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Solicitud de reserva enviada</title><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 <div class="max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
-    <div class="text-5xl mb-4"></div>
-    <h1 class="text-2xl font-bold mb-2">Completar pago</h1>
-    <p class="text-slate-600 mb-6">Reserva por <strong th:text="${#numbers.formatDecimal(reserva?.get('importe') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT') + ' ' + mon}">—</strong></p>
-    <a th:href="${stripeUrl}" class="block px-4 py-4 rounded-lg bg-blue-700 text-white font-bold"> Pagar con tarjeta →</a>
-    <p class="text-xs text-slate-400 mt-4">Procesado por Stripe · 256-bit SSL</p>
+    <div class="text-5xl mb-4">✓</div>
+    <h1 class="text-2xl font-bold mb-2">Solicitud de reserva enviada</h1>
+    <p class="text-slate-600 mb-1" th:text="${direccion}">—</p>
+    <p class="text-slate-600 mb-6">Señal propuesta: <strong th:text="${#numbers.formatDecimal(reserva?.get('importe') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT') + ' ' + mon}">—</strong></p>
+    <p class="text-sm text-slate-600">La inmobiliaria ya tiene tu solicitud y te contactará para confirmar la reserva
+        y explicarte cómo pagar la señal. No se ha cobrado nada.</p>
+    <p class="text-xs text-slate-400 mt-4">Si no recibes noticias en unos días, la solicitud caduca a los 15 días.</p>
 </div>
 </body></html>

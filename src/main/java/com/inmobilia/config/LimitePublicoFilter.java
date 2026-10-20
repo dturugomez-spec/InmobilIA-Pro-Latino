@@ -41,7 +41,7 @@ public class LimitePublicoFilter extends OncePerRequestFilter {
     record Limite(String grupo, int maximo, Duration ventana) {}
 
     private static final Pattern SIN_LIMITE = Pattern.compile(
-            "^/(stripe/webhook|whatsapp/webhook|reservas-online/webhook|api/v1/|api/v2/|login|forgot|reset"
+            "^/(stripe/webhook|whatsapp/webhook|api/v1/|api/v2/|login|forgot|reset"
             + "|chatbot/api/(iniciar|mensaje)$)");
     private static final Pattern ALTA = Pattern.compile("^/(register|solicitar-cuenta|portal/activar)");
     private static final Pattern CON_IA = Pattern.compile("^/v/[^/]+/calcular$");

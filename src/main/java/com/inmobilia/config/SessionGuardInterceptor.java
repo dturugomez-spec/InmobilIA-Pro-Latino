@@ -168,7 +168,7 @@ public class SessionGuardInterceptor implements HandlerInterceptor {
     /** Páginas públicas bajo prefijos internos: las abre cualquiera (con o sin sesión). */
     private static final List<String> RUTAS_PUBLICAS = List.of(
             "/chatbot/api/", "/chatbot/widget.js", "/reviews/publico/", "/nps/responder/",
-            "/referidos/codigo/", "/reservas-online/p/", "/reservas-online/webhook", "/informe/");
+            "/referidos/codigo/", "/reservas-online/p/", "/informe/");
 
     /** Informes: generar uno (aunque sea un POST) es leer, no modificar datos. */
     private static final java.util.Set<String> SECCIONES_SOLO_LECTURA = java.util.Set.of("reportes");
