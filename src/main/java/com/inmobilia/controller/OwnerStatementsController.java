@@ -29,10 +29,7 @@ public class OwnerStatementsController {
         List<Map<String, Object>> extractos = supabase.selectFilter(
                 "extractos_propietario", "user_id=eq." + uid + "&order=periodo_inicio.desc");
 
-        for (Map<String, Object> e : extractos) {
-            List<Map<String, Object>> p = supabase.selectFilter("propietarios", "id=eq." + e.get("propietario_id"));
-            if (!p.isEmpty()) e.put("propietario", p.get(0));
-        }
+        supabase.enriquecer(extractos, "propietario_id", "propietarios", "propietario", uid);
 
         double totalPendiente = extractos.stream().filter(e -> "pendiente".equals(e.get("estado")))
                 .mapToDouble(e -> nd(e.get("importe_liquidar"))).sum();

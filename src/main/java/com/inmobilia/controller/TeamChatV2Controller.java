@@ -74,15 +74,18 @@ public class TeamChatV2Controller {
         if (canalActivo != null) {
             mensajes = supabase.selectFilter(
                     "chat_mensajes",
-                    "canal_id=eq." + canalActivo.get("id") +
+                    "canal_id=eq." + canalActivo.get("id") + "&org_id=eq." + uid +
                             "&eliminado=eq.false&hilo_padre_id=is.null" +
                             "&order=created_at.asc&limit=200");
 
+            // Autores en una sola consulta (antes una por mensaje: 200 mensajes, 200 consultas)
+            Map<String, Map<String, Object>> autores = supabase.porIds("users",
+                    mensajes.stream().map(m -> m.get("autor_id")).toList(), null);
             for (Map<String, Object> m : mensajes) {
-                List<Map<String, Object>> autor = supabase.selectFilter("users", "id=eq." + m.get("autor_id"));
-                if (!autor.isEmpty()) {
-                    m.put("autor_nombre", autor.get(0).get("name"));
-                    m.put("autor_avatar", autor.get(0).get("avatar_url"));
+                Map<String, Object> autor = autores.get(String.valueOf(m.get("autor_id")));
+                if (autor != null) {
+                    m.put("autor_nombre", autor.get("name"));
+                    m.put("autor_avatar", autor.get("avatar_url"));
                 }
             }
             if (!mensajes.isEmpty()) {
@@ -113,6 +116,9 @@ public class TeamChatV2Controller {
         String canalId = String.valueOf(body.get("canal_id"));
         String contenido = String.valueOf(body.get("contenido"));
         if (contenido == null || contenido.isBlank()) return Map.of("ok", false);
+        // Solo en canales de la propia inmobiliaria (y si es privado, siendo miembro): antes se
+        // podía escribir en el canal de otra inmobiliaria con solo saber su id
+        if (canalPermitido(canalId, uid, realUid) == null) return Map.of("ok", false, "error", "Canal no encontrado");
 
         List<String> menciones = new ArrayList<>();
         Matcher mm = MENTION_PATTERN.matcher(contenido);
@@ -166,17 +172,22 @@ public class TeamChatV2Controller {
                                             @RequestParam(defaultValue = "0") long desde,
                                             HttpSession session) {
         String realUid = SessionUtils.realUid(session);
-        if (realUid == null) return Collections.emptyList();
+        String uid = SessionUtils.uid(session);
+        if (realUid == null || uid == null) return Collections.emptyList();
+        // Antes cualquiera con sesión leía los mensajes de cualquier canal (de otra inmobiliaria, o privado)
+        if (canalPermitido(canalId, uid, realUid) == null) return Collections.emptyList();
 
         List<Map<String, Object>> mensajes = supabase.selectFilter(
                 "chat_mensajes",
-                "canal_id=eq." + canalId + "&id=gt." + desde +
+                "canal_id=eq." + canalId + "&org_id=eq." + uid + "&id=gt." + desde +
                         "&eliminado=eq.false&hilo_padre_id=is.null" +
                         "&order=created_at.asc&limit=50");
 
+        Map<String, Map<String, Object>> autores = supabase.porIds("users",
+                mensajes.stream().map(m -> m.get("autor_id")).toList(), null);
         for (Map<String, Object> m : mensajes) {
-            List<Map<String, Object>> autor = supabase.selectFilter("users", "id=eq." + m.get("autor_id"));
-            if (!autor.isEmpty()) m.put("autor_nombre", autor.get(0).get("name"));
+            Map<String, Object> autor = autores.get(String.valueOf(m.get("autor_id")));
+            if (autor != null) m.put("autor_nombre", autor.get("name"));
         }
 
         if (!mensajes.isEmpty()) {
@@ -295,6 +306,16 @@ public class TeamChatV2Controller {
                 supabase.insert("chat_lecturas", data);
             }
         } catch (Exception ignored) {}
+    }
+
+    /** El canal si es de esta inmobiliaria y el usuario puede verlo (público, o privado siendo miembro). */
+    Map<String, Object> canalPermitido(String canalId, String orgId, String realUid) {
+        if (canalId == null || !canalId.matches("[0-9a-fA-F-]{1,64}")) return null;
+        List<Map<String, Object>> c = supabase.selectFilter("chat_canales", "id=eq." + canalId + "&org_id=eq." + orgId);
+        if (c.isEmpty()) return null;
+        Map<String, Object> canal = c.get(0);
+        if ("publico".equals(String.valueOf(canal.get("tipo")))) return canal;
+        return canal.get("miembros_ids") instanceof List<?> m && m.contains(realUid) ? canal : null;
     }
 
     private String procesarHtml(String texto) {

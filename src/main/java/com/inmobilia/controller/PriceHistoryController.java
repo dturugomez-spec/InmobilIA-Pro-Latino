@@ -56,10 +56,7 @@ public class PriceHistoryController {
         List<Map<String, Object>> cambios = supabase.selectFilter(
                 "precio_historico", "user_id=eq." + uid + "&order=created_at.desc&limit=50");
 
-        for (Map<String, Object> c : cambios) {
-            List<Map<String, Object>> p = supabase.selectFilter("propiedades", "id=eq." + c.get("propiedad_id"));
-            if (!p.isEmpty()) c.put("propiedad", p.get(0));
-        }
+        supabase.enriquecer(cambios, "propiedad_id", "propiedades", "propiedad", uid);
 
         long bajadas = cambios.stream().filter(c -> nd(c.get("diferencia")) < 0).count();
         long subidas = cambios.stream().filter(c -> nd(c.get("diferencia")) > 0).count();

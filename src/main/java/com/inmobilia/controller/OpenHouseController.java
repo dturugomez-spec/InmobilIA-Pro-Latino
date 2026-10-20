@@ -28,10 +28,7 @@ public class OpenHouseController {
         List<Map<String, Object>> ohs = supabase.selectFilter(
                 "open_houses", "user_id=eq." + uid + "&order=fecha.desc");
 
-        for (Map<String, Object> oh : ohs) {
-            List<Map<String, Object>> p = supabase.selectFilter("propiedades", "id=eq." + oh.get("propiedad_id"));
-            if (!p.isEmpty()) oh.put("propiedad", p.get(0));
-        }
+        supabase.enriquecer(ohs, "propiedad_id", "propiedades", "propiedad", uid);
 
         model.addAttribute("openHouses", ohs);
         model.addAttribute("baseUrl", BASE_URL);

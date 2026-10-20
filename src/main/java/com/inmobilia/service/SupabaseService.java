@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -299,6 +302,34 @@ public class SupabaseService {
     public List<Map<String, Object>> selectOwned(String table, String id, String uid) {
         if (uid == null || uid.isBlank()) return Collections.emptyList();
         return selectFilter(table, "id=eq." + id + "&user_id=eq." + uid);
+    }
+
+    /**
+     * Filas de varios ids en pocas consultas (de 100 en 100), indexadas por id. Para enriquecer
+     * listados sin hacer una consulta por fila (N+1). Con uid, solo las de esa inmobiliaria.
+     */
+    public Map<String, Map<String, Object>> porIds(String table, Collection<?> ids, String uid) {
+        List<String> limpios = ids.stream().filter(Objects::nonNull).map(String::valueOf)
+                .filter(s -> s.matches("[0-9a-fA-F-]{1,64}")).distinct().toList();
+        Map<String, Map<String, Object>> out = new HashMap<>();
+        for (int i = 0; i < limpios.size(); i += 100) {
+            String lote = String.join(",", limpios.subList(i, Math.min(i + 100, limpios.size())));
+            String filtro = "id=in.(" + lote + ")" + (uid == null || uid.isBlank() ? "" : "&user_id=eq." + uid);
+            for (Map<String, Object> r : selectFilter(table, filtro)) out.put(String.valueOf(r.get("id")), r);
+        }
+        return out;
+    }
+
+    /**
+     * Añade a cada fila la fila relacionada: p. ej. enriquecer(visitas, "propiedad_id", "propiedades",
+     * "propiedad", uid) pone en cada visita su propiedad, con una consulta por cada 100 y no una por fila.
+     */
+    public void enriquecer(List<Map<String, Object>> filas, String campoId, String tabla, String clave, String uid) {
+        Map<String, Map<String, Object>> rel = porIds(tabla, filas.stream().map(f -> f.get(campoId)).toList(), uid);
+        for (Map<String, Object> f : filas) {
+            Map<String, Object> r = rel.get(String.valueOf(f.get(campoId)));
+            if (r != null) f.put(clave, r);
+        }
     }
 
     /** update sin user_id (compat). La evicción por tabla la hace el método de 4 args. */

@@ -25,10 +25,7 @@ public class VirtualTourController {
         if (uid == null) return "redirect:/login";
 
         List<Map<String, Object>> tours = supabase.selectFilter("tours_virtuales", "user_id=eq." + uid + "&order=created_at.desc");
-        for (Map<String, Object> t : tours) {
-            List<Map<String, Object>> p = supabase.selectFilter("propiedades", "id=eq." + t.get("propiedad_id"));
-            if (!p.isEmpty()) t.put("propiedad", p.get(0));
-        }
+        supabase.enriquecer(tours, "propiedad_id", "propiedades", "propiedad", uid);
         model.addAttribute("tours", tours);
         model.addAttribute("propiedades", supabase.selectFilter("propiedades", "user_id=eq." + uid));
         model.addAttribute("baseUrl", BASE_URL);

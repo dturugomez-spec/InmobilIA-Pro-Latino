@@ -41,11 +41,8 @@ public class CobrokingController {
             List<Map<String, Object>> props = supabase.selectFilter(
                     "cobroking_propiedades",
                     "user_propietario_id=eq." + r.get("agencia_socia_id") + "&activa=eq.true");
-            // Enriquecer con datos propiedad
-            for (Map<String, Object> p : props) {
-                List<Map<String, Object>> propData = supabase.selectFilter("propiedades", "id=eq." + p.get("propiedad_id"));
-                if (!propData.isEmpty()) p.put("propiedad", propData.get(0));
-            }
+            // Enriquecer con datos propiedad (de la agencia socia: sin filtro de inmobiliaria)
+            supabase.enriquecer(props, "propiedad_id", "propiedades", "propiedad", null);
             compartidasConmigo.addAll(props);
         }
 

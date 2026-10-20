@@ -32,23 +32,15 @@ public class MatchingController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
 
-        StringBuilder q = new StringBuilder("user_id=eq.").append(uid).append("&order=score.desc");
-        if (estado != null && !estado.isBlank()) q.append("&estado=eq.").append(estado);
+        StringBuilder q = new StringBuilder("user_id=eq.").append(uid).append("&order=score.desc&limit=500");
+        if (estado != null && !estado.isBlank()) q.append("&estado=eq.").append(estado.replaceAll("[^a-z_]", ""));
         if (minScore != null) q.append("&score=gte.").append(minScore);
 
         List<Map<String, Object>> matches = supabase.selectFilter("matches", q.toString());
 
-        // Enriquecer con datos de propiedad y lead
-        for (Map<String, Object> m : matches) {
-            String propId = String.valueOf(m.get("propiedad_id"));
-            List<Map<String, Object>> p = supabase.selectFilter("propiedades", "id=eq." + propId);
-            if (!p.isEmpty()) m.put("propiedad", p.get(0));
-
-            if (m.get("lead_id") != null) {
-                List<Map<String, Object>> l = supabase.selectFilter("leads", "id=eq." + m.get("lead_id"));
-                if (!l.isEmpty()) m.put("lead", l.get(0));
-            }
-        }
+        // Enriquecer con propiedad y lead en 2 consultas (antes 2 por cada match: con 300 matches, 600 consultas)
+        supabase.enriquecer(matches, "propiedad_id", "propiedades", "propiedad", uid);
+        supabase.enriquecer(matches, "lead_id", "leads", "lead", uid);
 
         long nuevos = matches.stream().filter(m -> "nuevo".equals(m.get("estado"))).count();
         long interesados = matches.stream().filter(m -> "interesado".equals(m.get("estado"))).count();
@@ -92,12 +84,7 @@ public class MatchingController {
         if (uid == null) return "redirect:/login";
         List<Map<String, Object>> prefs = supabase.selectFilter(
                 "preferencias_busqueda", "user_id=eq." + uid + "&order=created_at.desc");
-        for (Map<String, Object> p : prefs) {
-            if (p.get("lead_id") != null) {
-                List<Map<String, Object>> l = supabase.selectFilter("leads", "id=eq." + p.get("lead_id"));
-                if (!l.isEmpty()) p.put("lead", l.get(0));
-            }
-        }
+        supabase.enriquecer(prefs, "lead_id", "leads", "lead", uid);
         model.addAttribute("preferencias", prefs);
         return "matching_prefs";
     }
