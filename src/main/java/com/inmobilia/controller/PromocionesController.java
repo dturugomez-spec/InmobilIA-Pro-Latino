@@ -127,16 +127,10 @@ public class PromocionesController {
     }
 
     /** Número entero de un campo opcional: vacío o no numérico → null (no se guarda). */
-    static Integer entero(String s) {
-        try { return s == null || s.isBlank() ? null : Integer.valueOf(s.trim()); }
-        catch (NumberFormatException e) { return null; }
-    }
+    static Integer entero(String s) { return com.inmobilia.util.Numeros.entero(s); }
 
-    /** Decimal de un campo opcional (admite coma): vacío o no numérico → null. */
-    static Double decimal(String s) {
-        try { return s == null || s.isBlank() ? null : Double.valueOf(s.trim().replace(",", ".")); }
-        catch (NumberFormatException e) { return null; }
-    }
+    /** Decimal de un campo opcional (formato español: "1.250,50"): vacío o no numérico → null. */
+    static Double decimal(String s) { return com.inmobilia.util.Numeros.decimal(s); }
 
     private static void putSiHay(Map<String, Object> data, String campo, Object valor) {
         if (valor != null) data.put(campo, valor);

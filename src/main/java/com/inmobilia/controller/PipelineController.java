@@ -170,8 +170,8 @@ public class PipelineController {
         data.put("columna_key", form.get("columna_key"));
         data.put("titulo", form.get("titulo"));
         data.put("subtitulo", form.get("subtitulo"));
-        if (notBlank(form.get("valor"))) data.put("valor", Double.parseDouble(form.get("valor")));
-        if (notBlank(form.get("probabilidad"))) data.put("probabilidad", Double.parseDouble(form.get("probabilidad")));
+        data.put("valor", com.inmobilia.util.Numeros.decimal(form.get("valor")));             // "250.000 $" ya no da 500
+        data.put("probabilidad", com.inmobilia.util.Numeros.decimal(form.get("probabilidad")));
         if (notBlank(form.get("fecha_limite"))) data.put("fecha_limite", form.get("fecha_limite"));
         if (notBlank(form.get("lead_id"))) data.put("lead_id", form.get("lead_id"));
         if (notBlank(form.get("propiedad_id"))) data.put("propiedad_id", form.get("propiedad_id"));

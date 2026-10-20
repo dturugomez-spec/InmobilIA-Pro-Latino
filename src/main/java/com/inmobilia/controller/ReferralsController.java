@@ -67,8 +67,7 @@ public class ReferralsController {
         data.put("activo", "on".equals(form.get("activo")));
         data.put("premio_referente", form.get("premio_referente"));
         data.put("premio_referido", form.get("premio_referido"));
-        data.put("premio_valor", form.get("premio_valor") != null && !form.get("premio_valor").isBlank()
-                ? Double.parseDouble(form.get("premio_valor")) : null);
+        data.put("premio_valor", com.inmobilia.util.Numeros.decimal(form.get("premio_valor")));
         data.put("requiere_cierre", "on".equals(form.getOrDefault("requiere_cierre", "on")));
         data.put("mensaje_landing", form.get("mensaje_landing"));
         List<Map<String, Object>> rows = supabase.selectFilter("referidos_config", "user_id=eq." + uid);

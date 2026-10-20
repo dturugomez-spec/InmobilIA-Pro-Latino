@@ -20,7 +20,7 @@
         <p class="text-sm text-slate-500 mt-3" th:text="${oh.get('propiedad') != null ? oh.get('propiedad').get('direccion') : ''}">—</p>
     </div>
 
-    <div th:if="${oh != null and !registrado and !error}" class="bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div th:if="${oh != null and !#bools.isTrue(registrado) and error == null}" class="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="h-48 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-6xl"></div>
 
         <div class="p-6">

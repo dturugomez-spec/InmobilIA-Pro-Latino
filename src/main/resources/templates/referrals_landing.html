@@ -22,7 +22,7 @@
             <p class="text-slate-600 mt-2">Te contactaremos en menos de 24h.</p>
         </div>
 
-        <div th:if="${ref != null and !registrado and !error}">
+        <div th:if="${ref != null and !#bools.isTrue(registrado) and error == null}">
             <p class="text-sm text-slate-700">Te recomienda: <strong th:text="${ref.get('referente_nombre')}">—</strong></p>
             <p class="text-sm text-slate-600 mt-2">Si haces una operación con nosotros:</p>
 

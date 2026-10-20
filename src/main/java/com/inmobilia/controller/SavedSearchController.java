@@ -40,7 +40,7 @@ public class SavedSearchController {
             if (form.get(k) != null) data.put(k, form.get(k));
         }
         for (String k : List.of("precio_min", "precio_max", "metros_min", "habitaciones_min", "banos_min")) {
-            if (form.get(k) != null && !form.get(k).isBlank()) data.put(k, Double.parseDouble(form.get(k)));
+            data.put(k, com.inmobilia.util.Numeros.decimal(form.get(k))); // "300.000" o "250.000 $" ya no dan 500
         }
         data.put("requiere_garaje", "on".equals(form.get("requiere_garaje")));
         data.put("requiere_ascensor", "on".equals(form.get("requiere_ascensor")));

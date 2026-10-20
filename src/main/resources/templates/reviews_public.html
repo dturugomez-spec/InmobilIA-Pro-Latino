@@ -19,8 +19,9 @@
         <p class="text-red-600" th:text="${error}">—</p>
     </div>
 
-    <div th:if="${review != null and !gracias and !error}">
+    <div th:if="${review != null and !#bools.isTrue(gracias) and error == null}">
         <h1 class="text-2xl font-bold text-slate-900 mb-2"> Tu opinión cuenta</h1>
+        <p th:if="${aviso != null}" class="mb-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800" th:text="${aviso}">—</p>
         <p class="text-slate-600 text-sm mb-6">Hola <strong th:text="${review.get('autor_nombre')}">—</strong>, gracias por dedicarnos 30 segundos.</p>
 
         <form th:action="@{|/reviews/publico/${review.get('solicitud_token')}|}" method="post" class="space-y-4">

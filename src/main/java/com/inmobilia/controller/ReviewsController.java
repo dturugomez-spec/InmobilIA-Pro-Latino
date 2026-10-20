@@ -126,8 +126,14 @@ public class ReviewsController {
         List<Map<String, Object>> rows = supabase.selectFilter("reviews", "solicitud_token=eq." + token);
         if (rows.isEmpty()) return "redirect:/";
 
+        Integer puntuacion = com.inmobilia.util.Numeros.entero(form.get("puntuacion"));
+        if (puntuacion == null || puntuacion < 1 || puntuacion > 5) { // antes, sin estrellas marcadas: error 500
+            model.addAttribute("review", rows.get(0));
+            model.addAttribute("aviso", "Marca de 1 a 5 estrellas antes de enviar.");
+            return "reviews_public";
+        }
         Map<String, Object> data = new LinkedHashMap<>();
-        data.put("puntuacion", Integer.parseInt(form.get("puntuacion")));
+        data.put("puntuacion", puntuacion);
         data.put("titulo", form.get("titulo"));
         data.put("comentario", form.get("comentario"));
         data.put("autor_rol", form.get("autor_rol"));
