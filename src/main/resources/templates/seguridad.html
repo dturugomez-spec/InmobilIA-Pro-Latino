@@ -37,8 +37,8 @@
                 <!-- A) Desactivada, sin empezar -->
                 <div th:if="${!activo2fa and qrSvg == null}">
                     <p class="text-slate-600 dark:text-slate-400">
-                        Al entrar, además de la contraseña te pediremos un código de 6 cifras que genera tu móvil.
-                        Aunque alguien consiguiera tu contraseña, <strong>sin tu móvil no podría entrar</strong>.
+                        Al entrar, además de la contraseña te pediremos un código de 6 cifras que genera tu celular.
+                        Aunque alguien consiguiera tu contraseña, <strong>sin tu celular no podría entrar</strong>.
                     </p>
                     <form method="post" action="/seguridad/2fa/iniciar" class="mt-4">
                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
@@ -52,7 +52,7 @@
                 <div th:if="${!activo2fa and qrSvg != null}" class="space-y-5">
                     <div class="flex gap-3">
                         <span class="flex-shrink-0 h-6 w-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">1</span>
-                        <p class="text-slate-700 dark:text-slate-300">Instala en tu móvil <strong>Google Authenticator</strong> o <strong>Microsoft Authenticator</strong> (gratis en App Store y Google Play). Si ya usas 1Password, Authy o similar, también vale.</p>
+                        <p class="text-slate-700 dark:text-slate-300">Instala en tu celular <strong>Google Authenticator</strong> o <strong>Microsoft Authenticator</strong> (gratis en App Store y Google Play). Si ya usas 1Password, Authy o similar, también vale.</p>
                     </div>
                     <div class="flex gap-3">
                         <span class="flex-shrink-0 h-6 w-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">2</span>
@@ -86,7 +86,7 @@
                 <div th:if="${activo2fa}" class="space-y-5">
                     <p class="text-slate-600 dark:text-slate-400">
                         Cada vez que entres te pediremos el código de tu app.
-                        Te quedan <strong th:text="${codigosRestantes}">10</strong> códigos de recuperación para cuando no tengas el móvil.
+                        Te quedan <strong th:text="${codigosRestantes}">10</strong> códigos de recuperación para cuando no tengas el celular.
                     </p>
 
                     <div class="grid sm:grid-cols-2 gap-4">
@@ -124,7 +124,7 @@
                 Tus códigos de recuperación
             </h2>
             <p class="mt-1 text-sm text-amber-900 dark:text-amber-200">
-                Guárdalos ahora en un lugar seguro (gestor de contraseñas o impresos). Sirven para entrar si pierdes el móvil.
+                Guárdalos ahora en un lugar seguro (gestor de contraseñas o impresos). Sirven para entrar si pierdes el celular.
                 Cada uno funciona <strong>una sola vez</strong> y <strong>no volveremos a enseñarlos</strong>.
             </p>
             <ul id="lista-codigos" class="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-sm">

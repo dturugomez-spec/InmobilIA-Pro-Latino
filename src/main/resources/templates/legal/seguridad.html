@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seguridad y privacidad · InmobilIA Pro</title>
-    <meta name="description" content="Cómo protege InmobilIA Pro los datos de tu inmobiliaria y de tus clientes: verificación en dos pasos, permisos por rol, registro de actividad, cifrado y RGPD.">
+    <meta name="description" content="Cómo protege InmobilIA Pro los datos de tu inmobiliaria y de tus clientes: verificación en dos pasos, permisos por rol, registro de actividad, cifrado y protección de datos.">
     <link rel="canonical" href="https://www.inmobiliapro.es/seguridad-datos">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
@@ -67,7 +67,7 @@
             los datos de una inmobiliaria no son visibles para otra. Los inquilinos que usan el portal solo ven su contrato, sus recibos y sus solicitudes.</p>
 
         <h2>Dónde están tus datos</h2>
-        <p th:if="${regionDatos != null}">Los servidores y la base de datos están alojados en <strong th:text="${regionDatos}">la Unión Europea</strong>.</p>
+        <p th:if="${regionDatos != null}">Los servidores y la base de datos están alojados en <strong th:text="${regionDatos}">—</strong>.</p>
         <ul>
             <li>La base de datos está cifrada en disco por nuestro proveedor (Supabase) y la conexión con ella va cifrada.</li>
             <li th:if="${cifradoActivo}">Las claves de la verificación en dos pasos se guardan además cifradas con <strong>AES-256</strong>, con una clave que no está en la base de datos.</li>
@@ -76,8 +76,8 @@
         </ul>
 
         <h2>Proveedores que tratan datos</h2>
-        <p>Para prestar el servicio usamos estos proveedores. Si alguno trata datos fuera del Espacio Económico Europeo, se hace con las garantías del RGPD
-            (cláusulas contractuales tipo de la Comisión Europea o el Marco de Privacidad de Datos UE-EE. UU.) recogidas en su acuerdo de tratamiento de datos.</p>
+        <p>Para prestar el servicio usamos estos proveedores. Algunos están en otros países (sobre todo EE. UU.): las transferencias se hacen con las garantías contractuales
+            de su acuerdo de tratamiento de datos.</p>
     </div>
 
     <div class="mt-4"><div th:replace="~{legal/fragmentos :: subencargados}"></div></div>
@@ -88,7 +88,7 @@
         <h2>Tus datos son tuyos</h2>
         <ul>
             <li><strong>Exportación completa</strong> en cualquier momento (JSON y CSV), sin coste.</li>
-            <li><strong>Contrato de encargado del tratamiento (RGPD, art. 28)</strong> listo para firmar: <a href="/dpa" class="text-blue-700 underline">ver y descargar el contrato</a>.</li>
+            <li><strong>Contrato de encargado del tratamiento de datos</strong> listo para firmar: <a href="/dpa" class="text-blue-700 underline">ver y descargar el contrato</a>.</li>
             <li>Facturas con <strong>Verifactu</strong>: cada factura lleva una huella SHA-256 encadenada que delata cualquier alteración.</li>
             <li>Al cancelar, puedes exportar tus datos y después los eliminamos, salvo lo que la ley obliga a conservar (como la facturación).</li>
         </ul>

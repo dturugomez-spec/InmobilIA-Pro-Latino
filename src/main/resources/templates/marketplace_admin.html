@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
-<head><title>Marketplace · Tinder de pisos</title></head>
+<head><title>Marketplace · Tinder de inmuebles</title></head>
 <body><div layout:fragment="content">
 
 <div class="rounded-xl bg-gradient-to-br from-rose-600 to-blue-900 p-6 mb-5 text-white">
     <h2 class="text-xl font-bold flex items-center gap-2">
-        <i data-lucide="flame" class="h-6 w-6"></i> Marketplace · "Tinder de pisos" 
+        <i data-lucide="flame" class="h-6 w-6"></i> Marketplace · "Tinder de inmuebles" 
     </h2>
     <p class="text-sm text-white/80 mt-1">Tus inmuebles publicados aparecen en el buscador público de compradores. Cada "me gusta" con contacto entra como lead en tu CRM. Captación de compradores en piloto automático.</p>
 </div>
 
 <!-- Buscador PROPIO de la agencia (solo TUS pisos, tu marca) -->
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 mb-5">
-    <p class="font-bold text-lg flex items-center gap-2"><i data-lucide="store" class="h-5 w-5 text-rose-600"></i> Tu buscador propio de pisos</p>
+    <p class="font-bold text-lg flex items-center gap-2"><i data-lucide="store" class="h-5 w-5 text-rose-600"></i> Tu buscador propio de inmuebles</p>
     <p class="text-sm text-slate-500 mt-1">Un buscador tipo swipe con <strong>solo tus inmuebles</strong> y tu marca, para tu web, microsite o redes sociales. Independiente del marketplace compartido de la red.</p>
     <div th:if="${buscadorUrl != null}" class="mt-4">
         <div class="flex items-center gap-2 bg-slate-50 dark:bg-neutral-800 rounded-lg p-2 ring-1 ring-slate-200 dark:ring-neutral-700">

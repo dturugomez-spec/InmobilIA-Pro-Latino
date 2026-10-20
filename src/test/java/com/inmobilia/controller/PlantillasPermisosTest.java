@@ -40,7 +40,15 @@ class PlantillasPermisosTest {
     }
 
     private String contenido(String plantilla, Context ctx) {
+        conPais(ctx);
         return engine.process(plantilla, Set.of("div[layout:fragment='content']"), ctx);
+    }
+
+    /** Lo que PaisInterceptor añade a todas las vistas (aquí, una inmobiliaria de Colombia). */
+    static void conPais(Context ctx) {
+        if (!ctx.containsVariable("pais")) ctx.setVariable("pais", com.inmobilia.util.Pais.de("CO"));
+        if (!ctx.containsVariable("mon")) ctx.setVariable("mon", "COP");
+        ctx.setLocale(java.util.Locale.forLanguageTag("es-CO"));
     }
 
     private static Map<String, Object> fila(Object... kv) {
@@ -124,7 +132,7 @@ class PlantillasPermisosTest {
         d.setVariable("importePorCargo", 50.0);
         d.setVariable("cuentaCargo", "ES91 •••• 1332");
         String ficha = contenido("insurance_detail", d);
-        assertTrue(ficha.contains("50,00 €"));
+        assertTrue(ficha.contains("50,00 COP"));
         assertTrue(ficha.contains("ES91 •••• 1332"));
         assertTrue(ficha.contains("2026-11-01"));
     }
@@ -175,7 +183,7 @@ class PlantillasPermisosTest {
         assertTrue(comercial.contains("data-nav-group=\"finanzas\""), "el grupo se oculta en el navegador si queda vacío");
 
         String contable = paginaCon(p, "contable");
-        assertTrue(contable.contains("href=\"/seguros\"") && contable.contains("href=\"/business\"") && contable.contains("href=\"/sepa\""));
+        assertTrue(contable.contains("href=\"/seguros\"") && contable.contains("href=\"/business\""));
         assertFalse(contable.contains("href=\"/bandeja\""));
 
         String admin = paginaCon(p, "admin");

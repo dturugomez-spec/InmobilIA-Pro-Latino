@@ -47,12 +47,12 @@ public class FeatureController {
         FEATURES.put("ia", f(
             "ia", "🧠", "Inteligencia artificial", "blue",
             "IA que entiende tu negocio inmobiliario",
-            "Más allá de un chatbot genérico: nuestra IA está entrenada con casuística del sector inmobiliario español. Prioriza leads, redacta descripciones, transcribe llamadas y resume conversaciones para que tu equipo se centre en cerrar operaciones.",
+            "Más allá de un chatbot genérico: nuestra IA está entrenada con casuística del sector inmobiliario de Latinoamérica. Prioriza leads, redacta descripciones, transcribe llamadas y resume conversaciones para que tu equipo se centre en cerrar operaciones.",
             new String[][]{
                 {"Lead Scoring automático", "Cada lead recibe una puntuación de 0 a 100 y una temperatura (HOT/Caliente/Tibio/Frío) calculada en tiempo real según comportamiento, datos del perfil y probabilidad estadística de conversión."},
                 {"Descripciones SEO en 5 segundos", "Le das los datos de la propiedad y la IA redacta una descripción optimizada para portales y motores de búsqueda. Multilingüe (ES/EN/CA)."},
                 {"Chatbot embebible en tu web", "Widget conectado a tu inventario real que responde dudas, agenda visitas y captura leads sin que tú intervengas. Funciona 24/7."},
-                {"OCR de DNI con un click", "Foto del DNI/NIE del cliente y se rellenan automáticamente todos los campos del expediente. Validación de letras incluida."},
+                {"OCR de identificaciones con un click", "Foto de la INE, cédula, DNI o RUN del cliente y se rellenan automáticamente todos los campos del expediente. Validación de letras incluida."},
                 {"Notas de voz transcritas", "Graba notas tras una visita y se transcriben + resumen automáticamente. Quedan asociadas al cliente y la propiedad."},
                 {"Reconocimiento de habitaciones por foto", "Sube fotos del inmueble y la IA detecta tipo de habitación, estado de reforma y características destacables para el anuncio."}
             },
@@ -65,21 +65,21 @@ public class FeatureController {
 
         // ─── CUMPLIMIENTO ───
         FEATURES.put("cumplimiento", f(
-            "cumplimiento", "⚖️", "Cumplimiento legal", "emerald",
-            "Tranquilidad jurídica de fábrica",
-            "El sector inmobiliario español está fuertemente regulado: Verifactu, AEAT, eIDAS, RGPD, LAU, RD 6/2020, RD 1007/2023, RD 390/2021... Cada cambio normativo se aplica automáticamente en la plataforma. Tú solo te preocupas de vender.",
+            "cumplimiento", "🌎", "Hecho para Latinoamérica", "emerald",
+            "Tu país, tu moneda, tus reglas",
+            "Cada inmobiliaria elige su país y la plataforma se adapta: moneda local o dólares, impuesto al consumo, identificaciones fiscales, prefijo telefónico, zona horaria y textos en español de la región. Funciona en 17 países, de México a Argentina.",
             new String[][]{
-                {"Verifactu (RD 1007/2023)", "Facturas con cadena hash SHA-256 + QR conforme a AEAT. Listo para el 2026 desde el primer día. Sin coste adicional."},
-                {"Firma electrónica eIDAS", "Contratos firmados desde el móvil con validación OTP + cadena hash blockchain de auditoría. Validez legal RD 6/2020 plena."},
-                {"15+ modelos AEAT automáticos", "Modelos 100 (IRPF), 130, 180, 184, 190, 200, 303, 347, 390... Se generan a partir de tus facturas sin trabajo manual."},
-                {"RGPD + LOPDGDD nativo", "Auditoría completa de accesos y cambios, gestión de consentimientos, derecho al olvido y portabilidad de datos."},
-                {"LAU integrada en contratos", "Plantillas de arrendamiento conformes a la Ley 29/1994 actualizada, con cláusulas de actualización IPC, garantías y prórrogas."},
-                {"Certificados energéticos (CEE)", "Registro y control de caducidad RD 390/2021 con alertas automáticas 90/30/7 días antes."}
+                {"17 países", "México, Colombia, Argentina, Chile, Perú, Ecuador, Uruguay, Paraguay, Bolivia, Venezuela, Centroamérica y República Dominicana."},
+                {"Moneda local o USD", "Importes en MXN, COP, ARS, CLP, PEN… o en dólares si tu mercado cotiza así la compraventa."},
+                {"Impuestos e identificaciones", "IVA, IGV, ITBIS, ITBMS o ISV con su tipo general, y RFC, NIT, CUIT, RUT, RUC o cédula en cada formulario."},
+                {"Protección de datos", "Registro de accesos y cambios, derechos ARCO, exportación y borrado de datos, con la ley de datos de tu país en los documentos."},
+                {"Firma electrónica", "Contratos firmados desde el celular con verificación de identidad y registro de evidencias (email, IP, fecha y hora)."},
+                {"Contratos orientativos", "Plantillas de arrendamiento y encargo con depósito en garantía, ajuste por inflación y datos de tu país, listas para revisar con tu abogado."}
             },
             new String[][]{
-                {"Sin sustos en inspecciones", "Todo trazable, todo conforme. La auditoría AEAT te durará minutos en lugar de semanas."},
-                {"Sin asesoría técnica extra", "No necesitas un consultor para cada nueva norma. Lo aplicamos automáticamente."},
-                {"Validez plena en juicios", "Firma electrónica y cadena hash con valor probatorio según la legislación española."}
+                {"Sin adaptar nada a mano", "Eliges el país una vez y toda la app habla tu idioma comercial."},
+                {"Listo para tu contador", "Resumen de impuestos y rentas por periodo, exportable. La factura electrónica oficial se timbra en el sistema de tu país."},
+                {"Todo trazable", "Cada acción queda registrada: quién, qué y cuándo."}
             }
         ));
 
@@ -92,7 +92,7 @@ public class FeatureController {
                 {"13 triggers de negocio", "Lead creado, visita agendada, factura impagada, contrato firmado, propiedad publicada... Cada evento puede disparar acciones."},
                 {"7 acciones encadenables", "Enviar email, asignar agente, crear tarea, mover en kanban, notificar por WhatsApp, etiquetar, cambiar de estado."},
                 {"Editor visual", "Diseña los workflows arrastrando bloques. Lo entiende cualquiera del equipo, no solo el técnico."},
-                {"Filtros condicionales", ("Aplica reglas solo si se cumplen condiciones: 'solo si presupuesto > 200.000 " + PaisActual.moneda() + "', 'solo si la zona es Madrid Centro'...")},
+                {"Filtros condicionales", ("Aplica reglas solo si se cumplen condiciones: 'solo si presupuesto > 200.000 " + PaisActual.moneda() + "', 'solo si la zona es Polanco'...")},
                 {"Programación temporal", "Ejecuta acciones en delay: '24h después de una visita, enviar encuesta NPS'. Sin atajos manuales."},
                 {"Histórico de ejecuciones", "Cada workflow lleva un log de todas sus ejecuciones, errores y resultados. Debugging fácil."}
             },
@@ -109,10 +109,10 @@ public class FeatureController {
             "Toda tu cartera en un único panel",
             "Olvídate de las hojas de Excel, los carpetas de Drive y los archivos sueltos. Toda la operativa de tu inmobiliaria en un único sistema diseñado para el sector.",
             new String[][]{
-                {"Propiedades", "Ficha completa con fotos, planos, vídeos, tour virtual, CEE, ficha catastral, historial de precios y visitas."},
+                {"Propiedades", "Ficha completa con fotos, planos, vídeos, tour virtual, clave catastral, historial de precios y visitas."},
                 {"Leads y oportunidades", "Pipeline kanban configurable con scoring, etapas personalizadas, drag&drop entre fases."},
                 {"Inquilinos y propietarios", "Carteras separadas con histórico de operaciones, documentos asociados y datos legales completos."},
-                {"Contratos", "Plantillas LAU/arrendamiento turístico/compraventa/arras con variables auto-rellenadas. Firma electrónica integrada."},
+                {"Contratos", "Plantillas de arrendamiento/arrendamiento temporal/compraventa/promesa con variables auto-rellenadas. Firma electrónica integrada."},
                 {"Visitas con agenda", "Calendario sincronizado con Google Calendar, recordatorios automáticos al cliente, feedback post-visita."},
                 {"Comisiones", "Cálculo automático por agente, propiedad y operación. Liquidaciones mensuales sin fricción."},
                 {"Seguros y siniestros", "Pólizas de hogar, impago de alquiler y RC. Gestión de siniestros con seguimiento."},
@@ -121,7 +121,7 @@ public class FeatureController {
             new String[][]{
                 {"Un solo sistema, no ocho", "Reemplaza CRM, ERP, drive de docs, calendario, hojas Excel."},
                 {"Búsqueda global", "Encuentra cualquier registro escribiendo 2 letras. Indexación full-text."},
-                {"Acceso desde cualquier sitio", "Web, móvil, tablet. Sincronización en tiempo real entre dispositivos."}
+                {"Acceso desde cualquier sitio", "Web, celular, tablet. Sincronización en tiempo real entre dispositivos."}
             }
         ));
 
@@ -131,10 +131,10 @@ public class FeatureController {
             "Habla con tus clientes desde el CRM",
             "WhatsApp, SMS, email y newsletter desde un único panel, con tracking completo de aperturas, clicks y conversiones. Adiós a saltar entre apps.",
             new String[][]{
-                {"WhatsApp Business Cloud API", "API oficial de Meta integrada. Plantillas pre-aprobadas, envíos masivos personalizados, conversaciones 1:1 sin pasar por el móvil."},
+                {"WhatsApp Business Cloud API", "API oficial de Meta integrada. Plantillas pre-aprobadas, envíos masivos personalizados, conversaciones 1:1 sin pasar por el celular."},
                 {"SMS marketing", "Pasarela conectada para recordatorios de visitas, confirmaciones y campañas masivas con tasa de apertura del 98%."},
                 {"Email marketing avanzado", "Editor visual de plantillas, A/B testing de asuntos, segmentación dinámica, tracking de aperturas y clicks."},
-                {"Newsletter público", "Captura suscriptores desde tu microsite con doble opt-in RGPD compliant. Envíos mensuales programados."},
+                {"Newsletter público", "Captura suscriptores desde tu microsite con doble opt-in y consentimiento registrado. Envíos mensuales programados."},
                 {"Bandeja unificada IMAP", "Tus emails de Gmail/Outlook integrados con la ficha del cliente. Adjuntos archivados automáticamente."},
                 {"Chat interno del equipo", "Canales por proyecto, mensajes directos, menciones y compartir archivos con tu equipo sin Slack externo."}
             },
@@ -153,7 +153,7 @@ public class FeatureController {
             new String[][]{
                 {"Microsite SEO incluido", "Tu propia web inmobiliaria con dominio personalizable, blog integrado, SEO técnico optimizado y velocidad de carga premium."},
                 {"Página pública por propiedad", "Cada inmueble con URL pública SEO-friendly, fotos en alta resolución, plano, mapa, tour virtual y formulario de contacto."},
-                {"Sindicación a portales", "Feed XML automático a Idealista, Fotocasa, Habitaclia, Pisos.com... Subes una vez, sale en 4 portales sin formato manual."},
+                {"Sindicación a portales", "Feed XML automático para los portales de tu país (Inmuebles24, Finca Raíz, Zonaprop, Portal Inmobiliario, Urbania...). Subes una vez, sale en todos sin formato manual."},
                 {"Tours virtuales 360º", "Sube tours de Matterport, Kuula o equivalentes y embébelos directamente en la ficha. Aumentan engagement un 40%."},
                 {"Staging digital con IA", "Decoración virtual de pisos vacíos para que vendan mejor. Tu cliente ve cómo quedaría amueblado."},
                 {"Blog SEO integrado", "Editor markdown, categorías, etiquetas, multi-idioma. Generación de artículos asistida por IA."}
@@ -169,11 +169,11 @@ public class FeatureController {
         FEATURES.put("cobros", f(
             "cobros", "💳", "Cobros automáticos", "cyan",
             "Cobra alquileres sin perseguir a nadie",
-            "Domiciliación SEPA, conciliación bancaria automática, multi-divisa y reconciliación contable. La parte aburrida de gestionar alquileres, automatizada.",
+            "Control de cobros de rentas, conciliación bancaria automática, multimoneda y reconciliación contable. La parte aburrida de gestionar alquileres, automatizada.",
             new String[][]{
-                {"SEPA Direct Debit", "Genera ficheros XML pain.008.001.02 para tu banco con los recibos mensuales. Cobros automáticos sin chasing manual."},
+                {"Recordatorios de pago", "Avisos automáticos por email y WhatsApp antes y después del vencimiento de cada renta."},
                 {"Conciliación bancaria", "Importa el extracto bancario y la plataforma asocia cada transacción a su factura automáticamente."},
-                {"Multi-divisa BCE", "Cotización actualizada del Banco Central Europeo. Facturas en EUR/USD/GBP sin conversión manual."},
+                {"Multimoneda", "Tipos de cambio actualizados a diario. Trabaja en moneda local o en USD sin conversiones manuales."},
                 {"Caja chica controlada", "Movimientos en efectivo trazables con justificantes adjuntos. Cierre de caja mensual con un click."},
                 {"Gastos del agente", "Kilometraje, dietas y reembolsos asociados a cada operación. Aprobación con un click."},
                 {"Extractos propietarios", "Liquidaciones mensuales automáticas a los propietarios con desglose de rentas, gastos y comisiones."}
@@ -207,16 +207,16 @@ public class FeatureController {
 
         // ─── MÓVIL ───
         FEATURES.put("movil", f(
-            "movil", "📱", "Móvil y multidispositivo", "slate",
+            "movil", "📱", "Celular y multidispositivo", "slate",
             "Trabaja desde donde estés",
             "App nativa para Android e iOS, PWA instalable en cualquier navegador, multi-idioma y whitelabel personalizable. Tu equipo trabaja desde la oficina, el coche o una cafetería.",
             new String[][]{
                 {"App móvil nativa", "Disponible para Android e iOS. Notificaciones push, modo offline parcial y rendimiento de app nativa."},
                 {"PWA instalable", "Si no quieres apps, instala la versión web como app desde el navegador. Sin pasar por App Store."},
-                {"Sincronización en tiempo real", "Cambias algo en el móvil y aparece al instante en el ordenador de tu equipo."},
-                {"Multi-idioma", "Interfaz completa en español, inglés y catalán. Atiende clientes internacionales sin problemas."},
+                {"Sincronización en tiempo real", "Cambias algo en el celular y aparece al instante en la computadora de tu equipo."},
+                {"Multi-idioma", "Interfaz en español de Latinoamérica e inglés. Atiende clientes internacionales sin problemas."},
                 {"Whitelabel personalizable", "Tu logo, tus colores corporativos, tu subdominio (tuagencia.app). Tus clientes ven tu marca, no la nuestra."},
-                {"Notas de voz y fotos", "Captura una visita con notas habladas y fotos georeferenciadas desde el móvil. Se asocian al expediente."}
+                {"Notas de voz y fotos", "Captura una visita con notas habladas y fotos georreferenciadas desde el celular. Se asocian al expediente."}
             },
             new String[][]{
                 {"Tu equipo siempre conectado", "Ya no dependes de estar en la oficina para gestionar."},

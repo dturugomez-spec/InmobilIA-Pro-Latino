@@ -92,10 +92,11 @@ class PlantillasSeguridadTest {
         for (String region : new String[]{null, "Unión Europea (Fráncfort)"}) {
             Context c = new Context();
             c.setVariable("regionDatos", region);
+            PlantillasPermisosTest.conPais(c);
             c.setVariable("copiasDatos", region == null ? null : "copia diaria");
             c.setVariable("cifradoActivo", region != null);
             String seg = engine.process("legal/seguridad", c);
-            assertTrue(seg.contains("Stripe Payments Europe"));
+            assertTrue(seg.contains("Stripe, Inc."));
             assertEquals(region != null, seg.contains("Fráncfort"));
             String dpa = engine.process("legal/dpa", c);
             assertTrue(dpa.contains("Anexo II"));

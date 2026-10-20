@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contrato de encargado del tratamiento · InmobilIA Pro</title>
-    <meta name="description" content="Contrato de encargado del tratamiento de datos (artículo 28 del RGPD) entre la inmobiliaria cliente e InmobilIA Pro.">
+    <meta name="description" content="Contrato de encargado del tratamiento de datos personales entre la inmobiliaria cliente e InmobilIA Pro.">
     <link rel="canonical" href="https://www.inmobiliapro.es/dpa">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
@@ -38,7 +38,7 @@
     </div>
 
     <h1 class="text-2xl font-bold tracking-tight mb-1">Contrato de encargado del tratamiento de datos personales</h1>
-    <p class="text-sm text-slate-500 mb-8">Artículo 28 del Reglamento (UE) 2016/679 (RGPD) y Ley Orgánica 3/2018 (LOPDGDD) · Versión de 8 de octubre de 2026</p>
+    <p class="text-sm text-slate-500 mb-8">Conforme a <span th:text="${pais.leyDatosTexto()}">la ley de protección de datos aplicable</span> · Versión de 20 de octubre de 2026</p>
 
     <div class="prose">
         <h2>Reunidos</h2>
@@ -76,16 +76,16 @@
         <h2>5. Obligaciones del Encargado</h2>
         <ol>
             <li>Tratar los datos <strong>solo siguiendo las instrucciones documentadas</strong> del Responsable (este contrato y el uso que haga de la plataforma) y no utilizarlos para fines propios.
-                Si una instrucción infringiera el RGPD, lo comunicará inmediatamente.</li>
+                Si una instrucción infringiera la normativa de protección de datos, lo comunicará inmediatamente.</li>
             <li>Garantizar que las personas autorizadas a tratar los datos se han comprometido a respetar la <strong>confidencialidad</strong>.</li>
-            <li>Aplicar las <strong>medidas de seguridad</strong> del artículo 32 del RGPD descritas en el Anexo II.</li>
+            <li>Aplicar las <strong>medidas de seguridad</strong> técnicas y organizativas descritas en el Anexo II.</li>
             <li>Recurrir a <strong>subencargados</strong> solo con la autorización general que el Responsable otorga con este contrato para los listados en el Anexo I.
                 Informará de cualquier cambio con al menos <strong>30 días</strong> de antelación para que el Responsable pueda oponerse; si se opone, podrá cancelar sin penalización.
                 El Encargado exigirá a cada subencargado las mismas obligaciones de protección de datos.</li>
             <li><strong>Ayudar al Responsable</strong> a atender los derechos de los interesados (acceso, rectificación, supresión, oposición, limitación y portabilidad), entre otros mediante las herramientas de exportación y edición de la plataforma.</li>
             <li>Ayudar al Responsable a cumplir sus obligaciones de seguridad, notificación de violaciones de seguridad y evaluaciones de impacto.</li>
             <li>Notificar al Responsable <strong>sin dilación indebida, y en todo caso en un máximo de 48 horas</strong> desde que tenga conocimiento, cualquier violación de seguridad que afecte a sus datos,
-                con la información disponible para que el Responsable pueda notificarla a la AEPD en el plazo legal de 72 horas.</li>
+                con la información disponible para que el Responsable pueda informar a los titulares y, si la ley lo exige, a la autoridad de protección de datos en el plazo legal.</li>
             <li>Al terminar el servicio, permitir al Responsable <strong>exportar sus datos</strong> durante 30 días y después <strong>suprimirlos</strong>, salvo los que una norma obligue a conservar.
                 Las copias de seguridad se eliminarán en su ciclo ordinario de rotación.</li>
             <li>Poner a disposición del Responsable la información necesaria para demostrar el cumplimiento de este contrato y permitir <strong>auditorías</strong> razonables, con un preaviso de 30 días y sin acceso a datos de otros clientes.</li>
@@ -99,11 +99,11 @@
         </ul>
 
         <h2>7. Transferencias internacionales</h2>
-        <p>Algunos subencargados tienen su sede fuera del Espacio Económico Europeo (Anexo I). Las transferencias se realizan con las garantías del capítulo V del RGPD:
-            cláusulas contractuales tipo aprobadas por la Comisión Europea o adhesión del proveedor al Marco de Privacidad de Datos UE-EE. UU., según su acuerdo de tratamiento de datos.</p>
+        <p>Algunos subencargados tienen su sede en otros países, sobre todo EE. UU. (Anexo I). Las transferencias se realizan con las garantías contractuales de su acuerdo
+            de tratamiento de datos y con los requisitos de información o consentimiento que exija la ley aplicable.</p>
 
         <h2>8. Ley aplicable</h2>
-        <p>Este contrato se rige por el RGPD, la LOPDGDD y la legislación española.</p>
+        <p>Este contrato se rige por <span th:text="${pais.leyDatosTexto()}">la ley de protección de datos aplicable</span> y la legislación de <span th:text="${pais.nombre()}">el país</span>.</p>
 
         <h2>Anexo I · Subencargados autorizados</h2>
     </div>
@@ -123,7 +123,7 @@
             <li><strong>Protección de la aplicación:</strong> comprobación del origen de las peticiones, cabeceras de seguridad, registros del servidor sin contraseñas ni secretos.</li>
             <li><strong>Pagos:</strong> gestionados por Stripe; el Encargado no almacena datos de tarjetas.</li>
             <li th:if="${copiasDatos != null}"><strong>Copias de seguridad:</strong> <span th:text="${copiasDatos}">copia diaria</span>.</li>
-            <li th:if="${regionDatos != null}"><strong>Ubicación:</strong> servidores y base de datos en <span th:text="${regionDatos}">la UE</span>.</li>
+            <li th:if="${regionDatos != null}"><strong>Ubicación:</strong> servidores y base de datos en <span th:text="${regionDatos}">—</span>.</li>
         </ul>
 
         <h2>Firmas</h2>

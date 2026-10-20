@@ -64,7 +64,7 @@
         <li><strong>Obligaciones del propietario.</strong> Facilitar la documentación necesaria y el acceso al inmueble para su visita.</li>
         <li th:if="${n.get('observaciones') != null and !n.get('observaciones').isEmpty()}">
             <strong>Observaciones.</strong> <span th:text="${n.get('observaciones')}">—</span></li>
-        <li><strong>Protección de datos (RGPD).</strong> Los datos se tratarán conforme al RGPD y la LOPDGDD con la finalidad
+        <li><strong>Protección de datos.</strong> Los datos se tratarán conforme a <span th:text="${pais.leyDatosTexto()}">la ley de protección de datos aplicable</span> con la finalidad
             de gestionar el presente encargo, pudiendo el interesado ejercer sus derechos ante LA AGENCIA.</li>
     </ol>
 

@@ -17,7 +17,11 @@
     <p class="text-sm text-slate-500 mb-8">Última actualización: 8 de octubre de 2026</p>
 
     <div class="prose">
-        <p>InmobilIA Pro ("nosotros", "la plataforma") respeta tu privacidad y se compromete a proteger los datos personales que nos facilitas. Esta política explica qué información recopilamos, cómo la usamos y cuáles son tus derechos según el <strong>Reglamento General de Protección de Datos (RGPD, UE 2016/679)</strong> y la <strong>LOPDGDD (Ley Orgánica 3/2018)</strong>.</p>
+        <p>InmobilIA Pro ("nosotros", "la plataforma") respeta tu privacidad y se compromete a proteger los datos personales que nos facilitas. Esta política explica qué información recopilamos, cómo la usamos y cuáles son tus derechos conforme a la legislación de protección de datos aplicable: la del país de la inmobiliaria y, en su caso, la del país donde está establecido el prestador del servicio. Entre otras:</p>
+        <ul>
+            <li th:each="p : ${paises}" th:if="${p.leyDatos() != null}"><strong th:text="${p.bandera() + ' ' + p.nombre()}">México</strong>: <span th:text="${p.leyDatos()}">ley</span></li>
+        </ul>
+        <p>En los países sin una ley general de protección de datos aplicamos estos mismos principios y derechos.</p>
 
         <h2>1. Responsable del tratamiento</h2>
         <p>El responsable del tratamiento de tus datos es el titular de la cuenta InmobilIA Pro registrado en la plataforma. Para consultas sobre privacidad puedes escribir a <strong>inmobilia.support@gmail.com</strong>.</p>
@@ -35,7 +39,7 @@
         <ul>
             <li>Prestar el servicio contratado de gestión inmobiliaria.</li>
             <li>Permitir la autenticación, recuperación de contraseña y comunicación operativa.</li>
-            <li>Cumplir obligaciones legales (fiscales, contables, RGPD).</li>
+            <li>Cumplir obligaciones legales (fiscales, contables y de protección de datos).</li>
             <li>Mejorar la plataforma mediante análisis estadísticos agregados (sin perfilado individual).</li>
         </ul>
 
@@ -43,25 +47,26 @@
         <p>El tratamiento se basa en (i) la <strong>ejecución del contrato de servicio</strong> que aceptas al registrarte, (ii) el <strong>cumplimiento de obligaciones legales</strong> del responsable, y (iii) el <strong>interés legítimo</strong> en seguridad y mejora del servicio.</p>
 
         <h2>5. Conservación de datos</h2>
-        <p>Conservamos tus datos mientras tu cuenta esté activa. Si la cancelas, eliminamos los datos personales en un plazo máximo de 30 días, excepto los que debamos conservar por obligación legal (facturación: 4 años; auditoría: hasta 6 años).</p>
+        <p>Conservamos tus datos mientras tu cuenta esté activa. Si la cancelas, eliminamos los datos personales en un plazo máximo de 30 días, excepto los que debamos conservar por obligación legal (facturación y auditoría: el plazo que exija la legislación fiscal aplicable).</p>
 
         <h2>6. Destinatarios y encargados de tratamiento</h2>
-        <p>No cedemos tus datos a terceros para fines comerciales. Para prestar el servicio usamos los proveedores de la tabla. Si alguno trata datos fuera del Espacio Económico Europeo,
-            se hace con las garantías del RGPD (cláusulas contractuales tipo de la Comisión Europea o Marco de Privacidad de Datos UE-EE. UU.) recogidas en su acuerdo de tratamiento de datos.
+        <p>No cedemos tus datos a terceros para fines comerciales. Para prestar el servicio usamos los proveedores de la tabla. Algunos están en otros países (sobre todo EE. UU.):
+            las transferencias se hacen con las garantías contractuales de su acuerdo de tratamiento de datos y, cuando la ley lo exige, informándote y recabando tu consentimiento.
             Las inmobiliarias clientes pueden firmar con nosotros el <a href="/dpa" class="text-blue-700 underline">contrato de encargado del tratamiento</a>.</p>
     </div>
     <div class="my-4"><div th:replace="~{legal/fragmentos :: subencargados}"></div></div>
     <div class="prose">
 
         <h2>7. Tus derechos</h2>
-        <p>Tienes derecho a:</p>
+        <p>Tienes los derechos <strong>ARCO</strong> y otros que te reconozca la ley de tu país:</p>
         <ul>
             <li><strong>Acceso</strong>: solicitar copia de los datos que tenemos sobre ti.</li>
             <li><strong>Rectificación</strong>: corregir datos inexactos.</li>
-            <li><strong>Supresión</strong>: eliminar tu cuenta y datos personales (botón disponible en Configuración).</li>
+            <li><strong>Cancelación o supresión</strong>: eliminar tu cuenta y datos personales (botón disponible en Configuración).</li>
             <li><strong>Oposición y limitación</strong>: oponerte a ciertos tratamientos.</li>
             <li><strong>Portabilidad</strong>: recibir tus datos en formato estructurado (export disponible en Configuración).</li>
-            <li><strong>Reclamación</strong> ante la <strong>Agencia Española de Protección de Datos (AEPD)</strong>, www.aepd.es.</li>
+            <li><strong>Revocar tu consentimiento</strong> en cualquier momento, sin efectos retroactivos.</li>
+            <li><strong>Reclamación</strong> ante la autoridad de protección de datos de tu país.</li>
         </ul>
 
         <h2>8. Seguridad</h2>

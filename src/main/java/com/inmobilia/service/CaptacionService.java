@@ -108,7 +108,7 @@ public class CaptacionService {
     private static String legibleTipo(String t) {
         if (t == null) return "propietarios";
         return switch (t) {
-            case "propietarios_piso" -> "propietarios de pisos";
+            case "propietarios_piso" -> "propietarios de departamentos";
             case "chalets" -> "propietarios de chalets/casas";
             case "locales" -> "propietarios de locales comerciales";
             case "herederos" -> "herederos de una vivienda";

@@ -31,7 +31,8 @@ class FotosInmuebleTest {
         BrandingService branding = mock(BrandingService.class);
         when(branding.branding(anyString())).thenReturn(Map.of());
 
-        new PublicPropertyPageController(supabase, branding, mock(LeadAutoResponderService.class))
+        new PublicPropertyPageController(supabase, mock(com.inmobilia.service.PaisService.class), branding,
+                mock(LeadAutoResponderService.class))
                 .publica("p1", new ExtendedModelMap());
 
         verify(supabase).selectFilter(eq("attachments"), argThat(f ->

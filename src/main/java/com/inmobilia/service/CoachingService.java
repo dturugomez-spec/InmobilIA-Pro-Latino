@@ -28,7 +28,7 @@ public class CoachingService {
     static {
         add("comision", "«Otra agencia me cobra menos comisión»", "propietario",
             "El propietario compara tu comisión con la de la competencia.",
-            "Eres un propietario que quiere vender su piso pero te resistes a pagar la comisión: insistes en que otra agencia te cobra menos. Defiende tu postura con educación pero firmeza.");
+            "Eres un propietario que quiere vender su departamento pero te resistes a pagar la comisión: insistes en que otra agencia te cobra menos. Defiende tu postura con educación pero firmeza.");
         add("particular", "«Quiero venderlo yo solo (particular)»", "propietario",
             "El propietario cree que puede vender sin agencia y ahorrarse la comisión.",
             "Eres un propietario convencido de que puedes vender tu vivienda por tu cuenta en los portales inmobiliarios sin pagar a nadie. Eres escéptico con las agencias.");
@@ -37,7 +37,7 @@ public class CoachingService {
             "Eres un propietario con apego emocional a tu casa: crees que vale mucho más que la valoración del agente y te ofende un poco la cifra.");
         add("exclusiva", "«No quiero exclusiva, prefiero multiagencia»", "propietario",
             "El propietario rechaza la exclusiva y quiere darlo a varias agencias.",
-            "Eres un propietario que piensa que dar el piso a muchas agencias lo venderá antes. Te niegas a firmar una exclusiva.");
+            "Eres un propietario que piensa que dar el departamento a muchas agencias lo venderá antes. Te niegas a firmar una exclusiva.");
         add("presupuesto", "«Está por encima de mi presupuesto»", "comprador",
             "El comprador dice que el inmueble se sale de su presupuesto.",
             "Eres un comprador interesado pero que dice no llegar al precio. Intentas negociar a la baja y dudas si seguir.");

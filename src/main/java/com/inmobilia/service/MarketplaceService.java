@@ -164,7 +164,7 @@ public class MarketplaceService {
         if (buyerEmail.isBlank()) return false;
 
         // Datos de inmueble y agencia para el email
-        String titulo = "tu piso favorito", agencia = "la agencia";
+        String titulo = "tu inmueble favorito", agencia = "la agencia";
         List<Map<String, Object>> pr = supabase.selectFilter("propiedades", "id=eq." + sw.get("propiedad_id"));
         if (!pr.isEmpty()) titulo = str(pr.get(0).getOrDefault("name", pr.get(0).get("address")));
         List<Map<String, Object>> ag = supabase.selectFilter("users", "id=eq." + agencyId);
@@ -177,7 +177,7 @@ public class MarketplaceService {
                     "<p><strong>" + agencia + "</strong> también quiere enseñarte <strong>" + titulo + "</strong>. " +
                     "Se pondrán en contacto contigo muy pronto para organizar una visita.</p>" +
                     "<p style=\"color:#64748b;font-size:13px\">Recibes este email porque marcaste este inmueble en el buscador de InmobilIA.</p></div>";
-            email.send(buyerEmail, "💞 ¡Es un match! " + agencia + " quiere enseñarte el piso", html);
+            email.send(buyerEmail, "💞 ¡Es un match! " + agencia + " quiere enseñarte el inmueble", html);
         } catch (Exception e) {
             log.warn("match email: {}", e.getMessage());
         }

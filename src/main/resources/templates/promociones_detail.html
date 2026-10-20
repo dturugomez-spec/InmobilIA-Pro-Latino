@@ -13,13 +13,13 @@
         <h3 class="font-semibold text-sm">+ Añadir unidad</h3>
         <div class="grid grid-cols-3 gap-2">
             <input type="text" name="bloque" placeholder="Bloque" class="px-2 py-1.5 text-xs border rounded">
-            <input type="number" name="planta" placeholder="Planta" class="px-2 py-1.5 text-xs border rounded">
+            <input type="number" name="planta" placeholder="Piso (nivel)" class="px-2 py-1.5 text-xs border rounded">
             <input type="text" name="letra" placeholder="Letra" class="px-2 py-1.5 text-xs border rounded">
         </div>
         <select name="tipologia" class="w-full px-3 py-2 text-sm border rounded">
             <option value="1d">1 dorm</option><option value="2d">2 dorm</option>
             <option value="3d">3 dorm</option><option value="4d">4 dorm</option>
-            <option value="atico">Ático</option><option value="duplex">Dúplex</option>
+            <option value="atico">Penthouse</option><option value="duplex">Dúplex</option>
         </select>
         <div class="grid grid-cols-2 gap-2">
             <input type="number" name="num_habitaciones" placeholder="Hab" class="px-2 py-1.5 text-xs border rounded">
@@ -29,7 +29,7 @@
         </div>
         <input type="number" step="0.01" name="precio" required placeholder="Precio $" class="w-full px-3 py-2 text-sm border rounded">
         <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="plaza_garaje"> Plaza garaje</label>
-        <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="trastero"> Trastero</label>
+        <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="trastero"> Bodega</label>
         <button class="w-full px-3 py-1.5 rounded bg-amber-700 text-white text-sm">+ Crear</button>
     </form>
 

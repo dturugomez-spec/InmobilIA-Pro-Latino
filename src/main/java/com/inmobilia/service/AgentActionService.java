@@ -61,11 +61,11 @@ public class AgentActionService {
         - "cambiar_etapa": params {lead_nombre, etapa(Nuevo|Contactado|Visita|Oferta|Firmado|Perdido)}
               (ej. "marca a Ana como contactada", "Luis hizo la visita", "hemos firmado con Pedro")
         - "agendar_visita": params {lead_nombre, propiedad_nombre, fecha_iso(YYYY-MM-DDTHH:mm), duracion_min(int)}
-              (ej. "agenda visita con Ana mañana a las 17 en el piso de Calle Mayor")
+              (ej. "agenda visita con Ana mañana a las 17 en el departamento de Av. Reforma")
         - "buscar_compradores": params {propiedad_nombre}
-              (ej. "¿qué leads encajan con el ático de Sol?", "busca compradores para...")
+              (ej. "¿qué leads encajan con el penthouse de Polanco?", "busca compradores para...")
         - "sugerir_propiedades": params {lead_nombre}
-              (ej. "¿qué pisos le enseño a Ana?", "qué le puedo ofrecer a Luis", "propiedades para el lead X")
+              (ej. "¿qué inmuebles le enseño a Ana?", "qué le puedo ofrecer a Luis", "propiedades para el lead X")
         - "redactar_mensaje": params {canal(email|whatsapp), lead_nombre, asunto, cuerpo}
               (solo REDACTA un borrador; si el lead tiene teléfono se añade enlace de WhatsApp listo)
         - "enviar_email": params {lead_nombre, asunto, cuerpo}
@@ -351,7 +351,7 @@ public class AgentActionService {
                     (presup > 0 ? " (presupuesto ~" + Math.round(presup) + (" " + PaisActual.moneda() + ")") : "") +
                     ". ¿Le abrimos una alerta con el simulador o buscamos en co-broking?");
         }
-        return resp("🏠 Pisos para enseñarle a " + lead.getOrDefault("nombre", leadNombre) +
+        return resp("🏠 Inmuebles para enseñarle a " + lead.getOrDefault("nombre", leadNombre) +
                 (presup > 0 ? " (hasta ~" + Math.round(presup) + (" " + PaisActual.moneda() + ")") : "") + ":\n\n" + String.join("\n", lineas) +
                 "\n\n¿Le agendo una visita o le redacto un mensaje con estas opciones?");
     }

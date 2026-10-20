@@ -53,7 +53,7 @@ public class PropertyDescriptionAIController {
         Object precio = p.get("current_value") != null ? p.get("current_value") : p.get("purchase_price");
         datos.append("Precio: ").append(precio).append((" " + PaisActual.moneda() + "\n"));
         if (p.get("year_built") != null) datos.append("Año construcción: ").append(p.get("year_built")).append("\n");
-        if (p.get("floor") != null) datos.append("Planta: ").append(p.get("floor")).append("\n");
+        if (p.get("floor") != null) datos.append("Piso (nivel): ").append(p.get("floor")).append("\n");
         if (p.get("notes") != null) datos.append("Notas del agente: ").append(p.get("notes")).append("\n");
 
         String prompt = "Datos de la propiedad:\n" + datos + "\n\n" +

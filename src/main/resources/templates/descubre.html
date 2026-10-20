@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <script th:inline="javascript">window.MON = /*[[${mon}]]*/ 'MXN'; window.LOC = /*[[${pais != null ? pais.locale().toLanguageTag() : 'es'}]]*/ 'es-MX';</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuentra tu piso · Desliza y enamórate</title>
-    <meta name="description" content="Descubre pisos en venta deslizando. Gratis, sin registro. Marca los que te gustan y la agencia te contacta.">
+    <title>Encuentra tu hogar · Desliza y enamórate</title>
+    <meta name="description" content="Descubre inmuebles en venta deslizando. Gratis, sin registro. Marca los que te gustan y la agencia te contacta.">
     <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,7 @@
     <!-- Filtros -->
     <div x-show="!started" x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6">
         <div class="text-center mb-5">
-            <h1 class="display text-3xl font-extrabold">Encuentra tu piso </h1>
+            <h1 class="display text-3xl font-extrabold">Encuentra tu hogar </h1>
             <p class="text-slate-600 mt-2 text-sm">Desliza, marca tus favoritos y deja que la agencia te contacte. Sin buscar entre mil anuncios.</p>
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -57,7 +57,7 @@
         <button @click="empezar()" class="w-full mt-5 px-6 py-3.5 rounded-xl brand-grad text-white font-bold text-lg">
             Empezar a descubrir →
         </button>
-        <p class="text-center text-xs text-slate-400 mt-3">100% gratis para ti. Solo verás pisos de agencias verificadas.</p>
+        <p class="text-center text-xs text-slate-400 mt-3">100% gratis para ti. Solo verás inmuebles de agencias verificadas.</p>
     </div>
 
     <!-- Stack de cartas -->
@@ -142,7 +142,7 @@
     </div>
 
     <p class="text-center text-xs text-slate-400 mt-8">
-        ¿Eres una agencia? <a href="/#contacto" class="underline hover:text-slate-700">Publica tus pisos aquí</a> · Powered by InmobilIA Pro
+        ¿Eres una agencia? <a href="/#contacto" class="underline hover:text-slate-700">Publica tus inmuebles aquí</a> · Powered by InmobilIA Pro
     </p>
 </div>
 

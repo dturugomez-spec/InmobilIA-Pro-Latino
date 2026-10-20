@@ -13,7 +13,7 @@
                 <h2 class="text-xl font-bold flex items-center gap-2">
                     <i data-lucide="shield-check" class="h-6 w-6"></i> Gestión de seguros
                 </h2>
-                <p class="text-sm text-white/80 mt-1">Hogar, vida, impago de alquiler, comunidad y RC.</p>
+                <p class="text-sm text-white/80 mt-1">Hogar, vida, impago de renta, condominio y RC.</p>
             </div>
             <a href="/seguros/nuevo" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-blue-900 hover:bg-white/90 text-sm font-medium">
                 <i data-lucide="plus" class="h-4 w-4"></i> Nueva póliza
@@ -48,7 +48,7 @@
             <option value="hogar"> Hogar</option>
             <option value="vida"> Vida</option>
             <option value="impago_alquiler"> Impago alquiler</option>
-            <option value="comunidad"> Comunidad</option>
+            <option value="comunidad"> Condominio</option>
             <option value="responsabilidad_civil"> RC</option>
         </select>
         <select name="estado" onchange="this.form.submit()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
@@ -82,7 +82,7 @@
                         <span th:case="'hogar'"> Hogar</span>
                         <span th:case="'vida'"> Vida</span>
                         <span th:case="'impago_alquiler'"> Impago</span>
-                        <span th:case="'comunidad'"> Comunidad</span>
+                        <span th:case="'comunidad'"> Condominio</span>
                         <span th:case="'responsabilidad_civil'"> RC</span>
                         <span th:case="*" th:text="${p.get('tipo')}">—</span>
                     </span>

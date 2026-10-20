@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  *   {hoy}, {hoy.dia}, {hoy.mes_letra}, {hoy.anio}
  *   {empresa.nombre}, {empresa.telefono}
  *   {numero_en_letras:precio}  → conversión número → letras
- *   {%importe:1234.56}      → formato monetario español: 1.234,56 $
+ *   {%importe:1234.56}      → formato monetario del país de la inmobiliaria: 1,234.56 MXN
  *
  * Detecta variables automáticamente al guardar.
  */
@@ -117,7 +117,7 @@ public class DocumentTemplateService {
     private String formatearImporte(String s) {
         try {
             double v = Double.parseDouble(s.replace(",", ".").trim());
-            return new java.text.DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(new Locale("es", "ES")))
+            return new java.text.DecimalFormat("#,##0.00", java.text.DecimalFormatSymbols.getInstance(PaisActual.get().locale()))
                     .format(v) + (" " + PaisActual.moneda());
         } catch (Exception e) { return s; }
     }
@@ -204,20 +204,20 @@ public class DocumentTemplateService {
                 "plantillas_documento", "user_id=eq." + userId + "&es_sistema=eq.true");
         if (!exist.isEmpty()) return;
 
-        crearPlantilla(userId, "📜 Mandato de venta (exclusiva)", "mandato",
+        crearPlantilla(userId, "📜 Contrato de corretaje (exclusiva)", "mandato",
                 "Autorización exclusiva del propietario a la inmobiliaria para vender",
                 MANDATO_VENTA_TPL);
 
-        crearPlantilla(userId, "📝 Reserva de propiedad", "reserva",
-                "Documento de reserva con señal antes de las arras",
+        crearPlantilla(userId, "📝 Carta de apartado", "reserva",
+                "Apartado del inmueble antes de la promesa de compraventa",
                 RESERVA_TPL);
 
-        crearPlantilla(userId, "💰 Contrato de arras", "arras",
-                "Arras penitenciales con cláusulas estándar art. 1454 CC",
+        crearPlantilla(userId, "💰 Promesa de compraventa", "arras",
+                "Promesa de compraventa con anticipo y pena convencional",
                 ARRAS_TPL);
 
-        crearPlantilla(userId, "🏠 Contrato de arrendamiento LAU", "contrato_alquiler",
-                "Vivienda habitual según Ley de Arrendamientos Urbanos",
+        crearPlantilla(userId, "🏠 Contrato de arrendamiento", "contrato_alquiler",
+                "Casa habitación (modelo orientativo para revisar con tu abogado)",
                 ALQUILER_TPL);
     }
 
@@ -235,72 +235,76 @@ public class DocumentTemplateService {
 
     // === Plantillas predefinidas ===
     private static final String MANDATO_VENTA_TPL = """
-            <h1>MANDATO DE VENTA EN EXCLUSIVA</h1>
+            <h1>CONTRATO DE CORRETAJE INMOBILIARIO EN EXCLUSIVA</h1>
             <p>En <strong>{empresa.direccion}</strong>, a <strong>{hoy.completa}</strong>.</p>
-            <h2>REUNIDOS</h2>
-            <p>De una parte, <strong>{propietario.nombre}</strong>, con NIF <strong>{propietario.dni}</strong>,
-            domicilio en <strong>{propietario.direccion}</strong> (en adelante, "EL PROPIETARIO").</p>
-            <p>De otra parte, <strong>{empresa.nombre}</strong>, con NIF <strong>{empresa.nif}</strong>
+            <h2>PARTES</h2>
+            <p>De una parte, <strong>{propietario.nombre}</strong>, con identificación <strong>{propietario.dni}</strong>,
+            con domicilio en <strong>{propietario.direccion}</strong> (en adelante, "EL PROPIETARIO").</p>
+            <p>De otra parte, <strong>{empresa.nombre}</strong>, con identificación fiscal <strong>{empresa.nif}</strong>
             (en adelante, "LA INMOBILIARIA").</p>
             <h2>OBJETO</h2>
-            <p>EL PROPIETARIO encarga a LA INMOBILIARIA la venta en exclusiva del inmueble sito en
+            <p>EL PROPIETARIO encarga a LA INMOBILIARIA la promoción y venta en exclusiva del inmueble ubicado en
             <strong>{propiedad.direccion}</strong>, por un precio de venta de <strong>{%importe:propiedad.precio}</strong>
             (<em>{numero_en_letras:propiedad.precio}</em>).</p>
             <h2>COMISIÓN</h2>
-            <p>La comisión pactada es del 3% + IVA sobre el precio final de venta.</p>
-            <h2>DURACIÓN</h2>
-            <p>El presente mandato tendrá una duración de 6 meses prorrogables.</p>
+            <p>La comisión pactada es del 3% más impuestos sobre el precio final de venta, pagadera al momento de la firma de la escritura.</p>
+            <h2>VIGENCIA</h2>
+            <p>El presente contrato tendrá una vigencia de 6 meses, prorrogables por acuerdo de las partes.</p>
+            <p><em>Modelo orientativo: revísalo con un abogado conforme a la legislación de tu país.</em></p>
             <p>Firmado en {empresa.direccion} a {hoy.completa}.</p>
             """;
 
     private static final String RESERVA_TPL = """
-            <h1>DOCUMENTO DE RESERVA</h1>
-            <p>En a {hoy.completa}, D./Dña. <strong>{lead.nombre}</strong>, con NIF <strong>{lead.dni}</strong>,
-            entrega a <strong>{empresa.nombre}</strong> la cantidad de <strong>$3.000</strong> en concepto de RESERVA
+            <h1>CARTA DE APARTADO / RESERVA</h1>
+            <p>A {hoy.completa}, <strong>{lead.nombre}</strong>, con identificación <strong>{lead.dni}</strong>,
+            entrega a <strong>{empresa.nombre}</strong> la cantidad indicada abajo en concepto de APARTADO
             para la adquisición del inmueble:</p>
             <ul>
               <li><strong>Dirección:</strong> {propiedad.direccion}</li>
-              <li><strong>Referencia catastral:</strong> {propiedad.referencia_catastral}</li>
+              <li><strong>Clave catastral / folio registral:</strong> {propiedad.referencia_catastral}</li>
               <li><strong>Precio de venta:</strong> {%importe:propiedad.precio}</li>
+              <li><strong>Importe del apartado:</strong> ______________</li>
             </ul>
-            <p>La presente reserva tendrá una validez de 15 días naturales para la firma del contrato de arras.</p>
-            <p>Si transcurrido dicho plazo el comprador desiste, perderá la cantidad entregada.</p>
+            <p>El presente apartado tendrá una vigencia de 15 días naturales para la firma del contrato de promesa de compraventa.</p>
+            <p>Si transcurrido dicho plazo el comprador desiste sin causa justificada, perderá la cantidad entregada.</p>
             """;
 
     private static final String ARRAS_TPL = """
-            <h1>CONTRATO DE ARRAS PENITENCIALES</h1>
+            <h1>CONTRATO DE PROMESA DE COMPRAVENTA</h1>
             <p>En {empresa.direccion}, a {hoy.completa}.</p>
-            <h2>REUNIDOS</h2>
-            <p>De una parte, <strong>{propietario.nombre}</strong>, NIF {propietario.dni} ("PARTE VENDEDORA").</p>
-            <p>De otra, <strong>{lead.nombre}</strong>, NIF {lead.dni} ("PARTE COMPRADORA").</p>
-            <h2>EXPONEN</h2>
-            <p>I.- La PARTE VENDEDORA es propietaria de la finca sita en <strong>{propiedad.direccion}</strong>.</p>
-            <p>II.- Ambas partes acuerdan la compraventa por <strong>{%importe:propiedad.precio}</strong>.</p>
-            <h2>PACTAN</h2>
+            <h2>PARTES</h2>
+            <p>De una parte, <strong>{propietario.nombre}</strong>, identificación {propietario.dni} ("PARTE PROMITENTE VENDEDORA").</p>
+            <p>De otra, <strong>{lead.nombre}</strong>, identificación {lead.dni} ("PARTE PROMITENTE COMPRADORA").</p>
+            <h2>DECLARACIONES</h2>
+            <p>I.- La PARTE VENDEDORA es propietaria del inmueble ubicado en <strong>{propiedad.direccion}</strong>.</p>
+            <p>II.- Ambas partes se obligan a celebrar la compraventa por <strong>{%importe:propiedad.precio}</strong>.</p>
+            <h2>CLÁUSULAS</h2>
             <p><strong>PRIMERA.</strong> La PARTE COMPRADORA entrega <strong>{%importe:oferta.deposito_arras}</strong>
-            en concepto de arras penitenciales (art. 1454 CC).</p>
-            <p><strong>SEGUNDA.</strong> La escritura de compraventa se otorgará antes del
+            como anticipo y garantía de cumplimiento, que se descontará del precio.</p>
+            <p><strong>SEGUNDA.</strong> La escritura de compraventa se firmará ante notario antes del
             <strong>{oferta.fecha_caducidad}</strong>.</p>
-            <p><strong>TERCERA.</strong> En caso de desistimiento del COMPRADOR, perderá la cantidad entregada.
-            Si desiste el VENDEDOR, devolverá el doble.</p>
+            <p><strong>TERCERA.</strong> Si la PARTE COMPRADORA incumple, perderá el anticipo entregado.
+            Si incumple la PARTE VENDEDORA, devolverá el anticipo más una pena convencional de igual importe.</p>
+            <p><em>Modelo orientativo: revísalo con un abogado o notario conforme a la legislación de tu país.</em></p>
             """;
 
     private static final String ALQUILER_TPL = """
-            <h1>CONTRATO DE ARRENDAMIENTO DE VIVIENDA HABITUAL</h1>
+            <h1>CONTRATO DE ARRENDAMIENTO DE CASA HABITACIÓN</h1>
             <p>En {empresa.direccion}, a {hoy.completa}.</p>
-            <h2>REUNIDOS</h2>
-            <p>De una parte, <strong>{propietario.nombre}</strong>, NIF {propietario.dni} ("ARRENDADOR").</p>
-            <p>De otra, <strong>{inquilino.nombre}</strong>, NIF {inquilino.dni} ("ARRENDATARIO").</p>
-            <h2>EXPONEN</h2>
-            <p>Que el ARRENDADOR cede en arrendamiento al ARRENDATARIO la vivienda sita en
-            <strong>{propiedad.direccion}</strong>, con referencia catastral {propiedad.referencia_catastral}.</p>
+            <h2>PARTES</h2>
+            <p>De una parte, <strong>{propietario.nombre}</strong>, identificación {propietario.dni} ("ARRENDADOR").</p>
+            <p>De otra, <strong>{inquilino.nombre}</strong>, identificación {inquilino.dni} ("ARRENDATARIO").</p>
+            <h2>DECLARACIONES</h2>
+            <p>Que el ARRENDADOR da en arrendamiento al ARRENDATARIO el inmueble ubicado en
+            <strong>{propiedad.direccion}</strong>, con clave catastral {propiedad.referencia_catastral}.</p>
             <h2>CLÁUSULAS</h2>
-            <p><strong>1ª RENTA.</strong> La renta mensual será de <strong>{%importe:contrato.renta_mensual}</strong>
-            pagaderos en los 5 primeros días de cada mes.</p>
-            <p><strong>2ª DURACIÓN.</strong> El plazo del arrendamiento es de 5 años, prorrogable según LAU.</p>
-            <p><strong>3ª FIANZA.</strong> El ARRENDATARIO entrega una fianza de
+            <p><strong>1ª RENTA.</strong> La renta mensual será de <strong>{%importe:contrato.renta_mensual}</strong>,
+            pagadera dentro de los 5 primeros días de cada mes.</p>
+            <p><strong>2ª VIGENCIA.</strong> El arrendamiento tendrá la duración pactada por las partes, prorrogable en los términos de la ley aplicable.</p>
+            <p><strong>3ª DEPÓSITO EN GARANTÍA.</strong> El ARRENDATARIO entrega un depósito en garantía de
             <strong>{%importe:contrato.fianza}</strong> (1 mensualidad).</p>
-            <p><strong>4ª GASTOS.</strong> Los suministros (agua, luz, gas) serán por cuenta del ARRENDATARIO.</p>
-            <p>Y en prueba de conformidad, firman el presente contrato por duplicado.</p>
+            <p><strong>4ª SERVICIOS.</strong> Los servicios (agua, luz, gas, internet) serán por cuenta del ARRENDATARIO.</p>
+            <p><em>Modelo orientativo: revísalo con un abogado conforme a la legislación de tu país.</em></p>
+            <p>Leído el presente contrato, las partes lo firman por duplicado.</p>
             """;
 }

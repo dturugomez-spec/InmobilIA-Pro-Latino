@@ -94,7 +94,7 @@
                     <h2 class="display font-bold text-lg mb-2"> Detalles</h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-slate-600">
                         <p th:if="${p.get('type')}" th:text="${p.get('type')}">—</p>
-                        <p th:if="${p.get('floor')}" th:text="${'Planta ' + p.get('floor')}">—</p>
+                        <p th:if="${p.get('floor')}" th:text="${'Piso ' + p.get('floor')}">—</p>
                         <p th:if="${p.get('status')}" th:text="${p.get('status')}">—</p>
                         <p th:if="${p.get('reference')}" th:text="${'Ref. ' + p.get('reference')}">—</p>
                         <p th:if="${p.get('postal_code')}" th:text="${p.get('postal_code')}">—</p>
