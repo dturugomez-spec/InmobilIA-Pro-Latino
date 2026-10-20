@@ -35,17 +35,17 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div class="card-print p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos</div>
-            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="card-print p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos</div>
-            <div class="text-xl font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+            <div class="text-xl font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="card-print p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Beneficio bruto</div>
             <div class="text-xl font-bold font-mono mt-1"
                  th:classappend="${beneficioBruto >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}"
-                 th:text="${#numbers.formatDecimal(beneficioBruto,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                 th:text="${#numbers.formatDecimal(beneficioBruto,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="card-print p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Margen</div>
@@ -60,7 +60,7 @@
         <div class="flex items-end justify-between mb-4">
             <div>
                 <h3 class="text-base font-semibold">Evolución mensual</h3>
-                <p class="text-xs text-slate-500 dark:text-neutral-400">Ingresos vs gastos por mes (€)</p>
+                <p class="text-xs text-slate-500 dark:text-neutral-400">Ingresos vs gastos por mes ([[${mon}]])</p>
             </div>
             <div class="flex items-center gap-3 text-[11px] text-slate-500 dark:text-neutral-400">
                 <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded bg-emerald-500"></span>Ingresos</span>
@@ -88,7 +88,7 @@
                 <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
                     <tr th:each="e : ${ingresosCat}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
                         <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
-                        <td class="px-5 py-2.5 font-mono text-right text-emerald-600 dark:text-emerald-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-emerald-600 dark:text-emerald-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                         <td class="px-5 py-2.5 font-mono text-right text-xs text-slate-500" th:text="${totalIngresos > 0 ? #numbers.formatDecimal(e.value * 100 / totalIngresos,1,1) + '%' : '—'}">—</td>
                     </tr>
                     <tr th:if="${ingresosCat.isEmpty()}"><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sin ingresos registrados.</td></tr>
@@ -96,7 +96,7 @@
                 <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold">
                     <tr>
                         <td class="px-5 py-2.5">Total</td>
-                        <td class="px-5 py-2.5 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                         <td class="px-5 py-2.5 font-mono text-right text-xs">100%</td>
                     </tr>
                 </tfoot>
@@ -111,7 +111,7 @@
                 <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
                     <tr th:each="e : ${gastosCat}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
                         <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
-                        <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                         <td class="px-5 py-2.5 font-mono text-right text-xs text-slate-500" th:text="${totalGastos > 0 ? #numbers.formatDecimal(e.value * 100 / totalGastos,1,1) + '%' : '—'}">—</td>
                     </tr>
                     <tr th:if="${gastosCat.isEmpty()}"><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sin gastos registrados.</td></tr>
@@ -119,7 +119,7 @@
                 <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold">
                     <tr>
                         <td class="px-5 py-2.5">Total</td>
-                        <td class="px-5 py-2.5 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                         <td class="px-5 py-2.5 font-mono text-right text-xs">100%</td>
                     </tr>
                 </tfoot>
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false }, ticks: { color: text } },
-                y: { grid: { color: grid }, ticks: { color: text, callback: v => v >= 1000 ? (v/1000)+'K€' : v+'€' } }
+                y: { grid: { color: grid }, ticks: { color: text, callback: v => v >= 1000 ? (v/1000)+('K ' + (window.MON||'')) : v+((window.MON||'')) } }
             }
         }
     });

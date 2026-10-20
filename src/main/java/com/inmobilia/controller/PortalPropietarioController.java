@@ -25,6 +25,7 @@ import java.util.*;
 public class PortalPropietarioController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final PortalPropietarioService portal;
     private final NotificationService notif;
     private final BrandingService branding;
@@ -119,6 +120,7 @@ public class PortalPropietarioController {
             return "portal_propietario_publico";
         }
         String uid = String.valueOf(p.get("user_id"));
+        paises.usar(uid);  // moneda y formato del país de la inmobiliaria
 
         // Contador de visitas al portal (no bloqueante)
         try {

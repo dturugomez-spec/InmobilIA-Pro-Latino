@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -90,7 +92,7 @@ public class FeatureController {
                 {"13 triggers de negocio", "Lead creado, visita agendada, factura impagada, contrato firmado, propiedad publicada... Cada evento puede disparar acciones."},
                 {"7 acciones encadenables", "Enviar email, asignar agente, crear tarea, mover en kanban, notificar por WhatsApp, etiquetar, cambiar de estado."},
                 {"Editor visual", "Diseña los workflows arrastrando bloques. Lo entiende cualquiera del equipo, no solo el técnico."},
-                {"Filtros condicionales", "Aplica reglas solo si se cumplen condiciones: 'solo si presupuesto > 200.000€', 'solo si la zona es Madrid Centro'..."},
+                {"Filtros condicionales", ("Aplica reglas solo si se cumplen condiciones: 'solo si presupuesto > 200.000 " + PaisActual.moneda() + "', 'solo si la zona es Madrid Centro'...")},
                 {"Programación temporal", "Ejecuta acciones en delay: '24h después de una visita, enviar encuesta NPS'. Sin atajos manuales."},
                 {"Histórico de ejecuciones", "Cada workflow lleva un log de todas sus ejecuciones, errores y resultados. Debugging fácil."}
             },

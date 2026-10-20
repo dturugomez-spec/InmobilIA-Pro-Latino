@@ -29,11 +29,11 @@
         </div>
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
             <p class="text-[10px] uppercase tracking-wider text-slate-500">Prima anual total</p>
-            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(primaTotal, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</p>
+            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(primaTotal, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</p>
         </div>
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
             <p class="text-[10px] uppercase tracking-wider text-emerald-700">Comisiones</p>
-            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(comisionesTotal, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(comisionesTotal, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</p>
         </div>
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-amber-300 p-4" th:classappend="${porVencer > 0} ? 'ring-2'">
             <p class="text-[10px] uppercase tracking-wider text-amber-700">Vencen en 30 días</p>
@@ -92,8 +92,8 @@
                     <p class="text-xs font-mono text-slate-500" th:text="${p.get('numero_poliza')}">—</p>
                 </td>
                 <td class="px-4 py-3 text-xs" th:text="${p.get('tomador')}">—</td>
-                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('prima_anual') != null ? #numbers.formatDecimal(p.get('prima_anual'),1,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
-                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('capital_asegurado') != null ? #numbers.formatDecimal(p.get('capital_asegurado'),1,'POINT',0,'COMMA') + ' €' : '—'}">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('prima_anual') != null ? #numbers.formatDecimal(p.get('prima_anual'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('capital_asegurado') != null ? #numbers.formatDecimal(p.get('capital_asegurado'),1,'DEFAULT',0,'DEFAULT') + ' ' + mon : '—'}">—</td>
                 <td class="px-4 py-3 text-xs font-mono" th:text="${p.get('fecha_vencimiento')}">—</td>
                 <td class="px-4 py-3">
                     <span th:switch="${p.get('estado')}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full">

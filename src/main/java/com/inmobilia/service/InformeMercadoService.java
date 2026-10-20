@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -129,8 +131,8 @@ public class InformeMercadoService {
         try {
             String prompt = String.format(Locale.ROOT,
                 "Informe de mercado para un %s en %s.\n" +
-                "Precio recomendado: %s€ (rango %s-%s€, ~%s€/m²).\n" +
-                "Comparables analizados en la zona: %s. €/m² medio de zona: %s. Días medios en venta: %s.\n\n" +
+                ("Precio recomendado: %s" + PaisActual.moneda() + " (rango %s-%s" + PaisActual.moneda() + ", ~%s" + PaisActual.moneda() + "/m²).\n") +
+                ("Comparables analizados en la zona: %s. " + PaisActual.moneda() + "/m² medio de zona: %s. Días medios en venta: %s.\n\n") +
                 "Escribe un análisis de mercado profesional y honesto para el PROPIETARIO (110-150 palabras): " +
                 "posicionamiento del precio, qué dicen los comparables y recomendación de estrategia de venta. " +
                 "Sin prometer resultados. Español de España.",

@@ -84,9 +84,9 @@
             </div>
             <div class="text-right flex-shrink-0">
                 <p class="text-xs text-slate-400">Estimado</p>
-                <p class="text-xl font-extrabold text-brand-800" th:text="${#numbers.formatInteger(v.get('precio_estimado'), 0, 'POINT') + ' €'}">—</p>
+                <p class="text-xl font-extrabold text-brand-800" th:text="${#numbers.formatInteger(v.get('precio_estimado'), 0, 'DEFAULT') + ' ' + mon}">—</p>
                 <p class="text-[11px] text-slate-400"
-                   th:text="${#numbers.formatInteger(v.get('precio_min'), 0, 'POINT') + ' – ' + #numbers.formatInteger(v.get('precio_max'), 0, 'POINT')}">—</p>
+                   th:text="${#numbers.formatInteger(v.get('precio_min'), 0, 'DEFAULT') + ' – ' + #numbers.formatInteger(v.get('precio_max'), 0, 'DEFAULT')}">—</p>
             </div>
         </div>
     </div>

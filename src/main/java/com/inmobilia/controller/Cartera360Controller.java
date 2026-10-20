@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
@@ -79,7 +81,7 @@ public class Cartera360Controller {
         if (telefono != null && !"null".equals(telefono)) {
             for (Map<String, Object> c : supabase.selectFilter("contratos", "user_id=eq." + uid + "&inquilino_id=eq." + id)) {
                 timeline.add(evento("contrato", "Contrato",
-                        "Renta " + c.get("renta_mensual") + "€", String.valueOf(c.get("created_at"))));
+                        "Renta " + c.get("renta_mensual") + ("" + PaisActual.moneda()), String.valueOf(c.get("created_at"))));
             }
         }
 
@@ -87,7 +89,7 @@ public class Cartera360Controller {
         for (Map<String, Object> f : supabase.selectFilter("facturas",
                 "user_id=eq." + uid + "&cliente_email=eq." + email + "&order=fecha.desc&limit=20")) {
             timeline.add(evento("factura", "Factura " + f.get("numero"),
-                    f.get("total") + "€ - " + f.get("estado"), String.valueOf(f.get("fecha"))));
+                    f.get("total") + ("" + PaisActual.moneda() + " - ") + f.get("estado"), String.valueOf(f.get("fecha"))));
         }
 
         // WhatsApp

@@ -23,6 +23,7 @@ import java.util.*;
 public class PortalCompradorController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final NotificationService notif;
     private final BrandingService branding;
 
@@ -184,6 +185,7 @@ public class PortalCompradorController {
             return "portal_comprador_publico";
         }
         String uid = String.valueOf(sel.get("user_id"));
+        paises.usar(uid);  // moneda y formato del país de la inmobiliaria
 
         try {
             int vistas = sel.get("vistas") == null ? 0 : (int) Double.parseDouble(String.valueOf(sel.get("vistas")));

@@ -51,24 +51,24 @@
 <div class="grid grid-3" style="margin: 16px 0;">
     <div class="card">
         <div class="card-title">Precio mercado m²</div>
-        <div class="card-value" th:text="${#numbers.formatDecimal(pricePerM2,0,'POINT',0,'COMMA') + ' €'}">— €</div>
+        <div class="card-value" th:text="${#numbers.formatDecimal(pricePerM2,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</div>
         <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Media zona INE 2026</div>
     </div>
     <div class="card">
         <div class="card-title">Estimación venta</div>
-        <div class="card-value" style="color: #1e40af" th:text="${#numbers.formatDecimal(estimacionVenta,0,'POINT',0,'COMMA') + ' €'}">— €</div>
-        <div style="font-size: 10px; color: #64748b; margin-top: 4px;" th:text="'Rango: ' + ${#numbers.formatDecimal(estimacionMin,0,'POINT',0,'COMMA') + '€ - ' + #numbers.formatDecimal(estimacionMax,0,'POINT',0,'COMMA') + '€'}">rango</div>
+        <div class="card-value" style="color: #1e40af" th:text="${#numbers.formatDecimal(estimacionVenta,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;" th:text="'Rango: ' + ${#numbers.formatDecimal(estimacionMin,0,'DEFAULT',0,'DEFAULT') + ' ' + mon + ' - ' + #numbers.formatDecimal(estimacionMax,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">rango</div>
     </div>
     <div class="card">
         <div class="card-title">Renta alquiler estimada</div>
-        <div class="card-value" style="color: #10b981" th:text="${#numbers.formatDecimal(rentaMensual,0,'POINT',0,'COMMA') + ' €/mes'}">— €</div>
+        <div class="card-value" style="color: #10b981" th:text="${#numbers.formatDecimal(rentaMensual,0,'DEFAULT',0,'DEFAULT') + ' ' + mon + '/mes'}">— [[${mon}]]</div>
         <div style="font-size: 10px; color: #64748b; margin-top: 4px;" th:text="'Yield bruto ' + ${yieldBruto + '%'}">—</div>
     </div>
 </div>
 
 <h2>2. Análisis del precio pretendido</h2>
 <div th:if="${precioPretendido > 0}">
-    <p>Usted nos comenta una pretensión de <strong th:text="${#numbers.formatDecimal(precioPretendido,0,'POINT',0,'COMMA') + ' €'}">— €</strong>. Comparado con la estimación de mercado:</p>
+    <p>Usted nos comenta una pretensión de <strong th:text="${#numbers.formatDecimal(precioPretendido,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</strong>. Comparado con la estimación de mercado:</p>
 
     <div th:classappend="${veredicto == 'AJUSTADO' ? 'verdict v-ok' : (veredicto == 'BAJO' ? 'verdict v-ok' : (veredicto == 'ALGO ALTO' ? 'verdict v-warn' : 'verdict v-err'))}" class="verdict" style="margin: 14px 0;">
         Veredicto: <span th:text="${veredicto}">—</span>

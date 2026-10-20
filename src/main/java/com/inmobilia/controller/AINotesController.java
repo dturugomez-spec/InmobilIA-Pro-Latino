@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -42,7 +44,7 @@ public class AINotesController {
         ctx.append("LEAD: ").append(lead.get("nombre")).append("\n");
         ctx.append("Email: ").append(lead.get("email")).append("\n");
         ctx.append("Tipo: ").append(lead.get("tipo")).append("\n");
-        ctx.append("Presupuesto: ").append(lead.get("presupuesto_max")).append("€\n");
+        ctx.append("Presupuesto: ").append(lead.get("presupuesto_max")).append(("" + PaisActual.moneda() + "\n"));
         ctx.append("Zona: ").append(lead.get("zona")).append("\n");
         ctx.append("Score: ").append(lead.get("score")).append("/100\n\n");
 

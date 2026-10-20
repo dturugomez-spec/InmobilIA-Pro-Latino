@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.service.WorkflowEngine;
@@ -154,13 +156,13 @@ public class WorkflowController {
 
         list.add(plantilla(
                 "💰 Lead premium → director",
-                "Si el presupuesto > 500.000€, asignar a director y notificación urgente",
+                ("Si el presupuesto > 500.000 " + PaisActual.moneda() + ", asignar a director y notificación urgente"),
                 "lead_creado",
                 Map.of("campo", "presupuesto_max", "operador", ">", "valor", 500000),
                 List.of(
                         accion("send_notification", Map.of(
                                 "titulo", "💎 Lead premium",
-                                "mensaje", "{nombre} con presupuesto {presupuesto_max}€",
+                                "mensaje", ("{nombre} con presupuesto {presupuesto_max} " + PaisActual.moneda()),
                                 "urgencia", "alta",
                                 "link", "/leads"
                         )),
@@ -199,7 +201,7 @@ public class WorkflowController {
                         accion("send_email", Map.of(
                                 "to", "{cliente_email}",
                                 "subject", "Recordatorio de pago - Factura {numero}",
-                                "body", "<p>Hola {cliente_nombre},</p><p>Te recordamos que tienes pendiente la factura {numero} por importe de {importe}€.</p>"
+                                "body", ("<p>Hola {cliente_nombre},</p><p>Te recordamos que tienes pendiente la factura {numero} por importe de {importe} " + PaisActual.moneda() + ".</p>")
                         )),
                         accion("change_status", Map.of("tabla", "facturas", "estado", "morosa")),
                         accion("create_task", Map.of(

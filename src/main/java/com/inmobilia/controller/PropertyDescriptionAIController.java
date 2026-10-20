@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -49,7 +51,7 @@ public class PropertyDescriptionAIController {
         datos.append("Baños: ").append(p.get("bathrooms")).append("\n");
         datos.append("Superficie: ").append(p.get("area_m2")).append(" m²\n");
         Object precio = p.get("current_value") != null ? p.get("current_value") : p.get("purchase_price");
-        datos.append("Precio: ").append(precio).append(" €\n");
+        datos.append("Precio: ").append(precio).append((" " + PaisActual.moneda() + "\n"));
         if (p.get("year_built") != null) datos.append("Año construcción: ").append(p.get("year_built")).append("\n");
         if (p.get("floor") != null) datos.append("Planta: ").append(p.get("floor")).append("\n");
         if (p.get("notes") != null) datos.append("Notas del agente: ").append(p.get("notes")).append("\n");

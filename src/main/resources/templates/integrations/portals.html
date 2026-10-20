@@ -79,7 +79,7 @@
                     <td class="px-4 py-2.5 font-medium" th:text="${p.get('name')}">nombre</td>
                     <td class="px-4 py-2.5 text-slate-600 dark:text-slate-400" th:text="${p.get('city') ?: '—'}">—</td>
                     <td class="px-4 py-2.5 font-mono text-right" th:text="${p.get('area_m2') != null ? p.get('area_m2') + ' m²' : '—'}">—</td>
-                    <td class="px-4 py-2.5 font-mono text-right font-semibold" th:text="${p.get('current_value') != null ? p.get('current_value') + ' €' : '—'}">—</td>
+                    <td class="px-4 py-2.5 font-mono text-right font-semibold" th:text="${p.get('current_value') != null ? p.get('current_value') + ' ' + mon : '—'}">—</td>
                 </tr>
                 <tr th:if="${publicadas.isEmpty()}">
                     <td colspan="6" class="py-12 text-center">

@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,7 @@ import java.util.*;
  * 🏷️ AVM · Modelo de valoración automática de inmuebles
  *
  * Estima el precio de un inmueble combinando:
- *   1. Tabla base de €/m² por provincia (mercado España, valores de referencia)
+ *   1. Tabla base de $/m² por provincia (mercado España, valores de referencia)
  *   2. Ajustes por tipo, estado, planta, extras (ascensor, garaje, terraza)
  *   3. Comparables reales de la cartera de la agencia (si hay)
  *   4. Refinamiento opcional con IA
@@ -26,7 +28,7 @@ public class ValoracionService {
     private final SupabaseService supabase;
     private final AIService aiService;
 
-    /** €/m² de referencia por provincia (compraventa, valores orientativos 2025). */
+    /** $/m² de referencia por provincia (compraventa, valores orientativos 2025). */
     private static final Map<String, Double> EUR_M2 = new HashMap<>();
     static {
         EUR_M2.put("madrid", 3650.0);      EUR_M2.put("barcelona", 4100.0);
@@ -111,7 +113,7 @@ public class ValoracionService {
         return r;
     }
 
-    /** Media de €/m² de propiedades similares en la cartera de la agencia. */
+    /** Media de $/m² de propiedades similares en la cartera de la agencia. */
     private Double comparables(String userId, Map<String, String> in, double metros) {
         try {
             String muni = in.getOrDefault("municipio", "");
@@ -137,7 +139,7 @@ public class ValoracionService {
     public String comentarioIA(Map<String, Object> val, Map<String, String> in, String userId) {
         try {
             String prompt = String.format(
-                "Inmueble: %s de %s m² en %s, estado %s. Valoración estimada: %s€ (rango %s-%s€).\n" +
+                ("Inmueble: %s de %s m² en %s, estado %s. Valoración estimada: %s" + PaisActual.moneda() + " (rango %s-%s" + PaisActual.moneda() + ").\n") +
                 "Escribe 2-3 frases comerciales (máx 60 palabras) para el propietario, explicando el valor y " +
                 "animándole a una valoración profesional gratuita. Tono cercano y profesional, español.",
                 in.getOrDefault("tipo", "inmueble"), in.getOrDefault("metros", "?"),
@@ -158,7 +160,7 @@ public class ValoracionService {
                 .replaceAll("[óò]", "o").replaceAll("[úù]", "u");
     }
     private static long redondear(double v) {
-        // redondea a los 1000€ más cercanos para que parezca tasación real
+        // redondea a los 1000$ más cercanos para que parezca tasación real
         return Math.round(v / 1000.0) * 1000;
     }
 }

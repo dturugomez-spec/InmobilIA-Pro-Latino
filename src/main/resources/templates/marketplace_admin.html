@@ -36,7 +36,7 @@
         <div class="flex-1">
             <p class="font-bold text-lg">Marketplace activo </p>
             <p class="text-sm text-slate-500 mt-1">Tus inmuebles publicados ya aparecen para los compradores. Recibirás sus contactos como leads automáticamente.</p>
-            <p class="text-xs text-slate-400 mt-1">Add-on: <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes</strong> (+25% sobre tu plan).</p>
+            <p class="text-xs text-slate-400 mt-1">Add-on: <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes</strong> (+25% sobre tu plan).</p>
             <a href="/descubre" target="_blank" class="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-blue-700 hover:underline">
                 <i data-lucide="external-link" class="h-4 w-4"></i> Ver el buscador público
             </a>
@@ -54,7 +54,7 @@
             </div>
             <div class="flex-1">
                 <p class="font-bold text-lg">Activa el marketplace de compradores</p>
-                <p class="text-sm text-slate-500 mt-1">Por <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes</strong> (+25% de tu plan <span th:text="${#strings.capitalize(plan)} + ' · ' + ${planPrice} + ' €'">—</span>), tus inmuebles aparecen en el buscador público tipo swipe y cada comprador interesado entra como lead en tu CRM.</p>
+                <p class="text-sm text-slate-500 mt-1">Por <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes</strong> (+25% de tu plan <span th:text="${#strings.capitalize(plan)} + ' · ' + ${planPrice} + ' ' + ${mon}">—</span>), tus inmuebles aparecen en el buscador público tipo swipe y cada comprador interesado entra como lead en tu CRM.</p>
                 <ul class="text-sm text-slate-600 mt-3 space-y-1">
                     <li> Captación de compradores 24/7 sin esfuerzo</li>
                     <li> Leads con scoring (like 60 · super like 80)</li>
@@ -63,7 +63,7 @@
                 <form th:action="@{/marketplace/toggle}" method="post" class="mt-4">
                     <input type="hidden" name="activar" value="true">
                     <button class="px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">
-                        Activar por <span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes
+                        Activar por <span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes
                     </button>
                 </form>
             </div>

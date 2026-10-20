@@ -48,7 +48,7 @@
                 <span th:if="${b.get('operacion')}" class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700" th:text="${b.get('operacion')}">—</span>
                 <span th:if="${b.get('tipo')}" class="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700" th:text="${b.get('tipo')}">—</span>
                 <span th:if="${b.get('municipio')}" class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700" th:text="${b.get('municipio')}">—</span>
-                <span th:if="${b.get('precio_max')}" class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700" th:text="'hasta ' + ${b.get('precio_max')} + '€'">—</span>
+                <span th:if="${b.get('precio_max')}" class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700" th:text="'hasta ' + ${b.get('precio_max')} + ${mon}">—</span>
             </div>
             <p class="text-[10px] text-slate-400 mt-2"><span th:text="${b.get('matches_count') ?: 0}">0</span> matches enviados</p>
         </div>

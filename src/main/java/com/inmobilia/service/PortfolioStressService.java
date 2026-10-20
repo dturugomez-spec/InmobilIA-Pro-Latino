@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Stress Test agregado de toda la cartera (no de un solo activo).
  * Aplica simultaneamente shocks macro y operativos sobre el portfolio:
- *  - Subida del Euribor (+100/+200/+300 pb)
+ *  - Subida de la tasa de interés de los créditos (+100/+200/+300 pb)
  *  - Caida de rentas (vacancia + morosidad)
  *  - Aumento de OPEX (inflacion +5/+10%)
  *
@@ -55,7 +55,7 @@ public class PortfolioStressService {
      * Ejecuta el stress test completo.
      * @param props lista de propiedades del usuario.
      * @param contratos contratos activos.
-     * @param euriborActual ultimo Euribor 12M (% anual).
+     * @param euriborActual tasa de referencia actual de los créditos (% anual).
      */
     public StressReport run(List<Map<String, Object>> props,
                              List<Map<String, Object>> contratos,
@@ -128,12 +128,12 @@ public class PortfolioStressService {
 
         // --- 2. Escenarios adversos ---
         List<Scenario> esc = new ArrayList<>();
-        esc.add(buildScenario("Euribor +100 pb",
+        esc.add(buildScenario("Tasa de interés +100 pb",
                 "Subida tipos 1 punto. Hipotecas variables se encarecen.",
                 1.0, 0, 0, rentasAnuales, opexAnual, deudaAnual,
                 euriborActual, props, rentaPorProp));
 
-        esc.add(buildScenario("Euribor +200 pb",
+        esc.add(buildScenario("Tasa de interés +200 pb",
                 "Crisis monetaria. Tipos +2 puntos. Escenario 2022-2023.",
                 2.0, 0, 0, rentasAnuales, opexAnual, deudaAnual,
                 euriborActual, props, rentaPorProp));

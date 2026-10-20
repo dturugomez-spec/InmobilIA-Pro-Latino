@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -121,7 +123,7 @@ public class LeadAutoResponderService {
     private static String fmtPrecio(Object precio) {
         try {
             double v = Double.parseDouble(String.valueOf(precio));
-            return String.format("%,.0f €", v).replace(",", ".");
+            return String.format(("%,.0f " + PaisActual.moneda()), v).replace(",", ".");
         } catch (Exception e) { return ""; }
     }
 

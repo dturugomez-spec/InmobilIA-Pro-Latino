@@ -9,7 +9,7 @@
 <div class="grid grid-cols-3 gap-3 mb-5">
     <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
         <p class="text-[10px] uppercase text-amber-700">Total mes</p>
-        <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(totalMes, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+        <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(totalMes, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</p>
     </div>
     <div class="rounded-xl bg-slate-50 ring-1 ring-slate-200 p-4">
         <p class="text-[10px] uppercase">Km mes</p>
@@ -41,9 +41,9 @@
         </div>
         <div class="grid grid-cols-2 gap-2">
             <input type="number" step="0.1" name="km" placeholder="Km" class="px-3 py-2 text-sm border rounded">
-            <input type="number" step="0.001" name="importe_por_km" value="0.26" placeholder="€/km" class="px-3 py-2 text-sm border rounded">
+            <input type="number" step="0.001" name="importe_por_km" value="0.26" placeholder="$/km" class="px-3 py-2 text-sm border rounded">
         </div>
-        <input type="number" step="0.01" name="importe" placeholder="Importe € (si no km)" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="number" step="0.01" name="importe" placeholder="Importe $ (si no km)" class="w-full px-3 py-2 text-sm border rounded">
         <button class="w-full px-4 py-2 rounded bg-amber-700 text-white text-sm"> Registrar</button>
     </form>
 
@@ -63,7 +63,7 @@
                     <span th:text="${g.get('concepto')}">—</span>
                     <span th:if="${g.get('km')}" class="text-[10px] text-slate-400" th:text="' (' + ${g.get('km')} + ' km)'">—</span>
                 </td>
-                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(g.get('importe') ?: 0, 1, 'POINT', 2, 'COMMA')} + ' €'">—</td>
+                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(g.get('importe') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">—</td>
                 <td class="px-3 py-2">
                     <span th:if="${g.get('estado') == 'pendiente'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Pendiente</span>
                     <span th:if="${g.get('estado') == 'aprobado'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> Aprobado</span>

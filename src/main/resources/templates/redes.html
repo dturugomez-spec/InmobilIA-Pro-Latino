@@ -28,7 +28,7 @@
             <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.1) 45%, rgba(0,0,0,.35) 100%)"></div>
 
             <div class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white text-slate-900 font-extrabold text-lg"
-                 th:text="${#numbers.formatInteger(precio, 0, 'POINT')} + ' €'">—</div>
+                 th:text="${#numbers.formatInteger(precio, 0, 'DEFAULT')} + ' ' + ${mon}">—</div>
 
             <div class="absolute bottom-0 inset-x-0 p-5">
                 <p class="text-2xl font-extrabold leading-tight" style="font-family:'Plus Jakarta Sans',sans-serif" th:text="${p.get('name') ?: p.get('address')}">—</p>

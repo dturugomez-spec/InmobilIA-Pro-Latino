@@ -23,6 +23,7 @@ import java.util.*;
 public class InformeMercadoController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final InformeMercadoService informes;
     private final BrandingService branding;
 
@@ -79,6 +80,7 @@ public class InformeMercadoController {
         if (rows.isEmpty()) { model.addAttribute("error", "Informe no encontrado"); return "informe_publico"; }
         Map<String, Object> r = rows.get(0);
         String uid = String.valueOf(r.get("user_id"));
+        paises.usar(uid);  // moneda y formato del país de la inmobiliaria
 
         // Contar vistas (salvo preview del propio agente)
         if (preview == null) {

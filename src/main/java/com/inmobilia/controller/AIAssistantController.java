@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -72,7 +74,7 @@ public class AIAssistantController {
                   .append(" | ").append(p.get("city"))
                   .append(" | ").append(p.get("status"))
                   .append(" | valor ").append(p.get("current_value"))
-                  .append(" € | renta ").append(p.get("rental_income")).append(" €/mes\n");
+                  .append((" " + PaisActual.moneda() + " | renta ")).append(p.get("rental_income")).append((" " + PaisActual.moneda() + "/mes\n"));
             }
 
             var inq = supabase.query("inquilinos", orgId);
@@ -81,7 +83,7 @@ public class AIAssistantController {
                 sb.append("- ").append(i.get("name"))
                   .append(" | ").append(i.get("property_name"))
                   .append(" | renta ").append(i.get("rent_amount"))
-                  .append(" € | estado ").append(i.get("status")).append("\n");
+                  .append((" " + PaisActual.moneda() + " | estado ")).append(i.get("status")).append("\n");
             }
 
             int year = LocalDate.now().getYear();
@@ -99,7 +101,7 @@ public class AIAssistantController {
                     else gastosMes += amt;
                 } catch (Exception ignored) {}
             }
-            sb.append(String.format("\nMES ACTUAL (%d/%d): ingresos %.0f €, gastos %.0f €, neto %.0f €\n",
+            sb.append(String.format(("\nMES ACTUAL (%d/%d): ingresos %.0f " + PaisActual.moneda() + ", gastos %.0f " + PaisActual.moneda() + ", neto %.0f " + PaisActual.moneda() + "\n"),
                     month, year, ingresosMes, gastosMes, ingresosMes - gastosMes));
 
             var leads = supabase.query("leads", orgId);

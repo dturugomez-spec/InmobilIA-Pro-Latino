@@ -20,16 +20,16 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
             <p class="text-[10px] uppercase text-slate-500">Precio original</p>
-            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(precioOriginal, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(precioOriginal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
             <p class="text-[10px] uppercase text-blue-700">Precio actual</p>
-            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(precioActual, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(precioActual, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl" th:classappend="${cambioTotal >= 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-red-50 ring-1 ring-red-200'}" class="p-4">
             <p class="text-[10px] uppercase" th:classappend="${cambioTotal >= 0 ? 'text-emerald-700' : 'text-red-700'}">Cambio total</p>
             <p class="text-xl font-bold mt-1" th:classappend="${cambioTotal >= 0 ? 'text-emerald-700' : 'text-red-700'}"
-               th:text="${(cambioTotal >= 0 ? '+' : '') + #numbers.formatDecimal(cambioTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+               th:text="${(cambioTotal >= 0 ? '+' : '') + #numbers.formatDecimal(cambioTotal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl" th:classappend="${cambioPct >= 0 ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-red-50 ring-1 ring-red-200'}" class="p-4">
             <p class="text-[10px] uppercase">% variación</p>
@@ -62,8 +62,8 @@
                 <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
                 <tr th:each="h : ${historico}">
                     <td class="px-3 py-2 font-mono text-xs" th:text="${#strings.substring(h.get('created_at'),0,10)}">—</td>
-                    <td class="px-3 py-2 text-right font-mono text-xs" th:text="${#numbers.formatDecimal(h.get('precio_anterior') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
-                    <td class="px-3 py-2 text-right font-mono text-xs font-bold" th:text="${#numbers.formatDecimal(h.get('precio_nuevo'), 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                    <td class="px-3 py-2 text-right font-mono text-xs" th:text="${#numbers.formatDecimal(h.get('precio_anterior') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</td>
+                    <td class="px-3 py-2 text-right font-mono text-xs font-bold" th:text="${#numbers.formatDecimal(h.get('precio_nuevo'), 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</td>
                     <td class="px-3 py-2 text-right font-mono text-xs"
                         th:classappend="${h.get('diferencia_pct') != null and h.get('diferencia_pct').doubleValue() >= 0 ? 'text-emerald-700' : 'text-red-700'}"
                         th:text="${h.get('diferencia_pct') != null ? (h.get('diferencia_pct').doubleValue() >= 0 ? '+' : '') + #numbers.formatDecimal(h.get('diferencia_pct'), 1, 1) + '%' : '—'}">—</td>
@@ -96,7 +96,7 @@
             data: {
                 labels,
                 datasets: [{
-                    label: 'Precio (€)',
+                    label: ('Precio (' + (window.MON||'') + ')'),
                     data,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59,130,246,0.1)',
@@ -107,7 +107,7 @@
             },
             options: {
                 responsive: true,
-                scales: { y: { ticks: { callback: v => new Intl.NumberFormat('es-ES').format(v) + ' €' } } }
+                scales: { y: { ticks: { callback: v => new Intl.NumberFormat(window.LOC||'es').format(v) + (' ' + (window.MON||'')) } } }
             }
         });
     </script>

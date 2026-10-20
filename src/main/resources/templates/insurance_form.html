@@ -84,15 +84,15 @@
             <h3 class="font-semibold text-sm mb-3 text-cyan-700"> Coberturas</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                 <div>
-                    <label class="block text-xs font-medium mb-1">Capital asegurado (€)</label>
+                    <label class="block text-xs font-medium mb-1">Capital asegurado ([[${mon}]])</label>
                     <input type="number" step="0.01" name="capital_asegurado" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1">Franquicia (€)</label>
+                    <label class="block text-xs font-medium mb-1">Franquicia ([[${mon}]])</label>
                     <input type="number" step="0.01" name="franquicia" value="0" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1">Prima anual (€) *</label>
+                    <label class="block text-xs font-medium mb-1">Prima anual ([[${mon}]]) *</label>
                     <input type="number" step="0.01" name="prima_anual" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 </div>
             </div>
@@ -107,7 +107,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1 text-emerald-700"> Comisión agente (€/año)</label>
+                    <label class="block text-xs font-medium mb-1 text-emerald-700"> Comisión agente ([[${mon}]]/año)</label>
                     <input type="number" step="0.01" name="comision_agente" class="w-full px-3 py-2 text-sm border border-emerald-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 </div>
             </div>

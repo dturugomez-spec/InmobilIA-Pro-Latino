@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.PermissionService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -283,7 +285,7 @@ public class IntegrationsController {
         String uid = SessionUtils.uid(session);
         var invoices = supabase.query("invoices", uid);
 
-        // Agrupar por NIF cliente y sumar (>3000€ son los que se declaran)
+        // Agrupar por NIF cliente y sumar (>3000$ son los que se declaran)
         Map<String, double[]> byClient = new java.util.LinkedHashMap<>();
         Map<String, String> clientName = new java.util.HashMap<>();
         for (var i : invoices) {
@@ -300,7 +302,7 @@ public class IntegrationsController {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=modelo347-" + year + ".csv");
         try (PrintWriter w = response.getWriter()) {
-            w.println("﻿NIF;Nombre cliente;Total facturado anual;Declarable (>3000€)");
+            w.println(("﻿NIF;Nombre cliente;Total facturado anual;Declarable (>3000 " + PaisActual.moneda() + ")"));
             for (var entry : byClient.entrySet()) {
                 double total = entry.getValue()[0];
                 w.println(String.join(";",

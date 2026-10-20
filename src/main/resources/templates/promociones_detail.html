@@ -27,7 +27,7 @@
             <input type="number" step="0.1" name="superficie_util" placeholder="m² útil" class="px-2 py-1.5 text-xs border rounded">
             <input type="text" name="orientacion" placeholder="Orientación" class="px-2 py-1.5 text-xs border rounded">
         </div>
-        <input type="number" step="0.01" name="precio" required placeholder="Precio €" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="number" step="0.01" name="precio" required placeholder="Precio $" class="w-full px-3 py-2 text-sm border rounded">
         <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="plaza_garaje"> Plaza garaje</label>
         <label class="flex items-center gap-1 text-xs"><input type="checkbox" name="trastero"> Trastero</label>
         <button class="w-full px-3 py-1.5 rounded bg-amber-700 text-white text-sm">+ Crear</button>
@@ -47,7 +47,7 @@
                 <td class="px-3 py-2 text-xs" th:text="${u.get('tipologia')}">—</td>
                 <td class="px-3 py-2 text-center text-xs" th:text="${u.get('num_habitaciones') + '/' + u.get('num_banos')}">—</td>
                 <td class="px-3 py-2 text-right text-xs" th:text="${u.get('superficie_util') + ' m²'}">—</td>
-                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(u.get('precio') ?: 0, 1, 'POINT', 0, 'COMMA') + ' €'}">—</td>
+                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(u.get('precio') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT') + ' ' + mon}">—</td>
                 <td class="px-3 py-2">
                     <span th:if="${u.get('estado') == 'disponible'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Libre</span>
                     <span th:if="${u.get('estado') == 'reservada'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Reservada</span>

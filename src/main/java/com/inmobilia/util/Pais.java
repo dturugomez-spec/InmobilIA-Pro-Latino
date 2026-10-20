@@ -91,6 +91,18 @@ public record Pais(String codigo, String nombre, String bandera, String moneda, 
 
     public ZoneId zonaId() { return ZoneId.of(zona); }
 
+    /** Moneda local del país (la de la tabla), aunque la inmobiliaria trabaje en USD. */
+    public String monedaLocal() { return de(codigo).moneda(); }
+
+    /** Mismo país trabajando en otra moneda (p. ej. USD en Argentina, Uruguay o Perú para compraventa). */
+    public Pais conMoneda(String otra) {
+        if (otra == null || otra.isBlank() || otra.equalsIgnoreCase(moneda)) return this;
+        String m = otra.trim().toUpperCase(Locale.ROOT);
+        if (!m.equals("USD") && !m.equals(monedaLocal())) return this;
+        return new Pais(codigo, nombre, bandera, m, locale, impuesto, tipoImpuesto, idFiscal, idPersonal,
+                prefijo, zona, leyDatos, portales);
+    }
+
     /** Ley de datos para textos legales; genérico donde no hay una ley general. */
     public String leyDatosTexto() {
         return leyDatos != null ? leyDatos : "la legislación de protección de datos personales aplicable en " + nombre;

@@ -60,7 +60,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200 dark:divide-neutral-800 border-t border-slate-200 dark:border-neutral-800">
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Presupuesto</div>
-                    <div class="text-base font-bold font-mono mt-0.5" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' €' : '—'}">— €</div>
+                    <div class="text-base font-bold font-mono mt-0.5" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' ' + mon : '—'}">— [[${mon}]]</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Score</div>
@@ -117,7 +117,7 @@
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Etapa</dt><dd class="font-medium" th:text="${lead.get('etapa') ?: '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Tipo activo</dt><dd th:text="${lead.get('tipo_activo') ?: '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Zona</dt><dd th:text="${lead.get('zona') ?: '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Presupuesto</dt><dd class="font-mono font-semibold" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Presupuesto</dt><dd class="font-mono font-semibold" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' ' + mon : '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Score</dt><dd class="font-mono" th:text="${lead.get('score') != null ? lead.get('score') + '/100' : '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Próx. seguim.</dt><dd class="font-mono" th:text="${lead.get('next_followup') != null ? #strings.substring(lead.get('next_followup'),0,10) : '—'}">—</dd></div>
                 </dl>
@@ -172,7 +172,7 @@
                     <tr th:each="o : ${oportunidades}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
                         <td class="px-4 py-3 font-medium" th:text="${o.get('property_name')}">—</td>
                         <td class="px-4 py-3" th:text="${o.get('type') ?: '—'}">—</td>
-                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${o.get('price') != null ? o.get('price') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${o.get('price') != null ? o.get('price') + ' ' + mon : '—'}">—</td>
                         <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800" th:text="${o.get('status') ?: '—'}">—</span></td>
                     </tr>
                 </tbody>

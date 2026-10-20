@@ -28,7 +28,7 @@
                 <div class="h-full bg-emerald-500" th:style="|width: ${p.get('porcentaje_vendido')}%|"></div>
             </div>
             <p class="text-xs font-mono text-amber-700 mt-2"
-               th:text="'Desde ' + ${#numbers.formatDecimal(p.get('precio_desde') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</p>
+               th:text="'Desde ' + ${#numbers.formatDecimal(p.get('precio_desde') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</p>
         </div>
     </a>
     <div th:if="${promociones.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Sin promociones.</div>

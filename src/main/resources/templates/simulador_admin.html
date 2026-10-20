@@ -78,8 +78,8 @@
             </div>
             <div class="text-right flex-shrink-0">
                 <p class="text-xs text-slate-400">Capacidad de compra</p>
-                <p class="text-xl font-extrabold text-emerald-600" th:text="${#numbers.formatInteger(v.get('capacidad_max'), 0, 'POINT') + ' €'}">—</p>
-                <p class="text-[11px] text-slate-400" th:text="'cuota ~' + ${#numbers.formatInteger(v.get('cuota_estimada'), 0, 'POINT')} + ' €/mes'">—</p>
+                <p class="text-xl font-extrabold text-emerald-600" th:text="${#numbers.formatInteger(v.get('capacidad_max'), 0, 'DEFAULT') + ' ' + mon}">—</p>
+                <p class="text-[11px] text-slate-400" th:text="'cuota ~' + ${#numbers.formatInteger(v.get('cuota_estimada'), 0, 'DEFAULT')} + ' ' + ${mon} + '/mes'">—</p>
             </div>
         </div>
     </div>

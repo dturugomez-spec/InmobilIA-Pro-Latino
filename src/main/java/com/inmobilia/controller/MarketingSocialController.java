@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.BrandingService;
 import com.inmobilia.service.SupabaseService;
@@ -52,7 +54,7 @@ public class MarketingSocialController {
         Object precio = p.get("current_value") != null ? p.get("current_value") : p.get("purchase_price");
         String datos = "Inmueble: " + p.getOrDefault("name", p.getOrDefault("address", "?")) +
                 " en " + p.getOrDefault("city", "?") + ". Tipo " + p.getOrDefault("type", "?") +
-                ". Precio " + precio + "€. " + p.getOrDefault("bedrooms", "?") + " hab, " +
+                ". Precio " + precio + ("" + PaisActual.moneda() + ". ") + p.getOrDefault("bedrooms", "?") + " hab, " +
                 p.getOrDefault("bathrooms", "?") + " baños, " + p.getOrDefault("area_m2", "?") + " m²." +
                 (p.get("notes") != null ? " Notas: " + p.get("notes") : "");
 

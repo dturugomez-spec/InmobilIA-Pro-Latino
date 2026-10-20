@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -89,7 +91,7 @@ public class ReverseSearchService {
             "<p>Hola %s, hemos encontrado una nueva propiedad que coincide con tu búsqueda <strong>%s</strong>:</p>" +
             "<div style='border:1px solid #e2e8f0;border-radius:8px;padding:15px;margin:15px 0'>" +
             "  <h3>%s</h3>" +
-            "  <p style='font-size:24px;color:#3b82f6;font-weight:bold'>%s €</p>" +
+            ("  <p style='font-size:24px;color:#3b82f6;font-weight:bold'>%s " + PaisActual.moneda() + "</p>") +
             "  <p>🛏 %s · 🚿 %s · 📐 %s m²</p>" +
             "</div>" +
             "<p>Si te interesa, contesta este email o llámanos.</p>",

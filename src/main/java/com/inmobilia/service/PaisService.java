@@ -33,8 +33,12 @@ public class PaisService {
         if (e != null && System.currentTimeMillis() - e.at() < TTL_MS) return e.pais();
         Pais p = Pais.de(null);
         try {
-            List<Map<String, Object>> us = supabase.selectFilter("users", "id=eq." + orgUid + "&select=pais&limit=1");
-            if (!us.isEmpty()) p = Pais.de(us.get(0).get("pais"));
+            List<Map<String, Object>> us = supabase.selectFilter("users",
+                    "id=eq." + orgUid + "&select=pais,moneda&limit=1");
+            if (!us.isEmpty()) {
+                Object mon = us.get(0).get("moneda");
+                p = Pais.de(us.get(0).get("pais")).conMoneda(mon == null ? null : String.valueOf(mon));
+            }
         } catch (Exception ex) {
             log.debug("No se pudo leer el país de {}: {}", orgUid, ex.getMessage());
         }
@@ -49,9 +53,11 @@ public class PaisService {
         return p;
     }
 
-    public boolean guardar(String orgUid, String codigo) {
+    /** Guarda país y moneda de trabajo (la local del país o USD). */
+    public boolean guardar(String orgUid, String codigo, String moneda) {
         if (!Pais.existe(codigo)) return false;
-        boolean ok = supabase.update("users", orgUid, Map.of("pais", codigo.trim().toUpperCase()));
+        Pais p = Pais.de(codigo).conMoneda(moneda);
+        boolean ok = supabase.update("users", orgUid, Map.of("pais", p.codigo(), "moneda", p.moneda()));
         cache.remove(orgUid);
         return ok;
     }

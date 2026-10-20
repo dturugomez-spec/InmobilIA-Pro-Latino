@@ -15,7 +15,7 @@
             <div th:each="d : ${deals}" th:if="${d.get('status') == etapa}" class="kanban-card">
                 <div class="kanban-title" th:text="${d.get('property_name')}">Activo</div>
                 <div class="kanban-meta" th:text="${d.get('city')}">Ciudad</div>
-                <div class="kanban-price" th:text="${d.get('price')} + ' EUR'">Precio</div>
+                <div class="kanban-price" th:text="${d.get('price')} + ' ' + ${mon}">Precio</div>
             </div>
         </div>
     </div>

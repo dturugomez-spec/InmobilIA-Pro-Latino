@@ -1,6 +1,10 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.service.CurrencyService;
+import com.inmobilia.service.PaisService;
 import com.inmobilia.service.SupabaseService;
+import com.inmobilia.util.Pais;
+import com.inmobilia.util.PreciosReferencia;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +25,12 @@ import java.util.Map;
 public class ValuationPublicController {
 
     private final SupabaseService supabase;
+    private final PaisService paises;
+    private final CurrencyService divisas;
 
     @GetMapping("/tasacion")
     public String form(@RequestParam(required = false) String ref, Model model) {
+        if (ref != null && !ref.isBlank()) paises.usar(ref); // moneda y ejemplos del país de la agencia
         model.addAttribute("ref", ref);
         return "public_valuation";
     }
@@ -43,8 +50,11 @@ public class ValuationPublicController {
         String phone = String.valueOf(body.getOrDefault("phone", ""));
         String agencyRef = String.valueOf(body.getOrDefault("agencyRef", ""));
 
+        // País de la agencia que enlazó la calculadora (moneda y precios de referencia)
+        Pais pais = agencyRef.isBlank() ? com.inmobilia.util.PaisActual.get() : paises.usar(agencyRef);
+
         // Cálculo simplificado por zona y características (datos orientativos)
-        double basePrice = priceFor(city);  // €/m² medio en la ciudad
+        double basePrice = divisas.convertir(PreciosReferencia.usdPorM2(pais, city), "USD", pais.moneda());
         double estVenta = basePrice * m2;
         // Ajuste por habitaciones
         if (beds >= 3) estVenta *= 1.05;
@@ -67,6 +77,7 @@ public class ValuationPublicController {
         result.put("rentaMin", Math.round(rentaMensual * 0.92));
         result.put("rentaMax", Math.round(rentaMensual * 1.08));
         result.put("yieldBruto", 5.0);
+        result.put("moneda", pais.moneda());
 
         // Si nos dieron datos de contacto + agencyRef → guardar como lead
         if (!email.isBlank() && !agencyRef.isBlank()) {
@@ -80,8 +91,8 @@ public class ValuationPublicController {
                     lead.put("nombre", name);
                     lead.put("email", email);
                     lead.put("telefono", phone);
-                    lead.put("interes", String.format("Solicita valoración: %s en %s, %.0fm², %dh, %db. Estimación: %d€",
-                            type, city, m2, beds, baths, Math.round(estVenta)));
+                    lead.put("interes", String.format("Solicita valoración: %s en %s, %.0fm², %dh, %db. Estimación: %d %s",
+                            type, city, m2, beds, baths, Math.round(estVenta), pais.moneda()));
                     lead.put("origen", "Calculadora web");
                     lead.put("etapa", "Nuevo");
                     lead.put("zona", city);
@@ -93,30 +104,6 @@ public class ValuationPublicController {
         }
 
         return result;
-    }
-
-    /** Precios medios m² por ciudad (orientativos · datos públicos INE Q4 2024). */
-    private static double priceFor(String city) {
-        if (city == null) return 1800;
-        String c = city.toLowerCase().trim();
-        return switch (c) {
-            case "madrid" -> 4200;
-            case "barcelona" -> 4500;
-            case "san sebastián", "san sebastian", "donostia" -> 5800;
-            case "bilbao" -> 3200;
-            case "palma", "palma de mallorca" -> 3900;
-            case "valencia" -> 2400;
-            case "málaga", "malaga" -> 2600;
-            case "sevilla" -> 2200;
-            case "zaragoza" -> 1800;
-            case "alicante" -> 2100;
-            case "murcia" -> 1500;
-            case "vitoria" -> 2700;
-            case "córdoba", "cordoba" -> 1700;
-            case "valladolid" -> 1700;
-            case "vigo" -> 1900;
-            default -> 1800;
-        };
     }
 
     private static double parseD(Object o) { if (o == null) return 0; try { return Double.parseDouble(String.valueOf(o)); } catch(Exception e) { return 0; } }

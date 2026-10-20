@@ -22,19 +22,19 @@
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Valor cartera</div>
-            <div class="text-base font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalValor,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-base font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalValor,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos totales</div>
-            <div class="text-base font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-base font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos totales</div>
-            <div class="text-base font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-base font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">NOI total</div>
-            <div class="text-base font-bold font-mono mt-1" th:classappend="${totalNOI >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(totalNOI,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-base font-bold font-mono mt-1" th:classappend="${totalNOI >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(totalNOI,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-200 dark:ring-brand-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400">Cap rate medio</div>
@@ -76,12 +76,12 @@
                             <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('type')}">tipo</div>
                         </td>
                         <td class="px-4 py-3 text-slate-600 dark:text-slate-400" th:text="${r.get('city') ?: '—'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right text-xs text-slate-500" th:text="${#numbers.formatDecimal(r.get('compra'),0,'POINT',0,'COMMA') + ' €'}">— €</td>
-                        <td class="px-3 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(r.get('valor'),0,'POINT',0,'COMMA') + ' €'}">— €</td>
+                        <td class="px-3 py-3 font-mono text-right text-xs text-slate-500" th:text="${#numbers.formatDecimal(r.get('compra'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</td>
+                        <td class="px-3 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(r.get('valor'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</td>
                         <td class="px-3 py-3 font-mono text-right" th:classappend="${r.get('plusvalia') >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${(r.get('plusvalia') >= 0 ? '+' : '') + #numbers.formatDecimal(r.get('plusvalia'),1,2) + '%'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(r.get('ingresos'),0,'POINT',0,'COMMA') + ' €'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${#numbers.formatDecimal(r.get('gastos'),0,'POINT',0,'COMMA') + ' €'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right font-semibold" th:classappend="${r.get('noi') >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(r.get('noi'),0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(r.get('ingresos'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${#numbers.formatDecimal(r.get('gastos'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
+                        <td class="px-3 py-3 font-mono text-right font-semibold" th:classappend="${r.get('noi') >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(r.get('noi'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
                         <td class="px-3 py-3 font-mono text-right">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold"
                                   th:classappend="${r.get('capRate') >= 5 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : (r.get('capRate') >= 3 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400')}"
@@ -96,11 +96,11 @@
                 <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold border-t-2 border-slate-200 dark:border-neutral-700" th:if="${!rows.isEmpty()}">
                     <tr>
                         <td colspan="3" class="px-4 py-3">Total cartera</td>
-                        <td colspan="2" class="px-3 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(totalValor,0,'POINT',0,'COMMA') + ' €'}">— €</td>
+                        <td colspan="2" class="px-3 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(totalValor,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">— [[${mon}]]</td>
                         <td></td>
-                        <td class="px-3 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',0,'COMMA') + ' €'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',0,'COMMA') + ' €'}">—</td>
-                        <td class="px-3 py-3 font-mono text-right" th:classappend="${totalNOI >= 0 ? 'text-emerald-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(totalNOI,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
+                        <td class="px-3 py-3 font-mono text-right" th:classappend="${totalNOI >= 0 ? 'text-emerald-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(totalNOI,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
                         <td class="px-3 py-3 font-mono text-right text-brand-700 dark:text-brand-400" th:text="${#numbers.formatDecimal(capRateMedio,1,2) + '%'}">—</td>
                         <td class="px-3 py-3 font-mono text-right text-slate-600" th:text="${#numbers.formatDecimal(yieldMedio,1,2) + '%'}">—</td>
                     </tr>

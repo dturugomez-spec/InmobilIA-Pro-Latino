@@ -12,18 +12,18 @@
             <label>Tarifa diaria turistico <input type="number" step="0.01" name="tarifaDiariaTuristico" required></label>
             <label>Ocupacion (%) <input type="number" step="0.1" name="ocupacionPct" value="65"></label>
             <label>Gastos gestion (%) <input type="number" step="0.1" name="gastosGestion" value="25"></label>
-            <label>Limpieza mensual (EUR) <input type="number" step="0.01" name="limpiezaMes" value="250"></label>
+            <label>Limpieza mensual ([[${mon}]]) <input type="number" step="0.01" name="limpiezaMes" value="250"></label>
         </div>
         <div class="form-actions"><button class="btn btn-primary">Comparar</button></div>
     </form>
     <div class="kpi-grid" th:if="${ganador != null}">
         <div class="kpi-card"><div class="kpi-label">Anual largo plazo</div>
-            <div class="kpi-value" th:text="${#numbers.formatDecimal(anualLp,0,'POINT',0,'COMMA')} + ' EUR'">—</div></div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(anualLp,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div></div>
         <div class="kpi-card"><div class="kpi-label">Anual turistico (neto)</div>
-            <div class="kpi-value" th:text="${#numbers.formatDecimal(anualTur,0,'POINT',0,'COMMA')} + ' EUR'">—</div></div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(anualTur,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div></div>
         <div class="kpi-card"><div class="kpi-label">Diferencia</div>
             <div class="kpi-value" th:classappend="${diferencia > 0} ? 'pos' : 'neg'"
-                 th:text="${#numbers.formatDecimal(diferencia,0,'POINT',0,'COMMA')} + ' EUR'">—</div></div>
+                 th:text="${#numbers.formatDecimal(diferencia,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div></div>
         <div class="kpi-card"><div class="kpi-label">Ganador</div>
             <div class="kpi-value pos" th:text="${ganador}">—</div></div>
     </div>

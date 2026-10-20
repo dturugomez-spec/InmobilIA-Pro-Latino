@@ -153,7 +153,7 @@
         <div class="relative flex-1 min-w-0">
             <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300/90 mb-0.5"> Único en el mercado</div>
             <h3 class="text-lg font-bold text-white">Audita tu cartera en 1 clic</h3>
-            <p class="text-sm text-white/70">15 chequeos automáticos · Impacto económico en € · Plan de acción priorizado</p>
+            <p class="text-sm text-white/70">15 chequeos automáticos · Impacto económico en [[${mon}]] · Plan de acción priorizado</p>
         </div>
         <i data-lucide="arrow-right" class="relative h-5 w-5 text-white/80 group-hover:translate-x-1 transition-transform flex-shrink-0"></i>
     </a>
@@ -199,9 +199,9 @@
                         </div>
                         <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Valor cartera</span>
                     </div>
-                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${valorCartera}">0 €</div>
+                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${valorCartera}">0 [[${mon}]]</div>
                     <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">
-                        <span th:text="${nProps}">0</span> activos · avg <span th:text="${precioMedio}">0 €</span>
+                        <span th:text="${nProps}">0</span> activos · avg <span th:text="${precioMedio}">0 [[${mon}]]</span>
                     </div>
                 </div>
 
@@ -215,7 +215,7 @@
                     </div>
                     <div class="text-2xl font-bold font-mono tracking-tight"
                          th:classappend="${plusvaliaPct >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-                         th:text="${plusvalia}">0 €</div>
+                         th:text="${plusvalia}">0 [[${mon}]]</div>
                     <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">
                         <span th:text="${#numbers.formatDecimal(plusvaliaPct,1,2)} + '%'">0%</span> vs compra
                     </div>
@@ -245,8 +245,8 @@
                         </div>
                         <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">NOI mensual</span>
                     </div>
-                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${noiMes}">0 €</div>
-                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">anual <span th:text="${noiAnual}">0 €</span></div>
+                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${noiMes}">0 [[${mon}]]</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">anual <span th:text="${noiAnual}">0 [[${mon}]]</span></div>
                 </div>
 
                 <!-- Cash Flow -->
@@ -259,8 +259,8 @@
                     </div>
                     <div class="text-2xl font-bold font-mono tracking-tight"
                          th:classappend="${cashflowMesNum >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-                         th:text="${cashflowMes}">0 €</div>
-                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">tras hipoteca <span th:text="${mortgageMes}">0 €</span></div>
+                         th:text="${cashflowMes}">0 [[${mon}]]</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">tras hipoteca <span th:text="${mortgageMes}">0 [[${mon}]]</span></div>
                 </div>
 
                 <!-- Cap rate -->
@@ -315,19 +315,19 @@
                 <div class="space-y-2">
                     <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
                         <span class="text-xs text-slate-500 dark:text-neutral-400">Ingresos mes</span>
-                        <span class="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400" th:text="${revMes}">0 €</span>
+                        <span class="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400" th:text="${revMes}">0 [[${mon}]]</span>
                     </div>
                     <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
                         <span class="text-xs text-slate-500 dark:text-neutral-400">Gastos mes</span>
-                        <span class="font-mono font-semibold text-sm text-red-600 dark:text-red-400" th:text="${expMes}">0 €</span>
+                        <span class="font-mono font-semibold text-sm text-red-600 dark:text-red-400" th:text="${expMes}">0 [[${mon}]]</span>
                     </div>
                     <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
                         <span class="text-xs text-slate-500 dark:text-neutral-400">Cashflow YTD</span>
-                        <span class="font-mono font-semibold text-sm" th:classappend="${cashflowYtdNum >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" th:text="${cashflowYtd}">0 €</span>
+                        <span class="font-mono font-semibold text-sm" th:classappend="${cashflowYtdNum >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" th:text="${cashflowYtd}">0 [[${mon}]]</span>
                     </div>
                     <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
                         <span class="text-xs text-slate-500 dark:text-neutral-400">Ingresos 12M</span>
-                        <span class="font-mono font-semibold text-sm" th:text="${revUlt12}">0 €</span>
+                        <span class="font-mono font-semibold text-sm" th:text="${revUlt12}">0 [[${mon}]]</span>
                     </div>
                 </div>
             </div>
@@ -498,7 +498,7 @@
                             <td class="py-2.5 px-2 truncate max-w-[140px]" th:text="${t.property_name}">—</td>
                             <td class="py-2.5 px-2 font-mono text-right font-semibold"
                                 th:classappend="${t.type != null and #strings.equalsIgnoreCase(t.type,'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-                                th:text="${#numbers.formatDecimal(t.amount != null ? t.amount : 0,0,'POINT',0,'COMMA')} + ' €'">0</td>
+                                th:text="${#numbers.formatDecimal(t.amount != null ? t.amount : 0,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0</td>
                         </tr>
                         </tbody>
                     </table>
@@ -620,7 +620,7 @@
                 plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', padding: 10, cornerRadius: 8, titleFont: { size: 11 }, bodyFont: { size: 12 } } },
                 scales: {
                     x: { grid: { display: false }, ticks: { color: text, font: { size: 11 } } },
-                    y: { grid: { color: grid, drawBorder: false }, ticks: { color: text, font: { size: 11 }, callback: v => v >= 1000 ? (v/1000) + 'K €' : v + ' €' } }
+                    y: { grid: { color: grid, drawBorder: false }, ticks: { color: text, font: { size: 11 }, callback: v => v >= 1000 ? (v/1000) + ('K ' + (window.MON||'')) : v + (' ' + (window.MON||'')) } }
                 }
             }
         });

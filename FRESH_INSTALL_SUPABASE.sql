@@ -4029,3 +4029,4 @@ CREATE INDEX IF NOT EXISTS idx_leads_asignado ON leads(asignado_a);
 -- ===== Versión Latinoamérica (V100) =====
 ALTER TABLE users ADD COLUMN IF NOT EXISTS pais TEXT DEFAULT 'MX';
 ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS pais TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS moneda TEXT;

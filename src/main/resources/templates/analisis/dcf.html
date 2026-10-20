@@ -9,8 +9,8 @@
     <form method="post" action="/finanzas/dcf" class="form-card">
         <h3>Inputs del modelo</h3>
         <div class="form-grid cols-4">
-            <label>Precio (EUR) <input type="number" step="0.01" name="price" required th:value="${in?.price()}"></label>
-            <label>Renta mensual (EUR) <input type="number" step="0.01" name="rentMonthly" required th:value="${in?.rentMonthly()}"></label>
+            <label>Precio ([[${mon}]]) <input type="number" step="0.01" name="price" required th:value="${in?.price()}"></label>
+            <label>Renta mensual ([[${mon}]]) <input type="number" step="0.01" name="rentMonthly" required th:value="${in?.rentMonthly()}"></label>
             <label>Vacancy (%) <input type="number" step="0.1" name="vacancyPct" th:value="${in?.vacancyPct() ?: 5}"></label>
             <label>OPEX (%) <input type="number" step="0.1" name="opexPct" th:value="${in?.opexPct() ?: 25}"></label>
             <label>Anos <input type="number" name="years" th:value="${in?.years() ?: 10}"></label>
@@ -39,7 +39,7 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">NPV</div>
-                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.npv(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.npv(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">MOIC</div>
@@ -55,11 +55,11 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Equity</div>
-                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.equityInvested(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.equityInvested(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Deuda</div>
-                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.debt(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.debt(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div>
             </div>
         </div>
 
@@ -75,14 +75,14 @@
                 <tbody>
                 <tr th:each="y : ${out.years()}">
                     <td th:text="${y.year()}">1</td>
-                    <td th:text="${#numbers.formatDecimal(y.egi(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.opex(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.noi(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.capex(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.cfBeforeDebt(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.debtSvc(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.cfEquity(),0,'POINT',0,'COMMA')}">0</td>
-                    <td th:text="${#numbers.formatDecimal(y.debtBalance(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.egi(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.opex(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.noi(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.capex(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.cfBeforeDebt(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.debtSvc(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.cfEquity(),0,'DEFAULT',0,'DEFAULT')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.debtBalance(),0,'DEFAULT',0,'DEFAULT')}">0</td>
                     <td th:text="${#numbers.formatDecimal(y.dscr(),1,2)}">0</td>
                 </tr>
                 </tbody>

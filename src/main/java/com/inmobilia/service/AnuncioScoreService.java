@@ -10,7 +10,7 @@ import java.util.*;
  * 📣 Optimizador de anuncios ("Anuncio Score").
  *
  * Puntúa la calidad/completitud del anuncio de cada inmueble (0-100), detecta
- * lo que falta y si el precio está fuera de mercado (comparado con el €/m²
+ * lo que falta y si el precio está fuera de mercado (comparado con el $/m²
  * mediano de la propia cartera). Objetivo: vender más rápido. Sin llamadas extra
  * por inmueble (calcula la mediana una sola vez).
  */
@@ -35,7 +35,7 @@ public class AnuncioScoreService {
             new Factor("reference",      "Referencia", 5)
     );
 
-    /** Mediana de €/m² de la cartera (para posicionar precios). */
+    /** Mediana de $/m² de la cartera (para posicionar precios). */
     public double medianaEurM2(List<Map<String, Object>> props) {
         List<Double> ratios = new ArrayList<>();
         for (Map<String, Object> p : props) {

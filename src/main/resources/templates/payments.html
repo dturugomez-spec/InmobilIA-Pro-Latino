@@ -10,15 +10,15 @@
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Esperado anual</div>
-            <div class="text-lg font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalEsperado,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-lg font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalEsperado,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Cobrado</div>
-            <div class="text-lg font-bold font-mono mt-1 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalCobrado,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-lg font-bold font-mono mt-1 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalCobrado,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Pendiente</div>
-            <div class="text-lg font-bold font-mono mt-1 text-amber-600 dark:text-amber-400" th:text="${#numbers.formatDecimal(totalPendiente,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-lg font-bold font-mono mt-1 text-amber-600 dark:text-amber-400" th:text="${#numbers.formatDecimal(totalPendiente,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Pagados</div>
@@ -82,11 +82,11 @@
                             <div class="font-medium" th:text="${r.get('name')}">nombre</div>
                             <div class="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[180px]" th:text="${r.get('property')}">propiedad</div>
                         </td>
-                        <td class="px-3 py-3 font-mono text-xs text-right text-slate-600 dark:text-slate-400" th:text="${r.get('rent') > 0 ? #numbers.formatDecimal(r.get('rent'),0,'POINT',0,'COMMA') + ' €' : '—'}">— €</td>
+                        <td class="px-3 py-3 font-mono text-xs text-right text-slate-600 dark:text-slate-400" th:text="${r.get('rent') > 0 ? #numbers.formatDecimal(r.get('rent'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>
                         <td th:each="m : ${#numbers.sequence(0,11)}" class="px-2 py-3 text-center">
                             <button type="button"
                                     th:if="${r.get('estados')[m] == 1}"
-                                    th:title="'Pagado · ' + ${#numbers.formatDecimal(r.get('cobrado')[m],0,'POINT',0,'COMMA')} + ' €'"
+                                    th:title="'Pagado · ' + ${#numbers.formatDecimal(r.get('cobrado')[m],0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}"
                                     class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-emerald-500 text-white shadow-sm cursor-default">
                                 <i data-lucide="check" class="h-3.5 w-3.5"></i>
                             </button>
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', async () => {
             const ds = btn.dataset;
             const amount = parseFloat(ds.amount);
-            const customAmount = prompt(`Marcar como cobrado · mes ${ds.month}/${ds.year}\nInquilino: ${ds.tenant}\n\nImporte cobrado en €:`, amount > 0 ? amount.toFixed(2) : '');
+            const customAmount = prompt(`Marcar como cobrado · mes ${ds.month}/${ds.year}\nInquilino: ${ds.tenant}\n\nImporte cobrado en ${(window.MON||'')}:`, amount > 0 ? amount.toFixed(2) : '');
             if (customAmount === null) return;
             const finalAmount = parseFloat(customAmount.replace(',', '.'));
             if (isNaN(finalAmount) || finalAmount <= 0) { window.toast && window.toast('Importe no válido', 'err'); return; }

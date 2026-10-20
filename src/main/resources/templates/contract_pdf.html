@@ -69,13 +69,13 @@
 <p>De conformidad con el artículo 9 LAU, llegado el día del vencimiento, si ninguna de las partes hubiese notificado a la otra, al menos con cuatro meses de antelación a aquella fecha en el caso del ARRENDADOR y dos meses en el del ARRENDATARIO, su voluntad de no renovarlo, el contrato se prorrogará obligatoriamente por plazos anuales hasta un máximo de tres años.</p>
 
 <h2>TERCERA · RENTA</h2>
-<p>La renta mensual pactada es de <strong th:text="${contrato.get('rent') != null ? contrato.get('rent') + ' €' : '________ €'}">—</strong> (<em>importe en letra</em>), pagaderos por mensualidades anticipadas dentro de los siete primeros días de cada mes mediante transferencia bancaria a la cuenta indicada por el ARRENDADOR.</p>
+<p>La renta mensual pactada es de <strong th:text="${contrato.get('rent') != null ? contrato.get('rent') + ' ' + mon : '________ ' + mon}">—</strong> (<em>importe en letra</em>), pagaderos por mensualidades anticipadas dentro de los siete primeros días de cada mes mediante transferencia bancaria a la cuenta indicada por el ARRENDADOR.</p>
 
 <h2>CUARTA · ACTUALIZACIÓN DE LA RENTA</h2>
 <p>La renta podrá actualizarse anualmente conforme al <strong>Índice de Referencia para Arrendamiento de Vivienda (IRAV)</strong> publicado por el INE, conforme al artículo 18 LAU y la Ley 12/2023 de vivienda. La actualización tendrá efectos a partir del mes siguiente al cumplimiento de cada año de vigencia del contrato, mediante notificación escrita.</p>
 
 <h2>QUINTA · FIANZA Y GARANTÍAS</h2>
-<p>El ARRENDATARIO entrega en este acto, en concepto de <strong>fianza legal</strong>, la cantidad de <strong th:text="${contrato.get('deposit') != null ? contrato.get('deposit') + ' €' : '________ €'}">—</strong>, equivalente a una mensualidad de renta, conforme al artículo 36 LAU. Esta cantidad será depositada en el organismo competente de la Comunidad Autónoma.</p>
+<p>El ARRENDATARIO entrega en este acto, en concepto de <strong>fianza legal</strong>, la cantidad de <strong th:text="${contrato.get('deposit') != null ? contrato.get('deposit') + ' ' + mon : '________ ' + mon}">—</strong>, equivalente a una mensualidad de renta, conforme al artículo 36 LAU. Esta cantidad será depositada en el organismo competente de la Comunidad Autónoma.</p>
 <p>La fianza será devuelta al ARRENDATARIO a la finalización del contrato, una vez comprobado el estado del inmueble y el cumplimiento de las obligaciones contractuales.</p>
 
 <h2>SEXTA · GASTOS Y SERVICIOS</h2>

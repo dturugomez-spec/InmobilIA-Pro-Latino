@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,7 +114,7 @@ public class AgentAutopilotService {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("precio_nuevo", precio);
             insertar(uid, "bajar_precio", "media",
-                    "Bajar precio de " + s.get("direccion") + " a " + String.format("%,d", precio) + "€",
+                    "Bajar precio de " + s.get("direccion") + " a " + String.format("%,d", precio) + ("" + PaisActual.moneda()),
                     s.get("dias") + " días en mercado sin cerrar (-" + s.get("pct") + "%)",
                     null, payload, null, String.valueOf(s.get("id")));
             creadas++;
@@ -317,7 +319,7 @@ public class AgentAutopilotService {
         double precio = nd(payload.get("precio_nuevo"));
         if (precio <= 0) throw new IllegalStateException("Precio inválido");
         supabase.update("propiedades", propId, Map.of("current_value", precio), uid);
-        return "💶 Precio actualizado a " + String.format("%,d", (long) precio) + "€";
+        return "💶 Precio actualizado a " + String.format("%,d", (long) precio) + ("" + PaisActual.moneda());
     }
 
     private String ejecutarCrearTarea(String uid, Map<String, Object> a, Map<String, Object> payload) {

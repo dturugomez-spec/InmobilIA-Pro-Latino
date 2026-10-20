@@ -17,6 +17,7 @@ import java.util.*;
 public class OpenHouseController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     @GetMapping
@@ -81,6 +82,7 @@ public class OpenHouseController {
             return "open_house_public";
         }
         Map<String, Object> oh = ohs.get(0);
+        paises.usar(String.valueOf(oh.get("user_id")));  // moneda y formato del país de la inmobiliaria
         List<Map<String, Object>> p = supabase.selectFilter("propiedades", "id=eq." + oh.get("propiedad_id"));
         if (!p.isEmpty()) oh.put("propiedad", p.get(0));
         model.addAttribute("oh", oh);

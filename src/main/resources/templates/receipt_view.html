@@ -61,15 +61,15 @@
             <div class="ml-auto max-w-xs space-y-2 text-sm">
                 <div class="flex justify-between">
                     <span class="text-slate-600 dark:text-slate-400">Importe alquiler</span>
-                    <span class="font-mono" th:text="${#numbers.formatDecimal(rec.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(rec.get('importe') ?: 0,0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</span>
                 </div>
                 <div class="flex justify-between" th:if="${rec.get('irpf_amount') != null and rec.get('irpf_amount') > 0}">
                     <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${rec.get('irpf_pct') + '%'}">19%</span>)</span>
-                    <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(rec.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €'}">—</span>
+                    <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(rec.get('irpf_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</span>
                 </div>
                 <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
                     <span class="font-bold">TOTAL RECIBIDO</span>
-                    <span class="text-xl font-mono font-bold" th:text="${#numbers.formatDecimal(rec.get('total_pagado') ?: rec.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</span>
+                    <span class="text-xl font-mono font-bold" th:text="${#numbers.formatDecimal(rec.get('total_pagado') ?: rec.get('importe') ?: 0,0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</span>
                 </div>
             </div>
         </div>

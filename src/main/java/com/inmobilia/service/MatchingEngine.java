@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,12 +79,12 @@ public class MatchingEngine {
         if (precio > 0 && pMax > 0) {
             if (precio <= pMax && precio >= pMin * 0.85) {  // 15% margen abajo
                 r.score += 25;
-                r.razones.add(String.format("Precio en rango (%.0f€)", precio));
+                r.razones.add(String.format(("Precio en rango (%.0f " + PaisActual.moneda() + ")"), precio));
             } else if (precio <= pMax * 1.10) {
                 r.score += 12;
                 r.razones.add("Precio cercano (10% sobre presupuesto)");
             } else {
-                r.descartes.add(String.format("Precio fuera de rango (%.0f€)", precio));
+                r.descartes.add(String.format(("Precio fuera de rango (%.0f " + PaisActual.moneda() + ")"), precio));
             }
         }
 
@@ -231,7 +233,7 @@ public class MatchingEngine {
             String html = String.format(
                 "<h2>🏠 Encontramos una propiedad ideal para ti</h2>" +
                 "<p><strong>%s</strong></p>" +
-                "<p>Precio: <strong>%.0f €</strong></p>" +
+                ("<p>Precio: <strong>%.0f " + PaisActual.moneda() + "</strong></p>") +
                 "<p>Habitaciones: %s · Baños: %s · Superficie: %.0f m²</p>" +
                 "<p><em>Coincide al %.0f%% con tu búsqueda.</em></p>",
                 str(prop.getOrDefault("name", prop.get("address"))),

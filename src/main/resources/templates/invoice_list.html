@@ -10,15 +10,15 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Emitido</div>
-            <div class="text-xl font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalEmitido,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-xl font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalEmitido,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Cobrado</div>
-            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalCobrado,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalCobrado,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Pendiente cobro</div>
-            <div class="text-xl font-bold font-mono mt-1 text-amber-700 dark:text-amber-400" th:text="${#numbers.formatDecimal(totalPendiente,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+            <div class="text-xl font-bold font-mono mt-1 text-amber-700 dark:text-amber-400" th:text="${#numbers.formatDecimal(totalPendiente,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
         </div>
         <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
             <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Vencidas</div>
@@ -65,10 +65,10 @@
                         <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('cliente_nif') ?: ''}">NIF</div>
                     </td>
                     <td class="px-4 py-3 truncate max-w-[180px]" th:text="${r.get('concepto')}">concepto</td>
-                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('base_imponible') != null ? #numbers.formatDecimal(r.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
-                    <td class="px-4 py-3 font-mono text-right text-xs text-slate-500" th:text="${r.get('iva_amount') != null ? #numbers.formatDecimal(r.get('iva_amount'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
-                    <td class="px-4 py-3 font-mono text-right text-xs text-red-500" th:text="${r.get('irpf_amount') != null and r.get('irpf_amount') > 0 ? '-' + #numbers.formatDecimal(r.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
-                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${r.get('total') != null ? #numbers.formatDecimal(r.get('total'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('base_imponible') != null ? #numbers.formatDecimal(r.get('base_imponible'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>
+                    <td class="px-4 py-3 font-mono text-right text-xs text-slate-500" th:text="${r.get('iva_amount') != null ? #numbers.formatDecimal(r.get('iva_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>
+                    <td class="px-4 py-3 font-mono text-right text-xs text-red-500" th:text="${r.get('irpf_amount') != null and r.get('irpf_amount') > 0 ? '-' + #numbers.formatDecimal(r.get('irpf_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${r.get('total') != null ? #numbers.formatDecimal(r.get('total'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>
                     <td class="px-4 py-3">
                         <span th:text="${r.get('status')}"
                               th:classappend="${

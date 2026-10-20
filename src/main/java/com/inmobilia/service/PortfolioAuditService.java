@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,11 +16,10 @@ import java.util.*;
  * cruzando datos internos (Supabase) con datos oficiales (Euribor, INE).
  *
  * Devuelve una puntuacion 0-100, un desglose por areas y una lista priorizada
- * de hallazgos con impacto estimado en EUR y accion recomendada.
+ * de hallazgos con impacto estimado en la moneda de la inmobiliaria y accion recomendada.
  *
- * Nicho unico: ningun competidor del mercado (Witei, Sooprema, Tokko, Inmovilla,
- * Idealista Pro, Stessa, Buildium) ofrece una auditoria de cartera valorada
- * economicamente y cruzada con normativa espanola vigente.
+ * Nicho unico: ningun competidor del mercado (Tokko, EasyBroker, Wasi, Stessa, Buildium)
+ * ofrece una auditoria de cartera valorada economicamente.
  */
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,6 @@ import java.util.*;
 public class PortfolioAuditService {
 
     private final SupabaseService supabase;
-    private final OfficialDataService official;
 
     public enum Severity { CRITICAL, WARNING, INFO, OK }
     public enum Area {
@@ -81,8 +81,6 @@ public class PortfolioAuditService {
         List<Map<String, Object>> mant      = safe(supabase.query("mantenimiento", uid));
         List<Map<String, Object>> docs      = safe(supabase.query("documentos", uid));
 
-        Double euribor = null;
-        try { euribor = official.euriborLive().valor(); } catch (Exception ignored) {}
 
         LocalDate today = LocalDate.now();
         List<Finding> findings = new ArrayList<>();
@@ -123,9 +121,10 @@ public class PortfolioAuditService {
                         && (ipc == null || ipc.isBlank() || "No".equalsIgnoreCase(ipc))) {
                     double lostMonth = rent * 0.03; // asumiendo 3% anual no aplicado
                     findings.add(new Finding("CONTRATO_SIN_IPC", Area.CONTRATOS, Severity.WARNING,
-                        "Actualización IPC/IRAV pendiente",
-                        "Contrato de " + propName + " lleva >12 meses sin revisión. LAU permite actualización hasta el 2% (IRAV 2024-2025).",
-                        "Aplicar IRAV oficial", "/crud/contratos",
+                        "Actualización de renta pendiente",
+                        "Contrato de " + propName + " lleva >12 meses sin revisión. Revisa la cláusula de ajuste "
+                                + "(inflación, UF, UVA, UVR… según el contrato y la ley de tu país).",
+                        "Revisar contrato", "/crud/contratos",
                         lostMonth * 12, propName));
                 }
             }
@@ -229,11 +228,11 @@ public class PortfolioAuditService {
                     0, null));
             }
         }
-        if (euribor != null && euribor > 2.5 && mortgageAnual > 0) {
-            findings.add(new Finding("EURIBOR_ALTO", Area.FINANCIACION, Severity.INFO,
-                "Euribor 12M en " + fmtPct(euribor) + " - revisar hipotecas variables",
-                "El Euribor actual puede impactar tu cuota. Si tienes hipoteca variable, simula el impacto.",
-                "Simular hipoteca", "/herramientas/euribor",
+        if (mortgageAnual > 0) {
+            findings.add(new Finding("TASA_VARIABLE", Area.FINANCIACION, Severity.INFO,
+                "Revisa los créditos con tasa variable",
+                "Si algún crédito hipotecario es de tasa variable o indexado (UVA, UVR, UF), simula el impacto de una subida.",
+                "Stress test de cartera", "/herramientas/stress-cartera",
                 0, null));
         }
 
@@ -297,19 +296,21 @@ public class PortfolioAuditService {
             if (name != null && !propsConCertEnerg.contains(name.toLowerCase())) {
                 findings.add(new Finding("NO_CERT_ENERG_" + name, Area.DOCUMENTACION, Severity.INFO,
                     "Certificado energético no registrado",
-                    "'" + name + "' no tiene CEE cargado. Obligatorio para venta/alquiler (RD 390/2021).",
+                    "'" + name + "' no tiene certificado o constancia de eficiencia energética cargado (exigible en algunas ciudades y países).",
                     "Cargar certificado", "/crud/documentos/new",
                     300, name));
             }
         }
 
         // ══════════════ REGULATORIO ══════════════
-        // Ley Vivienda 2023 + zonas tensionadas (informativo general)
+        // Normativa de arrendamiento del país (informativo general)
         if (!props.isEmpty()) {
-            findings.add(new Finding("LEY_VIVIENDA_2023", Area.REGULATORIO, Severity.INFO,
-                "Revisar Ley 12/2023 de Vivienda",
-                "Aplicable en CCAA con zonas tensionadas declaradas (Cataluña, Baleares, País Vasco). Limita subidas y fija índice IRAV.",
-                "Consultar BOE", "https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203",
+            com.inmobilia.util.Pais pais = com.inmobilia.util.PaisActual.get();
+            findings.add(new Finding("NORMATIVA_ARRENDAMIENTO", Area.REGULATORIO, Severity.INFO,
+                "Revisa la normativa de arrendamiento de " + pais.nombre(),
+                "Plazos, depósitos en garantía, ajustes de renta y desalojos cambian según el país y, en algunos, "
+                        + "según el estado o la provincia. Confirma tus contratos con un profesional local.",
+                "Radar regulatorio", "/herramientas/radar",
                 0, null));
         }
 
@@ -369,7 +370,7 @@ public class PortfolioAuditService {
         catch (Exception e) { return null; }
     }
     private String fmtEur(double v) {
-        return String.format(Locale.GERMANY, "%,.0f €", v);
+        return String.format(Locale.GERMANY, ("%,.0f " + PaisActual.moneda()), v);
     }
     private String fmtPct(double v) {
         return String.format(Locale.US, "%.2f%%", v);

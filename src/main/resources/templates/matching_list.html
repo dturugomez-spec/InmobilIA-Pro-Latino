@@ -99,7 +99,7 @@
 
             <!-- Datos propiedad -->
             <div th:if="${m.get('propiedad') != null}" class="grid grid-cols-3 gap-2 text-[10px] mb-3 bg-slate-50 dark:bg-neutral-800/30 p-2 rounded">
-                <div><p class="text-slate-500 uppercase">Precio</p><p class="font-mono font-bold" th:text="${#numbers.formatDecimal(m.get('propiedad').get('precio') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</p></div>
+                <div><p class="text-slate-500 uppercase">Precio</p><p class="font-mono font-bold" th:text="${#numbers.formatDecimal(m.get('propiedad').get('precio') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</p></div>
                 <div><p class="text-slate-500 uppercase">m²</p><p class="font-mono" th:text="${m.get('propiedad').get('metros_cuadrados') ?: '—'}">—</p></div>
                 <div><p class="text-slate-500 uppercase">Hab</p><p class="font-mono" th:text="${m.get('propiedad').get('habitaciones') ?: '—'}">—</p></div>
             </div>

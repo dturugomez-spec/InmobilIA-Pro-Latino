@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,7 @@ import java.util.regex.Pattern;
  *   {hoy}, {hoy.dia}, {hoy.mes_letra}, {hoy.anio}
  *   {empresa.nombre}, {empresa.telefono}
  *   {numero_en_letras:precio}  → conversión número → letras
- *   {%importe:1234.56}      → formato monetario español: 1.234,56 €
+ *   {%importe:1234.56}      → formato monetario español: 1.234,56 $
  *
  * Detecta variables automáticamente al guardar.
  */
@@ -116,7 +118,7 @@ public class DocumentTemplateService {
         try {
             double v = Double.parseDouble(s.replace(",", ".").trim());
             return new java.text.DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(new Locale("es", "ES")))
-                    .format(v) + " €";
+                    .format(v) + (" " + PaisActual.moneda());
         } catch (Exception e) { return s; }
     }
 
@@ -254,7 +256,7 @@ public class DocumentTemplateService {
     private static final String RESERVA_TPL = """
             <h1>DOCUMENTO DE RESERVA</h1>
             <p>En a {hoy.completa}, D./Dña. <strong>{lead.nombre}</strong>, con NIF <strong>{lead.dni}</strong>,
-            entrega a <strong>{empresa.nombre}</strong> la cantidad de <strong>3.000 €</strong> en concepto de RESERVA
+            entrega a <strong>{empresa.nombre}</strong> la cantidad de <strong>$3.000</strong> en concepto de RESERVA
             para la adquisición del inmueble:</p>
             <ul>
               <li><strong>Dirección:</strong> {propiedad.direccion}</li>

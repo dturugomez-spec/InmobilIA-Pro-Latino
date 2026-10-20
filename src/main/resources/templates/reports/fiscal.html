@@ -63,19 +63,19 @@
                             <span th:case="3">Oct-Dic</span>
                         </span>
                     </td>
-                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
-                    <td class="px-5 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
-                    <td class="px-5 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${irpfTrim[i] > 0 ? '-' + #numbers.formatDecimal(irpfTrim[i],0,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
-                    <td class="px-5 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(ivaTrim[i] - irpfTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[i],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
+                    <td class="px-5 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[i],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
+                    <td class="px-5 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${irpfTrim[i] > 0 ? '-' + #numbers.formatDecimal(irpfTrim[i],0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</td>
+                    <td class="px-5 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(ivaTrim[i] - irpfTrim[i],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                 </tr>
             </tbody>
             <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold border-t-2 border-slate-200 dark:border-neutral-700">
                 <tr>
                     <td class="px-5 py-3">TOTAL ejercicio</td>
-                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[0]+baseTrim[1]+baseTrim[2]+baseTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
-                    <td class="px-5 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
-                    <td class="px-5 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
-                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal((ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3]) - (irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3]),0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[0]+baseTrim[1]+baseTrim[2]+baseTrim[3],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
+                    <td class="px-5 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
+                    <td class="px-5 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3],0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal((ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3]) - (irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3]),0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                 </tr>
             </tfoot>
         </table>
@@ -87,17 +87,17 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4">
                 <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos íntegros</div>
-                <div class="text-lg font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(rentaInmobiliaria,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-lg font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(rentaInmobiliaria,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 <div class="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 mt-1">Rentas de alquiler</div>
             </div>
             <div class="rounded-lg bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40 p-4">
                 <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos deducibles</div>
-                <div class="text-lg font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(gastosDeducibles,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-lg font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(gastosDeducibles,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 <div class="text-[10px] text-red-700/80 dark:text-red-400/80 mt-1">IBI, comunidad, mantenimiento, intereses</div>
             </div>
             <div class="rounded-lg bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-200 dark:ring-brand-900/40 p-4">
                 <div class="text-[10px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400">Rendimiento neto</div>
-                <div class="text-lg font-bold font-mono mt-1 text-brand-700 dark:text-brand-400" th:classappend="${rendimientoNeto >= 0 ? '' : 'text-red-700 dark:text-red-400'}" th:text="${#numbers.formatDecimal(rendimientoNeto,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-lg font-bold font-mono mt-1 text-brand-700 dark:text-brand-400" th:classappend="${rendimientoNeto >= 0 ? '' : 'text-red-700 dark:text-red-400'}" th:text="${#numbers.formatDecimal(rendimientoNeto,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 <div class="text-[10px] text-brand-700/80 dark:text-brand-400/80 mt-1">Antes de reducción 60% vivienda habitual</div>
             </div>
         </div>
@@ -112,7 +112,7 @@
             <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
                 <tr th:each="e : ${gastosCat}">
                     <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
-                    <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                 </tr>
                 <tr th:if="${gastosCat.isEmpty()}"><td colspan="2" class="px-5 py-6 text-center text-sm text-slate-500">Sin gastos registrados.</td></tr>
             </tbody>

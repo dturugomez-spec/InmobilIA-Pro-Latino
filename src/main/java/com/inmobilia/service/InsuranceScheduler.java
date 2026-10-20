@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.util.CargoSeguro;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -113,7 +115,7 @@ public class InsuranceScheduler {
         String titulo = dias == 1 ? "💳 Cargo de seguro mañana" : "💳 Cargo de seguro en 7 días";
         String mensaje = String.format("%s de %s: %s el %s%s%s",
                 p.get("tipo"), p.get("aseguradora"),
-                importe != null ? String.format(java.util.Locale.forLanguageTag("es-ES"), "%,.2f €", importe) : "importe sin indicar",
+                importe != null ? String.format(java.util.Locale.forLanguageTag("es-ES"), ("%,.2f " + PaisActual.moneda()), importe) : "importe sin indicar",
                 cargo.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 cuenta != null ? " · cuenta " + cuenta : "",
                 Boolean.TRUE.equals(p.get("domiciliado")) ? " (domiciliado)" : " (no domiciliado: hay que pagarlo)");

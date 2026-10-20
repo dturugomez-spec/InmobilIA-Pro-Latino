@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AgentActionService;
 import com.inmobilia.service.AgentBriefingService;
 import com.inmobilia.service.AIService;
@@ -65,7 +67,7 @@ public class AgentController {
                 ctx.append("- ").append(l.getOrDefault("nombre", "?"))
                    .append(" | etapa:").append(l.getOrDefault("etapa", "?"))
                    .append(" | score:").append(l.getOrDefault("score", "?"));
-                if (l.get("presupuesto") != null) ctx.append(" | presup:").append(l.get("presupuesto")).append("€");
+                if (l.get("presupuesto") != null) ctx.append(" | presup:").append(l.get("presupuesto")).append(("" + PaisActual.moneda()));
                 if (l.get("zona") != null) ctx.append(" | zona:").append(l.get("zona"));
                 ctx.append(" | tel:").append(l.getOrDefault("telefono", "-")).append("\n");
             }
@@ -75,7 +77,7 @@ public class AgentController {
                 Object precio = p.get("current_value") != null ? p.get("current_value") : p.getOrDefault("purchase_price", "?");
                 ctx.append("- ").append(p.getOrDefault("name", p.getOrDefault("address", "?")))
                    .append(" | ").append(p.getOrDefault("city", "?"))
-                   .append(" | ").append(precio).append("€")
+                   .append(" | ").append(precio).append(("" + PaisActual.moneda()))
                    .append(" | ").append(p.getOrDefault("status", "?")).append("\n");
             }
             // Agenda inmediata: visitas próximas y tareas pendientes
@@ -151,7 +153,7 @@ public class AgentController {
         var rows = supabase.selectFilter("propiedades", "id=eq." + propId);
         if (rows.isEmpty() || !uid.equals(String.valueOf(rows.get(0).get("user_id")))) return Map.of("ok", false);
         supabase.update("propiedades", propId, Map.of("current_value", precio));
-        return Map.of("ok", true, "msg", "💶 Precio actualizado a " + Math.round(precio) + "€");
+        return Map.of("ok", true, "msg", "💶 Precio actualizado a " + Math.round(precio) + ("" + PaisActual.moneda()));
     }
 
     /** Crea una tarea de seguimiento/reactivación (desde "leads en riesgo" o matches). */

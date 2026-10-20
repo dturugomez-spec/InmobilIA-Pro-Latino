@@ -43,7 +43,7 @@
                 <tr>
                     <td class="px-4 py-3 font-medium text-xs"> Precio</td>
                     <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
-                        <span th:text="${#numbers.formatDecimal(p.get('precio') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</span>
+                        <span th:text="${#numbers.formatDecimal(p.get('precio') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</span>
                         <span th:if="${st.index == mejorPrecio}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> MEJOR</span>
                     </td>
                 </tr>
@@ -55,9 +55,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="px-4 py-3 font-medium text-xs"> €/m²</td>
+                    <td class="px-4 py-3 font-medium text-xs"> [[${mon}]]/m²</td>
                     <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
-                        <span th:text="${p.get('precio_m2') != null ? #numbers.formatDecimal(p.get('precio_m2'), 1, 'POINT', 0, 'COMMA') + ' €' : '—'}">—</span>
+                        <span th:text="${p.get('precio_m2') != null ? #numbers.formatDecimal(p.get('precio_m2'), 1, 'DEFAULT', 0, 'DEFAULT') + ' ' + mon : '—'}">—</span>
                         <span th:if="${st.index == mejorPrecioM2}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> MEJOR RATIO</span>
                     </td>
                 </tr>
@@ -107,7 +107,7 @@
                 <tr class="bg-emerald-50 dark:bg-emerald-900/20">
                     <td class="px-4 py-3 font-medium text-xs"> Tu comisión (3%)</td>
                     <td th:each="p : ${seleccion}" class="px-4 py-3 font-mono text-emerald-700 font-bold"
-                        th:text="${#numbers.formatDecimal(p.get('comision_estimada') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                        th:text="${#numbers.formatDecimal(p.get('comision_estimada') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</td>
                 </tr>
             </tbody>
         </table>

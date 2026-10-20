@@ -17,19 +17,19 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
             <p class="text-[10px] uppercase text-slate-500">Saldo total</p>
-            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(saldoTotal, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(saldoTotal, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
             <p class="text-[10px] uppercase text-emerald-700">Ingresos mes</p>
-            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(ingresosMes, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(ingresosMes, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
             <p class="text-[10px] uppercase text-red-700">Gastos mes</p>
-            <p class="text-xl font-bold mt-1 text-red-700" th:text="${#numbers.formatDecimal(gastosMes, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1 text-red-700" th:text="${#numbers.formatDecimal(gastosMes, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
             <p class="text-[10px] uppercase text-blue-700">Balance mes</p>
-            <p class="text-xl font-bold mt-1" th:classappend="${balanceMes >= 0 ? 'text-blue-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(balanceMes, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1" th:classappend="${balanceMes >= 0 ? 'text-blue-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(balanceMes, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
     </div>
 
@@ -42,7 +42,7 @@
                 <li th:each="c : ${cuentas}" class="p-2 rounded bg-slate-50 dark:bg-neutral-800/50">
                     <div class="flex items-center justify-between">
                         <p class="text-sm font-medium" th:text="${c.get('nombre')}">—</p>
-                        <span class="font-mono font-bold text-sm" th:text="${#numbers.formatDecimal(c.get('saldo_actual') ?: 0, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</span>
+                        <span class="font-mono font-bold text-sm" th:text="${#numbers.formatDecimal(c.get('saldo_actual') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</span>
                     </div>
                     <p class="text-[10px] text-slate-500 capitalize" th:text="${c.get('tipo')}">—</p>
                 </li>
@@ -87,7 +87,7 @@
                     <option value="otros">Otros</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="number" step="0.01" name="importe" required placeholder="Importe €" class="px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                    <input type="number" step="0.01" name="importe" required placeholder="Importe $" class="px-3 py-2 text-sm border border-slate-200 rounded-lg">
                     <input type="number" step="0.01" name="iva_pct" placeholder="IVA %" class="px-3 py-2 text-sm border border-slate-200 rounded-lg">
                 </div>
                 <input type="text" name="proveedor" placeholder="Proveedor" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
@@ -103,7 +103,7 @@
             <ul class="space-y-2">
                 <li th:each="entry : ${porCategoria}" class="flex items-center justify-between text-sm">
                     <span class="capitalize" th:text="${#strings.replace(entry.key, '_', ' ')}">—</span>
-                    <span class="font-mono font-bold text-red-700" th:text="${#numbers.formatDecimal(entry.value, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</span>
+                    <span class="font-mono font-bold text-red-700" th:text="${#numbers.formatDecimal(entry.value, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</span>
                 </li>
                 <li th:if="${porCategoria.isEmpty()}" class="text-xs text-slate-400 italic text-center py-4">Sin gastos este mes</li>
             </ul>
@@ -136,7 +136,7 @@
                 </td>
                 <td class="px-4 py-2 text-right font-mono font-bold"
                     th:classappend="${m.get('tipo') == 'ingreso' ? 'text-emerald-700' : 'text-red-700'}"
-                    th:text="${(m.get('tipo') == 'ingreso' ? '+' : '-') + #numbers.formatDecimal(m.get('importe'), 1, 'POINT', 2, 'COMMA')} + ' €'">—</td>
+                    th:text="${(m.get('tipo') == 'ingreso' ? '+' : '-') + #numbers.formatDecimal(m.get('importe'), 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">—</td>
             </tr>
             <tr th:if="${movimientos.isEmpty()}"><td colspan="5" class="py-8 text-center text-slate-500 text-sm">Sin movimientos.</td></tr>
             </tbody>

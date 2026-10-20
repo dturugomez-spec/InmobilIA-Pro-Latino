@@ -48,9 +48,9 @@
                         </a>
                     </td>
                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400 truncate max-w-[200px]" th:text="${r.get('property') ?: '—'}">—</td>
-                    <td class="px-3 py-3 font-mono text-right text-xs" th:text="${r.get('rent') > 0 ? #numbers.formatDecimal(r.get('rent'),0,'POINT',0,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-3 py-3 font-mono text-right text-xs" th:text="${r.get('rent') > 0 ? #numbers.formatDecimal(r.get('rent'),0,'DEFAULT',0,'DEFAULT') + ' ' + mon : '—'}">—</td>
                     <td class="px-3 py-3 font-mono text-right" th:text="${r.get('pagosCount')}">0</td>
-                    <td class="px-3 py-3 font-mono text-right font-semibold text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(r.get('totalPagado'),0,'POINT',0,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-3 py-3 font-mono text-right font-semibold text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(r.get('totalPagado'),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</td>
                     <td class="px-3 py-3 text-center">
                         <span th:if="${r.get('score') > 0}"
                               th:text="${r.get('score') + '/100'}"

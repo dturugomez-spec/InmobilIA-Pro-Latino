@@ -12,7 +12,7 @@
             <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs uppercase tracking-wider mb-4" th:text="${promo.get('fase')}">—</span>
             <h1 class="text-5xl md:text-7xl font-black mb-4" th:text="${promo.get('nombre')}">—</h1>
             <p class="text-xl opacity-90" th:text="${promo.get('municipio') + ' · ' + promo.get('num_unidades') + ' viviendas'}">—</p>
-            <p class="mt-6 text-3xl font-bold">Desde <span th:text="${#numbers.formatDecimal(promo.get('precio_desde') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</span></p>
+            <p class="mt-6 text-3xl font-bold">Desde <span th:text="${#numbers.formatDecimal(promo.get('precio_desde') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</span></p>
         </div>
     </header>
     <section class="py-20 px-4 max-w-6xl mx-auto">
@@ -30,7 +30,7 @@
                     <td class="capitalize" th:text="${u.get('tipologia')}">—</td>
                     <td class="text-center" th:text="${u.get('num_habitaciones')}">—</td>
                     <td class="text-center" th:text="${u.get('superficie_util') + ' m²'}">—</td>
-                    <td class="text-right font-bold" th:text="${#numbers.formatDecimal(u.get('precio') ?: 0, 1, 'POINT', 0, 'COMMA') + ' €'}">—</td>
+                    <td class="text-right font-bold" th:text="${#numbers.formatDecimal(u.get('precio') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT') + ' ' + mon}">—</td>
                 </tr>
                 </tbody>
             </table>

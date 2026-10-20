@@ -13,7 +13,7 @@
             <h2 class="audit-hero-title">Auditor IA de Cartera</h2>
             <p class="audit-hero-desc">
                 Escaneo completo de tu cartera cruzado con datos oficiales
-                (Catastro, BCE, INE, BOE). Cada hallazgo lleva <b>impacto estimado en €</b>
+                (Catastro, BCE, INE, BOE). Cada hallazgo lleva <b>impacto estimado en [[${mon}]]</b>
                 y acción recomendada.
             </p>
             <div class="audit-hero-meta">
@@ -59,7 +59,7 @@
         <div class="kpi-card tone-ok">
             <div class="kpi-label">Impacto económico estimado</div>
             <div class="kpi-value mono"
-                 th:text="${#numbers.formatDecimal(report.totalImpactEur(),0,'POINT',0,'COMMA')} + ' €'">—</div>
+                 th:text="${#numbers.formatDecimal(report.totalImpactEur(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</div>
             <div class="kpi-hint">Coste evitable anual</div>
         </div>
     </div>
@@ -113,7 +113,7 @@
                     <div class="finding-detail" th:text="${f.detail()}">—</div>
                     <div class="finding-foot">
                         <span class="finding-impact" th:if="${f.impactEur() > 0}">
-                             Impacto: <b th:text="${#numbers.formatDecimal(f.impactEur(),0,'POINT',0,'COMMA')} + ' €'">—</b>
+                             Impacto: <b th:text="${#numbers.formatDecimal(f.impactEur(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</b>
                         </span>
                         <a th:href="${f.actionUrl()}" class="btn-mini btn-action"
                            th:target="${#strings.startsWith(f.actionUrl(), 'http')} ? '_blank' : '_self'"

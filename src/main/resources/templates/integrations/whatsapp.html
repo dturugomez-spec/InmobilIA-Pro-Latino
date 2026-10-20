@@ -170,11 +170,11 @@ function waApp() {
             const T = this.tenant;
             const today = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'long', year:'numeric' });
             const month = new Date().toLocaleDateString('es-ES', { month:'long', year:'numeric' });
-            const fmt = (n) => parseFloat(n||0).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2});
+            const fmt = (n) => parseFloat(n||0).toLocaleString(window.LOC||'es', {minimumFractionDigits:2, maximumFractionDigits:2});
 
             switch(t) {
                 case 'payment_reminder':
-                    this.message = `Hola ${T.name || '[nombre]'},\n\nTe recordamos amablemente que tienes pendiente el pago de la renta de ${month} por importe de ${fmt(T.rent)} €${T.property ? ' correspondiente a ' + T.property : ''}.\n\nSi ya has realizado el ingreso, ignora este mensaje. Si necesitas algo, no dudes en escribirnos.\n\nGracias,\nInmobilIA Pro`;
+                    this.message = `Hola ${T.name || '[nombre]'},\n\nTe recordamos amablemente que tienes pendiente el pago de la renta de ${month} por importe de ${fmt(T.rent)} ${(window.MON||'')}${T.property ? ' correspondiente a ' + T.property : ''}.\n\nSi ya has realizado el ingreso, ignora este mensaje. Si necesitas algo, no dudes en escribirnos.\n\nGracias,\nInmobilIA Pro`;
                     break;
                 case 'lease_ending':
                     this.message = `Hola ${T.name || '[nombre]'},\n\nTe escribimos para recordarte que tu contrato de alquiler${T.property ? ' de ' + T.property : ''} finaliza el ${T.end ? T.end.substring(0,10) : '[fecha]'}.\n\n¿Te gustaría renovarlo? Estamos disponibles para hablar de las condiciones cuando te venga bien.\n\nUn saludo,\nInmobilIA Pro`;

@@ -24,11 +24,11 @@
         </div>
         <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
             <p class="text-[10px] uppercase text-blue-700">Valor generado</p>
-            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(valorTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(valorTotal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
         <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
             <p class="text-[10px] uppercase text-amber-700">Premios pendientes</p>
-            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(premiosPendientes, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(premiosPendientes, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</p>
         </div>
     </div>
 
@@ -51,7 +51,7 @@
                     <input type="text" name="premio_referido" th:value="${cfg.get('premio_referido')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium mb-1">Valor premio (€)</label>
+                    <label class="block text-xs font-medium mb-1">Valor premio ([[${mon}]])</label>
                     <input type="number" step="0.01" name="premio_valor" th:value="${cfg.get('premio_valor')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
                 </div>
                 <button class="w-full px-4 py-2 rounded-lg bg-fuchsia-700 hover:bg-fuchsia-800 text-white text-sm font-medium"> Guardar</button>
@@ -78,7 +78,7 @@
                     <th class="text-left px-3 py-2">Código</th>
                     <th class="text-left px-3 py-2">Cliente</th>
                     <th class="text-left px-3 py-2">Estado</th>
-                    <th class="text-right px-3 py-2">€</th>
+                    <th class="text-right px-3 py-2">[[${mon}]]</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -98,9 +98,9 @@
                             <span th:case="'cerrado_ko'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700"> Perdido</span>
                         </span>
                     </td>
-                    <td class="px-3 py-2 text-right font-mono text-xs" th:text="${r.get('valor_operacion') != null ? #numbers.formatDecimal(r.get('valor_operacion'),1,'POINT',0,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-3 py-2 text-right font-mono text-xs" th:text="${r.get('valor_operacion') != null ? #numbers.formatDecimal(r.get('valor_operacion'),1,'DEFAULT',0,'DEFAULT') + ' ' + mon : '—'}">—</td>
                     <td class="px-3 py-2 text-right">
-                        <form th:if="${r.get('estado') != 'cerrado_ok' and r.get('estado') != 'cerrado_ko'}" th:action="@{|/referidos/${r.get('id')}/cerrar|}" method="post" class="inline" onsubmit="this.querySelector('input').value = prompt('Valor operación (€):') || ''">
+                        <form th:if="${r.get('estado') != 'cerrado_ok' and r.get('estado') != 'cerrado_ko'}" th:action="@{|/referidos/${r.get('id')}/cerrar|}" method="post" class="inline" onsubmit="this.querySelector('input').value = prompt(('Valor operación (' + (window.MON||'') + '):')) || ''">
                             <input type="hidden" name="valor">
                             <button class="text-[10px] text-emerald-700 hover:underline">Cerrar OK</button>
                         </form>

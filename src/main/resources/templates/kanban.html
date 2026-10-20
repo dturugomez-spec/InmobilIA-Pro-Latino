@@ -58,7 +58,7 @@
                 </div>
                 <div class="text-[11px] text-slate-500 dark:text-neutral-400 font-mono"
                      th:if="${presupuestoEtapa.get(etapa) != null and presupuestoEtapa.get(etapa) > 0}"
-                     th:text="${#numbers.formatDecimal(presupuestoEtapa.get(etapa),0,'POINT',0,'COMMA')} + ' € total'">— €</div>
+                     th:text="${#numbers.formatDecimal(presupuestoEtapa.get(etapa),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon} + ' total'">— [[${mon}]]</div>
             </div>
 
             <!-- Tarjetas -->
@@ -80,7 +80,7 @@
                         </div>
                         <div class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-2" th:text="${r.get('interes') ?: r.get('zona') ?: '—'}">interés</div>
                         <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-mono font-semibold text-slate-700 dark:text-slate-300" th:text="${r.get('presupuesto') != null ? r.get('presupuesto') + ' €' : '—'}">— €</span>
+                            <span class="font-mono font-semibold text-slate-700 dark:text-slate-300" th:text="${r.get('presupuesto') != null ? r.get('presupuesto') + ' ' + mon : '—'}">— [[${mon}]]</span>
                             <span class="text-slate-400" th:text="${r.get('origen') ?: ''}">origen</span>
                         </div>
                         <div class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1" th:if="${r.get('next_followup')}">
@@ -102,7 +102,7 @@
                         </div>
                         <div class="text-xs text-slate-600 dark:text-slate-400 mb-2" th:text="${(r.get('city') ?: '') + ' · ' + (r.get('type') ?: '')}">ubicación</div>
                         <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-mono font-semibold text-slate-700 dark:text-slate-300" th:text="${r.get('price') != null ? r.get('price') + ' €' : '—'}">— €</span>
+                            <span class="font-mono font-semibold text-slate-700 dark:text-slate-300" th:text="${r.get('price') != null ? r.get('price') + ' ' + mon : '—'}">— [[${mon}]]</span>
                             <span class="text-slate-400 font-mono" th:if="${r.get('cap_rate')}" th:text="${r.get('cap_rate') + '%'}">—</span>
                         </div>
                         <div class="text-[10px] text-slate-400 mt-1.5 truncate" th:text="${r.get('source') ?: ''}">origen</div>

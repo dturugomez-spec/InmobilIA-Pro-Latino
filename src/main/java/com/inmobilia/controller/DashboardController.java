@@ -3,7 +3,6 @@ package com.inmobilia.controller;
 import com.inmobilia.service.AgentBriefingService;
 import com.inmobilia.service.HealthScoreService;
 import com.inmobilia.service.NewsService;
-import com.inmobilia.service.OfficialDataService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.FormatUtils;
 import com.inmobilia.util.SessionUtils;
@@ -29,7 +28,6 @@ public class DashboardController {
 
     private final SupabaseService supabase;
     private final HealthScoreService healthService;
-    private final OfficialDataService official;
     private final NewsService newsService;
     private final AgentBriefingService briefingService;
 
@@ -300,15 +298,6 @@ public class DashboardController {
         model.addAttribute("cashflowYtdNum", cashflowYtd);
         model.addAttribute("revUlt12", FormatUtils.dinero(revUlt12));
         model.addAttribute("cashflowUlt12", FormatUtils.dinero(cashflowUlt12));
-
-        // ─── Datos oficiales en vivo ──────────────────────────────────
-        try {
-            var live = official.euriborLive();
-            model.addAttribute("liveEuribor", live);
-            model.addAttribute("liveEuriborDelta", official.euriborDelta12m());
-            model.addAttribute("liveIpvYoy", official.ipvYoY());
-            model.addAttribute("liveTedr", official.bancoDeEspanaTedr());
-        } catch (Exception ignored) {}
 
         // ─── Noticias de mercado (ticker compacto) ────────────────────
         try {

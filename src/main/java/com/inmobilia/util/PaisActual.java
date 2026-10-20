@@ -14,6 +14,9 @@ public final class PaisActual {
         return p != null ? p : Pais.de(null);
     }
 
+    /** Código de la moneda de la inmobiliaria ("MXN", "COP"…) para textos e importes. */
+    public static String moneda() { return get().moneda(); }
+
     public static void set(Pais p) { ACTUAL.set(p); }
 
     public static void limpiar() { ACTUAL.remove(); }

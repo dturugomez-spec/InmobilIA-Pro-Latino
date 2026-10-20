@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -308,7 +310,7 @@ public class AgentActionService {
             String zona = String.valueOf(l.getOrDefault("zona", "")).toLowerCase();
             if (!city.isBlank() && !zona.isBlank() && !zona.contains(city) && !city.contains(zona)) continue;
             lineas.add("• " + l.getOrDefault("nombre", "?")
-                    + (presup > 0 ? " (hasta " + Math.round(presup) + "€)" : "")
+                    + (presup > 0 ? " (hasta " + Math.round(presup) + ("" + PaisActual.moneda() + ")") : "")
                     + (l.get("telefono") != null ? " · 📞 " + l.get("telefono") : ""));
             if (lineas.size() >= 5) break;
         }
@@ -317,7 +319,7 @@ public class AgentActionService {
                     " ahora mismo. Prueba a compartir tu enlace de valoración o el simulador para captar más.");
         }
         return resp("🎯 Leads que encajan con " + prop.getOrDefault("name", prop.get("address")) +
-                (precio > 0 ? " (" + Math.round(precio) + "€)" : "") + ":\n\n" + String.join("\n", lineas) +
+                (precio > 0 ? " (" + Math.round(precio) + ("" + PaisActual.moneda() + ")") : "") + ":\n\n" + String.join("\n", lineas) +
                 "\n\n¿Quieres que agende una visita o les redacte un mensaje?");
     }
 
@@ -340,17 +342,17 @@ public class AgentActionService {
             String city = String.valueOf(prop.getOrDefault("city", "")).toLowerCase();
             if (!zona.isBlank() && !city.isBlank() && !city.contains(zona) && !zona.contains(city)) continue;
             lineas.add("• " + prop.getOrDefault("name", prop.getOrDefault("address", "Inmueble"))
-                    + " — " + Math.round(precio) + "€"
+                    + " — " + Math.round(precio) + ("" + PaisActual.moneda())
                     + (prop.get("city") != null ? " (" + prop.get("city") + ")" : ""));
             if (lineas.size() >= 5) break;
         }
         if (lineas.isEmpty()) {
             return resp("No encontré propiedades de tu cartera que encajen con " + lead.getOrDefault("nombre", leadNombre) +
-                    (presup > 0 ? " (presupuesto ~" + Math.round(presup) + "€)" : "") +
+                    (presup > 0 ? " (presupuesto ~" + Math.round(presup) + ("" + PaisActual.moneda() + ")") : "") +
                     ". ¿Le abrimos una alerta con el simulador o buscamos en co-broking?");
         }
         return resp("🏠 Pisos para enseñarle a " + lead.getOrDefault("nombre", leadNombre) +
-                (presup > 0 ? " (hasta ~" + Math.round(presup) + "€)" : "") + ":\n\n" + String.join("\n", lineas) +
+                (presup > 0 ? " (hasta ~" + Math.round(presup) + ("" + PaisActual.moneda() + ")") : "") + ":\n\n" + String.join("\n", lineas) +
                 "\n\n¿Le agendo una visita o le redacto un mensaje con estas opciones?");
     }
 
@@ -424,7 +426,7 @@ public class AgentActionService {
         String url = BASE_URL + "/informe/" + rec.get("token");
         return ok("📊 Informe de mercado generado para " +
                 props.get(0).getOrDefault("name", props.get(0).get("address")) +
-                "\n\nPrecio recomendado: " + rec.get("precio_recomendado") + "€" +
+                "\n\nPrecio recomendado: " + rec.get("precio_recomendado") + ("" + PaisActual.moneda()) +
                 "\n👉 Compártelo: " + url, "cma_generado");
     }
 

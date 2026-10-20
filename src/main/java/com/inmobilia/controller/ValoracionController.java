@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.BrandingService;
 import com.inmobilia.service.NotificationService;
 import com.inmobilia.service.SupabaseService;
@@ -26,6 +28,7 @@ import java.util.*;
 public class ValoracionController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final ValoracionService valoracion;
     private final NotificationService notif;
     private final WorkflowEngine workflowEngine;
@@ -73,6 +76,7 @@ public class ValoracionController {
     public String publico(@PathVariable String token, Model model) {
         List<Map<String, Object>> u = supabase.selectFilter("users", "valoracion_token=eq." + token);
         if (u.isEmpty()) { model.addAttribute("error", "Enlace no válido"); return "valoracion_publica"; }
+        paises.usar(String.valueOf(u.get(0).get("id")));  // moneda y formato del país de la inmobiliaria
         Map<String, Object> b = branding.branding(String.valueOf(u.get(0).get("id")));
         model.addAttribute("token", token);
         model.addAttribute("empresa", b.get("nombre"));
@@ -140,7 +144,7 @@ public class ValoracionController {
         lead.put("origen", "valoracion");
         lead.put("etapa", "Nuevo");
         lead.put("zona", in.get("municipio"));
-        lead.put("notas", String.format("VALORACIÓN: %s de %s m² en %s. Estimado %s€. Quiere vender: %s",
+        lead.put("notas", String.format(("VALORACIÓN: %s de %s m² en %s. Estimado %s" + PaisActual.moneda() + ". Quiere vender: %s"),
                 in.getOrDefault("tipo", "?"), in.getOrDefault("metros", "?"),
                 in.getOrDefault("municipio", "?"), val.get("precio_estimado"),
                 in.getOrDefault("quiere_vender", "?")));

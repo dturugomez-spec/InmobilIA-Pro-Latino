@@ -78,7 +78,7 @@ public class CellTone {
             case "TIME" -> { return escape(String.valueOf(val)); }
             case "NUM" -> {
                 String n = fmtNumber(val);
-                return escape(isEur(name) ? n + " €" : n);
+                return escape(isEur(name) ? n + (" " + PaisActual.moneda()) : n);
             }
             case "INT" -> { return escape(String.valueOf(val)); }
             default -> {

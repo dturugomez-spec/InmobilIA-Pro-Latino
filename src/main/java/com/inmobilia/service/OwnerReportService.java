@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -112,7 +114,7 @@ public class OwnerReportService {
             + "  <p style=\"margin:0 0 6px\">" + esc(saludo) + "</p>"
             + "  <p style=\"margin:0 0 18px;color:#475569\">Este es el resumen de la actividad de <strong>" + esc(inmueble) + "</strong> este mes:</p>"
             + "  <table style=\"width:100%;border-collapse:collapse;margin-bottom:18px\">"
-            + row("Precio de venta actual", precioFmt + " €")
+            + row("Precio de venta actual", precioFmt + (" " + PaisActual.moneda()))
             + row("Días en el mercado", dias + " días")
             + row("Visitas este mes", String.valueOf(visitasMes))
             + row("Visitas totales", String.valueOf(visitasTotal))

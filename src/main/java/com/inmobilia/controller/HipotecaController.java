@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.BrandingService;
 import com.inmobilia.service.HipotecaService;
 import com.inmobilia.service.NotificationService;
@@ -26,6 +28,7 @@ import java.util.*;
 public class HipotecaController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final HipotecaService hipoteca;
     private final NotificationService notif;
     private final WorkflowEngine workflowEngine;
@@ -70,6 +73,7 @@ public class HipotecaController {
     public String publico(@PathVariable String token, Model model) {
         List<Map<String, Object>> u = supabase.selectFilter("users", "simulador_token=eq." + token);
         if (u.isEmpty()) { model.addAttribute("error", "Enlace no válido"); return "simulador_publico"; }
+        paises.usar(String.valueOf(u.get(0).get("id")));  // moneda y formato del país de la inmobiliaria
         model.addAttribute("token", token);
         model.addAttribute("empresa", branding.branding(String.valueOf(u.get(0).get("id"))).get("nombre"));
         return "simulador_publico";
@@ -128,7 +132,7 @@ public class HipotecaController {
         lead.put("etapa", "Nuevo");
         lead.put("zona", in.get("zona_interes"));
         lead.put("presupuesto", calc.get("capacidad_max"));
-        lead.put("notas", String.format("SIMULADOR HIPOTECA: capacidad ~%s€, cuota ~%s€/mes (esfuerzo %s%%). Busca en: %s",
+        lead.put("notas", String.format(("SIMULADOR HIPOTECA: capacidad ~%s" + PaisActual.moneda() + ", cuota ~%s" + PaisActual.moneda() + "/mes (esfuerzo %s%%). Busca en: %s"),
                 calc.get("capacidad_max"), calc.get("cuota_estimada"), calc.get("esfuerzo_pct"),
                 in.getOrDefault("zona_interes", "?")));
         lead.put("created_at", OffsetDateTime.now().toString());
@@ -149,7 +153,7 @@ public class HipotecaController {
 
         // 3) Notificar + workflow
         notif.create(uid, "🏦 Nuevo comprador (simulador)",
-                in.get("nombre") + " puede comprar hasta ~" + calc.get("capacidad_max") + "€ en " + in.getOrDefault("zona_interes", ""),
+                in.get("nombre") + " puede comprar hasta ~" + calc.get("capacidad_max") + ("" + PaisActual.moneda() + " en ") + in.getOrDefault("zona_interes", ""),
                 "/simulador", "alta");
         try { workflowEngine.triggerEvent(uid, "lead_creado", lead); } catch (Exception ignored) {}
 

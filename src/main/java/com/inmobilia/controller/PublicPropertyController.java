@@ -24,6 +24,7 @@ import java.util.Map;
 public class PublicPropertyController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
 
     @GetMapping("/p/{reference}")
     public String publicView(@PathVariable String reference, Model model) {
@@ -40,6 +41,7 @@ public class PublicPropertyController {
 
         // Owner data (para el contacto)
         String orgId = String.valueOf(prop.get("user_id"));
+        paises.usar(orgId);  // moneda y formato del país de la inmobiliaria
         var owners = supabase.findBy("users", Map.of("id", orgId));
         Map<String, Object> owner = owners.isEmpty() ? Map.of() : owners.get(0);
 

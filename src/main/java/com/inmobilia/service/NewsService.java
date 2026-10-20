@@ -54,24 +54,34 @@ public class NewsService {
 
     private record Feed(String url, String source, String icon, String category) {}
 
-    // Google News RSS: agrega muchas fuentes españolas, fechas actuales y NO bloquea IPs de
+    // Google News RSS por país: agrega muchas fuentes locales, fechas actuales y NO bloquea IPs de
     // datacenter (a diferencia de los RSS directos de los medios, que rechazan a Railway).
-    private static final List<Feed> MARKET_FEEDS = List.of(
-        new Feed("https://news.google.com/rss/search?q=vivienda%20OR%20inmobiliario%20OR%20alquiler%20OR%20hipoteca&hl=es&gl=ES&ceid=ES:es",
-                 "Actualidad", "", "Vivienda"),
-        new Feed("https://news.google.com/rss/search?q=mercado%20inmobiliario%20OR%20precio%20de%20la%20vivienda%20OR%20euribor%20OR%20idealista%20OR%20fotocasa&hl=es&gl=ES&ceid=ES:es",
-                 "Mercado", "", "Vivienda")
-    );
+    private static String googleNews(String query) {
+        String gl = com.inmobilia.util.PaisActual.get().codigo();
+        return "https://news.google.com/rss/search?q=" + java.net.URLEncoder.encode(query, StandardCharsets.UTF_8)
+                + "&hl=es-419&gl=" + gl + "&ceid=" + gl + ":es-419";
+    }
 
-    private static final List<Feed> REGULATORY_FEEDS = List.of(
-        new Feed("https://www.boe.es/rss/boe.php", "BOE", "", "Legal"),
-        new Feed("https://www.boe.es/rss/canal.php?c=ultimas_disposiciones", "BOE Ultimas", "", "Legal")
-    );
+    private static List<Feed> marketFeeds() {
+        return List.of(
+            new Feed(googleNews("vivienda OR inmobiliario OR alquiler OR renta OR hipoteca OR crédito hipotecario"),
+                     "Actualidad", "", "Vivienda"),
+            new Feed(googleNews("mercado inmobiliario OR precio de la vivienda OR bienes raíces OR desarrollo inmobiliario"),
+                     "Mercado", "", "Vivienda"));
+    }
+
+    private static List<Feed> regulatoryFeeds() {
+        return List.of(
+            new Feed(googleNews("ley de vivienda OR ley de arrendamiento OR reforma inmobiliaria OR impuesto predial"),
+                     "Normativa", "", "Legal"),
+            new Feed(googleNews("decreto vivienda OR regulación alquiler OR registro de la propiedad OR catastro"),
+                     "Normativa", "", "Legal"));
+    }
 
     // Palabras clave para quedarnos solo con noticias inmobiliarias de los feeds de economía general.
     private static final String[] KW_INMO = {"vivienda","alquiler","arrendamiento","hipoteca","inmobil",
-        "piso","idealista","fotocasa","catastro","urbanismo","okupa","desahucio","euribor","lau",
-        "obra nueva","promotor","casero","inquilino","metro cuadrado","precio del suelo"};
+        "departamento","apartamento","bienes raíces","catastro","urbanismo","desalojo","predial",
+        "preventa","desarrollador","arrendador","inquilino","metro cuadrado","precio del suelo","renta"};
 
     private boolean esInmobiliario(Article a) {
         String low = (a.title() + " " + a.summary()).toLowerCase();
@@ -86,15 +96,15 @@ public class NewsService {
         log.info("Noticias: caché evacuada para refresco periódico");
     }
 
-    @Cacheable(value = "newsMarket", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = "newsMarket", key = "T(com.inmobilia.util.PaisActual).get().codigo() + '-' + #limit", unless = "#result == null || #result.isEmpty()")
     public List<Article> marketNews(int limit) {
         List<Article> all = new ArrayList<>();
         if (gnewsKey != null && !gnewsKey.isBlank()) {
             // Fuente preferente: API GNews (funciona desde la IP de Railway; los RSS directos la bloquean)
             all.addAll(fetchGnews("vivienda OR inmobiliario OR alquiler OR hipoteca", 10));
-            all.addAll(fetchGnews("mercado inmobiliario OR precio vivienda OR euribor", 10));
+            all.addAll(fetchGnews("mercado inmobiliario OR precio vivienda OR bienes raíces", 10));
         } else {
-            for (Feed f : MARKET_FEEDS) {
+            for (Feed f : marketFeeds()) {
                 try {
                     boolean filtrar = "Economia".equals(f.category());
                     for (Article a : fetch(f)) if (!filtrar || esInmobiliario(a)) all.add(a);
@@ -116,7 +126,7 @@ public class NewsService {
         List<Article> out = new ArrayList<>();
         try {
             String url = "https://gnews.io/api/v4/search?q=" + java.net.URLEncoder.encode(query, StandardCharsets.UTF_8)
-                    + "&lang=es&country=es&max=" + max + "&apikey=" + gnewsKey;
+                    + "&lang=es&country=" + com.inmobilia.util.PaisActual.get().codigo().toLowerCase() + "&max=" + max + "&apikey=" + gnewsKey;
             HttpRequest req = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(8)).GET().build();
             HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
@@ -142,10 +152,10 @@ public class NewsService {
         return out;
     }
 
-    @Cacheable(value = "newsRegulatory", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = "newsRegulatory", key = "T(com.inmobilia.util.PaisActual).get().codigo() + '-' + #limit", unless = "#result == null || #result.isEmpty()")
     public List<Article> regulatoryNews(int limit) {
         List<Article> all = new ArrayList<>();
-        for (Feed f : REGULATORY_FEEDS) {
+        for (Feed f : regulatoryFeeds()) {
             try {
                 List<Article> items = fetch(f);
                 // Filtrar solo los que tengan relacion con vivienda/inmobiliario
@@ -153,8 +163,8 @@ public class NewsService {
                     String low = (a.title() + " " + a.summary()).toLowerCase();
                     if (low.contains("vivienda") || low.contains("alquiler") || low.contains("arrendamiento")
                             || low.contains("hipoteca") || low.contains("inmobil") || low.contains("urbanismo")
-                            || low.contains("catastro") || low.contains("suelo") || low.contains("itp")
-                            || low.contains("plusvalia") || low.contains("lau")) {
+                            || low.contains("catastro") || low.contains("suelo") || low.contains("predial")
+                            || low.contains("renta") || low.contains("registro de la propiedad")) {
                         all.add(a);
                     }
                 }

@@ -4,7 +4,6 @@ import com.inmobilia.service.FutureProofScoreService;
 import com.inmobilia.service.FutureProofScoreService.ScoreResult;
 import com.inmobilia.service.HealthScoreService;
 import com.inmobilia.service.NewsService;
-import com.inmobilia.service.OfficialDataService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
@@ -29,7 +28,6 @@ public class HerramientasController {
     private final FutureProofScoreService futureProof;
     private final SupabaseService supabase;
     private final NewsService newsService;
-    private final OfficialDataService officialData;
 
     @GetMapping("/health-score")
     public String healthScore(HttpSession session, Model model) {
@@ -174,37 +172,6 @@ public class HerramientasController {
         try {
             model.addAttribute("regulatoryNews", newsService.regulatoryNews(12));
         } catch (Exception e) { model.addAttribute("regulatoryNews", java.util.List.of()); }
-        try {
-            model.addAttribute("euribor", officialData.euriborLive());
-            model.addAttribute("euriborDelta", officialData.euriborDelta12m());
-            model.addAttribute("ipvYoY", officialData.ipvYoY());
-            model.addAttribute("tedr", officialData.bancoDeEspanaTedr());
-        } catch (Exception ignored) {}
         return "herramientas/radar";
-    }
-
-    @GetMapping("/holding")
-    public String holdingForm(HttpSession session, Model model) {
-        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
-        model.addAttribute("page", "Optimizador Holding");
-        return "herramientas/holding";
-    }
-
-    @PostMapping("/holding")
-    public String holdingRun(@RequestParam double ingresosAnuales,
-                             @RequestParam(defaultValue = "Persona fisica") String estructuraActual,
-                             HttpSession session, Model model) {
-        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
-        double pfIrpf = ingresosAnuales * 0.45;
-        double pjIs = ingresosAnuales * 0.25;
-        double ahorro = pfIrpf - pjIs;
-        String recomendacion = ingresosAnuales >= 60000 ? "Sociedad Limitada" : "Persona fisica (aun)";
-        model.addAttribute("page", "Optimizador Holding");
-        model.addAttribute("pfIrpf", pfIrpf);
-        model.addAttribute("pjIs", pjIs);
-        model.addAttribute("ahorro", ahorro);
-        model.addAttribute("recomendacion", recomendacion);
-        model.addAttribute("estructuraActual", estructuraActual);
-        return "herramientas/holding";
     }
 }

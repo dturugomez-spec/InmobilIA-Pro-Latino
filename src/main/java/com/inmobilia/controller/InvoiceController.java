@@ -2,7 +2,6 @@ package com.inmobilia.controller;
 
 import com.inmobilia.service.PermissionService;
 import com.inmobilia.service.SupabaseService;
-import com.inmobilia.service.VerifactuService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -17,11 +16,13 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 /**
- * Facturación con normativa española:
+ * Facturación / documentos de cobro, adaptados al país de la inmobiliaria:
  * - Numeración correlativa por serie/usuario (auto-trigger en BBDD)
- * - IVA 21% por defecto (configurable)
- * - Retención IRPF 19% típico para alquileres
+ * - Impuesto al consumo del país por defecto (IVA 16 % MX, IVA 19 % CO, IGV 18 % PE…), configurable
+ * - Retención opcional (columna irpf_pct por compatibilidad del esquema)
  * - Estados: Borrador, Emitida, Pagada, Vencida, Anulada
+ * La factura electrónica con validez fiscal se timbra en el sistema autorizado de cada país
+ * (CFDI/SAT, DIAN, ARCA, SII, SUNAT…); aquí se lleva el control de cobros.
  */
 @Controller
 @RequestMapping("/invoices")
@@ -31,7 +32,6 @@ public class InvoiceController {
 
     private final SupabaseService supabase;
     private final PermissionService permissions;
-    private final VerifactuService verifactu;
 
     // ─── LISTADO ───
     @GetMapping
@@ -178,12 +178,6 @@ public class InvoiceController {
         if (id == null || id.isBlank()) {
             data.put("created_at", OffsetDateTime.now().toString());
 
-            // Verifactu: encadenar hash con la factura anterior
-            String prevHash = verifactu.getLastHash(uid);
-            int chainId = verifactu.getNextChainId(uid);
-            data.put("verifactu_chain_id", chainId);
-            data.put("verifactu_prev_hash", prevHash);
-
             Map<String, Object> saved = supabase.insert("invoices", data);
             if (saved == null || saved.isEmpty()) {
                 String err = supabase.lastError();
@@ -191,17 +185,7 @@ public class InvoiceController {
                 return "redirect:/invoices/new";
             }
 
-            // Calcular hash y QR ahora que tenemos el numero asignado por el trigger
-            try {
-                String hash = verifactu.calculateHash(saved, prevHash);
-                String qr = verifactu.generateQrPayload(saved, hash);
-                supabase.update("invoices", String.valueOf(saved.get("id")),
-                        Map.of("verifactu_hash", hash, "verifactu_qr_payload", qr), uid);
-            } catch (Exception e) {
-                log.warn("Verifactu hash falló: {}", e.getMessage());
-            }
-
-            SessionUtils.flash(session, "Factura " + saved.get("full_number") + " creada (Verifactu OK)");
+            SessionUtils.flash(session, "Factura " + saved.get("full_number") + " creada");
             return "redirect:/invoices/" + saved.get("id");
         } else {
             data.put("updated_at", OffsetDateTime.now().toString());

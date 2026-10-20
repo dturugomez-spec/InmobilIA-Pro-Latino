@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
@@ -30,7 +32,7 @@ public class ReferralsController {
         if (cfgs.isEmpty()) {
             Map<String, Object> nueva = new LinkedHashMap<>();
             nueva.put("user_id", uid);
-            nueva.put("premio_referente", "200€ por cada venta cerrada");
+            nueva.put("premio_referente", ("200 " + PaisActual.moneda() + " por cada venta cerrada"));
             nueva.put("premio_referido", "0,5% de descuento en comisión");
             nueva.put("created_at", OffsetDateTime.now().toString());
             cfg = supabase.insert("referidos_config", nueva);

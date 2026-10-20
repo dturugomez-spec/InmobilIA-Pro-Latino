@@ -33,7 +33,7 @@
                 <li th:each="t : ${pendientes}" class="p-2 rounded bg-slate-50 dark:bg-neutral-800/50">
                     <div class="flex justify-between">
                         <span th:text="${t.get('fecha')}">—</span>
-                        <span class="font-mono font-bold" th:classappend="${t.get('importe').doubleValue() >= 0 ? 'text-emerald-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(t.get('importe'),1,'POINT',2,'COMMA')} + ' €'">—</span>
+                        <span class="font-mono font-bold" th:classappend="${t.get('importe').doubleValue() >= 0 ? 'text-emerald-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(t.get('importe'),1,'DEFAULT',2,'DEFAULT')} + ' ' + ${mon}">—</span>
                     </div>
                     <p class="text-[10px] text-slate-500" th:text="${t.get('concepto')}">—</p>
                 </li>

@@ -4,7 +4,7 @@
 <body><div layout:fragment="content">
 <div class="rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 p-6 mb-5 text-white">
     <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="credit-card" class="h-6 w-6"></i> Reservas online</h2>
-    <p class="text-sm text-white/80 mt-1">Cobra señal de reserva por internet con Stripe. <strong th:text="${pagadas}">0</strong> pagadas · <strong th:text="${#numbers.formatDecimal(totalCobrado, 1, 'POINT', 2, 'COMMA')} + ' €'">0</strong> cobrado.</p>
+    <p class="text-sm text-white/80 mt-1">Cobra señal de reserva por internet con Stripe. <strong th:text="${pagadas}">0</strong> pagadas · <strong th:text="${#numbers.formatDecimal(totalCobrado, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</strong> cobrado.</p>
 </div>
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
     <table class="w-full text-sm">
@@ -20,7 +20,7 @@
                 <p class="text-slate-500" th:text="${r.get('email')}">—</p>
             </td>
             <td class="px-3 py-2 text-xs font-mono" th:text="${#strings.substring(r.get('propiedad_id'),0,8)}">—</td>
-            <td class="px-3 py-2 text-right font-bold" th:text="${#numbers.formatDecimal(r.get('importe'),1,'POINT',2,'COMMA') + ' €'}">—</td>
+            <td class="px-3 py-2 text-right font-bold" th:text="${#numbers.formatDecimal(r.get('importe'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</td>
             <td class="px-3 py-2">
                 <span th:if="${r.get('estado') == 'pagada'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> Pagada</span>
                 <span th:if="${r.get('estado') == 'pendiente'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">⏳ Pendiente</span>

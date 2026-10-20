@@ -33,7 +33,7 @@
 
             <div class="flex items-center justify-between text-xs">
                 <span class="text-slate-500" th:text="${p.get('total_cards')} + ' tarjetas'">0</span>
-                <span class="font-mono font-bold text-emerald-700" th:text="${#numbers.formatDecimal(p.get('valor_total') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">0 €</span>
+                <span class="font-mono font-bold text-emerald-700" th:text="${#numbers.formatDecimal(p.get('valor_total') ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</span>
             </div>
         </a>
     </div>

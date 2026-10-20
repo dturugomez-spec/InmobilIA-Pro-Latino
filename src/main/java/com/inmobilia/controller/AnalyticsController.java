@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
@@ -78,7 +80,7 @@ public class AnalyticsController {
         if (bestMonth >= 0) {
             insights.add(insight("📈", "info", "Mejor mes",
                     monthName(bestMonth) + " fue tu mes con más ingresos: " +
-                    String.format("%,.0f €", ingresosActual[bestMonth])));
+                    String.format(("%,.0f " + PaisActual.moneda()), ingresosActual[bestMonth])));
         }
 
         // Cap rate medio

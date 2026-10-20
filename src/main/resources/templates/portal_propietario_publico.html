@@ -27,7 +27,7 @@
     <div class="brand-grad rounded-2xl shadow-xl p-7 text-white mb-5">
         <p class="text-xs uppercase tracking-wider text-white/60">Informe privado de tu inmueble</p>
         <h1 class="display text-2xl md:text-3xl font-extrabold mt-1" th:text="${p.get('address') ?: p.get('name')}">—</h1>
-        <p class="text-white/80 mt-1 text-sm" th:text="${p.get('city') + (p.get('current_value') != null ? ' · ' + #numbers.formatInteger(p.get('current_value'), 0, 'POINT') + ' €' : '')}">—</p>
+        <p class="text-white/80 mt-1 text-sm" th:text="${p.get('city') + (p.get('current_value') != null ? ' · ' + #numbers.formatInteger(p.get('current_value'), 0, 'DEFAULT') + ' ' + mon : '')}">—</p>
         <p class="text-white/50 text-xs mt-3" th:if="${branding != null}"
            th:text="'Gestionado por ' + ${branding.get('nombre')}">—</p>
     </div>
@@ -73,7 +73,7 @@
     <!-- Mejor oferta -->
     <div th:if="${resumen.get('mejor_oferta') != null}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
         <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1"> Mejor oferta recibida</p>
-        <p class="display text-3xl font-extrabold text-slate-900" th:text="${#numbers.formatInteger(resumen.get('mejor_oferta'), 0, 'POINT')} + ' €'">—</p>
+        <p class="display text-3xl font-extrabold text-slate-900" th:text="${#numbers.formatInteger(resumen.get('mejor_oferta'), 0, 'DEFAULT')} + ' ' + ${mon}">—</p>
         <p th:if="${resumen.get('oferta_vs_precio_pct') != null}" class="text-sm text-slate-500 mt-1"
            th:text="${resumen.get('oferta_vs_precio_pct')} + '% de tu precio de salida'">—</p>
     </div>

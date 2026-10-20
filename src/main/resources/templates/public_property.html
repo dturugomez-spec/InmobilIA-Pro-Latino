@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="|${prop.get('name')} · ${prop.get('city')} · InmobilIA Pro|">Propiedad</title>
-    <meta name="description" th:content="|${prop.get('name')} en ${prop.get('city')}. ${prop.get('area_m2')} m². ${prop.get('bedrooms')} hab. ${prop.get('current_value')}€|">
+    <meta name="description" th:content="|${prop.get('name')} en ${prop.get('city')}. ${prop.get('area_m2')} m². ${prop.get('bedrooms')} hab. ${prop.get('current_value')}${mon}|">
     <meta property="og:title" th:content="${prop.get('name')}">
-    <meta property="og:description" th:content="|${prop.get('city')} · ${prop.get('area_m2')}m² · ${prop.get('current_value')}€|">
+    <meta property="og:description" th:content="|${prop.get('city')} · ${prop.get('area_m2')}m² · ${prop.get('current_value')}${mon}|">
     <meta property="og:image" th:content="${prop.get('featured_photo')}">
     <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -103,8 +103,8 @@
         <aside class="space-y-4 lg:sticky lg:top-24 self-start">
             <div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 text-white p-5 ring-1 ring-blue-800 shadow-xl">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200">Precio</div>
-                <div class="text-3xl font-bold tracking-tight mt-1" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : 'Consultar'}">— €</div>
-                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="${'o ' + prop.get('rental_income') + ' €/mes alquiler'}">—</div>
+                <div class="text-3xl font-bold tracking-tight mt-1" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' ' + mon : 'Consultar'}">— [[${mon}]]</div>
+                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="${'o ' + prop.get('rental_income') + ' ' + mon + '/mes alquiler'}">—</div>
 
                 <a href="#contact" class="block w-full text-center mt-4 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-blue-800 text-sm font-bold transition-colors">
                     Solicitar visita

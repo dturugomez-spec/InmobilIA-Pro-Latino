@@ -21,7 +21,7 @@
         </div>
         <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
             <p class="text-[10px] uppercase text-emerald-700">Ingresos totales</p>
-            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(ingresoTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0 €</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(ingresoTotal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</p>
         </div>
         <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
             <p class="text-[10px] uppercase text-blue-700">Operaciones</p>

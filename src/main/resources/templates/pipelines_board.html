@@ -20,8 +20,8 @@
             <div class="text-right">
                 <p class="text-[10px] uppercase text-white/60">Valor total · Forecast</p>
                 <p class="text-lg font-bold">
-                    <span class="text-white/90" th:text="${#numbers.formatDecimal(valorTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0</span>
-                    <span class="text-emerald-300 ml-2 text-sm">→ <span th:text="${#numbers.formatDecimal(forecast, 1, 'POINT', 0, 'COMMA')} + ' €'">0</span></span>
+                    <span class="text-white/90" th:text="${#numbers.formatDecimal(valorTotal, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</span>
+                    <span class="text-emerald-300 ml-2 text-sm">→ <span th:text="${#numbers.formatDecimal(forecast, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</span></span>
                 </p>
             </div>
         </div>
@@ -45,7 +45,7 @@
                         <button th:data-id="${pipeline.get('id')}" th:data-col="${col.get('key')}" onclick="abrirNuevaCard(this.dataset.id, this.dataset.col)" class="text-slate-400 hover:text-slate-700 text-lg">+</button>
                     </div>
                     <div class="mt-1 flex items-center justify-between text-[10px]">
-                        <span class="font-mono text-emerald-700" th:text="${#numbers.formatDecimal(valorColumna.get(col.get('key')) ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">0</span>
+                        <span class="font-mono text-emerald-700" th:text="${#numbers.formatDecimal(valorColumna.get(col.get('key')) ?: 0, 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">0</span>
                         <span class="text-slate-400" th:if="${tiempoMedio.get(col.get('key')) != null}" th:text="${tiempoMedio.get(col.get('key'))} + 'h media'">0</span>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                             <p class="text-xs text-slate-500 mt-0.5" th:text="${card.get('subtitulo')}">—</p>
 
                             <div th:if="${card.get('valor') != null}" class="mt-2 flex items-center justify-between text-xs">
-                                <span class="font-mono font-bold text-emerald-700" th:text="${#numbers.formatDecimal(card.get('valor'), 1, 'POINT', 0, 'COMMA')} + ' €'">—</span>
+                                <span class="font-mono font-bold text-emerald-700" th:text="${#numbers.formatDecimal(card.get('valor'), 1, 'DEFAULT', 0, 'DEFAULT')} + ' ' + ${mon}">—</span>
                                 <span th:if="${card.get('probabilidad')}" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700" th:text="${card.get('probabilidad')} + '%'">—</span>
                             </div>
 
@@ -91,7 +91,7 @@
                 <input type="text" name="titulo" placeholder="Título *" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 <input type="text" name="subtitulo" placeholder="Subtítulo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="number" name="valor" placeholder="Valor (€)" step="0.01" class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    <input type="number" name="valor" placeholder="Valor ($)" step="0.01" class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                     <input type="number" name="probabilidad" placeholder="% prob." min="0" max="100" class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 </div>
                 <input type="date" name="fecha_limite" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">

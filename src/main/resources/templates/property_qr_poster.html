@@ -51,8 +51,8 @@
             <div class="text-sm text-blue-200 mb-4">Fotos · Precio · Características · Solicitar visita</div>
 
             <div class="bg-white/10 backdrop-blur rounded-xl p-4 ring-1 ring-white/20">
-                <div class="text-3xl font-black tracking-tight" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : 'Consultar'}">— €</div>
-                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="'o ' + ${prop.get('rental_income')} + ' €/mes alquiler'">—</div>
+                <div class="text-3xl font-black tracking-tight" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' ' + mon : 'Consultar'}">— [[${mon}]]</div>
+                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="'o ' + ${prop.get('rental_income')} + ' ' + ${mon} + '/mes alquiler'">—</div>
                 <div class="text-xs text-blue-300 mt-3 flex items-center justify-center gap-3">
                     <span th:if="${prop.get('area_m2')}"><strong th:text="${prop.get('area_m2')}">—</strong> m²</span>
                     <span th:if="${prop.get('bedrooms')}"><strong th:text="${prop.get('bedrooms')}">—</strong> hab</span>

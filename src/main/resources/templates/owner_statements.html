@@ -8,7 +8,7 @@
 </div>
 
 <div class="rounded-xl bg-amber-50 border-2 border-amber-200 p-4 mb-5">
-    <p class="text-sm font-bold text-amber-900"> Pendiente liquidar: <span th:text="${#numbers.formatDecimal(totalPendiente, 1, 'POINT', 2, 'COMMA')} + ' €'">0</span></p>
+    <p class="text-sm font-bold text-amber-900"> Pendiente liquidar: <span th:text="${#numbers.formatDecimal(totalPendiente, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">0</span></p>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -41,9 +41,9 @@
             <tr th:each="e : ${extractos}">
                 <td class="px-3 py-2 text-xs" th:text="${e.get('propietario') != null ? e.get('propietario').get('nombre') : '—'}">—</td>
                 <td class="px-3 py-2 text-xs font-mono" th:text="${#strings.substring(e.get('periodo_inicio'),0,7)}">—</td>
-                <td class="px-3 py-2 text-right font-mono text-emerald-700" th:text="${#numbers.formatDecimal(e.get('total_rentas') ?: 0, 1, 'POINT', 2, 'COMMA')} + '€'">—</td>
-                <td class="px-3 py-2 text-right font-mono text-red-700" th:text="${#numbers.formatDecimal(e.get('total_gastos') ?: 0, 1, 'POINT', 2, 'COMMA')} + '€'">—</td>
-                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(e.get('importe_liquidar') ?: 0, 1, 'POINT', 2, 'COMMA')} + '€'">—</td>
+                <td class="px-3 py-2 text-right font-mono text-emerald-700" th:text="${#numbers.formatDecimal(e.get('total_rentas') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ${mon}">—</td>
+                <td class="px-3 py-2 text-right font-mono text-red-700" th:text="${#numbers.formatDecimal(e.get('total_gastos') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ${mon}">—</td>
+                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(e.get('importe_liquidar') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ${mon}">—</td>
                 <td class="px-3 py-2">
                     <span th:if="${e.get('estado') == 'pendiente'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Pendiente</span>
                     <span th:if="${e.get('estado') == 'pagado'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> Pagado</span>

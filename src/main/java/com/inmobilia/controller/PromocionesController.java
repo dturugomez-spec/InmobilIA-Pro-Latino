@@ -17,6 +17,7 @@ import java.util.*;
 public class PromocionesController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
 
     @GetMapping
     public String list(HttpSession session, Model model) {
@@ -113,6 +114,7 @@ public class PromocionesController {
         List<Map<String, Object>> rows = supabase.selectFilter("promociones", "landing_slug=eq." + slug + "&publicada=eq.true");
         if (rows.isEmpty()) { model.addAttribute("error", true); return "promociones_public"; }
         Map<String, Object> p = rows.get(0);
+        paises.usar(String.valueOf(p.get("user_id")));  // moneda y formato del país de la inmobiliaria
         int v = ((Number) p.getOrDefault("visitas_count", 0)).intValue() + 1;
         supabase.update("promociones", String.valueOf(p.get("id")), Map.of("visitas_count", v));
 

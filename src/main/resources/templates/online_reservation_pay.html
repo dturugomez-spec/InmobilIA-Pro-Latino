@@ -4,7 +4,7 @@
 <div class="max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
     <div class="text-5xl mb-4"></div>
     <h1 class="text-2xl font-bold mb-2">Completar pago</h1>
-    <p class="text-slate-600 mb-6">Reserva por <strong th:text="${#numbers.formatDecimal(reserva?.get('importe') ?: 0, 1, 'POINT', 2, 'COMMA') + ' €'}">—</strong></p>
+    <p class="text-slate-600 mb-6">Reserva por <strong th:text="${#numbers.formatDecimal(reserva?.get('importe') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT') + ' ' + mon}">—</strong></p>
     <a th:href="${stripeUrl}" class="block px-4 py-4 rounded-lg bg-blue-700 text-white font-bold"> Pagar con tarjeta →</a>
     <p class="text-xs text-slate-400 mt-4">Procesado por Stripe · 256-bit SSL</p>
 </div>

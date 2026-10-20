@@ -46,7 +46,7 @@
     <p class="text-sm mb-3">El PROPIETARIO encarga a LA AGENCIA la gestión para la venta del siguiente inmueble:</p>
     <p class="text-sm mb-3 pl-4 border-l-2 border-slate-300" th:text="${n.get('inmueble_texto')}">—</p>
     <p class="text-sm mb-6">Precio de venta fijado:
-        <strong th:text="${n.get('precio') != null ? #numbers.formatInteger(n.get('precio'), 0, 'POINT') + ' €' : '____________'}">—</strong>.
+        <strong th:text="${n.get('precio') != null ? #numbers.formatInteger(n.get('precio'), 0, 'DEFAULT') + ' ' + mon : '____________'}">—</strong>.
     </p>
 
     <!-- Condiciones -->

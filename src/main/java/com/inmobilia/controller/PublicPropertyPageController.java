@@ -20,6 +20,7 @@ import java.util.*;
 public class PublicPropertyPageController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private final BrandingService branding;
     private final LeadAutoResponderService autoResponder;
 
@@ -37,6 +38,7 @@ public class PublicPropertyPageController {
 
         // Datos de la agencia (branding real) para contacto/cabecera
         String uid = String.valueOf(p.get("user_id"));
+        paises.usar(uid);  // moneda y formato del país de la inmobiliaria
         Map<String, Object> agente = branding.branding(uid);
 
         // Microsite del agente para branding

@@ -37,13 +37,13 @@
     <!-- Precio recomendado -->
     <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-7 mb-5 text-center">
         <p class="text-sm text-slate-500 uppercase tracking-wider">Precio de salida recomendado</p>
-        <p class="display text-4xl md:text-5xl font-extrabold text-slate-900 mt-2" th:text="${#numbers.formatInteger(r.get('precio_recomendado'), 0, 'POINT')} + ' €'">—</p>
+        <p class="display text-4xl md:text-5xl font-extrabold text-slate-900 mt-2" th:text="${#numbers.formatInteger(r.get('precio_recomendado'), 0, 'DEFAULT')} + ' ' + ${mon}">—</p>
         <p class="text-slate-500 mt-2 text-sm">
-            Rango: <span th:text="${#numbers.formatInteger(r.get('precio_min'), 0, 'POINT')}">—</span> € –
-            <span th:text="${#numbers.formatInteger(r.get('precio_max'), 0, 'POINT')}">—</span> €
+            Rango: <span th:text="${#numbers.formatInteger(r.get('precio_min'), 0, 'DEFAULT')}">—</span> [[${mon}]] –
+            <span th:text="${#numbers.formatInteger(r.get('precio_max'), 0, 'DEFAULT')}">—</span> [[${mon}]]
         </p>
         <div class="inline-flex items-center gap-3 mt-4 flex-wrap justify-center">
-            <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold" th:text="'~' + ${#numbers.formatInteger(r.get('eur_m2'), 0, 'POINT')} + ' €/m²'">—</span>
+            <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold" th:text="'~' + ${#numbers.formatInteger(r.get('eur_m2'), 0, 'DEFAULT')} + ' ' + ${mon} + '/m²'">—</span>
             <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold" th:text="'confianza ' + ${r.get('confianza')}">—</span>
         </div>
     </div>
@@ -55,8 +55,8 @@
             <p class="text-xs text-slate-500 mt-1">comparables</p>
         </div>
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
-            <p class="display text-2xl font-extrabold text-slate-900" th:text="${r.get('eur_m2_zona') != null ? #numbers.formatInteger(r.get('eur_m2_zona'), 0, 'POINT') + ' €' : '—'}">—</p>
-            <p class="text-xs text-slate-500 mt-1">€/m² zona</p>
+            <p class="display text-2xl font-extrabold text-slate-900" th:text="${r.get('eur_m2_zona') != null ? #numbers.formatInteger(r.get('eur_m2_zona'), 0, 'DEFAULT') + ' ' + mon : '—'}">—</p>
+            <p class="text-xs text-slate-500 mt-1">[[${mon}]]/m² zona</p>
         </div>
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
             <p class="display text-2xl font-extrabold text-amber-600" th:text="${r.get('dias_medios_venta') != null ? r.get('dias_medios_venta') : '—'}">—</p>
@@ -80,7 +80,7 @@
                         <th class="py-2 pr-2">Inmueble</th>
                         <th class="py-2 px-2 text-right">m²</th>
                         <th class="py-2 px-2 text-right">Precio</th>
-                        <th class="py-2 px-2 text-right">€/m²</th>
+                        <th class="py-2 px-2 text-right">[[${mon}]]/m²</th>
                         <th class="py-2 pl-2">Estado</th>
                     </tr>
                 </thead>
@@ -88,8 +88,8 @@
                     <tr th:each="c : ${comparables}" class="border-b border-slate-50">
                         <td class="py-2 pr-2 text-slate-700 truncate max-w-[160px]" th:text="${c.get('direccion')}">—</td>
                         <td class="py-2 px-2 text-right text-slate-600" th:text="${#numbers.formatInteger(c.get('metros'), 0)}">—</td>
-                        <td class="py-2 px-2 text-right font-semibold" th:text="${#numbers.formatInteger(c.get('precio'), 0, 'POINT')} + ' €'">—</td>
-                        <td class="py-2 px-2 text-right text-slate-600" th:text="${#numbers.formatInteger(c.get('eur_m2'), 0, 'POINT')}">—</td>
+                        <td class="py-2 px-2 text-right font-semibold" th:text="${#numbers.formatInteger(c.get('precio'), 0, 'DEFAULT')} + ' ' + ${mon}">—</td>
+                        <td class="py-2 px-2 text-right text-slate-600" th:text="${#numbers.formatInteger(c.get('eur_m2'), 0, 'DEFAULT')}">—</td>
                         <td class="py-2 pl-2">
                             <span th:if="${c.get('vendida')}" class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Vendida</span>
                             <span th:unless="${c.get('vendida')}" class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">En venta</span>

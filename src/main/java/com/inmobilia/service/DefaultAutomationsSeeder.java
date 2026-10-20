@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -67,14 +69,14 @@ public class DefaultAutomationsSeeder {
 
             // ─── 3. LEAD PREMIUM: presupuesto alto → director + urgente ───
             crear(userId,
-                "💎 Lead premium (>500k€) → director + urgente",
-                "Si el presupuesto supera 500.000€, notifica al director y crea tarea urgente para HOY.",
+                ("💎 Lead premium (>500k" + PaisActual.moneda() + ") → director + urgente"),
+                ("Si el presupuesto supera 500.000 " + PaisActual.moneda() + ", notifica al director y crea tarea urgente para HOY."),
                 "lead_creado",
                 Map.of("campo", "presupuesto_max", "operador", ">", "valor", 500000),
                 List.of(
                     accion("send_notification", Map.of(
                         "titulo", "💎 Lead PREMIUM",
-                        "mensaje", "{nombre} · presupuesto {presupuesto_max}€",
+                        "mensaje", ("{nombre} · presupuesto {presupuesto_max} " + PaisActual.moneda()),
                         "urgencia", "alta", "link", "/leads-scoring")),
                     accion("create_task", Map.of(
                         "titulo", "🚨 LEAD VIP {nombre} — contactar HOY",

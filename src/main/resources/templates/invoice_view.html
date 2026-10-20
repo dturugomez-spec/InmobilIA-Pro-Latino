@@ -99,7 +99,7 @@
                 <tbody>
                     <tr class="border-b border-slate-100 dark:border-neutral-800">
                         <td class="py-3.5 text-slate-700 dark:text-slate-300" th:text="${inv.get('concepto') ?: 'Servicio facturado'}">Concepto</td>
-                        <td class="py-3.5 font-mono text-right font-medium" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                        <td class="py-3.5 font-mono text-right font-medium" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</td>
                     </tr>
                 </tbody>
             </table>
@@ -107,18 +107,18 @@
             <!-- Resumen -->
             <div class="mt-6 ml-auto max-w-xs">
                 <div class="space-y-2 text-sm">
-                    <div class="flex justify-between"><span class="text-slate-600 dark:text-slate-400">Base imponible</span><span class="font-mono" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</span></div>
+                    <div class="flex justify-between"><span class="text-slate-600 dark:text-slate-400">Base imponible</span><span class="font-mono" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</span></div>
                     <div class="flex justify-between" th:if="${inv.get('iva_amount') != null and inv.get('iva_amount') > 0}">
                         <span class="text-slate-600 dark:text-slate-400">IVA (<span th:text="${inv.get('iva_pct') + '%'}">21%</span>)</span>
-                        <span class="font-mono text-emerald-700 dark:text-emerald-400" th:text="${'+ ' + #numbers.formatDecimal(inv.get('iva_amount'),0,'POINT',2,'COMMA') + ' €'}">+ — €</span>
+                        <span class="font-mono text-emerald-700 dark:text-emerald-400" th:text="${'+ ' + #numbers.formatDecimal(inv.get('iva_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">+ — [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between" th:if="${inv.get('irpf_amount') != null and inv.get('irpf_amount') > 0}">
                         <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${inv.get('irpf_pct') + '%'}">19%</span>)</span>
-                        <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(inv.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €'}">- — €</span>
+                        <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(inv.get('irpf_amount'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">- — [[${mon}]]</span>
                     </div>
                     <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
                         <span class="text-base font-bold">TOTAL</span>
-                        <span class="text-xl font-mono font-bold" th:text="${inv.get('total') != null ? #numbers.formatDecimal(inv.get('total'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</span>
+                        <span class="text-xl font-mono font-bold" th:text="${inv.get('total') != null ? #numbers.formatDecimal(inv.get('total'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">— [[${mon}]]</span>
                     </div>
                 </div>
             </div>

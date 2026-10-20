@@ -20,6 +20,12 @@
                             th:text="|${p.bandera()} ${p.nombre()} (${p.moneda()})|">México</option>
                 </select>
             </label>
+            <label class="full">Moneda de trabajo
+                <select name="moneda">
+                    <option value="" th:text="|Moneda local del país|">Moneda local del país</option>
+                    <option value="USD" th:selected="${pais.moneda() == 'USD'}">USD (dólares, habitual en compraventa en Argentina, Uruguay o Perú)</option>
+                </select>
+            </label>
             <button class="btn btn-primary">Guardar país</button>
         </form>
         <p th:unless="${esAdmin}" style="color:#64748b;font-size:13px">Solo el administrador de la inmobiliaria puede cambiarlo.</p>

@@ -20,15 +20,15 @@
             <thead class="bg-slate-50"><tr>
                 <th class="text-left py-2">Municipio</th>
                 <th class="text-right py-2">Props</th>
-                <th class="text-right py-2">€/m²</th>
+                <th class="text-right py-2">[[${mon}]]/m²</th>
                 <th class="text-right py-2">Precio medio</th>
             </tr></thead>
             <tbody>
             <tr th:each="e : ${estadisticas}" class="border-b hover:bg-slate-50">
                 <td class="py-2 font-semibold" th:text="${e.get('municipio')}">—</td>
                 <td class="py-2 text-right font-mono" th:text="${e.get('count')}">0</td>
-                <td class="py-2 text-right font-mono text-blue-700" th:text="${#numbers.formatDecimal(e.get('eur_m2_medio'), 1, 0)} + '€'">—</td>
-                <td class="py-2 text-right font-mono" th:text="${#numbers.formatDecimal(e.get('precio_medio'), 1, 'POINT', 0, 'COMMA')} + '€'">—</td>
+                <td class="py-2 text-right font-mono text-blue-700" th:text="${#numbers.formatDecimal(e.get('eur_m2_medio'), 1, 0)} + ${mon}">—</td>
+                <td class="py-2 text-right font-mono" th:text="${#numbers.formatDecimal(e.get('precio_medio'), 1, 'DEFAULT', 0, 'DEFAULT')} + ${mon}">—</td>
             </tr>
             </tbody>
         </table>
@@ -44,7 +44,7 @@ const bounds = [];
 for (const p of props) {
     if (!p.lat || !p.lng) continue;
     const m = L.marker([p.lat, p.lng]).addTo(map);
-    m.bindPopup(`<strong>${p.direccion}</strong><br>${p.tipo} · ${new Intl.NumberFormat('es-ES').format(p.precio)}€<br><a href="/propiedades/${p.id}">Ver</a>`);
+    m.bindPopup(`<strong>${p.direccion}</strong><br>${p.tipo} · ${new Intl.NumberFormat(window.LOC||'es').format(p.precio)}${(window.MON||'')}<br><a href="/propiedades/${p.id}">Ver</a>`);
     bounds.push([p.lat, p.lng]);
 }
 if (bounds.length > 0) map.fitBounds(bounds);

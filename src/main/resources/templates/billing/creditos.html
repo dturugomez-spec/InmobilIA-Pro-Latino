@@ -20,8 +20,8 @@
 
     <div class="form-grid cols-2">
         <section class="form-card" th:each="p : ${packs}" style="text-align:center">
-            <h3 th:text="|${#numbers.formatInteger(p.credits(), 0, 'POINT')} créditos|">créditos</h3>
-            <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|≈ ${p.eurHint()} €|">€</p>
+            <h3 th:text="|${#numbers.formatInteger(p.credits(), 0, 'DEFAULT')} créditos|">créditos</h3>
+            <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|≈ ${p.eurHint()} ${mon}|">[[${mon}]]</p>
             <form method="post" th:action="@{/billing/credits/{k}(k=${p.key()})}">
                 <button class="btn btn-primary" th:disabled="${!stripeConfigured or !p.configured()}">Comprar</button>
             </form>

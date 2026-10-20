@@ -38,9 +38,9 @@
                     </td>
                     <td class="px-4 py-3 font-medium" th:text="${a.get('name')}">—</td>
                     <td class="px-4 py-3 text-right font-mono" th:text="${a.get('ops')}">0</td>
-                    <td class="px-4 py-3 text-right font-mono font-semibold" th:text="${#numbers.formatDecimal(a.get('total'),0,'POINT',2,'COMMA') + ' €'}">—</td>
-                    <td class="px-4 py-3 text-right font-mono text-emerald-600" th:text="${#numbers.formatDecimal(a.get('paid'),0,'POINT',2,'COMMA') + ' €'}">—</td>
-                    <td class="px-4 py-3 text-right font-mono text-amber-600" th:text="${#numbers.formatDecimal(a.get('pending'),0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 text-right font-mono font-semibold" th:text="${#numbers.formatDecimal(a.get('total'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</td>
+                    <td class="px-4 py-3 text-right font-mono text-emerald-600" th:text="${#numbers.formatDecimal(a.get('paid'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</td>
+                    <td class="px-4 py-3 text-right font-mono text-amber-600" th:text="${#numbers.formatDecimal(a.get('pending'),0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</td>
                 </tr>
                 <tr th:if="${agents.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500 text-sm">Sin comisiones registradas.</td></tr>
             </tbody>
@@ -75,9 +75,9 @@
                         <div th:text="${r.get('property_name')}">—</div>
                         <div class="text-slate-500" th:text="${r.get('client_name')}">—</div>
                     </td>
-                    <td class="px-4 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(r.get('operation_value') ?: 0,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(r.get('operation_value') ?: 0,0,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
                     <td class="px-4 py-3 font-mono text-right" th:text="${r.get('commission_pct') + '%'}">—</td>
-                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${#numbers.formatDecimal(r.get('commission_amount') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${#numbers.formatDecimal(r.get('commission_amount') ?: 0,0,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</td>
                     <td class="px-4 py-3">
                         <span th:text="${r.get('status')}" th:classappend="${#strings.equalsIgnoreCase(r.get('status'),'Pagada') ? 'bg-emerald-100 text-emerald-700' : (#strings.equalsIgnoreCase(r.get('status'),'Anulada') ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-700')}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full">—</span>
                     </td>

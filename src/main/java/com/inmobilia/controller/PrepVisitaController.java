@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -58,7 +60,7 @@ public class PrepVisitaController {
         ctx.append("INMUEBLE: ").append(prop.getOrDefault("name", prop.getOrDefault("address", "?")))
            .append(" en ").append(prop.getOrDefault("city", "?")).append("\n");
         Object precio = prop.get("current_value") != null ? prop.get("current_value") : prop.get("purchase_price");
-        ctx.append("- Precio: ").append(precio).append("€ · ")
+        ctx.append("- Precio: ").append(precio).append(("" + PaisActual.moneda() + " · "))
            .append(prop.getOrDefault("bedrooms", "?")).append(" hab · ")
            .append(prop.getOrDefault("bathrooms", "?")).append(" baños · ")
            .append(prop.getOrDefault("area_m2", "?")).append(" m² · tipo ").append(prop.getOrDefault("type", "?")).append("\n");
@@ -67,7 +69,7 @@ public class PrepVisitaController {
         if (!lead.isEmpty()) {
             ctx.append("\nCLIENTE:\n");
             ctx.append("- Interés: ").append(lead.getOrDefault("interes", "?")).append("\n");
-            if (lead.get("presupuesto") != null) ctx.append("- Presupuesto: ").append(lead.get("presupuesto")).append("€\n");
+            if (lead.get("presupuesto") != null) ctx.append("- Presupuesto: ").append(lead.get("presupuesto")).append(("" + PaisActual.moneda() + "\n"));
             if (lead.get("zona") != null) ctx.append("- Busca en: ").append(lead.get("zona")).append("\n");
             ctx.append("- Etapa: ").append(lead.getOrDefault("etapa", "?")).append("\n");
             if (lead.get("notas") != null) ctx.append("- Notas: ").append(lead.get("notas")).append("\n");

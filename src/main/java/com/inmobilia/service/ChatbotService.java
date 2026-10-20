@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -128,7 +130,7 @@ public class ChatbotService {
 
         // Detectar precio máximo (números)
         double precioMax = 0;
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d{1,9})\\s*(?:€|euros|mil|k)").matcher(msg);
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(("(\\d{1,9})\\s*(?:" + PaisActual.moneda() + "|euros|mil|k)")).matcher(msg);
         if (m.find()) {
             precioMax = Double.parseDouble(m.group(1)); // como mucho 9 cifras: un número enorme ya no rompe el chat
             if (msg.contains("mil") || msg.contains("k")) precioMax *= 1000;
@@ -148,7 +150,7 @@ public class ChatbotService {
                 String type = String.valueOf(p.getOrDefault("type", "")).toLowerCase();
                 if (!type.contains(tipoDeseado) && !tipoDeseado.contains(type)) continue;
             }
-            ctx.append(String.format("- %s | %s | %s€ | %s hab. | %s m²\n",
+            ctx.append(String.format(("- %s | %s | %s" + PaisActual.moneda() + " | %s hab. | %s m²\n"),
                     p.getOrDefault("name", p.getOrDefault("address", "?")), p.get("type"),
                     precio > 0 ? Math.round(precio) : "?",
                     p.get("bedrooms"), p.get("area_m2")));

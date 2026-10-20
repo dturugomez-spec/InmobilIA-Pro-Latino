@@ -66,25 +66,25 @@
             <div class="grid grid-cols-2 md:grid-cols-5 divide-x divide-slate-200 dark:divide-neutral-800 border-t border-slate-200 dark:border-neutral-800">
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Valor</div>
-                    <div class="text-base font-bold font-mono mt-0.5" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : '—'}">—</div>
+                    <div class="text-base font-bold font-mono mt-0.5" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' ' + mon : '—'}">—</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Renta mes</div>
-                    <div class="text-base font-bold font-mono mt-0.5" th:text="${prop.get('rental_income') != null ? prop.get('rental_income') + ' €' : '—'}">—</div>
+                    <div class="text-base font-bold font-mono mt-0.5" th:text="${prop.get('rental_income') != null ? prop.get('rental_income') + ' ' + mon : '—'}">—</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Ingresos</div>
-                    <div class="text-base font-bold font-mono mt-0.5 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ingresos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+                    <div class="text-base font-bold font-mono mt-0.5 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ingresos,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Gastos</div>
-                    <div class="text-base font-bold font-mono mt-0.5 text-red-600 dark:text-red-400" th:text="${#numbers.formatDecimal(gastos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+                    <div class="text-base font-bold font-mono mt-0.5 text-red-600 dark:text-red-400" th:text="${#numbers.formatDecimal(gastos,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Cashflow</div>
                     <div class="text-base font-bold font-mono mt-0.5"
                          th:classappend="${cashflow >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-                         th:text="${#numbers.formatDecimal(cashflow,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+                         th:text="${#numbers.formatDecimal(cashflow,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 </div>
             </div>
         </div>
@@ -150,11 +150,11 @@
             <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
                 <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="banknote" class="h-4 w-4 text-brand-600"></i> Financiero</h3>
                 <dl class="space-y-2.5 text-sm">
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Compra</dt><dd class="font-mono" th:text="${prop.get('purchase_price') != null ? prop.get('purchase_price') + ' €' : '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Valor actual</dt><dd class="font-mono font-semibold" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Renta bruta</dt><dd class="font-mono" th:text="${prop.get('rental_income') != null ? prop.get('rental_income') + ' €/mes' : '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Gastos mes</dt><dd class="font-mono" th:text="${prop.get('monthly_expenses') != null ? prop.get('monthly_expenses') + ' €' : '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Cuota hipoteca</dt><dd class="font-mono" th:text="${prop.get('mortgage_payment') != null ? prop.get('mortgage_payment') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Compra</dt><dd class="font-mono" th:text="${prop.get('purchase_price') != null ? prop.get('purchase_price') + ' ' + mon : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Valor actual</dt><dd class="font-mono font-semibold" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' ' + mon : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Renta bruta</dt><dd class="font-mono" th:text="${prop.get('rental_income') != null ? prop.get('rental_income') + ' ' + mon + '/mes' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Gastos mes</dt><dd class="font-mono" th:text="${prop.get('monthly_expenses') != null ? prop.get('monthly_expenses') + ' ' + mon : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Cuota hipoteca</dt><dd class="font-mono" th:text="${prop.get('mortgage_payment') != null ? prop.get('mortgage_payment') + ' ' + mon : '—'}">—</dd></div>
                 </dl>
             </div>
             <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${prop.get('notes')}">
@@ -206,7 +206,7 @@
                         <td class="px-4 py-3 font-medium" th:text="${c.get('tenant_name')}">—</td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('start_date') != null ? #strings.substring(c.get('start_date'),0,10) : '—'}">—</td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('end_date') != null ? #strings.substring(c.get('end_date'),0,10) : '—'}">—</td>
-                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${c.get('rent') != null ? c.get('rent') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${c.get('rent') != null ? c.get('rent') + ' ' + mon : '—'}">—</td>
                         <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800" th:text="${c.get('status') ?: 'Activo'}">Activo</span></td>
                     </tr>
                 </tbody>
@@ -233,7 +233,7 @@
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${t.get('date') != null ? #strings.substring(t.get('date'),0,10) : '—'}">—</td>
                         <td class="px-4 py-3"><span th:text="${t.get('type')}" th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400'" class="text-[10px] font-semibold px-2 py-0.5 rounded">—</span></td>
                         <td class="px-4 py-3" th:text="${t.get('category')}">—</td>
-                        <td class="px-4 py-3 font-mono text-right font-semibold" th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" th:text="${t.get('amount') != null ? t.get('amount') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" th:text="${t.get('amount') != null ? t.get('amount') + ' ' + mon : '—'}">—</td>
                     </tr>
                 </tbody>
             </table>
@@ -255,7 +255,7 @@
                         <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${m.get('description') ?: m.get('assigned_to') ?: '—'}">desc</div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <div class="font-mono font-semibold text-sm" th:text="${m.get('cost') != null ? m.get('cost') + ' €' : '—'}">—</div>
+                        <div class="font-mono font-semibold text-sm" th:text="${m.get('cost') != null ? m.get('cost') + ' ' + mon : '—'}">—</div>
                         <span class="text-[10px] font-semibold px-2 py-0.5 rounded mt-1 inline-block" th:classappend="${m.get('status') != null and (#strings.equalsIgnoreCase(m.get('status'),'Completado') or #strings.equalsIgnoreCase(m.get('status'),'Cerrado'))} ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'" th:text="${m.get('status') ?: 'Pendiente'}">estado</span>
                     </div>
                 </li>
@@ -278,7 +278,7 @@
                         <div class="text-xs text-slate-500 dark:text-neutral-400 font-mono" th:text="${s.get('policy_number') ?: '—'}">póliza</div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <div class="font-mono font-semibold text-sm" th:text="${s.get('annual_cost') != null ? s.get('annual_cost') + ' €/año' : '—'}">—</div>
+                        <div class="font-mono font-semibold text-sm" th:text="${s.get('annual_cost') != null ? s.get('annual_cost') + ' ' + mon + '/año' : '—'}">—</div>
                         <div class="text-[11px] text-slate-500" th:text="${s.get('expiry_date') != null ? 'caduca ' + #strings.substring(s.get('expiry_date'),0,10) : ''}">—</div>
                     </div>
                 </li>

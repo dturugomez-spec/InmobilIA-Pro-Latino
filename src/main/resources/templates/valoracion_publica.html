@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <script th:inline="javascript">window.MON = /*[[${mon}]]*/ 'MXN'; window.LOC = /*[[${pais != null ? pais.locale().toLanguageTag() : 'es'}]]*/ 'es-MX';</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¿Cuánto vale tu casa? · Valoración gratis en 30 segundos</title>
     <meta name="description" content="Valora tu vivienda gratis al instante con inteligencia artificial. Sin compromiso.">
@@ -87,12 +88,12 @@
     <div x-show="paso === 2" x-cloak x-transition class="space-y-5">
         <div class="brand-grad rounded-2xl shadow-xl p-8 text-white text-center">
             <p class="text-sm text-white/70 uppercase tracking-wider">Valoración estimada</p>
-            <p class="display text-4xl md:text-5xl font-extrabold mt-2" x-text="fmt(r.precio_estimado) + ' €'"></p>
+            <p class="display text-4xl md:text-5xl font-extrabold mt-2" x-text="fmt(r.precio_estimado) + (' ' + (window.MON||''))"></p>
             <p class="text-white/80 mt-2 text-sm">
-                Rango: <span x-text="fmt(r.precio_min)"></span> € – <span x-text="fmt(r.precio_max)"></span> €
+                Rango: <span x-text="fmt(r.precio_min)"></span> [[${mon}]] – <span x-text="fmt(r.precio_max)"></span> [[${mon}]]
             </p>
             <div class="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-white/15 text-xs">
-                <span x-text="'~' + fmt(r.eur_m2) + ' €/m²'"></span> ·
+                <span x-text="'~' + fmt(r.eur_m2) + (' ' + (window.MON||'') + '/m²')"></span> ·
                 <span x-text="'confianza ' + r.confianza"></span>
             </div>
         </div>
@@ -139,7 +140,7 @@ function valoracion() {
         f: { tipo:'piso', estado:'buen_estado', municipio:'', provincia:'', metros:'', habitaciones:'', ascensor:false, garaje:false, terraza:false },
         c: { nombre:'', telefono:'', email:'', quiere_vender:'explorando' },
         r: {},
-        fmt(v){ return new Intl.NumberFormat('es-ES').format(v||0); },
+        fmt(v){ return new Intl.NumberFormat(window.LOC||'es').format(v||0); },
         async calcular() {
             this.loading = true;
             try {

@@ -23,7 +23,7 @@
 <div th:if="${b.forecastMes > 0}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 p-5 mb-5 text-white flex items-center justify-between flex-wrap gap-3">
     <div>
         <p class="text-xs uppercase tracking-wider text-white/70"> Previsión de cierres este mes</p>
-        <p class="text-3xl font-bold mt-1" th:text="${#numbers.formatInteger(b.forecastMes, 0, 'POINT')} + ' €'">0 €</p>
+        <p class="text-3xl font-bold mt-1" th:text="${#numbers.formatInteger(b.forecastMes, 0, 'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</p>
     </div>
     <p class="text-sm text-white/80" th:text="${b.ofertasActivas} + ' ofertas activas · ponderadas por probabilidad'">—</p>
 </div>
@@ -159,8 +159,8 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <div class="text-right">
-                            <p class="text-xs text-slate-400 line-through" th:text="${#numbers.formatInteger(s.get('precio_actual'), 0, 'POINT')} + '€'">—</p>
-                            <p class="text-sm font-bold text-emerald-700" th:text="'-' + ${s.get('pct')} + '% → ' + ${#numbers.formatInteger(s.get('precio_sugerido'), 0, 'POINT')} + '€'">—</p>
+                            <p class="text-xs text-slate-400 line-through" th:text="${#numbers.formatInteger(s.get('precio_actual'), 0, 'DEFAULT')} + ${mon}">—</p>
+                            <p class="text-sm font-bold text-emerald-700" th:text="'-' + ${s.get('pct')} + '% → ' + ${#numbers.formatInteger(s.get('precio_sugerido'), 0, 'DEFAULT')} + ${mon}">—</p>
                         </div>
                         <button th:data-id="${s.get('id')}" th:data-precio="${s.get('precio_sugerido')}" title="Aplicar el precio sugerido"
                                 onclick="if(confirm('¿Aplicar el precio sugerido a este inmueble?')) accionRapida('/agente/accion/aplicar-precio', {propId: this.dataset.id, precio: this.dataset.precio}, this)"

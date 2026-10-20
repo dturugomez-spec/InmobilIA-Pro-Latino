@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.AuditTrail;
 import com.inmobilia.service.PlanService;
 import com.inmobilia.service.SupabaseService;
@@ -250,11 +252,11 @@ public class CrudController {
         try { return Double.parseDouble(String.valueOf(v)); } catch (Exception e) { return 0; }
     }
     private static String eur(double v) {
-        if (v == 0) return "0 €";
+        if (v == 0) return ("0 " + PaisActual.moneda());
         double abs = Math.abs(v);
-        if (abs >= 1_000_000) return String.format(java.util.Locale.GERMAN, "%,.2fM €", v / 1_000_000);
-        if (abs >= 1_000)     return String.format(java.util.Locale.GERMAN, "%,.1fK €", v / 1_000);
-        return String.format(java.util.Locale.GERMAN, "%,.0f €", v);
+        if (abs >= 1_000_000) return String.format(java.util.Locale.GERMAN, ("%,.2fM " + PaisActual.moneda()), v / 1_000_000);
+        if (abs >= 1_000)     return String.format(java.util.Locale.GERMAN, ("%,.1fK " + PaisActual.moneda()), v / 1_000);
+        return String.format(java.util.Locale.GERMAN, ("%,.0f " + PaisActual.moneda()), v);
     }
     private static boolean isExpiringSoon(Map<String, Object> r, String col, int days) {
         String s = (String) r.get(col);

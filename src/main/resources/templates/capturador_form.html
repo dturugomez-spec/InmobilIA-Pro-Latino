@@ -22,13 +22,11 @@
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1.5">Dirección</label>
-                <input type="text" name="address" required placeholder="Calle Mayor 1" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                <input type="text" name="address" required placeholder="Av. Reforma 123" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1.5">Ciudad *</label>
-                <select name="city" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
-                    <option th:each="c : ${ccaa}" th:value="${c}" th:text="${c}">CCAA</option>
-                </select>
+                <input type="text" name="city" required th:placeholder="${ciudadEjemplo}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1.5">Tipo</label>
@@ -53,7 +51,7 @@
                 <input type="number" name="year" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium mb-1.5">Precio que pretende el propietario (€)</label>
+                <label class="block text-sm font-medium mb-1.5">Precio que pretende el propietario ([[${mon}]])</label>
                 <input type="number" name="precioPretendido" step="1000" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
                 <p class="text-xs text-slate-500 mt-1">Lo compararemos con la estimación objetiva del mercado.</p>
             </div>

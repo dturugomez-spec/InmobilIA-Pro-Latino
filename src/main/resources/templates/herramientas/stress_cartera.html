@@ -13,12 +13,16 @@
             <h2 class="audit-hero-title">Stress Test de Cartera</h2>
             <p class="audit-hero-desc">
                 Simula simultaneamente <b>shocks macro y operativos</b> sobre toda tu cartera:
-                subidas Euribor, vacancia, morosidad e inflacion de OPEX.
+                subidas de la tasa de interés, vacancia, morosidad e inflacion de OPEX.
                 Los softwares retail solo miden propiedad a propiedad.
             </p>
             <div class="audit-hero-meta">
                 <span> Activos: <b th:text="${report.nProps()}">0</b></span>
-                <span> Euribor base: <b th:text="${#numbers.formatDecimal(euribor,1,3)} + '%'">—</b></span>
+                <form method="get" action="/herramientas/stress-cartera" style="display:inline-flex;gap:6px;align-items:center">
+                    <label for="tasa">Tasa de referencia de tus créditos (% anual):</label>
+                    <input id="tasa" type="number" name="tasa" step="0.05" min="0" th:value="${euribor}" style="width:90px">
+                    <button class="btn btn-ghost btn-mini">Recalcular</button>
+                </form>
             </div>
         </div>
     </div>
@@ -27,17 +31,17 @@
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-label">Rentas anuales base</div>
-            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.rentasAnualesBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.rentasAnualesBase(),1,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</div>
             <div class="kpi-hint">Ingresos brutos teoricos</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">OPEX anual</div>
-            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.opexAnualBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.opexAnualBase(),1,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</div>
             <div class="kpi-hint">IBI + comunidad + seguros + mant.</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Servicio deuda anual</div>
-            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.deudaAnualBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.deudaAnualBase(),1,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</div>
             <div class="kpi-hint">Cuotas hipotecarias</div>
         </div>
         <div class="kpi-card" th:style="|border-left:4px solid ${report.base().veredictoColor()}|">
@@ -68,7 +72,7 @@
                 <thead>
                     <tr>
                         <th>Escenario</th>
-                        <th class="num">Δ Euribor</th>
+                        <th class="num">Δ Tasa</th>
                         <th class="num">Vacancia +</th>
                         <th class="num">OPEX +</th>
                         <th class="num">Cashflow</th>
@@ -84,7 +88,7 @@
                         <td class="num">—</td>
                         <td class="num">—</td>
                         <td class="num">—</td>
-                        <td class="num"><b th:text="${#numbers.formatDecimal(report.base().cashflowAnual(),1,'POINT',0,'COMMA')} + ' €'">—</b></td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(report.base().cashflowAnual(),1,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">—</b></td>
                         <td class="num"><b th:text="${#numbers.formatDecimal(report.base().dscrAgregado(),1,2)}">—</b></td>
                         <td class="num" th:text="${report.base().propsEnRojo() + '/' + report.base().propsTotal()}">—</td>
                         <td><span class="pill" th:style="|background:${report.base().veredictoColor()}|"
@@ -96,7 +100,7 @@
                         <td class="num" th:text="${'+' + #numbers.formatDecimal(s.euriborDeltaPp(),1,1) + ' pp'}">—</td>
                         <td class="num" th:text="${'+' + #numbers.formatDecimal(s.vacanciaPctExtra(),1,0) + '%'}">—</td>
                         <td class="num" th:text="${'+' + #numbers.formatDecimal(s.opexInflacion(),1,0) + '%'}">—</td>
-                        <td class="num" th:text="${#numbers.formatDecimal(s.cashflowAnual(),1,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(s.cashflowAnual(),1,'DEFAULT',0,'DEFAULT') + ' ' + mon}">—</td>
                         <td class="num"><b th:text="${#numbers.formatDecimal(s.dscrAgregado(),1,2)}">—</b></td>
                         <td class="num" th:text="${s.propsEnRojo() + '/' + s.propsTotal()}">—</td>
                         <td><span class="pill" th:style="|background:${s.veredictoColor()}|"
@@ -122,10 +126,10 @@
                 <tbody>
                     <tr th:each="p : ${report.propiedadesDetalle()}">
                         <td th:text="${p.nombre}">—</td>
-                        <td class="num" th:text="${#numbers.formatDecimal(p.renta,1,'POINT',0,'COMMA')}">—</td>
-                        <td class="num" th:text="${#numbers.formatDecimal(p.opex,1,'POINT',0,'COMMA')}">—</td>
-                        <td class="num" th:text="${#numbers.formatDecimal(p.cuota,1,'POINT',0,'COMMA')}">—</td>
-                        <td class="num"><b th:text="${#numbers.formatDecimal(p.noi,1,'POINT',0,'COMMA')}">—</b></td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.renta,1,'DEFAULT',0,'DEFAULT')}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.opex,1,'DEFAULT',0,'DEFAULT')}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.cuota,1,'DEFAULT',0,'DEFAULT')}">—</td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(p.noi,1,'DEFAULT',0,'DEFAULT')}">—</b></td>
                         <td class="num"><b th:text="${#numbers.formatDecimal(p.dscr,1,2)}">—</b></td>
                         <td th:text="${p.estado}">—</td>
                     </tr>
@@ -138,7 +142,6 @@
     <div class="verdict-cta">
         <a href="/finanzas/stress" class="btn btn-ghost"> Stress por activo individual</a>
         <a href="/herramientas/auditoria" class="btn btn-primary"> Auditor IA de Cartera</a>
-        <a href="/herramientas/euribor" class="btn btn-ghost"> Euribor en vivo</a>
     </div>
 
 </div>

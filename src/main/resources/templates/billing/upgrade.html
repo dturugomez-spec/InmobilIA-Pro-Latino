@@ -41,7 +41,7 @@
     <div class="text-center mb-8">
         <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">Elige el plan que mejor se adapta a ti</h1>
-        <p class="text-slate-600 dark:text-slate-400">Sin permanencia. Cancela cuando quieras. IVA no incluido.</p>
+        <p class="text-slate-600 dark:text-slate-400">Sin permanencia. Cancela cuando quieras. Precios en dólares (USD), impuestos locales no incluidos.</p>
     </div>
 
     <!-- Sin Stripe configurado -->
@@ -62,7 +62,7 @@
             <h3 class="font-bold text-lg">Pro</h3>
             <p class="text-xs text-white/70 mt-1 mb-4">Para autónomos y micro-agencias</p>
             <div class="mb-5">
-                <span class="text-4xl font-bold tracking-tight">78€</span>
+                <span class="text-4xl font-bold tracking-tight">US$78</span>
                 <span class="text-white/70 text-sm">/mes</span>
             </div>
             <ul class="space-y-2.5 text-sm text-white/90 mb-6 flex-1">
@@ -85,7 +85,7 @@
                     Empezar 14 días gratis
                 </button>
             </form>
-            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-white/70">94,38 €/mes con IVA</p>
+            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-white/70">Facturado en USD · impuestos según tu país</p>
         </div>
 
         <!-- Agency -->
@@ -93,7 +93,7 @@
             <h3 class="font-bold text-lg">Agency</h3>
             <p class="text-xs text-slate-500 mt-1 mb-4">Para agencias y asset managers</p>
             <div class="mb-5">
-                <span class="text-4xl font-bold tracking-tight">198€</span>
+                <span class="text-4xl font-bold tracking-tight">US$198</span>
                 <span class="text-slate-500 text-sm">/mes</span>
             </div>
             <ul class="space-y-2.5 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
@@ -116,7 +116,7 @@
                     Empezar 14 días gratis
                 </button>
             </form>
-            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-slate-500">239,58 €/mes con IVA</p>
+            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-slate-500">Facturado en USD · impuestos según tu país</p>
         </div>
     </div>
 

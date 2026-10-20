@@ -9,8 +9,8 @@
     <form method="post" action="/finanzas/stress" class="form-card">
         <h3>Stress Test & DSCR</h3>
         <div class="form-grid cols-3">
-            <label>NOI anual (EUR) <input type="number" step="0.01" name="noi" required th:value="${in?.noi()}"></label>
-            <label>Deuda (EUR) <input type="number" step="0.01" name="debt" required th:value="${in?.debt()}"></label>
+            <label>NOI anual ([[${mon}]]) <input type="number" step="0.01" name="noi" required th:value="${in?.noi()}"></label>
+            <label>Deuda ([[${mon}]]) <input type="number" step="0.01" name="debt" required th:value="${in?.debt()}"></label>
             <label>Tipo (%) <input type="number" step="0.01" name="rate" required th:value="${in?.rate()}"></label>
             <label>Plazo (anos) <input type="number" name="term" th:value="${in?.term() ?: 25}"></label>
             <label>DSCR minimo <input type="number" step="0.01" name="dscrMin" th:value="${in?.dscrMin() ?: 1.25}"></label>
@@ -29,8 +29,8 @@
                 <tr th:each="s : ${scenarios}"
                     th:classappend="${s.dscr() < in.dscrMin()} ? 'row-danger' : ''">
                     <td th:text="${s.nombre()}">Base</td>
-                    <td th:text="${#numbers.formatDecimal(s.noi(),0,'POINT',0,'COMMA')} + ' EUR'">0</td>
-                    <td th:text="${#numbers.formatDecimal(s.pmt(),0,'POINT',0,'COMMA')} + ' EUR'">0</td>
+                    <td th:text="${#numbers.formatDecimal(s.noi(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0</td>
+                    <td th:text="${#numbers.formatDecimal(s.pmt(),0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0</td>
                     <td th:text="${#numbers.formatDecimal(s.dscr(),1,2)}">0</td>
                     <td>
                         <span th:if="${s.dscr() >= in.dscrMin()}" class="badge badge-ok">OK</span>

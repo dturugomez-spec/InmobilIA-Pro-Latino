@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <script th:inline="javascript">window.MON = /*[[${mon}]]*/ 'MXN'; window.LOC = /*[[${pais != null ? pais.locale().toLanguageTag() : 'es'}]]*/ 'es-MX';</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasación gratuita · InmobilIA Pro</title>
     <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
@@ -30,7 +31,7 @@
                    this.loading = false;
                    this.step = 4;
                },
-               fmt(n){return n ? n.toLocaleString('es-ES') + ' €' : '—'}
+               fmt(n){return n ? n.toLocaleString(document.documentElement.lang || 'es') + ' ' + (this.result?.moneda || window.MON || '') : '—'}
              }">
 
     <a href="/" class="inline-flex items-center gap-2 mb-6">
@@ -147,7 +148,7 @@
             <!-- Precio venta -->
             <div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 text-white p-6 mb-3">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200 mb-1">Venta estimada</div>
-                <div class="text-3xl font-bold tracking-tight" x-text="fmt(result?.ventaCentral)">— €</div>
+                <div class="text-3xl font-bold tracking-tight" x-text="fmt(result?.ventaCentral)">— [[${mon}]]</div>
                 <div class="text-sm text-blue-200 mt-1">
                     Rango: <span x-text="fmt(result?.ventaMin)"></span> - <span x-text="fmt(result?.ventaMax)"></span>
                 </div>
@@ -156,7 +157,7 @@
             <!-- Precio alquiler -->
             <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-5 mb-6">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">Alquiler estimado / mes</div>
-                <div class="text-2xl font-bold text-emerald-700" x-text="fmt(result?.rentaMensual)">— €</div>
+                <div class="text-2xl font-bold text-emerald-700" x-text="fmt(result?.rentaMensual)">— [[${mon}]]</div>
                 <div class="text-xs text-emerald-700/80 mt-1">
                     Yield bruto anual: <strong x-text="result?.yieldBruto + '%'"></strong>
                 </div>

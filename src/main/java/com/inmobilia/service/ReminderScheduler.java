@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -134,7 +136,7 @@ public class ReminderScheduler {
                     if (pagado < rent * 0.95) {
                         notifications.create(orgId, "error", "🔴",
                                 "Renta sin cobrar: " + name,
-                                "Pendiente " + String.format("%.0f €", rent - pagado) + " del mes actual",
+                                "Pendiente " + String.format(("%.0f " + PaisActual.moneda()), rent - pagado) + " del mes actual",
                                 "/payments");
                     }
                 }

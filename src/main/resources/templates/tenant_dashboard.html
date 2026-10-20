@@ -39,7 +39,7 @@
         <div class="md:col-span-3 grid grid-cols-3 gap-3">
             <div class="bg-white rounded-xl ring-1 ring-slate-200 p-4">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Renta mensual</div>
-                <div class="text-xl font-bold mt-1" th:text="${inq.get('rent_amount') != null ? inq.get('rent_amount') + ' €' : '—'}">— €</div>
+                <div class="text-xl font-bold mt-1" th:text="${inq.get('rent_amount') != null ? inq.get('rent_amount') + ' ' + mon : '—'}">— [[${mon}]]</div>
             </div>
             <div class="bg-white rounded-xl ring-1 ring-slate-200 p-4">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Recibos disponibles</div>
@@ -68,7 +68,7 @@
                         <tr th:each="r : ${receipts}">
                             <td class="py-2.5 font-mono font-bold" th:text="${r.get('full_number')}">R/00001</td>
                             <td class="py-2.5" th:text="${r.get('period_month') + '/' + r.get('period_year')}">—</td>
-                            <td class="py-2.5 font-mono text-right" th:text="${r.get('total_pagado') + ' €'}">—</td>
+                            <td class="py-2.5 font-mono text-right" th:text="${r.get('total_pagado') + ' ' + mon}">—</td>
                             <td class="py-2.5"><span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700" th:text="${r.get('status')}">—</span></td>
                             <td class="py-2.5 text-right"><a th:href="@{|/portal/receipts/${r.get('id')}|}" class="text-xs text-blue-700 hover:underline">Ver →</a></td>
                         </tr>
@@ -82,7 +82,7 @@
                 <div th:each="c : ${contracts}" class="rounded-lg bg-slate-50 p-4 mb-3">
                     <div class="text-xs text-slate-500"> <span th:text="${c.get('start_date') + ' → ' + c.get('end_date')}">—</span></div>
                     <div class="text-base font-bold mt-1" th:text="${c.get('property_name')}">—</div>
-                    <div class="text-sm text-slate-600 mt-1">Renta: <strong th:text="${c.get('rent') + ' €/mes'}">—</strong> · Fianza: <strong th:text="${c.get('deposit') + ' €'}">—</strong></div>
+                    <div class="text-sm text-slate-600 mt-1">Renta: <strong th:text="${c.get('rent') + ' ' + mon + '/mes'}">—</strong> · Fianza: <strong th:text="${c.get('deposit') + ' ' + mon}">—</strong></div>
                 </div>
                 <div th:if="${contracts.isEmpty()}" class="text-sm text-slate-500 text-center py-8">Sin contrato registrado.</div>
             </div>

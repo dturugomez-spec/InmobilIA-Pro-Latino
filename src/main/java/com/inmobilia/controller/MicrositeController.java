@@ -16,6 +16,7 @@ import java.util.*;
 public class MicrositeController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     @GetMapping("/microsite/admin")
@@ -73,6 +74,7 @@ public class MicrositeController {
             return "microsite_public";
         }
         Map<String, Object> ms = rows.get(0);
+        paises.usar(String.valueOf(ms.get("user_id")));  // moneda y formato del país de la inmobiliaria
 
         // Visitas++
         int v = ((Number) ms.getOrDefault("visitas_count", 0)).intValue() + 1;

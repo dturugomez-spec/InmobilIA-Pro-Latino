@@ -1,5 +1,7 @@
 package com.inmobilia.service;
 
+import com.inmobilia.util.PaisActual;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -508,7 +510,7 @@ public class AgentBriefingService {
             n = 0;
             for (Map<String, Object> s : sugerenciasPrecio) {
                 plan.add(paso("💸", "Propón bajar el precio de " + s.get("direccion"),
-                        s.get("dias") + " días en mercado → " + String.format("%,d", ((Number) s.get("precio_sugerido")).longValue()) + "€", "/agente"));
+                        s.get("dias") + " días en mercado → " + String.format("%,d", ((Number) s.get("precio_sugerido")).longValue()) + ("" + PaisActual.moneda()), "/agente"));
                 if (++n >= 2) break;
             }
             if (!tareasVencidas.isEmpty()) {
@@ -537,7 +539,7 @@ public class AgentBriefingService {
             if (!matchesProactivos.isEmpty()) s.append("- ").append(matchesProactivos.size()).append(" propiedades nuevas con leads compatibles esperando aviso\n");
             if (!oportunidadesDormidas.isEmpty()) s.append("- ").append(oportunidadesDormidas.size()).append(" clientes antiguos (3+ años) para reactivar\n");
             if (!tareasVencidas.isEmpty()) s.append("- ").append(tareasVencidas.size()).append(" tareas vencidas\n");
-            if (forecastMes > 0) s.append("- Previsión de cierres este mes: ").append(forecastMes).append("€ (").append(ofertasActivas).append(" ofertas activas)\n");
+            if (forecastMes > 0) s.append("- Previsión de cierres este mes: ").append(forecastMes).append(("" + PaisActual.moneda() + " (")).append(ofertasActivas).append(" ofertas activas)\n");
             return s.toString();
         }
 
@@ -566,7 +568,7 @@ public class AgentBriefingService {
             if (forecastMes > 0) {
                 h.append("<div style='background:#f0fdf4;border:1px solid #86efac;padding:14px;border-radius:8px;margin:16px 0'>")
                  .append("💰 <strong>Previsión de cierres este mes:</strong> ")
-                 .append(String.format("%,d", forecastMes)).append(" € ")
+                 .append(String.format("%,d", forecastMes)).append((" " + PaisActual.moneda() + " "))
                  .append("<span style='color:#64748b'>(").append(ofertasActivas).append(" ofertas activas, ponderadas por probabilidad)</span></div>");
             }
             // Match proactivo (formato propio)
@@ -593,7 +595,7 @@ public class AgentBriefingService {
                     if (n++ >= 8) break;
                     h.append("<li>").append(s.get("direccion"))
                      .append(" — lleva ").append(s.get("dias")).append(" días → bajar ")
-                     .append(s.get("pct")).append("% a <strong>").append(String.format("%,d", ((Number)s.get("precio_sugerido")).longValue())).append(" €</strong></li>");
+                     .append(s.get("pct")).append("% a <strong>").append(String.format("%,d", ((Number)s.get("precio_sugerido")).longValue())).append((" " + PaisActual.moneda() + "</strong></li>"));
                 }
                 h.append("</ul>");
             }

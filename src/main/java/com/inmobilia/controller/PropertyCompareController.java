@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 /**
- * Comparador lado a lado de hasta 4 propiedades, con cálculos de €/m², ratio,
+ * Comparador lado a lado de hasta 4 propiedades, con cálculos de $/m², ratio,
  * rentabilidad estimada y badge "mejor en X" automático.
  */
 @Controller

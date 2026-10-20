@@ -49,7 +49,7 @@
                 </div>
                 <div class="absolute top-3 right-3 brand-grad text-white px-3 py-1 rounded-full text-sm font-bold"
                      th:if="${p != null and (p.get('current_value') != null or p.get('purchase_price') != null)}"
-                     th:text="${#numbers.formatInteger(p.get('current_value') ?: p.get('purchase_price'), 0, 'POINT')} + ' €'">—</div>
+                     th:text="${#numbers.formatInteger(p.get('current_value') ?: p.get('purchase_price'), 0, 'DEFAULT')} + ' ' + ${mon}">—</div>
             </div>
             <div class="p-5">
                 <h3 class="display text-lg font-bold" th:text="${p != null ? (p.get('name') ?: p.get('address')) : 'Inmueble'}">—</h3>

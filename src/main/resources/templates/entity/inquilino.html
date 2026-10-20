@@ -61,7 +61,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200 dark:divide-neutral-800 border-t border-slate-200 dark:border-neutral-800">
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Renta</div>
-                    <div class="text-lg font-bold font-mono mt-0.5" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' €' : '—'}">— €</div>
+                    <div class="text-lg font-bold font-mono mt-0.5" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' ' + mon : '—'}">— [[${mon}]]</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Pagos cobrados</div>
@@ -69,7 +69,7 @@
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Total cobrado</div>
-                    <div class="text-lg font-bold font-mono mt-0.5 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(pagosTotal,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+                    <div class="text-lg font-bold font-mono mt-0.5 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(pagosTotal,0,'DEFAULT',0,'DEFAULT')} + ' ' + ${mon}">0 [[${mon}]]</div>
                 </div>
                 <div class="p-4">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Score</div>
@@ -134,8 +134,8 @@
                 <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="key" class="h-4 w-4 text-brand-600"></i> Datos del alquiler</h3>
                 <dl class="space-y-2.5 text-sm">
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Propiedad</dt><dd class="font-medium truncate" th:text="${tenant.get('property_name') ?: '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Renta mensual</dt><dd class="font-mono font-semibold" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' €' : '—'}">—</dd></div>
-                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Fianza</dt><dd class="font-mono" th:text="${tenant.get('deposit') != null ? tenant.get('deposit') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Renta mensual</dt><dd class="font-mono font-semibold" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' ' + mon : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Fianza</dt><dd class="font-mono" th:text="${tenant.get('deposit') != null ? tenant.get('deposit') + ' ' + mon : '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Inicio</dt><dd class="font-mono" th:text="${tenant.get('lease_start') != null ? #strings.substring(tenant.get('lease_start'),0,10) : '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Fin</dt><dd class="font-mono" th:text="${tenant.get('lease_end') != null ? #strings.substring(tenant.get('lease_end'),0,10) : '—'}">—</dd></div>
                     <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Avalista</dt><dd th:text="${tenant.get('guarantor_name') ?: '—'}">—</dd></div>
@@ -169,7 +169,7 @@
                         <td class="px-4 py-3 font-medium" th:text="${c.get('property_name')}">—</td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('start_date') != null ? #strings.substring(c.get('start_date'),0,10) : '—'}">—</td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('end_date') != null ? #strings.substring(c.get('end_date'),0,10) : '—'}">—</td>
-                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${c.get('rent') != null ? c.get('rent') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${c.get('rent') != null ? c.get('rent') + ' ' + mon : '—'}">—</td>
                         <td class="px-4 py-3">
                             <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300" th:text="${c.get('status') ?: 'Activo'}">Activo</span>
                         </td>
@@ -208,7 +208,7 @@
                         <td class="px-4 py-3" th:text="${t.get('category')}">—</td>
                         <td class="px-4 py-3 font-mono text-right font-semibold"
                             th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
-                            th:text="${t.get('amount') != null ? t.get('amount') + ' €' : '—'}">—</td>
+                            th:text="${t.get('amount') != null ? t.get('amount') + ' ' + mon : '—'}">—</td>
                         <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${t.get('invoice_number') ?: '—'}">—</td>
                     </tr>
                 </tbody>

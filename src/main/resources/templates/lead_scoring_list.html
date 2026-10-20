@@ -72,7 +72,7 @@
                 </p>
                 <p class="text-[10px] text-slate-400 mt-1">
                     Tipo: <span th:text="${l.get('tipo') ?: '—'}">—</span> ·
-                    Presup.: <span th:text="${l.get('presupuesto_max') != null ? #numbers.formatDecimal(l.get('presupuesto_max'),1,'POINT',0,'COMMA') + ' €' : '—'}">—</span>
+                    Presup.: <span th:text="${l.get('presupuesto_max') != null ? #numbers.formatDecimal(l.get('presupuesto_max'),1,'DEFAULT',0,'DEFAULT') + ' ' + mon : '—'}">—</span>
                 </p>
             </div>
 

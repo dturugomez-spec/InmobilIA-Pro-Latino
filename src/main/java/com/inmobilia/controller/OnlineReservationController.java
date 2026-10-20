@@ -17,6 +17,8 @@ import java.util.*;
 public class OnlineReservationController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PaisService paises;
+    private final com.inmobilia.service.CurrencyService divisas;
 
     @GetMapping
     public String list(HttpSession session, Model model) {
@@ -38,8 +40,10 @@ public class OnlineReservationController {
         List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + propId);
         if (rows.isEmpty()) { model.addAttribute("error", true); return "online_reservation_public"; }
         model.addAttribute("propiedad", rows.get(0));
-        // Importe por defecto: 1% del precio o mínimo 1000€
-        double importe = Math.max(1000, nd(rows.get(0).get("precio")) * 0.01);
+        paises.usar(String.valueOf(rows.get(0).get("user_id")));  // moneda y formato del país de la inmobiliaria
+        // Importe por defecto: 1% del precio o mínimo el equivalente a ~1.000 USD en la moneda de la agencia
+        double minimo = divisas.convertir(1000, "USD", com.inmobilia.util.PaisActual.moneda());
+        double importe = Math.max(Math.round(minimo), nd(rows.get(0).get("precio")) * 0.01);
         model.addAttribute("importeSugerido", importe);
         return "online_reservation_public";
     }

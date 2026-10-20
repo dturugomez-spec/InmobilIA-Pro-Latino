@@ -1,7 +1,9 @@
 package com.inmobilia.controller;
 
-import com.inmobilia.controller.TaxCalculatorController;
 import com.inmobilia.controller.ValuationPublicController;
+import com.inmobilia.service.CurrencyService;
+import com.inmobilia.util.PaisActual;
+import com.inmobilia.util.PreciosReferencia;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +25,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CapturadorReportController {
 
+    private final CurrencyService divisas;
+
     @GetMapping("/herramientas/informe-captador")
     public String form(HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         model.addAttribute("page", "Informe para captador");
-        model.addAttribute("ccaa", TaxCalculatorController.ITP_CCAA.keySet());
+        model.addAttribute("ciudadEjemplo", PreciosReferencia.ciudadPrincipal(PaisActual.get()));
         return "capturador_form";
     }
 
@@ -41,10 +45,11 @@ public class CapturadorReportController {
         double precioPretendido = parseD(body.get("precioPretendido"));
         int beds = (int) parseD(body.get("bedrooms"));
         int year = (int) parseD(body.get("year"));
-        String city = body.getOrDefault("city", "Madrid");
+        String city = body.getOrDefault("city", PreciosReferencia.ciudadPrincipal(PaisActual.get()));
         String type = body.getOrDefault("type", "Residencial");
 
-        double pricePerM2 = priceFor(city);
+        double pricePerM2 = divisas.convertir(PreciosReferencia.usdPorM2(PaisActual.get(), city),
+                "USD", PaisActual.moneda());
         double estimacionVenta = m2 * pricePerM2;
         if (beds >= 3) estimacionVenta *= 1.05;
         int currentYear = java.time.Year.now().getValue();
@@ -61,7 +66,7 @@ public class CapturadorReportController {
         int diasMercado = diff > 15 ? 180 : diff > 5 ? 120 : diff < -10 ? 30 : 60;
 
         model.addAttribute("data", body);
-        model.addAttribute("hoy", LocalDate.now().format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", new Locale("es","ES"))));
+        model.addAttribute("hoy", LocalDate.now().format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", PaisActual.get().locale())));
         model.addAttribute("pricePerM2", pricePerM2);
         model.addAttribute("estimacionVenta", estimacionVenta);
         model.addAttribute("estimacionMin", estimacionVenta * 0.92);
@@ -74,21 +79,6 @@ public class CapturadorReportController {
         model.addAttribute("diasMercado", diasMercado);
 
         return "capturador_report";
-    }
-
-    private static double priceFor(String city) {
-        String c = city == null ? "" : city.toLowerCase().trim();
-        return switch (c) {
-            case "madrid" -> 4200; case "barcelona" -> 4500;
-            case "san sebastián","san sebastian","donostia" -> 5800;
-            case "bilbao" -> 3200; case "palma","palma de mallorca" -> 3900;
-            case "valencia" -> 2400; case "málaga","malaga" -> 2600;
-            case "sevilla" -> 2200; case "zaragoza" -> 1800;
-            case "alicante" -> 2100; case "murcia" -> 1500;
-            case "vitoria" -> 2700; case "córdoba","cordoba" -> 1700;
-            case "valladolid" -> 1700; case "vigo" -> 1900;
-            default -> 1800;
-        };
     }
 
     private static double parseD(Object o) { if (o == null) return 0; try { return Double.parseDouble(String.valueOf(o)); } catch(Exception e) { return 0; } }

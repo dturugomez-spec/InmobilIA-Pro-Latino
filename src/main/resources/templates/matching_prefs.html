@@ -34,7 +34,7 @@
                 <td class="px-4 py-3 text-xs capitalize" th:text="${p.get('operacion')}">—</td>
                 <td class="px-4 py-3 text-xs" th:text="${p.get('tipo_propiedad') != null ? #strings.listJoin(p.get('tipo_propiedad'), ', ') : '—'}">—</td>
                 <td class="px-4 py-3 text-right font-mono text-xs"
-                    th:text="${(p.get('presupuesto_min') ?: 0) + ' – ' + (p.get('presupuesto_max') ?: 0) + ' €'}">—</td>
+                    th:text="${(p.get('presupuesto_min') ?: 0) + ' – ' + (p.get('presupuesto_max') ?: 0) + ' ' + mon}">—</td>
                 <td class="px-4 py-3 text-xs" th:text="${p.get('zonas') != null ? #strings.listJoin(p.get('zonas'), ', ') : '—'}">—</td>
                 <td class="px-4 py-3 text-xs" th:text="${(p.get('habitaciones_min') ?: '-') + '/' + (p.get('habitaciones_max') ?: '-')}">—</td>
                 <td class="px-4 py-3">

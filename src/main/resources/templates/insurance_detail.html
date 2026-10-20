@@ -28,7 +28,7 @@
             </div>
             <div class="text-right">
                 <p class="text-[10px] uppercase text-white/60">Prima anual</p>
-                <p class="text-2xl font-bold" th:text="${#numbers.formatDecimal(poliza.get('prima_anual') ?: 0, 1, 'POINT', 2, 'COMMA')} + ' €'">—</p>
+                <p class="text-2xl font-bold" th:text="${#numbers.formatDecimal(poliza.get('prima_anual') ?: 0, 1, 'DEFAULT', 2, 'DEFAULT')} + ' ' + ${mon}">—</p>
                 <p class="text-xs text-white/70 mt-1">
                     Vence: <span th:text="${poliza.get('fecha_vencimiento')}">—</span>
                 </p>
@@ -46,14 +46,14 @@
                     <div><dt class="text-xs text-slate-500">Tomador</dt><dd th:text="${poliza.get('tomador')}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Asegurado</dt><dd th:text="${poliza.get('asegurado')}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Beneficiario</dt><dd th:text="${poliza.get('beneficiario')}">—</dd></div>
-                    <div><dt class="text-xs text-slate-500">Capital asegurado</dt><dd class="font-mono" th:text="${poliza.get('capital_asegurado') != null ? #numbers.formatDecimal(poliza.get('capital_asegurado'),1,'POINT',2,'COMMA') + ' €' : '—'}">—</dd></div>
-                    <div><dt class="text-xs text-slate-500">Franquicia</dt><dd class="font-mono" th:text="${poliza.get('franquicia') != null ? #numbers.formatDecimal(poliza.get('franquicia'),1,'POINT',2,'COMMA') + ' €' : '—'}">—</dd></div>
+                    <div><dt class="text-xs text-slate-500">Capital asegurado</dt><dd class="font-mono" th:text="${poliza.get('capital_asegurado') != null ? #numbers.formatDecimal(poliza.get('capital_asegurado'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</dd></div>
+                    <div><dt class="text-xs text-slate-500">Franquicia</dt><dd class="font-mono" th:text="${poliza.get('franquicia') != null ? #numbers.formatDecimal(poliza.get('franquicia'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Forma de pago</dt><dd th:text="${poliza.get('forma_pago')}">—</dd></div>
-                    <div><dt class="text-xs text-slate-500">Importe por cargo</dt><dd class="font-mono" th:text="${importePorCargo != null ? #numbers.formatDecimal(importePorCargo,1,'POINT',2,'COMMA') + ' €' : '—'}">—</dd></div>
+                    <div><dt class="text-xs text-slate-500">Importe por cargo</dt><dd class="font-mono" th:text="${importePorCargo != null ? #numbers.formatDecimal(importePorCargo,1,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Cuenta de cargo</dt><dd class="font-mono" th:text="${cuentaCargo ?: 'Sin indicar'}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Próximo cargo</dt><dd th:text="${poliza.get('proximo_cargo') ?: '—'}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Domiciliado</dt><dd th:text="${#bools.isTrue(poliza.get('domiciliado')) ? 'Sí' : 'No'}">—</dd></div>
-                    <div><dt class="text-xs text-slate-500">Comisión agente</dt><dd class="font-mono text-emerald-700" th:text="${poliza.get('comision_agente') != null ? #numbers.formatDecimal(poliza.get('comision_agente'),1,'POINT',2,'COMMA') + ' €' : '—'}">—</dd></div>
+                    <div><dt class="text-xs text-slate-500">Comisión agente</dt><dd class="font-mono text-emerald-700" th:text="${poliza.get('comision_agente') != null ? #numbers.formatDecimal(poliza.get('comision_agente'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon : '—'}">—</dd></div>
                     <div><dt class="text-xs text-slate-500">Renovación auto</dt><dd th:text="${#bools.isTrue(poliza.get('renovacion_automatica')) ? 'Sí' : 'No'}">—</dd></div>
                 </dl>
                 <div th:if="${poliza.get('coberturas')}" class="mt-4 pt-3 border-t border-slate-100 dark:border-neutral-800">
@@ -91,7 +91,7 @@
                     <textarea name="descripcion" rows="2" placeholder="Descripción del siniestro..." class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></textarea>
                     <div class="grid grid-cols-2 gap-2">
                         <input type="text" name="numero_expediente" placeholder="Nº expediente" class="px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                        <input type="number" step="0.01" name="importe_reclamado" placeholder="Importe reclamado (€)" class="px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                        <input type="number" step="0.01" name="importe_reclamado" placeholder="Importe reclamado ($)" class="px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
                     </div>
                     <button type="submit" class="px-3 py-1.5 text-xs rounded bg-blue-700 text-white">Crear</button>
                 </form>
@@ -114,8 +114,8 @@
                                     <span th:case="'rechazado'" class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Rechazado</span>
                                     <span th:case="'cerrado'" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">Cerrado</span>
                                 </span>
-                                <p class="text-xs font-mono mt-1" th:if="${s.get('importe_reclamado')}" th:text="${'Recl: ' + #numbers.formatDecimal(s.get('importe_reclamado'),1,'POINT',2,'COMMA') + ' €'}">—</p>
-                                <p class="text-xs font-mono text-emerald-700" th:if="${s.get('importe_indemnizado')}" th:text="${'Indem: ' + #numbers.formatDecimal(s.get('importe_indemnizado'),1,'POINT',2,'COMMA') + ' €'}">—</p>
+                                <p class="text-xs font-mono mt-1" th:if="${s.get('importe_reclamado')}" th:text="${'Recl: ' + #numbers.formatDecimal(s.get('importe_reclamado'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</p>
+                                <p class="text-xs font-mono text-emerald-700" th:if="${s.get('importe_indemnizado')}" th:text="${'Indem: ' + #numbers.formatDecimal(s.get('importe_indemnizado'),1,'DEFAULT',2,'DEFAULT') + ' ' + mon}">—</p>
                             </div>
                         </div>
                     </li>

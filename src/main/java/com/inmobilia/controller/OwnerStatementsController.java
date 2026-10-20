@@ -1,5 +1,7 @@
 package com.inmobilia.controller;
 
+import com.inmobilia.util.PaisActual;
+
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
@@ -93,7 +95,7 @@ public class OwnerStatementsController {
         data.put("created_at", OffsetDateTime.now().toString());
         supabase.insert("extractos_propietario", data);
 
-        SessionUtils.flash(session, "✅ Extracto generado: " + liquidar + " € a liquidar");
+        SessionUtils.flash(session, "✅ Extracto generado: " + liquidar + (" " + PaisActual.moneda() + " a liquidar"));
         return "redirect:/extractos";
     }
 

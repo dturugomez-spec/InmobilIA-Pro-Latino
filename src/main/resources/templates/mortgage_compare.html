@@ -22,7 +22,7 @@
             <h3 class="font-semibold text-sm mb-2">Datos del préstamo</h3>
 
             <div>
-                <label class="block text-xs font-medium mb-1">Capital (€)</label>
+                <label class="block text-xs font-medium mb-1">Capital ([[${mon}]])</label>
                 <input type="number" x-model.number="capital" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
             </div>
             <div>
@@ -103,11 +103,11 @@
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Sin riesgo</span>
                     </div>
                     <p class="text-xs text-slate-500">Cuota mensual</p>
-                    <p class="text-2xl font-bold mb-2" x-text="fmt(result.fija.cuotaMensual) + ' €'"></p>
+                    <p class="text-2xl font-bold mb-2" x-text="fmt(result.fija.cuotaMensual) + (' ' + (window.MON||''))"></p>
                     <div class="space-y-1 text-xs">
                         <div class="flex justify-between"><span class="text-slate-500">Tipo:</span><span class="font-mono" x-text="fmt(result.fija.tipoMedio) + ' %'"></span></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Total intereses:</span><span class="font-mono text-amber-700" x-text="fmt(result.fija.totalIntereses) + ' €'"></span></div>
-                        <div class="flex justify-between border-t pt-1 mt-1"><span class="font-semibold">Total pagado:</span><span class="font-mono font-bold" x-text="fmt(result.fija.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Total intereses:</span><span class="font-mono text-amber-700" x-text="fmt(result.fija.totalIntereses) + (' ' + (window.MON||''))"></span></div>
+                        <div class="flex justify-between border-t pt-1 mt-1"><span class="font-semibold">Total pagado:</span><span class="font-mono font-bold" x-text="fmt(result.fija.totalPagado) + (' ' + (window.MON||''))"></span></div>
                     </div>
                 </div>
 
@@ -120,12 +120,12 @@
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Riesgo</span>
                     </div>
                     <p class="text-xs text-slate-500">Cuota inicial (1er año)</p>
-                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.variable.medio.cuotaInicial) + ' €'"></p>
+                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.variable.medio.cuotaInicial) + (' ' + (window.MON||''))"></p>
                     <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Total pagado según escenario</p>
                     <div class="space-y-1 text-xs">
-                        <div class="flex justify-between text-emerald-700"><span> Optimista (Eur. <span x-text="euriborOptimista"></span>%):</span><span class="font-mono" x-text="fmt(result.variable.optimista.totalPagado) + ' €'"></span></div>
-                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.variable.medio.totalPagado) + ' €'"></span></div>
-                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.variable.pesimista.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-emerald-700"><span> Optimista (Eur. <span x-text="euriborOptimista"></span>%):</span><span class="font-mono" x-text="fmt(result.variable.optimista.totalPagado) + (' ' + (window.MON||''))"></span></div>
+                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.variable.medio.totalPagado) + (' ' + (window.MON||''))"></span></div>
+                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.variable.pesimista.totalPagado) + (' ' + (window.MON||''))"></span></div>
                     </div>
                 </div>
 
@@ -138,12 +138,12 @@
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Equilibrio</span>
                     </div>
                     <p class="text-xs text-slate-500">Cuota fija (primeros <span x-text="anosFijoMixto"></span> años)</p>
-                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.mixta.medio.cuotaFija) + ' €'"></p>
+                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.mixta.medio.cuotaFija) + (' ' + (window.MON||''))"></p>
                     <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Total pagado según escenario</p>
                     <div class="space-y-1 text-xs">
-                        <div class="flex justify-between text-emerald-700"><span> Optimista:</span><span class="font-mono" x-text="fmt(result.mixta.optimista.totalPagado) + ' €'"></span></div>
-                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.mixta.medio.totalPagado) + ' €'"></span></div>
-                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.mixta.pesimista.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-emerald-700"><span> Optimista:</span><span class="font-mono" x-text="fmt(result.mixta.optimista.totalPagado) + (' ' + (window.MON||''))"></span></div>
+                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.mixta.medio.totalPagado) + (' ' + (window.MON||''))"></span></div>
+                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.mixta.pesimista.totalPagado) + (' ' + (window.MON||''))"></span></div>
                     </div>
                 </div>
             </div>
@@ -180,7 +180,7 @@
                 loading: false,
                 result: {},
                 chart: null,
-                fmt(v) { return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0); },
+                fmt(v) { return new Intl.NumberFormat(window.LOC||'es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0); },
                 async compare() {
                     this.loading = true;
                     try {
@@ -220,7 +220,7 @@
                                 { label: 'Mixta', data: [this.result.mixta.optimista.totalPagado, this.result.mixta.medio.totalPagado, this.result.mixta.pesimista.totalPagado], backgroundColor: '#a855f7' }
                             ]
                         },
-                        options: { responsive: true, scales: { y: { ticks: { callback: v => new Intl.NumberFormat('es-ES').format(v) + ' €' } } } }
+                        options: { responsive: true, scales: { y: { ticks: { callback: v => new Intl.NumberFormat(window.LOC||'es').format(v) + (' ' + (window.MON||'')) } } } }
                     });
                 },
                 init() { this.compare(); }
