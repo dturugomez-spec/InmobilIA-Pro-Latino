@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Agregador de noticias RSS de fuentes oficiales y medios economicos espanoles
+ * Agregador de noticias RSS de medios locales del país de la inmobiliaria
  * especializados en vivienda, alquiler y precios. Cache 30 min para no abusar
  * de los servidores origen.
  *
@@ -30,7 +30,7 @@ import java.util.Map;
  *  - El Confidencial Vivienda
  *  - Expansion Vivienda
  *  - Europa Press Inmobiliario
- *  - BOE sumario diario (regulatorio)
+ *  - Noticias de normativa de vivienda (regulatorio)
  *
  * Si todas las fuentes fallan (sin internet), devuelve lista vacia sin romper la UI.
  */

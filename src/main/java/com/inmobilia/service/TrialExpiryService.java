@@ -29,7 +29,7 @@ public class TrialExpiryService {
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     /** Cron diario a las 03:00. */
-    @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 3 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void desactivarTrialsExpirados() {
         log.info("[CRON] Comprobando trials expirados...");
         try {

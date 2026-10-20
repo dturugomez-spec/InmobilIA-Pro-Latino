@@ -15,7 +15,7 @@ import java.util.UUID;
 
 /**
  * Sube archivos a Supabase Storage. Bucket público "uploads": cualquiera con el enlace puede
- * verlos, así que solo se suben fotos de inmuebles (esImagen). Nada de DNI, contratos ni nóminas.
+ * verlos, así que solo se suben fotos de inmuebles (esImagen). Nada de identificaciones, contratos ni recibos de sueldo.
  *
  * Configurar el bucket en Supabase:
  *   Dashboard → Storage → New bucket → name: "uploads" → Public bucket: ON → Save

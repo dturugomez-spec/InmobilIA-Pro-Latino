@@ -13,7 +13,7 @@ import java.util.*;
 
 /**
  * Auditor IA de Cartera: ejecuta ~15 chequeos sobre la cartera del usuario
- * cruzando datos internos (Supabase) con datos oficiales (Euribor, INE).
+ * cruzando datos internos (Supabase) con referencias de mercado.
  *
  * Devuelve una puntuacion 0-100, un desglose por areas y una lista priorizada
  * de hallazgos con impacto estimado en la moneda de la inmobiliaria y accion recomendada.
@@ -205,7 +205,7 @@ public class PortfolioAuditService {
                     findings.add(new Finding("YIELD_ALTO_" + name, Area.RENTABILIDAD, Severity.INFO,
                         "Yield atípicamente alto",
                         "'" + name + "' rinde " + fmtPct(gy) + ". Revisa valor actual o riesgo zona.",
-                        "Actualizar valor con Catastro/CMA", "/herramientas/datos-oficiales",
+                        "Actualizar valor con comparables (CMA)", "/finanzas/valoracion",
                         0, name));
                 }
             }
@@ -223,7 +223,7 @@ public class PortfolioAuditService {
             } else if (dscr < 1.25) {
                 findings.add(new Finding("DSCR_BAJO", Area.FINANCIACION, Severity.WARNING,
                     "DSCR ajustado",
-                    "DSCR=" + fmtRatio(dscr) + ". Poca holgura ante subidas de Euribor o vacancia.",
+                    "DSCR=" + fmtRatio(dscr) + ". Poca holgura ante subidas de tasas o vacancia.",
                     "Simular stress test", "/analisis/stress",
                     0, null));
             }

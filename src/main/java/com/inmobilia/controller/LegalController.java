@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.time.LocalDate;
 
 /**
- * Páginas legales (RGPD): privacidad, términos, cookies, seguridad y contrato de encargado
+ * Páginas legales (protección de datos del país de la inmobiliaria): privacidad, términos, cookies, seguridad y contrato de encargado
  * del tratamiento (DPA). Accesibles sin login.
  *
  * Datos que dependen de la configuración real (y que NO se afirman si no están puestos):
@@ -64,7 +64,7 @@ public class LegalController {
         return "legal/seguridad";
     }
 
-    /** Contrato de encargado del tratamiento (art. 28 RGPD) para que la inmobiliaria lo firme. */
+    /** Contrato de encargado del tratamiento (encargado del tratamiento) para que la inmobiliaria lo firme. */
     @GetMapping({"/dpa", "/legal/dpa"})
     public String dpa(Model model) {
         model.addAttribute("page", "Contrato de encargado del tratamiento");

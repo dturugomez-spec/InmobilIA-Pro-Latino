@@ -67,7 +67,7 @@ public class AgentImpactService {
     }
 
     /** Cron viernes 17:00: envía el resumen semanal de impacto al dueño (retención). */
-    @Scheduled(cron = "0 0 17 * * FRI", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 17 * * FRI", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronSemanal() {
         try {
             List<Map<String, Object>> admins = safe("users", "active=eq.true&role=eq.admin&limit=500");

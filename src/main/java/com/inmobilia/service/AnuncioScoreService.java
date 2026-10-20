@@ -94,7 +94,7 @@ public class AnuncioScoreService {
                     " en " + str(p.get("city")) + ". Score de calidad: " + eval.get("score") + "/100.\n" +
                     (falta.length() > 0 ? "Le falta:\n" + falta : "Está bastante completo.\n") +
                     (eval.get("precio_msg") != null ? "Precio: " + eval.get("precio_msg") + "\n" : "") +
-                    "\nDa 3 consejos concretos y accionables (máx 70 palabras en total) para que este anuncio venda más rápido. Español de España.";
+                    "\nDa 3 consejos concretos y accionables (máx 70 palabras en total) para que este anuncio venda más rápido. Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros.";
             return aiService.call(null, prompt, "Eres un experto en marketing inmobiliario.", 200, uid);
         } catch (Exception e) {
             return null;

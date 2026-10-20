@@ -60,7 +60,7 @@ public class PrepVisitaController {
         ctx.append("INMUEBLE: ").append(prop.getOrDefault("name", prop.getOrDefault("address", "?")))
            .append(" en ").append(prop.getOrDefault("city", "?")).append("\n");
         Object precio = prop.get("current_value") != null ? prop.get("current_value") : prop.get("purchase_price");
-        ctx.append("- Precio: ").append(precio).append(("" + PaisActual.moneda() + " · "))
+        ctx.append("- Precio: ").append(precio).append((" " + PaisActual.moneda() + " · "))
            .append(prop.getOrDefault("bedrooms", "?")).append(" hab · ")
            .append(prop.getOrDefault("bathrooms", "?")).append(" baños · ")
            .append(prop.getOrDefault("area_m2", "?")).append(" m² · tipo ").append(prop.getOrDefault("type", "?")).append("\n");
@@ -69,7 +69,7 @@ public class PrepVisitaController {
         if (!lead.isEmpty()) {
             ctx.append("\nCLIENTE:\n");
             ctx.append("- Interés: ").append(lead.getOrDefault("interes", "?")).append("\n");
-            if (lead.get("presupuesto") != null) ctx.append("- Presupuesto: ").append(lead.get("presupuesto")).append(("" + PaisActual.moneda() + "\n"));
+            if (lead.get("presupuesto") != null) ctx.append("- Presupuesto: ").append(lead.get("presupuesto")).append((" " + PaisActual.moneda() + "\n"));
             if (lead.get("zona") != null) ctx.append("- Busca en: ").append(lead.get("zona")).append("\n");
             ctx.append("- Etapa: ").append(lead.getOrDefault("etapa", "?")).append("\n");
             if (lead.get("notas") != null) ctx.append("- Notas: ").append(lead.get("notas")).append("\n");
@@ -86,7 +86,7 @@ public class PrepVisitaController {
         String prompt = ctx + "\n\nPrepara una CHULETA breve para el agente antes de esta visita, con estas secciones:\n" +
                 "👤 PERFIL (1-2 frases)\n✅ POR QUÉ LE ENCAJA (2-3 puntos)\n" +
                 "⚠️ OBJECIONES PROBABLES Y CÓMO REBATIRLAS (2-3)\n💬 3 ARGUMENTOS CLAVE\n➡️ SIGUIENTE PASO SUGERIDO\n" +
-                "Concreto y accionable, español de España. Usa esos emojis como títulos.";
+                "Concreto y accionable, español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), sin vosotros. Usa esos emojis como títulos.";
         try {
             String prep = aiService.call(null, prompt, "Eres un coach inmobiliario que prepara al agente para cerrar la visita.", 500, uid);
             return Map.of("ok", prep != null, "prep", prep == null ? "No se pudo generar." : prep);

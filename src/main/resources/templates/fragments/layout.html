@@ -246,14 +246,6 @@
                     <i data-lucide="image" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Imágenes IA</span>
                 </a>
-                <a th:if="${nav.ve('/cee')}" href="/cee" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Certif. energético">
-                    <i data-lucide="leaf" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Certif. energético</span>
-                </a>
-                <a th:if="${nav.ve('/catastro')}" href="/catastro" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Catastro">
-                    <i data-lucide="map-pin" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Catastro</span>
-                </a>
                 </div>
             </div>
 
@@ -466,10 +458,6 @@
                     <i data-lucide="hand-coins" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Comisiones</span>
                 </a>
-                <a th:if="${nav.ve('/sepa')}" href="/sepa" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="SEPA">
-                    <i data-lucide="banknote" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">SEPA</span>
-                </a>
                 <a th:if="${nav.ve('/conciliacion')}" href="/conciliacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Conciliación bancaria">
                     <i data-lucide="banknote" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Conciliación bancaria</span>
@@ -493,14 +481,6 @@
                 <a th:if="${nav.ve('/calculadora-hipoteca')}" href="/calculadora-hipoteca" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calc. hipoteca">
                     <i data-lucide="calculator" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Calc. hipoteca</span>
-                </a>
-                <a th:if="${nav.ve('/calculadora-plusvalia')}" href="/calculadora-plusvalia" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calc. plusvalía">
-                    <i data-lucide="trending-up" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Calc. plusvalía</span>
-                </a>
-                <a th:if="${nav.ve('/calendario-fiscal')}" href="/calendario-fiscal" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calendario fiscal">
-                    <i data-lucide="calendar-clock" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Calendario fiscal</span>
                 </a>
                 </div>
             </div>
@@ -538,10 +518,6 @@
                 <a th:if="${userRole == 'admin' or userRole == 'director'}" href="/auditoria" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Auditoría">
                     <i data-lucide="file-search" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Auditoría</span>
-                </a>
-                <a th:if="${nav.ve('/herramientas/comparador-renta')}" href="/herramientas/comparador-renta" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Comparador de renta (IRAV)">
-                    <i data-lucide="scale" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Comparador de renta (IRAV)</span>
                 </a>
                 <a th:if="${nav.ve('/wiki')}" href="/wiki" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Wiki">
                     <i data-lucide="book-open" class="h-4 w-4 flex-shrink-0"></i>
@@ -587,10 +563,6 @@
                 <a th:if="${nav.ve('/integrations')}" href="/integrations" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Integraciones">
                     <i data-lucide="plug" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Integraciones</span>
-                </a>
-                <a th:if="${nav.ve('/holded')}" href="/holded" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Holded">
-                    <i data-lucide="link" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Holded</span>
                 </a>
                 <a th:if="${nav.ve('/google-calendar')}" href="/google-calendar" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Google Calendar">
                     <i data-lucide="calendar-days" class="h-4 w-4 flex-shrink-0"></i>

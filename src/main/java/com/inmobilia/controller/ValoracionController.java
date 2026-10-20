@@ -144,7 +144,7 @@ public class ValoracionController {
         lead.put("origen", "valoracion");
         lead.put("etapa", "Nuevo");
         lead.put("zona", in.get("municipio"));
-        lead.put("notas", String.format(("VALORACIÓN: %s de %s m² en %s. Estimado %s" + PaisActual.moneda() + ". Quiere vender: %s"),
+        lead.put("notas", String.format(("VALORACIÓN: %s de %s m² en %s. Estimado %s " + PaisActual.moneda() + ". Quiere vender: %s"),
                 in.getOrDefault("tipo", "?"), in.getOrDefault("metros", "?"),
                 in.getOrDefault("municipio", "?"), val.get("precio_estimado"),
                 in.getOrDefault("quiere_vender", "?")));

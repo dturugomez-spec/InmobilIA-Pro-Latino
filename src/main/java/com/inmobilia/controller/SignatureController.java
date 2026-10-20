@@ -157,7 +157,7 @@ public class SignatureController {
                 "<p>Hola %s,</p>" +
                 "<p>Te enviamos el documento <strong>%s</strong> para tu firma electrónica.</p>" +
                 "<p><a href='%s' style='display:inline-block;padding:12px 24px;background:#3b82f6;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>📝 Firmar documento</a></p>" +
-                "<p style='color:#64748b;font-size:12px'>Este enlace caduca el %s. La firma cumple con la Ley 6/2020 de servicios electrónicos de confianza.</p>",
+                "<p style='color:#64748b;font-size:12px'>Este enlace caduca el %s. Firma electrónica simple con registro de evidencias (email, IP, fecha y hora).</p>",
                 HtmlSeguro.escapar(String.valueOf(f.get("nombre"))), HtmlSeguro.escapar(String.valueOf(doc.get("titulo"))),
                 url, doc.get("fecha_expiracion"));
             emailService.send(email, "📄 " + doc.get("titulo") + " - Firma requerida", html);
@@ -294,12 +294,12 @@ public class SignatureController {
             } catch (Exception ignored) {}
         }
 
-        // Verificar DNI si está habilitado
+        // Verificar documento de identidad si está habilitado
         if (Boolean.TRUE.equals(doc.get("requiere_dni"))) {
             String dniEsperado = String.valueOf(firmante.get("dni"));
             String dniRecibido = String.valueOf(body.get("dni"));
             if (dniEsperado != null && !dniEsperado.isBlank() && !dniEsperado.equalsIgnoreCase(dniRecibido)) {
-                return Map.of("ok", false, "error", "DNI no coincide");
+                return Map.of("ok", false, "error", "El documento de identidad no coincide");
             }
         }
 

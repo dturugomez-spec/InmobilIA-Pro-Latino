@@ -44,7 +44,7 @@ public class SeguimientoService {
     private static final Set<String> ETAPAS_ACTIVAS = Set.of("Nuevo", "Contactado");
 
     /** Cron diario 9:30: inscribe leads nuevos y avanza las cadencias vencidas. */
-    @Scheduled(cron = "0 30 9 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 30 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronDiario() {
         try {
             List<Map<String, Object>> agencias = supabase.selectFilter(
@@ -204,7 +204,7 @@ public class SeguimientoService {
                     lead.getOrDefault("nombre", "cliente") +
                     (lead.get("zona") != null ? " (busca en " + lead.get("zona") + ")" : "") +
                     ". Propósito: " + proposito + ". Cercano y profesional, con una pregunta o llamada a la acción. " +
-                    "Firma como " + agencia + ". Español de España. Solo el texto, sin comillas.";
+                    "Firma como " + agencia + ". Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros. Solo el texto, sin comillas.";
             String r = aiService.call(null, prompt, "Eres un agente inmobiliario cercano y constante en el seguimiento.", 150, uid);
             return r == null || r.isBlank()
                     ? "Hola " + lead.getOrDefault("nombre", "") + ", ¿seguimos con tu búsqueda? Estoy aquí para ayudarte. " + agencia

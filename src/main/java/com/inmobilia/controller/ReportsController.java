@@ -268,7 +268,7 @@ public class ReportsController {
             } catch (Exception ignored) {}
         }
 
-        // Ingresos rentas para IRPF (modelo 100)
+        // Ingresos por rentas (para la declaración anual de impuestos)
         double rentaInmobiliaria = transacciones.stream()
                 .filter(t -> "Ingreso".equalsIgnoreCase(String.valueOf(t.getOrDefault("type", ""))))
                 .mapToDouble(t -> parseDouble(t.get("amount"))).sum();

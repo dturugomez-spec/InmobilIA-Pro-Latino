@@ -69,7 +69,7 @@ public class DefaultAutomationsSeeder {
 
             // ─── 3. LEAD PREMIUM: presupuesto alto → director + urgente ───
             crear(userId,
-                ("💎 Lead premium (>500k" + PaisActual.moneda() + ") → director + urgente"),
+                ("💎 Lead premium (>500k " + PaisActual.moneda() + ") → director + urgente"),
                 ("Si el presupuesto supera 500.000 " + PaisActual.moneda() + ", notifica al director y crea tarea urgente para HOY."),
                 "lead_creado",
                 Map.of("campo", "presupuesto_max", "operador", ">", "valor", 500000),

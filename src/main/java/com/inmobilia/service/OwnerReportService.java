@@ -33,8 +33,8 @@ public class OwnerReportService {
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
-    /** Cron: día 1 de cada mes a las 9:00 (Europe/Madrid). */
-    @Scheduled(cron = "0 0 9 1 * *", zone = "Europe/Madrid")
+    /** Cron: día 1 de cada mes a las 9:00 (zona horaria de la app). */
+    @Scheduled(cron = "0 0 9 1 * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void enviarInformesMensuales() {
         List<Map<String, Object>> props;
         try {

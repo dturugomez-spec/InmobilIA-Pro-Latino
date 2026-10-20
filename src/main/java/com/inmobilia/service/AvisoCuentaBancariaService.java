@@ -85,7 +85,7 @@ public class AvisoCuentaBancariaService {
     }
 
     static String html(String quien, String emailQuien, String donde, String antes, String despues) {
-        String cuando = ZonedDateTime.now(ZoneId.of("Europe/Madrid"))
+        String cuando = ZonedDateTime.now(com.inmobilia.util.PaisActual.get().zonaId())
                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm"));
         String persona = HtmlUtils.htmlEscape(quien == null ? "Alguien de tu equipo" : quien)
                 + (emailQuien == null ? "" : " (" + HtmlUtils.htmlEscape(emailQuien) + ")");

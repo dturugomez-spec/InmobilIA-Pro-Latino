@@ -26,7 +26,7 @@ public class InsuranceScheduler {
     private final NotificationService notif;
 
     /** Diaria 9:30 → buscar pólizas que vencen pronto */
-    @Scheduled(cron = "0 30 9 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 30 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void alertVencimientos() {
         log.info("[CRON] alertVencimientos seguros");
         LocalDate hoy = LocalDate.now();
@@ -80,7 +80,7 @@ public class InsuranceScheduler {
      * ha pasado, apuntar el siguiente según la forma de pago. La app no cobra ni paga: es control.
      * Necesita las columnas de la migración V84; sin ellas la consulta no devuelve nada.
      */
-    @Scheduled(cron = "0 35 9 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 35 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void alertCargos() {
         LocalDate hoy = LocalDate.now();
         List<Map<String, Object>> polizas = supabase.selectFilter(

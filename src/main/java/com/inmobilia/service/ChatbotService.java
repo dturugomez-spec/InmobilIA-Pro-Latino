@@ -130,7 +130,7 @@ public class ChatbotService {
 
         // Detectar precio máximo (números)
         double precioMax = 0;
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile(("(\\d{1,9})\\s*(?:" + PaisActual.moneda() + "|euros|mil|k)")).matcher(msg);
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(("(?i)(\\d{1,9})\\s*(?:" + PaisActual.moneda() + "|pesos|soles|d[oó]lares|usd|mil|k)")).matcher(msg);
         if (m.find()) {
             precioMax = Double.parseDouble(m.group(1)); // como mucho 9 cifras: un número enorme ya no rompe el chat
             if (msg.contains("mil") || msg.contains("k")) precioMax *= 1000;
@@ -150,7 +150,7 @@ public class ChatbotService {
                 String type = String.valueOf(p.getOrDefault("type", "")).toLowerCase();
                 if (!type.contains(tipoDeseado) && !tipoDeseado.contains(type)) continue;
             }
-            ctx.append(String.format(("- %s | %s | %s" + PaisActual.moneda() + " | %s hab. | %s m²\n"),
+            ctx.append(String.format(("- %s | %s | %s " + PaisActual.moneda() + " | %s hab. | %s m²\n"),
                     p.getOrDefault("name", p.getOrDefault("address", "?")), p.get("type"),
                     precio > 0 ? Math.round(precio) : "?",
                     p.get("bedrooms"), p.get("area_m2")));
@@ -218,9 +218,9 @@ public class ChatbotService {
             upd.put("visitor_email", emailM.group());
         }
 
-        // Teléfono español
+        // Teléfono (con o sin prefijo internacional, 8 a 13 cifras)
         java.util.regex.Matcher telM = java.util.regex.Pattern.compile(
-                "(?:\\+34\\s?)?([6-9]\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{3})").matcher(msg);
+                "(?:\\+\\d{1,3}[\\s-]?)?(?:\\d[\\s-]?){7,12}\\d").matcher(msg);
         if (telM.find() && conv.get("visitor_telefono") == null) {
             upd.put("visitor_telefono", telM.group().replaceAll("[\\s-]", ""));
         }

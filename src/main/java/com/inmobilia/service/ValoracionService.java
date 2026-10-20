@@ -12,7 +12,7 @@ import java.util.*;
  * 🏷️ AVM · Modelo de valoración automática de inmuebles
  *
  * Estima el precio de un inmueble combinando:
- *   1. Tabla base de $/m² por provincia (mercado España, valores de referencia)
+ *   1. Precio de referencia por m² de la ciudad (tabla latinoamericana en USD, convertida a la moneda de la agencia)
  *   2. Ajustes por tipo, estado, planta, extras (ascensor, garaje, terraza)
  *   3. Comparables reales de la cartera de la agencia (si hay)
  *   4. Refinamiento opcional con IA
@@ -27,40 +27,18 @@ public class ValoracionService {
 
     private final SupabaseService supabase;
     private final AIService aiService;
-
-    /** $/m² de referencia por provincia (compraventa, valores orientativos 2025). */
-    private static final Map<String, Double> EUR_M2 = new HashMap<>();
-    static {
-        EUR_M2.put("madrid", 3650.0);      EUR_M2.put("barcelona", 4100.0);
-        EUR_M2.put("baleares", 4250.0);    EUR_M2.put("illes balears", 4250.0);
-        EUR_M2.put("guipuzcoa", 3550.0);   EUR_M2.put("gipuzkoa", 3550.0);
-        EUR_M2.put("malaga", 2900.0);      EUR_M2.put("vizcaya", 2950.0);
-        EUR_M2.put("bizkaia", 2950.0);     EUR_M2.put("alava", 2500.0);
-        EUR_M2.put("las palmas", 2300.0);  EUR_M2.put("santa cruz de tenerife", 2200.0);
-        EUR_M2.put("girona", 2550.0);      EUR_M2.put("alicante", 2050.0);
-        EUR_M2.put("valencia", 2050.0);    EUR_M2.put("cadiz", 1950.0);
-        EUR_M2.put("navarra", 2100.0);     EUR_M2.put("cantabria", 2050.0);
-        EUR_M2.put("sevilla", 2150.0);     EUR_M2.put("granada", 1700.0);
-        EUR_M2.put("tarragona", 1750.0);   EUR_M2.put("la coruna", 1850.0);
-        EUR_M2.put("a coruna", 1850.0);    EUR_M2.put("zaragoza", 1700.0);
-        EUR_M2.put("asturias", 1650.0);    EUR_M2.put("murcia", 1350.0);
-        EUR_M2.put("cordoba", 1500.0);     EUR_M2.put("valladolid", 1700.0);
-        EUR_M2.put("almeria", 1650.0);     EUR_M2.put("huelva", 1500.0);
-        EUR_M2.put("toledo", 1300.0);      EUR_M2.put("badajoz", 1250.0);
-        EUR_M2.put("jaen", 1150.0);        EUR_M2.put("ciudad real", 1150.0);
-        EUR_M2.put("caceres", 1300.0);     EUR_M2.put("albacete", 1300.0);
-        EUR_M2.put("leon", 1300.0);        EUR_M2.put("salamanca", 1650.0);
-        EUR_M2.put("lugo", 1300.0);        EUR_M2.put("ourense", 1300.0);
-        EUR_M2.put("pontevedra", 1700.0);  EUR_M2.put("burgos", 1550.0);
-    }
-    private static final double EUR_M2_DEFAULT = 1800.0;  // media nacional aprox
+    private final PaisService paises;
+    private final CurrencyService divisas;
 
     public Map<String, Object> valorar(String userId, Map<String, String> in) {
         double metros = pd(in.get("metros"));
         if (metros <= 0) metros = 90;  // fallback razonable
 
+        // País de la agencia (también en la calculadora pública, que no tiene sesión)
+        com.inmobilia.util.Pais pais = paises.usar(userId);
+        String ciudad = in.getOrDefault("municipio", in.getOrDefault("provincia", ""));
         String provincia = norm(in.getOrDefault("provincia", in.getOrDefault("municipio", "")));
-        double base = EUR_M2.getOrDefault(provincia, EUR_M2_DEFAULT);
+        double base = divisas.convertir(com.inmobilia.util.PreciosReferencia.usdPorM2(pais, ciudad), "USD", pais.moneda());
 
         // 1) Comparables reales de la cartera de la agencia (afina la base)
         Double baseComparables = comparables(userId, in, metros);
@@ -98,7 +76,7 @@ public class ValoracionService {
         double min = estimado * 0.90;
         double max = estimado * 1.10;
 
-        String confianza = baseComparables != null ? "alta" : (EUR_M2.containsKey(provincia) ? "media" : "baja");
+        String confianza = baseComparables != null ? "alta" : (com.inmobilia.util.PreciosReferencia.conocida(pais, ciudad) ? "media" : "baja");
 
         Map<String, Object> r = new LinkedHashMap<>();
         r.put("ok", true);
@@ -139,7 +117,7 @@ public class ValoracionService {
     public String comentarioIA(Map<String, Object> val, Map<String, String> in, String userId) {
         try {
             String prompt = String.format(
-                ("Inmueble: %s de %s m² en %s, estado %s. Valoración estimada: %s" + PaisActual.moneda() + " (rango %s-%s" + PaisActual.moneda() + ").\n") +
+                ("Inmueble: %s de %s m² en %s, estado %s. Valoración estimada: %s " + PaisActual.moneda() + " (rango %s-%s " + PaisActual.moneda() + ").\n") +
                 "Escribe 2-3 frases comerciales (máx 60 palabras) para el propietario, explicando el valor y " +
                 "animándole a una valoración profesional gratuita. Tono cercano y profesional, español.",
                 in.getOrDefault("tipo", "inmueble"), in.getOrDefault("metros", "?"),

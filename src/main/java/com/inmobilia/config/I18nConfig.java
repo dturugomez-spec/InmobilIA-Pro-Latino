@@ -83,7 +83,7 @@ public class I18nConfig implements WebMvcConfigurer {
                 "/reports/**", "/invoices/**", "/receipts/**", "/commissions/**", "/integrations/**",
                 "/analytics", "/business", "/captacion", "/captacion/**", "/coach", "/optimizador",
                 "/informes", "/impacto", "/valoraciones", "/equipo", "/equipo/**",
-                "/cee/**", "/reviews/**", "/nota-encargo/**", "/newsletter/**",
+                "/reviews/**", "/nota-encargo/**", "/newsletter/**",
                 "/gastos-agente/**", "/busquedas-guardadas/**", "/creditos",
                 "/preferencias", "/preferencias/**", "/herramientas/**",
                 "/propiedades/mapa", "/trash", "/team/**");

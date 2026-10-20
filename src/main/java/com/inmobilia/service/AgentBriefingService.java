@@ -43,7 +43,7 @@ public class AgentBriefingService {
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     /** Cron: cada día laborable a las 8:00 genera el briefing de cada agencia. */
-    @Scheduled(cron = "0 0 8 * * MON-FRI", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 8 * * MON-FRI", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronDiario() {
         log.info("[AGENTE IA] Generando briefings diarios...");
         try {
@@ -78,7 +78,7 @@ public class AgentBriefingService {
     }
 
     /** Cron semanal: lunes 9:00 → informe estratégico de la semana anterior. */
-    @Scheduled(cron = "0 0 9 * * MON", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 9 * * MON", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronSemanal() {
         log.info("[AGENTE IA] Generando informes semanales...");
         try {
@@ -510,7 +510,7 @@ public class AgentBriefingService {
             n = 0;
             for (Map<String, Object> s : sugerenciasPrecio) {
                 plan.add(paso("💸", "Propón bajar el precio de " + s.get("direccion"),
-                        s.get("dias") + " días en mercado → " + String.format("%,d", ((Number) s.get("precio_sugerido")).longValue()) + ("" + PaisActual.moneda()), "/agente"));
+                        s.get("dias") + " días en mercado → " + String.format("%,d", ((Number) s.get("precio_sugerido")).longValue()) + (" " + PaisActual.moneda()), "/agente"));
                 if (++n >= 2) break;
             }
             if (!tareasVencidas.isEmpty()) {
@@ -539,7 +539,7 @@ public class AgentBriefingService {
             if (!matchesProactivos.isEmpty()) s.append("- ").append(matchesProactivos.size()).append(" propiedades nuevas con leads compatibles esperando aviso\n");
             if (!oportunidadesDormidas.isEmpty()) s.append("- ").append(oportunidadesDormidas.size()).append(" clientes antiguos (3+ años) para reactivar\n");
             if (!tareasVencidas.isEmpty()) s.append("- ").append(tareasVencidas.size()).append(" tareas vencidas\n");
-            if (forecastMes > 0) s.append("- Previsión de cierres este mes: ").append(forecastMes).append(("" + PaisActual.moneda() + " (")).append(ofertasActivas).append(" ofertas activas)\n");
+            if (forecastMes > 0) s.append("- Previsión de cierres este mes: ").append(forecastMes).append((" " + PaisActual.moneda() + " (")).append(ofertasActivas).append(" ofertas activas)\n");
             return s.toString();
         }
 

@@ -73,7 +73,7 @@ public class OwnerStatementsController {
         totalGastos = gastos.stream().mapToDouble(g -> nd(g.get("importe"))).sum();
 
         double comision = totalRentas * comisionPct / 100;
-        double iva = comision * 0.21;
+        double iva = comision * com.inmobilia.util.PaisActual.get().tipoImpuesto() / 100.0; // impuesto del país
         double retencion = totalRentas * retencionIrpfPct / 100;
         double liquidar = totalRentas - comision - iva - retencion - totalGastos;
 

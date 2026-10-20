@@ -63,6 +63,11 @@ public final class PreciosReferencia {
         return t.getOrDefault("*", 1000.0);
     }
 
+    /** true si la ciudad tiene precio propio en la tabla (si no, se usa la media del país). */
+    public static boolean conocida(Pais pais, String ciudad) {
+        return ciudad != null && USD_M2.getOrDefault(pais.codigo(), Map.of()).containsKey(normalizar(ciudad));
+    }
+
     public static String ciudadPrincipal(Pais pais) {
         return CAPITAL.getOrDefault(pais.codigo(), pais.nombre());
     }

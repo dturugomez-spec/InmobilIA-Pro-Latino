@@ -104,7 +104,7 @@ public class PortalPropietarioService {
     public String narrativaIA(Map<String, Object> p, Map<String, Object> resumen, String userId) {
         try {
             String prompt = String.format(Locale.ROOT,
-                ("Resumen de actividad del inmueble en %s (precio %s" + PaisActual.moneda() + "):\n") +
+                ("Resumen de actividad del inmueble en %s (precio %s " + PaisActual.moneda() + "):\n") +
                 "- Días en el mercado: %s\n- Visitas realizadas: %s\n- Visitas programadas: %s\n" +
                 "- Interés medio de visitantes: %s/5 (%s valoraciones)\n- Ofertas recibidas: %s (activas %s)\n\n" +
                 "Escribe un mensaje cercano y honesto al PROPIETARIO (máx 70 palabras) resumiendo cómo va la venta " +

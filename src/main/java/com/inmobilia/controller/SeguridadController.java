@@ -94,7 +94,7 @@ public class SeguridadController {
             model.addAttribute("equipoSin2fa", equipo.stream().filter(f -> !Boolean.TRUE.equals(f.get("con2fa"))).count());
         }
 
-        // Mis últimos accesos y eventos de seguridad (hora de España)
+        // Mis últimos accesos y eventos de seguridad (hora del país de la inmobiliaria)
         List<Map<String, Object>> eventos = new ArrayList<>();
         for (Map<String, Object> e : supabase.selectFilter("audit_log",
                 "actor_id=eq." + yo + "&categoria=eq.seguridad&order=created_at.desc&limit=12")) {
@@ -109,14 +109,13 @@ public class SeguridadController {
         return "seguridad";
     }
 
-    private static final java.time.ZoneId MADRID = java.time.ZoneId.of("Europe/Madrid");
     private static final java.time.format.DateTimeFormatter FMT =
             java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private static String fechaLocal(Object v) {
         if (v == null) return "";
         try {
-            return java.time.OffsetDateTime.parse(String.valueOf(v)).atZoneSameInstant(MADRID).format(FMT);
+            return java.time.OffsetDateTime.parse(String.valueOf(v)).atZoneSameInstant(com.inmobilia.util.PaisActual.get().zonaId()).format(FMT);
         } catch (Exception e) {
             String s = String.valueOf(v);
             return s.length() >= 16 ? s.substring(0, 16).replace('T', ' ') : s;

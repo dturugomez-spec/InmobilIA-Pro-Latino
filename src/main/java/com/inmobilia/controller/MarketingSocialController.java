@@ -54,14 +54,14 @@ public class MarketingSocialController {
         Object precio = p.get("current_value") != null ? p.get("current_value") : p.get("purchase_price");
         String datos = "Inmueble: " + p.getOrDefault("name", p.getOrDefault("address", "?")) +
                 " en " + p.getOrDefault("city", "?") + ". Tipo " + p.getOrDefault("type", "?") +
-                ". Precio " + precio + ("" + PaisActual.moneda() + ". ") + p.getOrDefault("bedrooms", "?") + " hab, " +
+                ". Precio " + precio + (" " + PaisActual.moneda() + ". ") + p.getOrDefault("bedrooms", "?") + " hab, " +
                 p.getOrDefault("bathrooms", "?") + " baños, " + p.getOrDefault("area_m2", "?") + " m²." +
                 (p.get("notes") != null ? " Notas: " + p.get("notes") : "");
 
         String estilo = "facebook".equals(red)
                 ? "Post para Facebook (80-120 palabras), tono cercano, con llamada a la acción y 3-5 hashtags."
                 : "Post para Instagram (60-90 palabras), con gancho en la 1ª línea, emojis, llamada a la acción y 6-10 hashtags inmobiliarios en español al final.";
-        String prompt = datos + "\n\nEscribe un " + estilo + " Español de España. No inventes datos que no te doy.";
+        String prompt = datos + "\n\nEscribe un " + estilo + " Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros. No inventes datos que no te doy.";
         try {
             String cap = aiService.call(null, prompt, "Eres un experto en marketing inmobiliario para redes sociales.", 350, uid);
             return Map.of("ok", cap != null, "caption", cap == null ? "No se pudo generar." : cap);

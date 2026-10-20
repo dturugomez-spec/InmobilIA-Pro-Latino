@@ -144,7 +144,7 @@ public class PortfolioStressService {
                 euriborActual, props, rentaPorProp));
 
         esc.add(buildScenario("Inflacion OPEX +10%",
-                "Costes operativos suben 10% (luz, comunidad, IBI, seguros).",
+                "Costes operativos suben 10% (luz, mantenimiento, predial, seguros).",
                 0, 0, 10, rentasAnuales, opexAnual, deudaAnual,
                 euriborActual, props, rentaPorProp));
 

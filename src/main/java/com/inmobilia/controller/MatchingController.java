@@ -162,7 +162,7 @@ public class MatchingController {
     }
 
     /** Cron 2 veces al día → 9:00 y 18:00 */
-    @Scheduled(cron = "0 0 9,18 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 9,18 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void autoMatchCron() {
         log.info("[CRON] autoMatchCron iniciado");
         // Obtener todos los usuarios activos

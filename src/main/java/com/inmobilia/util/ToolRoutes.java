@@ -18,10 +18,7 @@ public final class ToolRoutes {
             // Inicio
             Map.entry("Dashboard", "/dashboard"),
             Map.entry("Auditor IA de Cartera", "/herramientas/auditoria"),
-            Map.entry("Subastas BOE Hunter", "/herramientas/subastas-boe"),
-            Map.entry("Benchmark Renta Ministerio", "/herramientas/benchmark-renta"),
             Map.entry("Stress Test de Cartera", "/herramientas/stress-cartera"),
-            Map.entry("Comparador CCAA", "/herramientas/comparador-ccaa"),
             // Cartera
             Map.entry("Cartera de Activos", "/crud/propiedades"),
             Map.entry("CRM de Inquilinos", "/crud/inquilinos"),
@@ -46,7 +43,6 @@ public final class ToolRoutes {
             Map.entry("Optimizacion de Cartera", "/finanzas/portfolio"),
             Map.entry("Waterfall de Flujos", "/finanzas/waterfall"),
             Map.entry("Modelos de Valoracion", "/finanzas/valoracion"),
-            Map.entry("Planificacion Fiscal", "/herramientas/fiscal"),
             Map.entry("Simulador Value-Add", "/finanzas/reformas"),
             Map.entry("Seguimiento de ROI", "/finanzas/portfolio"),
             Map.entry("Flip & Trading", "/finanzas/quickcheck"),
@@ -76,13 +72,9 @@ public final class ToolRoutes {
             Map.entry("Radar de Mercado", "/herramientas/radar"),
             Map.entry("Portal de Inquilino", "/crud/inquilinos"),
             Map.entry("Mantenimiento Predictivo", "/herramientas/mantenimiento-predictivo"),
-            Map.entry("Consulta Catastro", "/herramientas/datos-oficiales"),
-            Map.entry("Datos Oficiales", "/herramientas/datos-oficiales"),
             Map.entry("Turistico vs Largo Plazo", "/herramientas/turistico"),
             Map.entry("Cazador de Oportunidades", "/ia/dealflow"),
             Map.entry("Informe PDF Profesional", "/ia/memo"),
-            Map.entry("Euribor en Vivo", "/herramientas/euribor"),
-            Map.entry("Optimizador Holding", "/herramientas/holding"),
             Map.entry("Comandos de Voz", "/config"),
             Map.entry("Multi-Empresa", "/config"),
             // Operaciones

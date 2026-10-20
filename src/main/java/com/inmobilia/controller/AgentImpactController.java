@@ -40,7 +40,7 @@ public class AgentImpactController {
                 "ejecutado %s acciones, captado %s leads automáticamente y mantiene %s leads en seguimiento, " +
                 "ahorrando ~%s horas de trabajo manual.\n\n" +
                 "Escribe 2-3 frases (máx 55 palabras) motivadoras y concretas para el dueño de la agencia, " +
-                "destacando el valor aportado. Tono cercano y profesional. Español de España.",
+                "destacando el valor aportado. Tono cercano y profesional. Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros.",
                 r.get("mensajesIA"), r.get("otrasAcciones"), r.get("captacionAuto"), r.get("enSeguimiento"), r.get("horas"));
             return aiService.call(null, prompt, "Eres el Agente IA de InmobilIA resumiendo tu propio impacto.", 160, uid);
         } catch (Exception e) {

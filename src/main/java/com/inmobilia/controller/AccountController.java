@@ -23,8 +23,8 @@ import java.util.Map;
 
 /**
  * Gestión de la cuenta del usuario:
- * - Eliminar cuenta (RGPD: derecho al olvido)
- * - Exportar todos sus datos en JSON (RGPD: derecho a la portabilidad)
+ * - Eliminar cuenta (protección de datos: derecho de supresión)
+ * - Exportar todos sus datos en JSON (protección de datos: portabilidad)
  */
 @Controller
 @RequiredArgsConstructor
@@ -71,7 +71,7 @@ public class AccountController {
     }
 
     /**
-     * Exportar todos los datos de la inmobiliaria en JSON (RGPD: portabilidad).
+     * Exportar todos los datos de la inmobiliaria en JSON (protección de datos: portabilidad).
      * Solo el administrador: son los datos de TODA la inmobiliaria, no los de una persona.
      */
     @GetMapping("/account/export")

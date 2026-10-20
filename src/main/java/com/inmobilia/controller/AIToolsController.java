@@ -117,7 +117,7 @@ public class AIToolsController {
                                 HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         String res = ai.call(SessionUtils.apiKey(session), pregunta,
-                "Eres un asistente especializado en inversion inmobiliaria en Espana.",
+                "Eres un asistente especializado en inversion inmobiliaria en " + com.inmobilia.util.PaisActual.get().nombre() + ".",
                 1200, SessionUtils.uid(session));
         model.addAttribute("page", "Asistente Inmobiliario IA");
         model.addAttribute("pregunta", pregunta);
@@ -237,7 +237,7 @@ public class AIToolsController {
                 recomendacion de perfil inversor.
                 """.formatted(tipoActivo, zona);
         String res = ai.call(SessionUtils.apiKey(session), prompt,
-                "Eres un analista de mercado inmobiliario espanol.", 1500, SessionUtils.uid(session));
+                "Eres un analista del mercado inmobiliario de " + com.inmobilia.util.PaisActual.get().nombre() + ".", 1500, SessionUtils.uid(session));
         model.addAttribute("page", "Analisis de Zona y Mercado");
         model.addAttribute("result", res);
         model.addAttribute("zona", zona);

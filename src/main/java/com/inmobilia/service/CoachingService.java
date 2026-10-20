@@ -31,7 +31,7 @@ public class CoachingService {
             "Eres un propietario que quiere vender su piso pero te resistes a pagar la comisión: insistes en que otra agencia te cobra menos. Defiende tu postura con educación pero firmeza.");
         add("particular", "«Quiero venderlo yo solo (particular)»", "propietario",
             "El propietario cree que puede vender sin agencia y ahorrarse la comisión.",
-            "Eres un propietario convencido de que puedes vender tu vivienda por tu cuenta en Idealista sin pagar a nadie. Eres escéptico con las agencias.");
+            "Eres un propietario convencido de que puedes vender tu vivienda por tu cuenta en los portales inmobiliarios sin pagar a nadie. Eres escéptico con las agencias.");
         add("valoracion_baja", "«Tu valoración es muy baja, vale más»", "propietario",
             "El propietario considera que su vivienda vale más que tu valoración.",
             "Eres un propietario con apego emocional a tu casa: crees que vale mucho más que la valoración del agente y te ofende un poco la cifra.");
@@ -62,7 +62,7 @@ public class CoachingService {
 
         String sistema = e.persona() + " " + dificultadHint(dificultad) +
                 " Eres el CLIENTE, no el agente. Responde SIEMPRE en primera persona como el cliente, " +
-                "en 1-3 frases, en español de España, con objeciones realistas. No te rompas el personaje, " +
+                "en 1-3 frases, en español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), sin vosotros, con objeciones realistas. No te rompas el personaje, " +
                 "no des consejos al agente y no narres. Si el agente te convence de verdad, puedes ceder poco a poco.";
 
         StringBuilder conv = new StringBuilder("Conversación hasta ahora:\n");
@@ -97,7 +97,7 @@ public class CoachingService {
                 "Evalúa el desempeño del AGENTE inmobiliario manejando esta objeción. " +
                 "Devuelve SOLO un JSON válido con esta forma exacta:\n" +
                 "{\"puntuacion\": <0-100>, \"fortalezas\": [\"...\"], \"mejoras\": [\"...\"], \"respuesta_modelo\": \"<una respuesta modelo breve>\"}\n" +
-                "Sé concreto y útil, en español de España. Sin texto fuera del JSON.";
+                "Sé concreto y útil, en español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), sin vosotros. Sin texto fuera del JSON.";
         try {
             String raw = aiService.call(null, prompt,
                     "Eres un formador experto en ventas inmobiliarias. Respondes solo JSON.", 500, uid);

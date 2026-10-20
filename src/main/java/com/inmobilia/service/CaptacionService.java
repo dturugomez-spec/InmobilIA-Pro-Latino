@@ -45,12 +45,12 @@ public class CaptacionService {
         String anguloTxt = ANGULOS.getOrDefault(angulo, angulo);
 
         String contexto = String.format(Locale.ROOT,
-            "Eres un agente inmobiliario experto en captación (farming) en España.\n" +
+            "Eres un agente inmobiliario experto en captación (farming) en " + com.inmobilia.util.PaisActual.get().nombre() + ".\n" +
             "Agencia: %s. Agente: %s. Teléfono: %s.\n" +
             "Zona objetivo: %s. Tipo de propietario: %s. Ángulo del mensaje: %s.\n" +
             "%s\n" +
             "Enlace de valoración gratuita de la agencia: %s\n\n" +
-            "Reglas: tono cercano, profesional y honesto; SIN promesas de resultados; español de España; " +
+            "Reglas: tono cercano, profesional y honesto; SIN promesas de resultados; español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), sin vosotros; " +
             "incluye SIEMPRE el enlace de valoración como llamada a la acción; firma con el nombre del agente y la agencia.",
             empresa, agente.isBlank() ? "(el agente)" : agente,
             telefono.isBlank() ? "(teléfono de la agencia)" : telefono,

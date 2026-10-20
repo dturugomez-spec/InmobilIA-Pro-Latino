@@ -71,9 +71,11 @@ public class SmsService {
 
     private String normalizar(String tel) {
         String clean = tel.replaceAll("[\\s\\-()]", "");
+        if (clean.startsWith("00")) clean = "+" + clean.substring(2);
         if (!clean.startsWith("+")) {
-            if (clean.length() == 9) clean = "+34" + clean;
-            else clean = "+" + clean;
+            // Número nacional sin prefijo: se le pone el del país de la inmobiliaria
+            String prefijo = com.inmobilia.util.PaisActual.get().prefijo();
+            clean = clean.startsWith(prefijo.substring(1)) && clean.length() > 10 ? "+" + clean : prefijo + clean;
         }
         return clean;
     }

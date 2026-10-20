@@ -18,8 +18,12 @@ import java.util.regex.Pattern;
 public class OcrDniController {
 
     private final AIService ai;
-    private static final Pattern DNI_PATTERN = Pattern.compile("\\b(\\d{8})\\s?([A-HJ-NP-TV-Z])\\b");
-    private static final Pattern NIE_PATTERN = Pattern.compile("\\b([XYZ])\\s?(\\d{7})\\s?([A-HJ-NP-TV-Z])\\b");
+    /** CURP mexicana (18 caracteres). */
+    private static final Pattern CURP = Pattern.compile("\\b([A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z0-9]\\d)\\b");
+    /** RUN / RUT chileno: 12.345.678-K */
+    private static final Pattern RUN = Pattern.compile("\\b(\\d{1,2}\\.?\\d{3}\\.?\\d{3})-([\\dK])\\b");
+    /** Número de documento genérico (DNI, cédula, DPI, DUI…): 6 a 13 cifras, con o sin puntos/guiones. */
+    private static final Pattern NUMERO_DOC = Pattern.compile("\\b(\\d{1,3}(?:[.\\s-]?\\d{3}){1,3}(?:[.\\s-]?\\d{1,4})?)\\b");
 
     @GetMapping
     public String panel(HttpSession session, Model model) {
@@ -36,19 +40,27 @@ public class OcrDniController {
 
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // DNI
-        Matcher dni = DNI_PATTERN.matcher(texto.toUpperCase());
-        if (dni.find()) {
-            String num = dni.group(1);
-            String letra = dni.group(2);
-            result.put("dni", num + letra);
-            result.put("tipo_doc", "DNI");
-            result.put("valido", validarDniLetra(num, letra));
+        // Documento de identidad (CURP, RUN, DNI, cédula…)
+        String up = texto.toUpperCase();
+        Matcher curp = CURP.matcher(up);
+        Matcher run = RUN.matcher(up);
+        if (curp.find()) {
+            result.put("dni", curp.group(1));
+            result.put("tipo_doc", "CURP");
+        } else if (run.find()) {
+            String cuerpo = run.group(1).replace(".", "");
+            result.put("dni", cuerpo + "-" + run.group(2));
+            result.put("tipo_doc", "RUN");
+            result.put("valido", digitoRut(cuerpo) == run.group(2).charAt(0));
         } else {
-            Matcher nie = NIE_PATTERN.matcher(texto.toUpperCase());
-            if (nie.find()) {
-                result.put("dni", nie.group(1) + nie.group(2) + nie.group(3));
-                result.put("tipo_doc", "NIE");
+            Matcher num = NUMERO_DOC.matcher(up);
+            while (num.find()) {
+                String limpio = num.group(1).replaceAll("[.\\s-]", "");
+                if (limpio.length() >= 6 && limpio.length() <= 13) {
+                    result.put("dni", limpio);
+                    result.put("tipo_doc", com.inmobilia.util.PaisActual.get().etiquetaIdPersonal());
+                    break;
+                }
             }
         }
 
@@ -74,19 +86,19 @@ public class OcrDniController {
         if (texto.matches("(?i).*\\bM\\b.*")) result.put("sexo", "M");
         if (texto.matches("(?i).*\\bF\\b.*")) result.put("sexo", "F");
 
-        // Nacionalidad
-        if (texto.toUpperCase().contains("ESP")) result.put("nacionalidad", "ESPAÑOLA");
 
         result.put("ok", true);
         return result;
     }
 
-    /** Algoritmo letra DNI español. */
-    private boolean validarDniLetra(String numero, String letra) {
-        try {
-            int n = Integer.parseInt(numero) % 23;
-            char[] LETRAS = "TRWAGMYFPDXBNJZSQVHLCKE".toCharArray();
-            return LETRAS[n] == letra.charAt(0);
-        } catch (Exception e) { return false; }
+    /** Dígito verificador del RUT/RUN chileno (módulo 11). */
+    private static char digitoRut(String cuerpo) {
+        int suma = 0, mult = 2;
+        for (int i = cuerpo.length() - 1; i >= 0; i--) {
+            suma += (cuerpo.charAt(i) - '0') * mult;
+            mult = mult == 7 ? 2 : mult + 1;
+        }
+        int dv = 11 - (suma % 11);
+        return dv == 11 ? '0' : dv == 10 ? 'K' : (char) ('0' + dv);
     }
 }

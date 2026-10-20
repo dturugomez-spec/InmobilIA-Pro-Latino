@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Genera contratos LAU imprimibles a PDF (vista HTML que el usuario imprime).
+ * Genera contratos de arrendamiento imprimibles a PDF (vista HTML que el usuario imprime).
  */
 @Controller
 @RequiredArgsConstructor
@@ -43,7 +43,7 @@ public class ContractPdfController {
         var users = supabase.findBy("users", Map.of("id", uid));
         Map<String, Object> emisor = users.isEmpty() ? Map.of() : users.get(0);
 
-        model.addAttribute("page", "Contrato LAU");
+        model.addAttribute("page", "Contrato de arrendamiento");
         model.addAttribute("contrato", contrato);
         model.addAttribute("inquilino", inquilino != null ? inquilino : Map.of());
         model.addAttribute("prop", prop != null ? prop : Map.of());

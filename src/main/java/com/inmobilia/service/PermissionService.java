@@ -88,7 +88,7 @@ public class PermissionService {
         SECTION_INFO.put("tareas",           new String[]{"Tareas", "Tareas del equipo"});
         SECTION_INFO.put("mantenimiento",    new String[]{"Mantenimiento", "Incidencias y reparaciones"});
         SECTION_INFO.put("reservas",         new String[]{"Reservas", "Reservas y señales online"});
-        SECTION_INFO.put("documentos",       new String[]{"Documentos", "Documentos y OCR de DNI"});
+        SECTION_INFO.put("documentos",       new String[]{"Documentos", "Documentos y OCR de identificaciones"});
         SECTION_INFO.put("eventos",          new String[]{"Eventos", "Eventos de la agenda"});
         SECTION_INFO.put("personal",         new String[]{"Personal", "Fichas del personal (datos de RR. HH.)"});
         SECTION_INFO.put("equipo",           new String[]{"Equipo", "Invitar empleados, cambiar roles, activar o desactivar"});

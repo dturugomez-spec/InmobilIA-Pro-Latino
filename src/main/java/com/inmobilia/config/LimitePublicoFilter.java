@@ -49,7 +49,7 @@ public class LimitePublicoFilter extends OncePerRequestFilter {
     /** Clics rápidos (me gusta / no me gusta), un envío por inmueble: no son formularios. */
     private static final Pattern INTERACCION = Pattern.compile("^/descubre/swipe$|^/c/[^/]+/reaccion$");
     private static final Pattern CALCULO = Pattern.compile(
-            "/calcular$|^/calculadora|^/comparador-hipotecas|^/divisas/convertir|^/catastro/consultar-"
+            "/calcular$|^/calculadora|^/comparador-hipotecas|^/divisas/convertir"
             + "|^/descubre/pool|^/ocr-dni/extraer|^/finanzas/dcf|^/herramientas/future-proof");
 
     private final RateLimiter rateLimiter;

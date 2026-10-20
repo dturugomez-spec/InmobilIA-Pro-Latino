@@ -22,11 +22,8 @@ public final class NavConfig {
 
         m.put("Inicio", new Category("Inicio", "🏠", "#4361ee", List.of(
             new Tool("Dashboard", "🏠", "Panel de control y KPIs en tiempo real"),
-            new Tool("Auditor IA de Cartera", "🏆", "Auditoria automatica cruzada con datos oficiales. Unico en el mercado."),
-            new Tool("Subastas BOE Hunter", "🔨", "Caza inmuebles en subasta BOE con criterios de inversion."),
-            new Tool("Benchmark Renta Ministerio", "🏛️", "Compara renta vs indice MITMA + zona tensionada Ley 12/2023."),
-            new Tool("Stress Test de Cartera", "🔬", "Stress agregado: Euribor, vacancia, morosidad, OPEX."),
-            new Tool("Comparador CCAA", "🗺️", "Fiscalidad + mercado por las 19 comunidades autonomas.")
+            new Tool("Auditor IA de Cartera", "🏆", "Auditoria automatica de contratos, seguros, rentabilidad y documentacion."),
+            new Tool("Stress Test de Cartera", "🔬", "Stress agregado: tasas de interés, vacancia, morosidad, OPEX.")
         )));
 
         m.put("Cartera", new Category("Cartera", "🏢", "#7c3aed", List.of(
@@ -55,7 +52,6 @@ public final class NavConfig {
             new Tool("Optimizacion de Cartera",  "🎯", "Maximiza el retorno de tu cartera"),
             new Tool("Waterfall de Flujos",      "💧", "Estructura de distribucion de flujos"),
             new Tool("Modelos de Valoracion",    "🏷️", "Valoracion por multiples metodos"),
-            new Tool("Planificacion Fiscal",     "📑", "Optimizacion fiscal de inversiones"),
             new Tool("Simulador Value-Add",      "🔨", "ROI de reformas y rehabilitaciones"),
             new Tool("Seguimiento de ROI",       "📉", "Control del retorno por activo"),
             new Tool("Flip & Trading",           "🔄", "Analisis de compraventa rapida"),
@@ -66,7 +62,7 @@ public final class NavConfig {
         m.put("IA", new Category("IA", "🤖", "#EE5D50", List.of(
             new Tool("Analizador de Operaciones IA", "🧠", "Analisis profundo de inversiones con GPT-4o"),
             new Tool("Lector IA de Contratos",       "📜", "Escanea contratos y detecta riesgos legales"),
-            new Tool("Valoracion IA + Comparables",  "💎", "Tasacion con Catastro + INE + comparables"),
+            new Tool("Valoracion IA + Comparables",  "💎", "Tasacion con comparables y datos de mercado"),
             new Tool("Asistente Inmobiliario IA",    "💬", "Asistente conversacional especializado"),
             new Tool("Scoring de Inquilinos",        "⭐", "Puntuacion de solvencia con IA"),
             new Tool("Buscador de Oportunidades",    "🔍", "Deteccion de oportunidades de inversion"),
@@ -89,13 +85,9 @@ public final class NavConfig {
             new Tool("Radar de Mercado",         "📡", "Monitorizacion del mercado"),
             new Tool("Portal de Inquilino",      "🏠", "Autoservicio para inquilinos"),
             new Tool("Mantenimiento Predictivo", "🔧", "Prediccion de averias"),
-            new Tool("Consulta Catastro",        "🗺️", "Acceso a datos catastrales"),
-            new Tool("Datos Oficiales",          "🏛️", "Catastro, BCE, INE, BOE, validadores oficiales"),
             new Tool("Turistico vs Largo Plazo", "🏖️", "Comparativa de regimenes de alquiler"),
             new Tool("Cazador de Oportunidades", "🎯", "Sistema de alertas de oportunidades"),
             new Tool("Informe PDF Profesional",  "📄", "Informes profesionales para clientes"),
-            new Tool("Euribor en Vivo",          "📊", "Tipos de referencia en tiempo real"),
-            new Tool("Optimizador Holding",      "🏛️", "Estructura societaria optima"),
             new Tool("Comandos de Voz",          "🎙️", "Control por comandos de voz"),
             new Tool("Multi-Empresa",            "🏢", "Gestion de cartera multi-sociedad")
         )));

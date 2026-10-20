@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * Comparador de hipotecas: fija vs variable vs mixta.
- * Calcula el coste total de cada modalidad en distintos escenarios de Euribor.
+ * Calcula el coste total de cada modalidad en distintos escenarios de tasa de interés.
  */
 @Controller
 public class MortgageCompareController {
@@ -33,7 +33,7 @@ public class MortgageCompareController {
         int anosFijoMixto = (int) pd(body.get("anosFijoMixto"));
         double diferencialMixto = pd(body.get("diferencialMixto")) / 100.0;
 
-        // Escenarios de Euribor (3 casos)
+        // Escenarios de tasa de interés (3 casos)
         double euriborOptimista = pd(body.get("euriborOptimista")) / 100.0;
         double euriborMedio = pd(body.get("euriborMedio")) / 100.0;
         double euriborPesimista = pd(body.get("euriborPesimista")) / 100.0;

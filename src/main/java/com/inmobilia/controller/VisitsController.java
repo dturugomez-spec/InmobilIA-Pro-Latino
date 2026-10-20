@@ -277,10 +277,10 @@ public class VisitsController {
     // ===== CRONS =====
 
     /** Recordatorio 24h antes (cada hora a y media para precisión) */
-    @Scheduled(cron = "0 30 * * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 30 * * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cron24h() {
         log.debug("[CRON] Recordatorios 24h visitas");
-        ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+        ZonedDateTime ahora = ZonedDateTime.now(com.inmobilia.util.PaisActual.get().zonaId());
         ZonedDateTime en24h = ahora.plusHours(24);
         ZonedDateTime en25h = ahora.plusHours(25);
 
@@ -303,9 +303,9 @@ public class VisitsController {
     }
 
     /** Recordatorio 1h antes (cada 15 minutos) */
-    @Scheduled(cron = "0 */15 * * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 */15 * * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cron1h() {
-        ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+        ZonedDateTime ahora = ZonedDateTime.now(com.inmobilia.util.PaisActual.get().zonaId());
         ZonedDateTime en1h = ahora.plusMinutes(45);
         ZonedDateTime en1h15 = ahora.plusMinutes(75);
 
@@ -334,9 +334,9 @@ public class VisitsController {
     }
 
     /** Solicitar feedback 2h después */
-    @Scheduled(cron = "0 0 * * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 * * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronFeedback() {
-        ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+        ZonedDateTime ahora = ZonedDateTime.now(com.inmobilia.util.PaisActual.get().zonaId());
         ZonedDateTime hace2h = ahora.minusHours(2);
         ZonedDateTime hace3h = ahora.minusHours(3);
 

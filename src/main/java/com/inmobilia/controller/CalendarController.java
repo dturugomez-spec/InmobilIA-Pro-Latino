@@ -46,7 +46,7 @@ public class CalendarController {
         ics.append("PRODID:-//InmobilIA Pro//ES\r\n");
         ics.append("CALSCALE:GREGORIAN\r\n");
         ics.append("X-WR-CALNAME:InmobilIA Pro Agenda\r\n");
-        ics.append("X-WR-TIMEZONE:Europe/Madrid\r\n");
+        ics.append("X-WR-TIMEZONE:" + com.inmobilia.util.PaisActual.get().zona() + "\r\n");
 
         // Eventos
         try {

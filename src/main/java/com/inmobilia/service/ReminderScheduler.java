@@ -26,8 +26,8 @@ public class ReminderScheduler {
     private final NotificationService notifications;
     private final EmailService emailService;
 
-    /** Cada día a las 8:00 AM Madrid: revisar vencimientos. */
-    @Scheduled(cron = "0 0 8 * * *", zone = "Europe/Madrid")
+    /** Cada día a las 8:00 AM (zona horaria de la app): revisar vencimientos. */
+    @Scheduled(cron = "0 0 8 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void dailyChecks() {
         log.info(">>> ReminderScheduler dailyChecks");
         try {
@@ -41,7 +41,7 @@ public class ReminderScheduler {
     }
 
     /** Lunes a las 9:00 AM: digest semanal por email. */
-    @Scheduled(cron = "0 0 9 * * MON", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 9 * * MON", zone = "${app.zona-horaria:America/Mexico_City}")
     public void weeklyDigest() {
         log.info(">>> ReminderScheduler weeklyDigest");
         try {

@@ -84,7 +84,7 @@ public class LeadInboxController {
                 + " proponer un siguiente paso concreto (una llamada corta o una visita) y pedir su disponibilidad."
                 + " Tono cercano y profesional. Máximo 4 frases. En español. Sin emojis. Solo el texto del mensaje.";
 
-        String system = "Eres un agente inmobiliario español experto en atención al cliente. Respondes SIEMPRE en español, breve y cálido.";
+        String system = "Eres un agente inmobiliario de " + com.inmobilia.util.PaisActual.get().nombre() + " experto en atención al cliente. Respondes SIEMPRE en español de Latinoamérica, breve y cálido.";
         String mensaje;
         try {
             mensaje = aiService.call(null, prompt, system, 400, uid);

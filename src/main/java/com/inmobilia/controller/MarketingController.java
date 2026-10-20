@@ -48,7 +48,6 @@ public class MarketingController {
            .append(urlEntry("/para-agencias"))
            .append(urlEntry("/para-asset-managers"))
            .append(urlEntry("/para-particulares"))
-           .append(urlEntry("/calculadora-impuestos-compra"))
            .append(urlEntry("/tasacion"))
            .append(urlEntry("/status"));
 

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.*;
 
 /**
- * Vista grid pro (estilo Sooprema/Idealista) para la cartera de propiedades.
+ * Vista grid pro (estilo portales inmobiliarios) para la cartera de propiedades.
  * Cards con foto destacada, badges, filtros avanzados.
  */
 @Controller

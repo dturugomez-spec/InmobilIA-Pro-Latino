@@ -353,39 +353,6 @@
             </div>
         </section>
 
-        <!-- ───── DATOS OFICIALES EN VIVO ───── -->
-        <section class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${liveEuribor != null}">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <h3 class="text-base font-semibold">Datos oficiales en vivo</h3>
-                <span class="text-xs text-slate-500 dark:text-neutral-400">BCE · Banco de España · INE</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <a href="/herramientas/euribor" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">Euribor 12M</div>
-                    <div class="text-lg font-bold font-mono mt-1" th:text="${liveEuribor.valor() != null ? #numbers.formatDecimal(liveEuribor.valor(),1,3) + '%' : '—'}">—</div>
-                    <div class="text-[10px] mt-0.5" th:if="${liveEuriborDelta != null}"
-                         th:classappend="${liveEuriborDelta > 0} ? 'text-red-600' : 'text-emerald-600'"
-                         th:text="${(liveEuriborDelta > 0 ? '▲ +' : '▼ ') + #numbers.formatDecimal(liveEuriborDelta,1,2) + ' pp'}">—</div>
-                </a>
-                <a href="/herramientas/euribor" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors" th:if="${liveTedr != null and liveTedr.tedrNuevo() != null}">
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">TEDR hipoteca</div>
-                    <div class="text-lg font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(liveTedr.tedrNuevo(),1,2) + '%'}">—</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">BdE</div>
-                </a>
-                <a href="/herramientas/datos-oficiales#ine" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors" th:if="${liveIpvYoy != null}">
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">IPV interanual</div>
-                    <div class="text-lg font-bold font-mono mt-1" th:text="${(liveIpvYoy > 0 ? '+' : '') + #numbers.formatDecimal(liveIpvYoy,1,2) + '%'}">—</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">INE</div>
-                </a>
-                <a href="/herramientas/datos-oficiales#boe" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">Boletín Oficial</div>
-                    <div class="text-lg font-bold mt-1"> BOE</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">Búsqueda</div>
-                </a>
-            </div>
-        </section>
-
         <!-- ───── ALERTAS + HEALTH SCORE ───── -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
@@ -577,21 +544,9 @@
                 <i data-lucide="user-plus" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
                 <span class="text-xs font-medium">Leads</span>
             </a>
-            <a href="/herramientas/euribor"    class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
-                <i data-lucide="trending-down" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
-                <span class="text-xs font-medium">Euríbor</span>
-            </a>
             <a href="/ia/analyzer"             class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
                 <i data-lucide="sparkles" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
                 <span class="text-xs font-medium">IA Analyzer</span>
-            </a>
-            <a href="/herramientas/datos-oficiales" class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
-                <i data-lucide="landmark" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
-                <span class="text-xs font-medium">Catastro</span>
-            </a>
-            <a href="/herramientas/fiscal"     class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
-                <i data-lucide="calculator" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
-                <span class="text-xs font-medium">Fiscal ES</span>
             </a>
         </div>
     </section>

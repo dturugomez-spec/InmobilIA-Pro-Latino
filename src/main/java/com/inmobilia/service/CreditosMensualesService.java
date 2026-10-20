@@ -30,7 +30,7 @@ public class CreditosMensualesService {
     private final SupabaseService supabase;
     private final AIService aiService;
 
-    @Scheduled(cron = "0 15 4 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 15 4 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void reponerVencidos() {
         String haceUnMes = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1).toString();
         List<Map<String, Object>> cuentas = supabase.selectFilter("users",

@@ -117,49 +117,19 @@ public class StripeService {
     }
 
     // ─── IVA ────────────────────────────────────────────────────────────
-    // Clientes = empresas españolas → IVA 21 % sumado al precio (los precios son "IVA no incluido").
-    // La app busca (o crea la primera vez) el tipo "IVA 21 %" en Stripe; no hay que configurar nada.
-    // Se puede forzar uno concreto con STRIPE_TAX_RATE_IVA=txr_...
+    // Clientes en Latinoamérica, precios en USD: no se añade ningún impuesto automáticamente.
+    // Si hace falta uno, se configura su id de Stripe en STRIPE_TAX_RATE_IVA=txr_...
     @Value("${stripe.tax-rate.iva:}")
     private String ivaTaxRateConfigured;
     private volatile String ivaTaxRateCache;
 
-    /** Id del tipo impositivo IVA 21 % (exclusivo) en Stripe, o null si no se pudo obtener. */
+    /** Id del tipo impositivo configurado en Stripe, o null si no hay ninguno. */
     String ivaTaxRateId() {
         if (ivaTaxRateConfigured != null && !ivaTaxRateConfigured.isBlank()) return ivaTaxRateConfigured;
-        if (ivaTaxRateCache != null) return ivaTaxRateCache;
-        synchronized (this) {
-            if (ivaTaxRateCache != null) return ivaTaxRateCache;
-            try {
-                BigDecimal veintiuno = new BigDecimal("21");
-                for (TaxRate tr : TaxRate.list(TaxRateListParams.builder().setActive(true).setLimit(100L).build()).getData()) {
-                    if ("IVA".equalsIgnoreCase(tr.getDisplayName())
-                            && tr.getPercentage() != null && tr.getPercentage().compareTo(veintiuno) == 0
-                            && !Boolean.TRUE.equals(tr.getInclusive())) {
-                        ivaTaxRateCache = tr.getId();
-                        return ivaTaxRateCache;
-                    }
-                }
-                TaxRate creado = TaxRate.create(TaxRateCreateParams.builder()
-                        .setDisplayName("IVA")
-                        .setDescription("IVA 21 % España")
-                        .setPercentage(veintiuno)
-                        .setInclusive(false)
-                        .setCountry("ES")
-                        .setJurisdiction("ES")
-                        .setTaxType(TaxRateCreateParams.TaxType.VAT)
-                        .build());
-                ivaTaxRateCache = creado.getId();
-                log.info("Creado tipo impositivo IVA 21 % en Stripe: {}", ivaTaxRateCache);
-                return ivaTaxRateCache;
-            } catch (Exception e) {
-                log.error("No se pudo obtener/crear el IVA en Stripe: {}", e.getMessage());
-                return null;
-            }
-        }
+        return null;
     }
 
-    /** Datos que una factura española necesita: NIF/CIF del cliente y dirección. */
+    /** Datos fiscales para la factura: identificador tributario del cliente y dirección. */
     private static void datosFiscales(SessionCreateParams.Builder b) {
         b.setBillingAddressCollection(SessionCreateParams.BillingAddressCollection.REQUIRED)
          .setTaxIdCollection(SessionCreateParams.TaxIdCollection.builder().setEnabled(true).build())
@@ -195,7 +165,7 @@ public class StripeService {
                 .setSuccessUrl(baseUrl + "/billing/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(baseUrl + "/billing/cancel")
                 .setAllowPromotionCodes(true)
-                .setLocale(SessionCreateParams.Locale.ES)
+                .setLocale(SessionCreateParams.Locale.ES_419)
                 .addLineItem(lineaConIva(priceId))
                 .putMetadata("user_id", String.valueOf(user.get("id")))
                 .putMetadata("plan", plan)
@@ -237,7 +207,7 @@ public class StripeService {
                 .setCustomer(customerId)
                 .setSuccessUrl(baseUrl + "/billing/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(baseUrl + "/creditos")
-                .setLocale(SessionCreateParams.Locale.ES)
+                .setLocale(SessionCreateParams.Locale.ES_419)
                 .addLineItem(lineaConIva(pack.priceId()))
                 .putMetadata("user_id", String.valueOf(user.get("id")))
                 .putMetadata("type", "credits")

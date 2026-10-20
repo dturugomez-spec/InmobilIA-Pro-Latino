@@ -19,7 +19,7 @@ import java.util.*;
  *  💰 Calidad económica:          20 pts (presupuesto alto + financiación clara)
  *  ⏰ Urgencia:                   15 pts (plazo corto, ya buscando activamente)
  *  📞 Engagement (interacciones): 25 pts (visitas web, emails abiertos, llamadas)
- *  🤝 Confianza:                  10 pts (DNI, contrato firma, depósito)
+ *  🤝 Confianza:                  10 pts (identificación, contrato firma, depósito)
  *  ⏱️ Antigüedad/recency:         10 pts (más reciente = más cálido)
  *
  * Temperatura:
@@ -240,7 +240,7 @@ public class LeadScoringService {
     }
 
     /** Recalcula scores de todos los leads cada noche. */
-    @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 3 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronRecalcular() {
         log.info("[CRON] Recalculando scores de leads...");
         List<Map<String, Object>> leads = supabase.selectFilter(

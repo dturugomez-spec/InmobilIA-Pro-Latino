@@ -38,7 +38,7 @@ public class AgentAutopilotService {
     // ─────────────────────────── CRON PROACTIVO ───────────────────────────
 
     /** Cada mañana a las 7:45 rellena la bandeja del Autopiloto para las agencias que lo activan. */
-    @Scheduled(cron = "0 45 7 * * MON-FRI", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 45 7 * * MON-FRI", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cronDiario() {
         try {
             List<Map<String, Object>> admins = supabase.selectFilter(
@@ -114,7 +114,7 @@ public class AgentAutopilotService {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("precio_nuevo", precio);
             insertar(uid, "bajar_precio", "media",
-                    "Bajar precio de " + s.get("direccion") + " a " + String.format("%,d", precio) + ("" + PaisActual.moneda()),
+                    "Bajar precio de " + s.get("direccion") + " a " + String.format("%,d", precio) + (" " + PaisActual.moneda()),
                     s.get("dias") + " días en mercado sin cerrar (-" + s.get("pct") + "%)",
                     null, payload, null, String.valueOf(s.get("id")));
             creadas++;
@@ -215,7 +215,7 @@ public class AgentAutopilotService {
                     " para el lead " + lead.getOrDefault("nombre", "cliente") +
                     (lead.get("zona") != null ? " (busca en " + lead.get("zona") + ")" : "") +
                     ". Cercano, profesional, con una pregunta o llamada a la acción. Firma como " + agencia +
-                    ". Español de España. Solo el texto del mensaje, sin comillas.";
+                    ". Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros. Solo el texto del mensaje, sin comillas.";
             String r = aiService.call(null, prompt, "Eres un agente inmobiliario cercano y eficaz.", 140, uid);
             return r == null || r.isBlank() ? null : r.trim();
         } catch (Exception e) { return null; }
@@ -319,7 +319,7 @@ public class AgentAutopilotService {
         double precio = nd(payload.get("precio_nuevo"));
         if (precio <= 0) throw new IllegalStateException("Precio inválido");
         supabase.update("propiedades", propId, Map.of("current_value", precio), uid);
-        return "💶 Precio actualizado a " + String.format("%,d", (long) precio) + ("" + PaisActual.moneda());
+        return "💶 Precio actualizado a " + String.format("%,d", (long) precio) + (" " + PaisActual.moneda());
     }
 
     private String ejecutarCrearTarea(String uid, Map<String, Object> a, Map<String, Object> payload) {

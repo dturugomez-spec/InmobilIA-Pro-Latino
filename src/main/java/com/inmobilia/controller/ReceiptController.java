@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Recibos de alquiler (vivienda habitual: sin IVA, con IRPF si arrendador es persona física).
+ * Recibos de renta / alquiler (impuesto y retención según el país y el tipo de arrendador).
  */
 @Controller
 @RequestMapping("/receipts")

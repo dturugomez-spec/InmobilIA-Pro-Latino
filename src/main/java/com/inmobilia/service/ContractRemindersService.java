@@ -14,7 +14,7 @@ import java.util.*;
  * - 60 días antes del fin → considerar renovación
  * - 30 días antes → recordar al inquilino
  * - 7 días antes → urgente
- * - Día del fin → fin del contrato + devolución fianza
+ * - Día del fin → fin del contrato + devolución del depósito en garantía
  * - 1 año exacto → actualización IPC anual
  */
 @Service
@@ -26,7 +26,7 @@ public class ContractRemindersService {
     private final NotificationService notif;
     private final EmailService emailService;
 
-    @Scheduled(cron = "0 0 9 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 0 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cron() {
         log.info("[CRON] Recordatorios contratos...");
         List<Map<String, Object>> contratos = supabase.selectFilter("contratos", "estado=eq.activo");
@@ -52,7 +52,7 @@ public class ContractRemindersService {
                                 "Toma decisión urgente", "/contratos", "alta");
                     } else if (dias == 0) {
                         notif.create(userId, "🏁 Contrato " + numero + " finaliza HOY",
-                                "Gestionar entrega de llaves y devolución de fianza", "/contratos", "alta");
+                                "Gestionar entrega de llaves y devolución del depósito en garantía", "/contratos", "alta");
                     }
                 }
 
@@ -69,7 +69,7 @@ public class ContractRemindersService {
                 if (fin != null && hoy.isAfter(fin.plusMonths(3))) {
                     if (!Boolean.TRUE.equals(c.get("fianza_devuelta"))) {
                         notif.create(userId, "⚠️ Fianza no devuelta",
-                                "Contrato " + numero + ": fianza pendiente de devolución (>3 meses)",
+                                "Contrato " + numero + ": depósito en garantía pendiente de devolución (>3 meses)",
                                 "/contratos", "alta");
                     }
                 }

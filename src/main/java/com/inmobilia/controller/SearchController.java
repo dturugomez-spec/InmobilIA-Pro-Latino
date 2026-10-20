@@ -97,7 +97,7 @@ public class SearchController {
                 if (hay.contains(qLower)) {
                     hits.add(hit("contrato", "📄",
                             str(c.get("tenant_name")) + " — " + str(c.get("property_name")),
-                            "Renta " + str(c.get("rent")) + ("" + PaisActual.moneda() + "/mes"),
+                            "Renta " + str(c.get("rent")) + (" " + PaisActual.moneda() + "/mes"),
                             "/crud/contratos/" + c.get("id") + "/edit"));
                 }
             }
@@ -111,7 +111,7 @@ public class SearchController {
                 if (hay.contains(qLower)) {
                     hits.add(hit("factura", "🧾",
                             str(f.get("full_number")) + " — " + str(f.get("cliente_nombre")),
-                            str(f.get("total")) + ("" + PaisActual.moneda() + " · ") + str(f.get("status")),
+                            str(f.get("total")) + (" " + PaisActual.moneda() + " · ") + str(f.get("status")),
                             "/invoices/" + f.get("id")));
                 }
             }

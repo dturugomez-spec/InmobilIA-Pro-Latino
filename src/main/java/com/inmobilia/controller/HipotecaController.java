@@ -132,7 +132,7 @@ public class HipotecaController {
         lead.put("etapa", "Nuevo");
         lead.put("zona", in.get("zona_interes"));
         lead.put("presupuesto", calc.get("capacidad_max"));
-        lead.put("notas", String.format(("SIMULADOR HIPOTECA: capacidad ~%s" + PaisActual.moneda() + ", cuota ~%s" + PaisActual.moneda() + "/mes (esfuerzo %s%%). Busca en: %s"),
+        lead.put("notas", String.format(("SIMULADOR HIPOTECA: capacidad ~%s " + PaisActual.moneda() + ", cuota ~%s " + PaisActual.moneda() + "/mes (esfuerzo %s%%). Busca en: %s"),
                 calc.get("capacidad_max"), calc.get("cuota_estimada"), calc.get("esfuerzo_pct"),
                 in.getOrDefault("zona_interes", "?")));
         lead.put("created_at", OffsetDateTime.now().toString());
@@ -153,7 +153,7 @@ public class HipotecaController {
 
         // 3) Notificar + workflow
         notif.create(uid, "🏦 Nuevo comprador (simulador)",
-                in.get("nombre") + " puede comprar hasta ~" + calc.get("capacidad_max") + ("" + PaisActual.moneda() + " en ") + in.getOrDefault("zona_interes", ""),
+                in.get("nombre") + " puede comprar hasta ~" + calc.get("capacidad_max") + (" " + PaisActual.moneda() + " en ") + in.getOrDefault("zona_interes", ""),
                 "/simulador", "alta");
         try { workflowEngine.triggerEvent(uid, "lead_creado", lead); } catch (Exception ignored) {}
 

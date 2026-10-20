@@ -111,8 +111,8 @@ public class GoogleCalendarController {
             Map<String, Object> event = new LinkedHashMap<>();
             event.put("summary", "🏠 Visita: " + v.get("visitante_nombre"));
             event.put("description", "Visita programada vía InmobilIA Pro");
-            event.put("start", Map.of("dateTime", v.get("fecha_inicio"), "timeZone", "Europe/Madrid"));
-            event.put("end", Map.of("dateTime", v.get("fecha_fin"), "timeZone", "Europe/Madrid"));
+            event.put("start", Map.of("dateTime", v.get("fecha_inicio"), "timeZone", com.inmobilia.util.PaisActual.get().zona()));
+            event.put("end", Map.of("dateTime", v.get("fecha_fin"), "timeZone", com.inmobilia.util.PaisActual.get().zona()));
 
             HttpHeaders h = new HttpHeaders();
             h.setBearerAuth(token);

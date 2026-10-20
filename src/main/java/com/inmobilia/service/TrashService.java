@@ -55,7 +55,7 @@ public class TrashService {
     }
 
     /** Cada noche elimina para siempre lo que lleva más de 30 días en la papelera. */
-    @Scheduled(cron = "0 30 4 * * *", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 30 4 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void vaciarCaducados() {
         String ahora = OffsetDateTime.now(ZoneOffset.UTC).toString();
         List<Map<String, Object>> caducados = supabase.selectFilter("trash",

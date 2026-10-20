@@ -131,11 +131,11 @@ public class InformeMercadoService {
         try {
             String prompt = String.format(Locale.ROOT,
                 "Informe de mercado para un %s en %s.\n" +
-                ("Precio recomendado: %s" + PaisActual.moneda() + " (rango %s-%s" + PaisActual.moneda() + ", ~%s" + PaisActual.moneda() + "/m²).\n") +
+                ("Precio recomendado: %s " + PaisActual.moneda() + " (rango %s-%s " + PaisActual.moneda() + ", ~%s " + PaisActual.moneda() + "/m²).\n") +
                 ("Comparables analizados en la zona: %s. " + PaisActual.moneda() + "/m² medio de zona: %s. Días medios en venta: %s.\n\n") +
                 "Escribe un análisis de mercado profesional y honesto para el PROPIETARIO (110-150 palabras): " +
                 "posicionamiento del precio, qué dicen los comparables y recomendación de estrategia de venta. " +
-                "Sin prometer resultados. Español de España.",
+                "Sin prometer resultados. Español de Latinoamérica (" + com.inmobilia.util.PaisActual.get().nombre() + "), con ustedes y sin vosotros.",
                 blank(tipo, "inmueble"), blank(municipio, "la zona"),
                 val(data.get("precio_recomendado")), val(data.get("precio_min")), val(data.get("precio_max")),
                 val(data.get("eur_m2")), val(data.get("n_comparables")), val(data.get("eur_m2_zona")),
