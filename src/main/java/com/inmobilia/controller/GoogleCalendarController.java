@@ -27,8 +27,21 @@ public class GoogleCalendarController {
 
     private static final String CLIENT_ID = System.getenv().getOrDefault("GOOGLE_CLIENT_ID", "TU_CLIENT_ID");
     private static final String CLIENT_SECRET = System.getenv().getOrDefault("GOOGLE_CLIENT_SECRET", "TU_SECRET");
-    private static final String REDIRECT = System.getenv().getOrDefault("BASE_URL", "https://inmobiliapro.es") + "/google-calendar/callback";
+    /** Dirección de vuelta registrada en Google Cloud: GOOGLE_REDIRECT_URI o la web con www (antes, sin www: no funcionaba). */
+    static final String REDIRECT = redireccion(System.getenv("GOOGLE_REDIRECT_URI"));
     private static final String SCOPE = "https://www.googleapis.com/auth/calendar.events";
+    private static final String CLAVE_STATE = "gcal_oauth_state";
+
+    static String redireccion(String configurada) {
+        return configurada != null && !configurada.isBlank() ? configurada.trim()
+                : com.inmobilia.util.UrlBase.BASE + "/google-calendar/callback";
+    }
+
+    private static boolean configurado() {
+        return !CLIENT_ID.isBlank() && !CLIENT_ID.startsWith("TU_") && !CLIENT_SECRET.isBlank() && !CLIENT_SECRET.startsWith("TU_");
+    }
+
+    private static String enc(String s) { return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8); }
 
     @GetMapping
     public String panel(HttpSession session, Model model) {
@@ -38,24 +51,52 @@ public class GoogleCalendarController {
         List<Map<String, Object>> cfgs = supabase.selectFilter("integraciones", "user_id=eq." + uid + "&proveedor=eq.google_calendar");
         boolean conectado = !cfgs.isEmpty() && cfgs.get(0).get("access_token") != null;
 
+        // "state" de un solo uso ligado a la sesión: sin él, otra web podía terminar la conexión
+        // con SU cuenta de Google y las visitas de la inmobiliaria acababan en su calendario
+        String state = java.util.HexFormat.of().formatHex(randomBytes());
+        session.setAttribute(CLAVE_STATE, state);
         String authUrl = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=" + CLIENT_ID +
-                "&redirect_uri=" + REDIRECT +
+                "?client_id=" + enc(CLIENT_ID) +
+                "&redirect_uri=" + enc(REDIRECT) +
                 "&response_type=code" +
-                "&scope=" + SCOPE +
+                "&scope=" + enc(SCOPE) +
                 "&access_type=offline" +
-                "&prompt=consent";
+                "&prompt=consent" +
+                "&state=" + state;
 
         model.addAttribute("conectado", conectado);
+        model.addAttribute("googleConfigurado", configurado());
         model.addAttribute("authUrl", authUrl);
         model.addAttribute("cfg", cfgs.isEmpty() ? null : cfgs.get(0));
         return "google_calendar_panel";
     }
 
+    private static byte[] randomBytes() {
+        byte[] b = new byte[16];
+        new java.security.SecureRandom().nextBytes(b);
+        return b;
+    }
+
     @GetMapping("/callback")
-    public String callback(@RequestParam String code, HttpSession session) {
+    public String callback(@RequestParam(required = false) String code,
+                           @RequestParam(required = false) String state,
+                           @RequestParam(required = false) String error,
+                           HttpSession session) {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
+
+        Object esperado = session.getAttribute(CLAVE_STATE);
+        session.removeAttribute(CLAVE_STATE);
+        if (state == null || esperado == null || !java.security.MessageDigest.isEqual(
+                state.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                String.valueOf(esperado).getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+            SessionUtils.flash(session, "⚠️ No se pudo verificar la conexión con Google. Vuelve a pulsar «Conectar con Google».");
+            return "redirect:/google-calendar";
+        }
+        if (error != null || code == null || code.isBlank()) {
+            SessionUtils.flash(session, "Conexión con Google cancelada.");
+            return "redirect:/google-calendar";
+        }
 
         try {
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
@@ -70,7 +111,10 @@ public class GoogleCalendarController {
             HttpEntity<MultiValueMap<String, String>> req = new HttpEntity<>(body, h);
 
             Map<?, ?> resp = rest.postForObject("https://oauth2.googleapis.com/token", req, Map.class);
-            if (resp == null) return "redirect:/google-calendar?error=1";
+            if (resp == null || resp.get("access_token") == null) {
+                SessionUtils.flash(session, "⚠️ Google no ha devuelto el permiso. Inténtalo de nuevo.");
+                return "redirect:/google-calendar";
+            }
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("user_id", uid);
@@ -87,9 +131,13 @@ public class GoogleCalendarController {
                 supabase.insert("integraciones", data);
             }
         } catch (Exception e) {
+            // Antes se decía "conectado" aunque fallara
             log.error("OAuth Google err: {}", e.getMessage());
+            SessionUtils.flash(session, "⚠️ No se pudo conectar con Google Calendar. Inténtalo de nuevo.");
+            return "redirect:/google-calendar";
         }
-        return "redirect:/google-calendar?conectado=1";
+        SessionUtils.flash(session, "✅ Google Calendar conectado");
+        return "redirect:/google-calendar";
     }
 
     /** Sincroniza una visita a Google Calendar. */
