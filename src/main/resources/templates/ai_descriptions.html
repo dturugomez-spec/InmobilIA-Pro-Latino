@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Generador descripciones IA</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-pink-700 to-fuchsia-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="wand-2" class="h-6 w-6"></i> Generador IA de descripciones</h2>
+    <p class="text-sm text-white/80 mt-1">Crea descripciones SEO optimizadas en segundos.</p>
+</div>
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 max-w-2xl space-y-3">
+    <select id="prop" class="w-full px-3 py-2 text-sm border rounded">
+        <option value="">— Selecciona propiedad —</option>
+        <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}">—</option>
+    </select>
+    <div class="grid grid-cols-3 gap-2">
+        <select id="objetivo" class="px-3 py-2 text-sm border rounded">
+            <option value="venta">Venta</option><option value="alquiler">Alquiler</option><option value="inversion">Inversión</option>
+        </select>
+        <select id="tono" class="px-3 py-2 text-sm border rounded">
+            <option value="profesional">Profesional</option><option value="emocional">Emocional</option>
+            <option value="lujo">Lujo</option><option value="conciso">Conciso</option>
+        </select>
+        <select id="longitud" class="px-3 py-2 text-sm border rounded">
+            <option value="100">100 palabras</option><option value="150" selected>150</option><option value="250">250</option>
+        </select>
+    </div>
+    <button onclick="generar()" class="w-full px-4 py-2 rounded bg-fuchsia-700 hover:bg-fuchsia-800 text-white text-sm font-medium"> Generar descripción</button>
+    <textarea id="resultado" rows="10" class="w-full px-3 py-2 text-sm border rounded" placeholder="La descripción aparecerá aquí..."></textarea>
+    <button onclick="aplicar()" class="px-4 py-2 rounded bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium"> Aplicar a propiedad</button>
+</div>
+<script>
+async function generar() {
+    const propId = document.getElementById('prop').value; if (!propId) return alert('Selecciona propiedad');
+    const fd = new FormData();
+    fd.append('objetivo', document.getElementById('objetivo').value);
+    fd.append('tono', document.getElementById('tono').value);
+    fd.append('longitud', document.getElementById('longitud').value);
+    document.getElementById('resultado').value = '⏳ Generando...';
+    const res = await fetch('/descripcion-ia/generar/' + propId, {method:'POST', body: fd});
+    const d = await res.json();
+    document.getElementById('resultado').value = d.descripcion || d.error;
+}
+async function aplicar() {
+    const propId = document.getElementById('prop').value; if (!propId) return;
+    const desc = document.getElementById('resultado').value;
+    await fetch('/descripcion-ia/aplicar/' + propId, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({descripcion: desc})});
+    alert(' Descripción aplicada');
+}
+</script>
+</div></body></html>

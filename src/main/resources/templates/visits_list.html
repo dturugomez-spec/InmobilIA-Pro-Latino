@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Visitas</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="calendar-check" class="h-6 w-6"></i> Visitas a propiedades
+                </h2>
+                <p class="text-sm text-white/80 mt-1">Agenda, confirmaciones automáticas y feedback post-visita.</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/visitas/calendario" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">
+                    <i data-lucide="calendar" class="h-4 w-4 inline-block"></i> Calendario
+                </a>
+                <a href="/visitas/nueva" class="px-4 py-2 rounded-lg bg-white text-violet-900 hover:bg-white/90 text-sm font-medium">
+                    <i data-lucide="plus" class="h-4 w-4 inline-block"></i> Nueva visita
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <div class="rounded-xl bg-violet-50 ring-1 ring-violet-200 p-4">
+            <p class="text-[10px] uppercase text-violet-700">Hoy</p>
+            <p class="text-xl font-bold text-violet-700" th:text="${hoyCount}">0</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+            <p class="text-[10px] uppercase text-amber-700">Programadas</p>
+            <p class="text-xl font-bold text-amber-700" th:text="${programadas}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Realizadas</p>
+            <p class="text-xl font-bold text-emerald-700" th:text="${realizadas}">0</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Convertidas</p>
+            <p class="text-xl font-bold text-blue-700" th:text="${convertidas}">0</p>
+        </div>
+        <div class="rounded-xl bg-fuchsia-50 ring-1 ring-fuchsia-200 p-4">
+            <p class="text-[10px] uppercase text-fuchsia-700">Conversión</p>
+            <p class="text-xl font-bold text-fuchsia-700" th:text="${#numbers.formatDecimal(tasaConversion, 1, 1)} + '%'">0%</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" action="/visitas" class="mb-4">
+        <select name="estado" onchange="this.form.submit()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <option value="">Todos los estados</option>
+            <option value="programada">Programada</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="realizada">Realizada</option>
+            <option value="cancelada">Cancelada</option>
+            <option value="no_presentado">No presentado</option>
+        </select>
+    </form>
+
+    <!-- Tabla -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+            <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                <th class="text-left px-4 py-3">Fecha</th>
+                <th class="text-left px-4 py-3">Visitante</th>
+                <th class="text-left px-4 py-3">Propiedad</th>
+                <th class="text-left px-4 py-3">Tipo</th>
+                <th class="text-left px-4 py-3">Estado</th>
+                <th class="text-center px-4 py-3">Interés</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="v : ${visitas}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                <td class="px-4 py-3 font-mono text-xs" th:text="${#strings.substring(v.get('fecha_inicio'), 0, 16)}">—</td>
+                <td class="px-4 py-3">
+                    <p class="font-medium" th:text="${v.get('visitante_nombre')}">—</p>
+                    <p class="text-xs text-slate-500" th:text="${v.get('visitante_telefono')}">—</p>
+                </td>
+                <td class="px-4 py-3 text-xs" th:text="${v.get('propiedad') != null ? v.get('propiedad').get('direccion') : '—'}">—</td>
+                <td class="px-4 py-3 text-xs capitalize" th:text="${v.get('tipo')}">—</td>
+                <td class="px-4 py-3">
+                    <span th:switch="${v.get('estado')}">
+                        <span th:case="'programada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Programada</span>
+                        <span th:case="'confirmada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Confirmada</span>
+                        <span th:case="'realizada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Realizada</span>
+                        <span th:case="'cancelada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Cancelada</span>
+                        <span th:case="'no_presentado'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">No vino</span>
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-center text-xs font-mono" th:text="${v.get('interes_nivel') != null ? v.get('interes_nivel') + '/5' : '—'}">—</td>
+                <td class="px-4 py-3 text-right">
+                    <a th:href="@{|/visitas/${v.get('id')}|}" class="text-xs text-blue-700 hover:underline">Ver</a>
+                </td>
+            </tr>
+            <tr th:if="${visitas.isEmpty()}"><td colspan="7" class="py-12 text-center text-slate-500 text-sm">Sin visitas.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

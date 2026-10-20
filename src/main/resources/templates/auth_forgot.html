@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar contraseña · InmobilIA Pro</title>
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .grid-bg {
+            background-image:
+                radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
+                radial-gradient(circle at 75% 80%, rgba(99, 102, 241, 0.18), transparent 50%),
+                linear-gradient(135deg, #0c1f4d 0%, #1e3a8a 50%, #312e81 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-white text-slate-900 antialiased">
+
+<div class="min-h-screen grid lg:grid-cols-2">
+    <aside class="hidden lg:flex relative grid-bg overflow-hidden">
+        <div class="relative z-10 flex flex-col justify-between w-full p-12 text-white">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                    <i data-lucide="building-2" class="h-5 w-5 text-white"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight">InmobilIA<span class="text-blue-400"> Pro</span></span>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold leading-tight tracking-tight">Recuperar acceso a tu cuenta</h1>
+                <p class="text-white/70 text-lg mt-4">Te enviaremos un enlace seguro a tu email.</p>
+            </div>
+            <div class="text-xs text-white/40">© 2026 InmobilIA Pro · <span th:replace="~{fragments/grupo :: sello(true)}"></span></div>
+        </div>
+    </aside>
+
+    <main class="flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div class="w-full max-w-md">
+            <div class="lg:hidden flex items-center gap-2 mb-10">
+                <div class="h-9 w-9 rounded-lg bg-blue-800 flex items-center justify-center">
+                    <i data-lucide="building-2" class="h-4 w-4 text-white"></i>
+                </div>
+                <span class="font-bold text-lg">InmobilIA<span class="text-blue-700"> Pro</span></span>
+            </div>
+
+            <h2 class="text-2xl font-bold tracking-tight">Recuperar contraseña</h2>
+            <p class="text-sm text-slate-500 mt-1.5">Introduce tu usuario y te enviaremos un email con un enlace para restablecer tu contraseña.</p>
+
+            <div th:if="${sentMessage}" class="mt-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+                <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-emerald-800" th:text="${sentMessage}">OK</p>
+            </div>
+
+            <form method="post" action="/forgot" class="mt-6 space-y-4" th:if="${sentMessage == null}">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Usuario o email</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input type="text" name="email" required autofocus
+                               class="w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all">
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium text-sm py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <span>Enviar enlace de recuperación</span>
+                    <i data-lucide="send" class="h-4 w-4"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="/login" class="text-sm text-blue-700 hover:text-blue-900 font-medium inline-flex items-center gap-1.5">
+                    <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i>
+                    Volver al login
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

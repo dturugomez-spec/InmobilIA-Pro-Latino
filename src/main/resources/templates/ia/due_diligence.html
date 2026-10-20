@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Due Diligence</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/due-diligence" class="form-card">
+        <h3>Due Diligence asistido</h3>
+        <label>Activo <input type="text" name="activo" required></label>
+        <label class="full">Contexto y datos conocidos
+            <textarea name="contexto" rows="4" required></textarea>
+        </label>
+        <div class="form-actions"><button class="btn btn-primary">Generar checklist DD</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+
+    <div th:replace="~{fragments/official-links :: panel('due-diligence,propiedad,catastro,legal,fiscal,empresa')}"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Cartera</title></head>
+<body>
+<div layout:fragment="content" x-data="propGrid()">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="h-7 w-7 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center"><i data-lucide="building" class="h-3.5 w-3.5 text-brand-700 dark:text-brand-400"></i></div>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Total cartera</span>
+            </div>
+            <div class="text-xl font-bold font-mono" th:text="${total}">0</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="h-7 w-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center"><i data-lucide="globe" class="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400"></i></div>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Publicadas</span>
+            </div>
+            <div class="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400" th:text="${publicadas}">0</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center"><i data-lucide="key" class="h-3.5 w-3.5 text-blue-700 dark:text-blue-400"></i></div>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Ocupadas</span>
+            </div>
+            <div class="text-xl font-bold font-mono" th:text="${ocupadas}">0</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center"><i data-lucide="door-open" class="h-3.5 w-3.5 text-amber-700 dark:text-amber-400"></i></div>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Disponibles</span>
+            </div>
+            <div class="text-xl font-bold font-mono" th:text="${libres}">0</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        <a href="/crud/propiedades/new" th:if="${canWrite}"
+           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i>
+            <span>Nueva propiedad</span>
+        </a>
+
+        <div class="flex items-center bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-lg p-0.5">
+            <a href="/crud/propiedades"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                <i data-lucide="list" class="h-3.5 w-3.5"></i>
+                <span>Lista</span>
+            </a>
+            <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-brand-100 dark:bg-brand-950/50 text-brand-800 dark:text-brand-300">
+                <i data-lucide="layout-grid" class="h-3.5 w-3.5"></i>
+                <span>Grid</span>
+            </button>
+        </div>
+
+        <div class="relative flex-1 max-w-sm">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+            <input type="search" x-model="q" placeholder="Buscar propiedad, dirección, referencia..."
+                   class="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+        </div>
+    </div>
+
+    <!-- Filtros chips -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-4">
+        <span class="text-xs text-slate-500 dark:text-neutral-400 mr-1">Estado:</span>
+        <button @click="estado = ''" :class="estado === '' ? 'bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300' : 'bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700'"
+                class="px-2.5 py-1 text-xs font-medium rounded-full transition-colors">Todos</button>
+        <button th:each="e : ${estados}" th:text="${e}"
+                @click="estado = $el.textContent.trim()"
+                :class="estado === '__VAL__' ? 'bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300' : 'bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700'"
+                class="px-2.5 py-1 text-xs font-medium rounded-full transition-colors">Estado</button>
+
+        <span class="text-xs text-slate-500 dark:text-neutral-400 ml-3 mr-1" th:if="${!#sets.isEmpty(tipos)}">Tipo:</span>
+        <button th:each="t : ${tipos}" th:text="${t}"
+                @click="tipo = (tipo === $el.textContent.trim() ? '' : $el.textContent.trim())"
+                class="px-2.5 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors">tipo</button>
+    </div>
+
+    <!-- Grid de propiedades -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div th:each="r : ${rows}"
+             th:attr="data-status=${r.get('status')},data-type=${r.get('type')},data-search=${(r.get('name') ?: '') + ' ' + (r.get('address') ?: '') + ' ' + (r.get('city') ?: '') + ' ' + (r.get('reference') ?: '')}"
+             class="property-card group rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden hover:shadow-card-xl transition-all">
+
+            <!-- Foto -->
+            <a th:href="@{|/entity/propiedad/${r.get('id')}|}" class="block relative aspect-[4/3] bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                <img th:if="${r.get('featured_photo')}"
+                     th:src="${r.get('featured_photo')}"
+                     th:alt="${r.get('name')}"
+                     loading="lazy"
+                     class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                     onerror="this.style.display='none'; this.parentElement.classList.add('no-img')">
+                <div th:unless="${r.get('featured_photo')}"
+                     class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-900">
+                    <i data-lucide="image" class="h-10 w-10 text-slate-400"></i>
+                </div>
+
+                <!-- Badges sobre la foto -->
+                <div class="absolute top-2 left-2 flex items-center gap-1.5">
+                    <span th:if="${r.get('publicada') == true or #strings.equalsIgnoreCase(r.get('publicada'),'true')}"
+                          class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white">
+                        <span class="h-1 w-1 rounded-full bg-white"></span>Publicada
+                    </span>
+                    <span th:if="${r.get('status')}" th:text="${r.get('status')}"
+                          class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900/60 backdrop-blur text-white">Estado</span>
+                </div>
+
+                <!-- Referencia abajo derecha -->
+                <span th:if="${r.get('reference')}" th:text="${r.get('reference')}"
+                      class="absolute bottom-2 right-2 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900/60 backdrop-blur text-white">REF</span>
+
+                <!-- Métricas abajo izquierda -->
+                <div class="absolute bottom-2 left-2 flex items-center gap-1.5">
+                    <span th:if="${r.get('visitas_count') != null and r.get('visitas_count') > 0}" th:text="${r.get('visitas_count')}"
+                          class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900/60 backdrop-blur text-white">
+                        <i data-lucide="eye" class="h-2.5 w-2.5"></i> 0
+                    </span>
+                </div>
+            </a>
+
+            <!-- Contenido card -->
+            <div class="p-3.5">
+                <a th:href="@{|/entity/propiedad/${r.get('id')}|}" class="block hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
+                    <h3 class="font-semibold text-sm truncate" th:text="${r.get('name')}">Nombre</h3>
+                </a>
+                <p class="text-xs text-slate-500 dark:text-neutral-400 truncate flex items-center gap-1 mt-0.5">
+                    <i data-lucide="map-pin" class="h-3 w-3"></i>
+                    <span th:text="${(r.get('address') ?: '') + (r.get('city') != null ? ' · ' + r.get('city') : '')}">dirección</span>
+                </p>
+
+                <div class="flex items-center gap-3 mt-3 text-xs text-slate-500 dark:text-neutral-400">
+                    <span class="flex items-center gap-1" th:if="${r.get('bedrooms')}">
+                        <i data-lucide="bed" class="h-3 w-3"></i>
+                        <span th:text="${r.get('bedrooms')}">0</span>
+                    </span>
+                    <span class="flex items-center gap-1" th:if="${r.get('bathrooms')}">
+                        <i data-lucide="bath" class="h-3 w-3"></i>
+                        <span th:text="${r.get('bathrooms')}">0</span>
+                    </span>
+                    <span class="flex items-center gap-1" th:if="${r.get('area_m2')}">
+                        <i data-lucide="ruler" class="h-3 w-3"></i>
+                        <span th:text="${r.get('area_m2')} + 'm²'">0m²</span>
+                    </span>
+                    <span class="flex items-center gap-1" th:if="${r.get('type')}">
+                        <i data-lucide="tag" class="h-3 w-3"></i>
+                        <span th:text="${r.get('type')}">tipo</span>
+                    </span>
+                </div>
+
+                <!-- Precio -->
+                <div class="flex items-end justify-between mt-3 pt-3 border-t border-slate-100 dark:border-neutral-800">
+                    <div>
+                        <div class="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Valor</div>
+                        <div class="font-mono font-bold text-base" th:text="${r.get('current_value') != null ? r.get('current_value') + ' €' : '—'}">— €</div>
+                    </div>
+                    <div class="text-right" th:if="${r.get('rental_income')}">
+                        <div class="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Renta</div>
+                        <div class="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400" th:text="${r.get('rental_income') + ' €/m'}">—</div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex items-center gap-1 mt-3">
+                    <a th:href="@{|/entity/propiedad/${r.get('id')}|}"
+                       class="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-xs font-medium transition-colors">
+                        <i data-lucide="eye" class="h-3 w-3"></i> Ficha
+                    </a>
+                    <a th:href="@{|/propiedad/${r.get('id')}/portal|}"
+                       title="Portal del propietario"
+                       class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 dark:hover:text-blue-400 transition-colors">
+                        <i data-lucide="panel-top" class="h-3 w-3"></i>
+                    </a>
+                    <a th:href="@{|/crud/propiedades/${r.get('id')}/edit|}" th:if="${canWrite}"
+                       class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/40 dark:hover:text-brand-400 transition-colors">
+                        <i data-lucide="pencil" class="h-3 w-3"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${rows.isEmpty()}" class="col-span-full text-center py-20">
+            <div class="inline-flex h-16 w-16 rounded-2xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-4">
+                <i data-lucide="building" class="h-7 w-7 text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">No hay propiedades aún</h3>
+            <p class="text-sm text-slate-500 dark:text-neutral-400 mb-4">Empieza añadiendo tu primera propiedad a la cartera.</p>
+            <a href="/crud/propiedades/new" th:if="${canWrite}"
+               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors">
+                <i data-lucide="plus" class="h-4 w-4"></i> Añadir primera propiedad
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function propGrid() {
+    return {
+        q: '',
+        estado: '',
+        tipo: '',
+        init() {
+            this.$watch('q', () => this.filter());
+            this.$watch('estado', () => this.filter());
+            this.$watch('tipo', () => this.filter());
+        },
+        filter() {
+            const q = this.q.toLowerCase();
+            document.querySelectorAll('.property-card').forEach(card => {
+                const txt = (card.dataset.search || '').toLowerCase();
+                const okQ = !q || txt.includes(q);
+                const okE = !this.estado || (card.dataset.status || '').toLowerCase() === this.estado.toLowerCase();
+                const okT = !this.tipo || (card.dataset.type || '').toLowerCase() === this.tipo.toLowerCase();
+                card.style.display = (okQ && okE && okT) ? '' : 'none';
+            });
+        }
+    };
+}
+</script>
+</body>
+</html>

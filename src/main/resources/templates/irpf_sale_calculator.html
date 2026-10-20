@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Calculadora IRPF Venta</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-rose-700 to-red-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="receipt" class="h-6 w-6"></i> Calculadora IRPF venta de vivienda
+        </h2>
+        <p class="text-sm text-white/80 mt-1">
+            Calcula la ganancia patrimonial y el IRPF a pagar al vender, aplicando todas las exenciones legales (RIRPF art. 38 + LIRPF).
+        </p>
+    </div>
+
+    <div x-data="irpfSale()" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="font-semibold text-sm mb-2"> Datos de adquisición</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-medium mb-1">Precio compra (€)</label>
+                    <input type="number" x-model.number="precioCompra" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-xs font-medium mb-1">Gastos compra (€)</label>
+                    <input type="number" x-model.number="gastosCompra" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+            </div>
+            <div><label class="block text-xs font-medium mb-1">Mejoras / inversiones (€)</label>
+                <input type="number" x-model.number="inversiones" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+
+            <h3 class="font-semibold text-sm mt-4 mb-2"> Datos de venta</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-medium mb-1">Precio venta (€)</label>
+                    <input type="number" x-model.number="precioVenta" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-xs font-medium mb-1">Gastos venta (€)</label>
+                    <input type="number" x-model.number="gastosVenta" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+            </div>
+
+            <h3 class="font-semibold text-sm mt-4 mb-2"> Exenciones</h3>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="esHabitual" class="rounded"> Era mi vivienda habitual</label>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="mayor65" class="rounded"> Soy mayor de 65 años</label>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="reinvertir" class="rounded"> Reinvertiré en otra vivienda habitual (2 años)</label>
+            <div x-show="reinvertir" x-transition>
+                <label class="block text-xs font-medium mb-1">Importe reinvertido (€)</label>
+                <input type="number" x-model.number="importeReinversion" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="rentaVitalicia" class="rounded"> Constituiré renta vitalicia (>65)</label>
+            <div x-show="rentaVitalicia" x-transition>
+                <label class="block text-xs font-medium mb-1">Importe renta vitalicia (máx. 240.000€)</label>
+                <input type="number" x-model.number="importeRentaVit" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+
+            <button @click="calc()" :disabled="loading"
+                    class="w-full mt-3 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-sm font-medium disabled:opacity-60">
+                <i data-lucide="calculator" class="h-4 w-4"></i> <span x-text="loading ? 'Calculando...' : 'Calcular IRPF'"></span>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div x-show="result.ok" x-transition class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3"> Resultado</h3>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="rounded-lg bg-slate-50 dark:bg-neutral-800/50 p-3">
+                        <p class="text-[10px] uppercase text-slate-500">Ganancia patrimonial</p>
+                        <p class="text-lg font-bold" x-text="fmt(result.gananciaPatrimonial) + ' €'"></p>
+                    </div>
+                    <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 p-3">
+                        <p class="text-[10px] uppercase text-emerald-700">Exenta</p>
+                        <p class="text-lg font-bold text-emerald-700" x-text="fmt(result.gananciaExenta || 0) + ' €'"></p>
+                    </div>
+                    <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 p-3">
+                        <p class="text-[10px] uppercase text-amber-700">Sujeta a IRPF</p>
+                        <p class="text-lg font-bold text-amber-700" x-text="fmt(result.gananciaSujeta) + ' €'"></p>
+                    </div>
+                    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-3">
+                        <p class="text-[10px] uppercase text-red-700">IRPF a pagar</p>
+                        <p class="text-lg font-bold text-red-700" x-text="fmt(result.irpf) + ' €'"></p>
+                    </div>
+                </div>
+
+                <div class="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-3 mb-3">
+                    <p class="text-[10px] uppercase text-emerald-700"> Neto que recibes</p>
+                    <p class="text-2xl font-bold text-emerald-900" x-text="fmt(result.neto) + ' €'"></p>
+                    <p class="text-xs text-slate-600 mt-1">Tipo efectivo: <span x-text="fmt(result.tipoEfectivo || 0) + '%'" class="font-mono"></span></p>
+                </div>
+
+                <div x-show="result.mensaje" class="text-xs text-slate-600 italic mb-2" x-text="result.mensaje"></div>
+                <div x-show="result.exenciones" class="text-xs text-emerald-700 bg-emerald-50 p-2 rounded" x-text="result.exenciones"></div>
+            </div>
+
+            <div x-show="result.tramosAplicados && result.tramosAplicados.length" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-2"> Desglose por tramos</h3>
+                <table class="w-full text-xs">
+                    <thead class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <tr><th class="text-left py-2">Tramo</th><th class="text-right py-2">Tipo</th><th class="text-right py-2">Base</th><th class="text-right py-2">Cuota</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <template x-for="t in result.tramosAplicados">
+                        <tr>
+                            <td class="py-2 font-mono" x-text="fmt(t.desde) + ' – ' + (t.hasta === '∞' ? '∞' : fmt(t.hasta)) + ' €'"></td>
+                            <td class="py-2 text-right font-mono" x-text="t.tipo + '%'"></td>
+                            <td class="py-2 text-right font-mono" x-text="fmt(t.baseEnTramo) + ' €'"></td>
+                            <td class="py-2 text-right font-mono font-bold text-red-700" x-text="fmt(t.cuota) + ' €'"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-900">
+                <p class="font-semibold mb-1"> Aviso legal</p>
+                <p>Cálculo orientativo basado en LIRPF + tramos del ahorro 2026. Las CCAA pueden tener tipos autonómicos diferentes. Consulta a un asesor fiscal antes de presentar la declaración.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function irpfSale() {
+            return {
+                precioCompra: 180000, gastosCompra: 18000, inversiones: 5000,
+                precioVenta: 280000, gastosVenta: 8000,
+                esHabitual: true, mayor65: false, reinvertir: false,
+                importeReinversion: 0, rentaVitalicia: false, importeRentaVit: 0,
+                loading: false, result: {},
+                fmt(v) { return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0); },
+                async calc() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch('/calculadora-irpf-venta', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                precioCompra: this.precioCompra, gastosCompra: this.gastosCompra, inversiones: this.inversiones,
+                                precioVenta: this.precioVenta, gastosVenta: this.gastosVenta,
+                                esHabitual: this.esHabitual, mayor65: this.mayor65,
+                                reinvertir: this.reinvertir, importeReinversion: this.importeReinversion,
+                                rentaVitalicia: this.rentaVitalicia, importeRentaVit: this.importeRentaVit
+                            })
+                        });
+                        this.result = await res.json();
+                        this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+                    } catch(e) { this.result = { error: 'Error' }; }
+                    this.loading = false;
+                },
+                init() { this.calc(); }
+            };
+        }
+    </script>
+</div>
+</body>
+</html>

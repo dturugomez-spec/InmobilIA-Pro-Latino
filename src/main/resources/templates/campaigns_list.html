@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Campañas marketing</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-pink-600 to-rose-900 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="megaphone" class="h-6 w-6"></i> Campañas de marketing
+                </h2>
+                <p class="text-sm text-white/80 mt-1">Email masivo con segmentación, plantillas, A/B testing y tracking completo.</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/plantillas" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">
+                    <i data-lucide="file-text" class="h-4 w-4 inline-block"></i> Plantillas
+                </a>
+                <a href="/campanas/nueva" class="px-4 py-2 rounded-lg bg-white text-rose-900 hover:bg-white/90 text-sm font-medium">
+                    <i data-lucide="plus" class="h-4 w-4 inline-block"></i> Nueva campaña
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs globales -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Enviadas</p>
+            <p class="text-xl font-bold mt-1" th:text="${enviadas}">0</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+            <p class="text-[10px] uppercase text-amber-700">Programadas</p>
+            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${programadas}">0</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Total emails</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${totalEnvios}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Tasa apertura</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(tasaApertura, 1, 1)} + '%'">0%</p>
+        </div>
+        <div class="rounded-xl bg-fuchsia-50 ring-1 ring-fuchsia-200 p-4">
+            <p class="text-[10px] uppercase text-fuchsia-700">Tasa click</p>
+            <p class="text-xl font-bold mt-1 text-fuchsia-700" th:text="${#numbers.formatDecimal(tasaClick, 1, 1)} + '%'">0%</p>
+        </div>
+    </div>
+
+    <!-- Listado -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+            <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                <th class="text-left px-4 py-3">Nombre</th>
+                <th class="text-left px-4 py-3">Canal</th>
+                <th class="text-left px-4 py-3">Estado</th>
+                <th class="text-right px-4 py-3">Enviados</th>
+                <th class="text-right px-4 py-3">Aperturas</th>
+                <th class="text-right px-4 py-3">Clicks</th>
+                <th class="text-left px-4 py-3">Creada</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="c : ${campanas}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                <td class="px-4 py-3">
+                    <p class="font-medium" th:text="${c.get('nombre')}">—</p>
+                    <p class="text-xs text-slate-500" th:text="${c.get('asunto')}">—</p>
+                </td>
+                <td class="px-4 py-3 text-xs">
+                    <span th:switch="${c.get('canal')}">
+                        <span th:case="'email'"> Email</span>
+                        <span th:case="'whatsapp'"> WhatsApp</span>
+                        <span th:case="'sms'"> SMS</span>
+                        <span th:case="'mixto'"> Mixto</span>
+                    </span>
+                </td>
+                <td class="px-4 py-3">
+                    <span th:switch="${c.get('estado')}">
+                        <span th:case="'borrador'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">Borrador</span>
+                        <span th:case="'programada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Programada</span>
+                        <span th:case="'enviando'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Enviando...</span>
+                        <span th:case="'enviada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Enviada</span>
+                        <span th:case="'pausada'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Pausada</span>
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${c.get('enviados')}">0</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-emerald-700" th:text="${c.get('abiertos')}">0</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-fuchsia-700" th:text="${c.get('clicks')}">0</td>
+                <td class="px-4 py-3 text-xs font-mono" th:text="${#strings.substring(c.get('created_at'), 0, 10)}">—</td>
+                <td class="px-4 py-3 text-right">
+                    <a th:href="@{|/campanas/${c.get('id')}|}" class="text-xs text-blue-700 hover:underline">Ver</a>
+                </td>
+            </tr>
+            <tr th:if="${campanas.isEmpty()}"><td colspan="8" class="py-12 text-center text-slate-500 text-sm">Sin campañas.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

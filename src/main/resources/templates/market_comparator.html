@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comparador renta</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-cyan-700 via-blue-800 to-blue-950 p-6 mb-5 ring-1 ring-blue-800 text-white">
+        <h2 class="text-xl font-bold"> Tu renta vs IRAV oficial</h2>
+        <p class="text-sm text-white/70 mt-1">Compara la renta que cobras con el Índice de Referencia para Arrendamiento de Vivienda (MITMA · Ley 12/2023). Detecta zonas tensionadas y riesgo legal.</p>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="text-left px-4 py-3">Propiedad</th>
+                    <th class="text-left px-4 py-3">Ciudad</th>
+                    <th class="text-right px-4 py-3">m²</th>
+                    <th class="text-right px-4 py-3">Renta mes</th>
+                    <th class="text-right px-4 py-3">Tu €/m²</th>
+                    <th class="text-right px-4 py-3">IRAV oficial €/m²</th>
+                    <th class="text-right px-4 py-3">Diferencia</th>
+                    <th class="text-left px-4 py-3">Veredicto</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="r : ${rows}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3 font-medium" th:text="${r.get('name')}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:text="${r.get('city')}">—</span>
+                        <span th:if="${r.get('tensionada')}" class="ml-1 inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700"> TENSIONADA</span>
+                    </td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('m2')}">—</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('rentMonthly') + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(r.get('yourEurM2'),1,2) + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right text-slate-500" th:text="${#numbers.formatDecimal(r.get('iravEurM2'),1,2) + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold"
+                        th:classappend="${r.get('diff') > 5 ? 'text-red-600' : (r.get('diff') < -10 ? 'text-blue-600' : 'text-emerald-600')}"
+                        th:text="${(r.get('diff') > 0 ? '+' : '') + #numbers.formatDecimal(r.get('diff'),1,1) + '%'}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:text="${r.get('veredicto')}"
+                              th:classappend="${r.get('tone') == 'ok' ? 'bg-emerald-100 text-emerald-700' : (r.get('tone') == 'warn' ? 'bg-amber-100 text-amber-700' : (r.get('tone') == 'err' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'))}"
+                              class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full">—</span>
+                    </td>
+                </tr>
+                <tr th:if="${rows.isEmpty()}"><td colspan="8" class="py-12 text-center text-slate-500">Sin propiedades con renta + m² registrados.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5 rounded-lg bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 p-4 text-xs text-amber-900">
+        <strong> Sobre la Ley 12/2023:</strong> En zonas tensionadas declaradas, los nuevos contratos no pueden superar la renta del contrato anterior (con excepciones por reforma o rehabilitación). Si tu inmueble está marcado como tensionado y la renta es muy superior al IRAV, consulta con tu asesor.
+    </div>
+
+</div>
+</body>
+</html>

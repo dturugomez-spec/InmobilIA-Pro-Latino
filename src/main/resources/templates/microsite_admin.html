@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Microsite</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-indigo-700 to-blue-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="globe" class="h-6 w-6"></i> Web pública de tu inmobiliaria</h2>
+    <p class="text-sm text-white/80 mt-1">CMS completo + SEO + captura de leads automática.</p>
+    <p class="text-xs text-white/60 mt-2">URL pública: <a th:href="@{|/m/${ms.get('slug')}|}" target="_blank" class="underline" th:text="${baseUrl + '/m/' + ms.get('slug')}">—</a></p>
+</div>
+
+<form method="post" action="/microsite/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4 max-w-4xl">
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> Identidad</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" name="slug" required placeholder="URL slug" th:value="${ms.get('slug')}" class="px-3 py-2 text-sm border rounded">
+            <input type="text" name="nombre_publico" placeholder="Nombre público" th:value="${ms.get('nombre_publico')}" class="px-3 py-2 text-sm border rounded">
+            <input type="text" name="tagline" placeholder="Tagline" th:value="${ms.get('tagline')}" class="md:col-span-2 px-3 py-2 text-sm border rounded">
+            <input type="color" name="color_primario" th:value="${ms.get('color_primario') ?: '#3b82f6'}" class="h-10 border rounded">
+        </div>
+    </section>
+
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> Hero</h3>
+        <input type="url" name="hero_imagen" placeholder="URL imagen hero" th:value="${ms.get('hero_imagen')}" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <input type="text" name="hero_titulo" placeholder="Título principal" th:value="${ms.get('hero_titulo')}" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <input type="text" name="hero_subtitulo" placeholder="Subtítulo" th:value="${ms.get('hero_subtitulo')}" class="w-full px-3 py-2 text-sm border rounded">
+    </section>
+
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> Sobre nosotros</h3>
+        <input type="text" name="sobre_nosotros_titulo" placeholder="Título sección" th:value="${ms.get('sobre_nosotros_titulo')}" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <textarea name="sobre_nosotros_texto" rows="4" placeholder="Quiénes somos..." th:text="${ms.get('sobre_nosotros_texto')}" class="w-full px-3 py-2 text-sm border rounded"></textarea>
+    </section>
+
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> Contacto</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" name="direccion" placeholder="Dirección" th:value="${ms.get('direccion')}" class="px-3 py-2 text-sm border rounded">
+            <input type="tel" name="telefono" placeholder="Teléfono" th:value="${ms.get('telefono')}" class="px-3 py-2 text-sm border rounded">
+            <input type="email" name="email" placeholder="Email" th:value="${ms.get('email')}" class="px-3 py-2 text-sm border rounded">
+            <input type="text" name="horario" placeholder="Horario" th:value="${ms.get('horario')}" class="px-3 py-2 text-sm border rounded">
+        </div>
+    </section>
+
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> Redes sociales</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <input type="url" name="redes_facebook" placeholder="Facebook" th:value="${ms.get('redes_facebook')}" class="px-3 py-2 text-sm border rounded">
+            <input type="url" name="redes_instagram" placeholder="Instagram" th:value="${ms.get('redes_instagram')}" class="px-3 py-2 text-sm border rounded">
+            <input type="url" name="redes_linkedin" placeholder="LinkedIn" th:value="${ms.get('redes_linkedin')}" class="px-3 py-2 text-sm border rounded">
+        </div>
+    </section>
+
+    <section>
+        <h3 class="font-semibold text-sm mb-3"> SEO</h3>
+        <input type="text" name="seo_title" placeholder="SEO Title (60 chars)" maxlength="60" th:value="${ms.get('seo_title')}" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <textarea name="seo_description" rows="2" maxlength="160" placeholder="Meta description (160 chars)" th:text="${ms.get('seo_description')}" class="w-full px-3 py-2 text-sm border rounded mb-2"></textarea>
+        <input type="text" name="seo_keywords" placeholder="Keywords (separar por comas)" th:value="${ms.get('seo_keywords')}" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <input type="text" name="google_analytics_id" placeholder="G-XXXXXX (Analytics)" th:value="${ms.get('google_analytics_id')}" class="w-full px-3 py-2 text-sm border rounded">
+    </section>
+
+    <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="publicado" th:checked="${ms.get('publicado')}">
+        <span class="font-bold"> Publicar el microsite</span>
+    </label>
+
+    <button class="px-4 py-2 rounded bg-indigo-700 text-white text-sm font-medium"> Guardar</button>
+</form>
+
+<div class="mt-5 grid grid-cols-3 gap-3 max-w-2xl">
+    <div class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+        <p class="text-[10px] uppercase text-slate-500"> Visitas</p>
+        <p class="text-xl font-bold" th:text="${ms.get('visitas_count') ?: 0}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
+        <p class="text-[10px] uppercase text-emerald-700"> Leads captados</p>
+        <p class="text-xl font-bold text-emerald-700" th:text="${ms.get('leads_capturados') ?: 0}">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-200">
+        <p class="text-[10px] uppercase text-blue-700"> Estado</p>
+        <p class="text-sm font-bold text-blue-700" th:text="${#bools.isTrue(ms.get('publicado')) ? ' Publicado' : '⏸ Borrador'}">—</p>
+    </div>
+</div>
+</div></body></html>

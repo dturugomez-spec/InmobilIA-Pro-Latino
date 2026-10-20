@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Editor de automatización</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-orange-700 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="settings-2" class="h-5 w-5"></i> Editor de automatización
+        </h2>
+        <p class="text-xs text-white/80 mt-1">Cuando ocurra <strong>el trigger</strong> → se ejecutarán <strong>las acciones en orden</strong>.</p>
+    </div>
+
+    <div x-data='wfEditor()' class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <!-- Editor -->
+        <div class="lg:col-span-3 space-y-4">
+
+            <!-- Datos básicos -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <input type="text" x-model="wf.nombre" placeholder="Nombre de la automatización" class="w-full px-3 py-2 text-base font-semibold border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                <textarea x-model="wf.descripcion" placeholder="Descripción..." rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+            </div>
+
+            <!-- Trigger -->
+            <div class="rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 ring-2 ring-blue-200 p-5">
+                <p class="text-xs font-bold text-blue-700 mb-2"> CUANDO OCURRA</p>
+                <select x-model="wf.trigger_evento" class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg bg-white">
+                    <option value="lead_creado"> Lead creado</option>
+                    <option value="lead_calificado"> Lead calificado</option>
+                    <option value="visita_programada"> Visita programada</option>
+                    <option value="visita_realizada"> Visita realizada</option>
+                    <option value="visita_cancelada"> Visita cancelada</option>
+                    <option value="propiedad_creada"> Propiedad creada</option>
+                    <option value="propiedad_vendida"> Propiedad vendida</option>
+                    <option value="contrato_firmado"> Contrato firmado</option>
+                    <option value="factura_creada"> Factura creada</option>
+                    <option value="factura_impagada"> Factura impagada</option>
+                    <option value="factura_pagada"> Factura pagada</option>
+                    <option value="match_encontrado"> Match encontrado</option>
+                </select>
+
+                <div class="mt-3">
+                    <p class="text-[10px] font-semibold text-blue-700 mb-1">Condición opcional</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" x-model="wf.trigger_condiciones.campo" placeholder="campo" class="px-2 py-1.5 text-xs border border-blue-200 rounded bg-white">
+                        <select x-model="wf.trigger_condiciones.operador" class="px-2 py-1.5 text-xs border border-blue-200 rounded bg-white">
+                            <option value="=">=</option>
+                            <option value="!=">≠</option>
+                            <option value=">">&gt;</option>
+                            <option value=">=">≥</option>
+                            <option value="<">&lt;</option>
+                            <option value="<=">≤</option>
+                            <option value="contains">contiene</option>
+                        </select>
+                        <input type="text" x-model="wf.trigger_condiciones.valor" placeholder="valor" class="px-2 py-1.5 text-xs border border-blue-200 rounded bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flecha -->
+            <div class="text-center text-3xl text-slate-400">↓</div>
+
+            <!-- Acciones -->
+            <div class="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 ring-2 ring-emerald-200 p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-bold text-emerald-700"> ENTONCES EJECUTA</p>
+                    <button type="button" @click="addAccion()" class="px-3 py-1 text-xs rounded bg-emerald-700 hover:bg-emerald-800 text-white">+ Añadir acción</button>
+                </div>
+
+                <template x-for="(a, idx) in wf.acciones" :key="idx">
+                    <div class="bg-white rounded-lg p-3 mb-2 ring-1 ring-emerald-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-emerald-700" x-text="(idx + 1) + '. ' + accionLabel(a.tipo)"></span>
+                            <button type="button" @click="removeAccion(idx)" class="text-red-500 text-xs"></button>
+                        </div>
+
+                        <select x-model="a.tipo" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded mb-2">
+                            <option value="send_email"> Enviar email</option>
+                            <option value="send_notification"> Notificación interna</option>
+                            <option value="create_task"> Crear tarea</option>
+                            <option value="change_status"> Cambiar estado</option>
+                            <option value="update_field"> Actualizar campo</option>
+                            <option value="assign_agent"> Asignar agente</option>
+                            <option value="wait_minutes">⏰ Esperar minutos</option>
+                        </select>
+
+                        <!-- send_email -->
+                        <div x-show="a.tipo === 'send_email'" class="space-y-1">
+                            <input type="text" x-model="a.config.to" placeholder="Para (puede usar {email})" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <input type="text" x-model="a.config.subject" placeholder="Asunto" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <textarea x-model="a.config.body" rows="3" placeholder="HTML del email. Usa {nombre} {email} {fecha}" class="w-full px-2 py-1 text-xs border border-slate-200 rounded font-mono"></textarea>
+                        </div>
+
+                        <!-- send_notification -->
+                        <div x-show="a.tipo === 'send_notification'" class="space-y-1">
+                            <input type="text" x-model="a.config.titulo" placeholder="Título" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <input type="text" x-model="a.config.mensaje" placeholder="Mensaje" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <select x-model="a.config.urgencia" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+
+                        <!-- create_task -->
+                        <div x-show="a.tipo === 'create_task'" class="space-y-1">
+                            <input type="text" x-model="a.config.titulo" placeholder="Título de la tarea" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <select x-model="a.config.prioridad" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                                <option value="urgente">Urgente</option>
+                            </select>
+                            <input type="number" x-model="a.config.dias_limite" placeholder="Días para completar" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                        </div>
+
+                        <!-- change_status -->
+                        <div x-show="a.tipo === 'change_status'" class="space-y-1">
+                            <input type="text" x-model="a.config.tabla" placeholder="Tabla (leads, facturas...)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                            <input type="text" x-model="a.config.estado" placeholder="Nuevo estado" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                        </div>
+
+                        <!-- assign_agent -->
+                        <div x-show="a.tipo === 'assign_agent'" class="space-y-1">
+                            <input type="text" x-model="a.config.agente_id" placeholder="agente_id (o 'auto' para round-robin)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                        </div>
+
+                        <!-- wait_minutes -->
+                        <div x-show="a.tipo === 'wait_minutes'" class="space-y-1">
+                            <input type="number" x-model="a.config.minutos" placeholder="Minutos a esperar" class="w-full px-2 py-1 text-xs border border-slate-200 rounded">
+                        </div>
+                    </div>
+                </template>
+
+                <p x-show="wf.acciones.length === 0" class="text-center text-xs text-slate-500 py-4">Añade al menos 1 acción.</p>
+            </div>
+
+            <!-- Config avanzada -->
+            <details class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <summary class="text-sm font-semibold cursor-pointer"> Avanzado</summary>
+                <div class="mt-3 space-y-2 text-sm">
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="wf.activo"> Activo</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="wf.solo_horario_laboral"> Solo en horario laboral (9–18 L-V)</label>
+                    <div>
+                        <label class="block text-xs">Retraso antes de ejecutar (minutos):</label>
+                        <input type="number" x-model="wf.delay_minutos" class="w-32 px-2 py-1 text-xs border border-slate-200 rounded">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-2">
+                <a href="/workflows" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+                <button @click="save()" class="px-4 py-2 rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium">
+                     Guardar automatización
+                </button>
+            </div>
+        </div>
+
+        <!-- Plantillas -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <h3 class="font-semibold text-sm mb-3"> Plantillas</h3>
+            <p class="text-[10px] text-slate-500 mb-3">Empieza con una plantilla pre-construida.</p>
+            <div class="space-y-2" id="plantillas-container">
+                <button type="button" th:each="p, st : ${plantillas}" th:onclick="|usarPlantilla(${st.index})|"
+                        class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition">
+                    <p class="text-xs font-semibold" th:text="${p.get('nombre')}">—</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5" th:text="${p.get('descripcion')}">—</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const wfData = /*[[${workflow}]]*/ null;
+        const plantillasData = /*[[${plantillas}]]*/ [];
+
+        function wfEditor() {
+            return {
+                wf: wfData || {
+                    id: '',
+                    nombre: '',
+                    descripcion: '',
+                    activo: true,
+                    trigger_evento: 'lead_creado',
+                    trigger_condiciones: { campo: '', operador: '=', valor: '' },
+                    acciones: [],
+                    delay_minutos: 0,
+                    solo_horario_laboral: false
+                },
+                addAccion() {
+                    this.wf.acciones.push({ tipo: 'send_email', config: {} });
+                },
+                removeAccion(idx) {
+                    this.wf.acciones.splice(idx, 1);
+                },
+                accionLabel(tipo) {
+                    const labels = {
+                        'send_email': ' Enviar email',
+                        'send_notification': ' Notificación',
+                        'create_task': ' Crear tarea',
+                        'change_status': ' Cambiar estado',
+                        'update_field': ' Actualizar campo',
+                        'assign_agent': ' Asignar agente',
+                        'wait_minutes': '⏰ Esperar'
+                    };
+                    return labels[tipo] || tipo;
+                },
+                async save() {
+                    const res = await fetch('/workflows/guardar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.wf)
+                    });
+                    if (res.ok || res.redirected) {
+                        window.location.href = '/workflows';
+                    }
+                }
+            }
+        }
+
+        function usarPlantilla(idx) {
+            const p = plantillasData[idx];
+            if (!p) return;
+            const editor = Alpine.$data(document.querySelector('[x-data]'));
+            editor.wf.nombre = p.nombre;
+            editor.wf.descripcion = p.descripcion;
+            editor.wf.trigger_evento = p.trigger_evento;
+            if (p.trigger_condiciones) editor.wf.trigger_condiciones = p.trigger_condiciones;
+            editor.wf.acciones = p.acciones;
+        }
+    </script>
+
+</div>
+</body>
+</html>

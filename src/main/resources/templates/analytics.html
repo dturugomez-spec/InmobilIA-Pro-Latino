@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Analítica</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- KPIs principales -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cashflow <span th:text="${yActual}">2026</span></div>
+            <div class="text-xl font-bold font-mono mt-1" th:classappend="${totalActual >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(totalActual,0,'POINT',0,'COMMA') + ' €'}">— €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cashflow <span th:text="${yAnterior}">2025</span></div>
+            <div class="text-xl font-bold font-mono mt-1 text-slate-500" th:text="${#numbers.formatDecimal(totalPrev,0,'POINT',0,'COMMA') + ' €'}">—</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Variación YoY</div>
+            <div class="text-xl font-bold font-mono mt-1" th:classappend="${yoyPct >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${(yoyPct >= 0 ? '+' : '') + #numbers.formatDecimal(yoyPct,1,1) + '%'}">—</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Yield medio</div>
+            <div class="text-xl font-bold font-mono mt-1 text-brand-700" th:text="${#numbers.formatDecimal(yieldMedio,1,2) + '%'}">—%</div>
+        </div>
+    </div>
+
+    <!-- Gráfica YoY -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <h3 class="text-base font-semibold mb-4">Comparativa cashflow año actual vs año anterior</h3>
+        <canvas id="yoyChart" height="120"></canvas>
+        <script th:inline="javascript">
+            window._yoy = {
+                actual: /*[[${ingresosActual}]]*/ [],
+                actualGastos: /*[[${gastosActual}]]*/ [],
+                prev: /*[[${ingresosPrev}]]*/ [],
+                prevGastos: /*[[${gastosPrev}]]*/ [],
+                forecast: /*[[${forecast}]]*/ [],
+                yA: /*[[${yActual}]]*/ 2026,
+                yP: /*[[${yAnterior}]]*/ 2025
+            };
+        </script>
+    </div>
+
+    <!-- Top insights -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+            <h3 class="text-base font-semibold">Insights destacados</h3>
+        </div>
+        <div class="p-3 space-y-2">
+            <div th:each="i : ${insights}"
+                 th:classappend="${
+                    i.tone == 'success' ? 'bg-emerald-50 dark:bg-emerald-950/30 ring-emerald-200 dark:ring-emerald-900/40' :
+                    (i.tone == 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 ring-amber-200 dark:ring-amber-900/40' :
+                    (i.tone == 'error' ? 'bg-red-50 dark:bg-red-950/30 ring-red-200 dark:ring-red-900/40' :
+                    'bg-blue-50 dark:bg-blue-950/30 ring-blue-200 dark:ring-blue-900/40'))}"
+                 class="rounded-lg ring-1 p-3 flex items-start gap-3">
+                <span class="text-xl flex-shrink-0" th:text="${i.icon}"></span>
+                <div>
+                    <div class="font-semibold text-sm" th:text="${i.title}">title</div>
+                    <div class="text-sm text-slate-700 dark:text-slate-300" th:text="${i.desc}">desc</div>
+                </div>
+            </div>
+            <div th:if="${insights.isEmpty()}" class="text-center py-8 text-sm text-slate-500">
+                Añade más datos para ver insights automáticos.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('yoyChart');
+    if (!ctx || !window._yoy) return;
+    const labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const isDark = document.documentElement.classList.contains('dark');
+    const text = isDark ? '#94a3b8' : '#64748b';
+    const grid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+
+    const cfA = _yoy.actual.map((v,i) => v - (_yoy.actualGastos[i] || 0));
+    const cfP = _yoy.prev.map((v,i) => v - (_yoy.prevGastos[i] || 0));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: _yoy.yA, data: cfA, borderColor: '#1e40af', backgroundColor: 'rgba(30,64,175,0.1)', tension: 0.4, fill: true, borderWidth: 2.5 },
+                { label: _yoy.yP, data: cfP, borderColor: '#94a3b8', backgroundColor: 'transparent', tension: 0.4, borderDash: [5,5], borderWidth: 2 },
+                { label: 'Forecast', data: _yoy.forecast, borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.4, borderDash: [2,2], borderWidth: 1.5, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, labels: { color: text, font: { size: 11 } } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: text } },
+                y: { grid: { color: grid }, ticks: { color: text, callback: v => v >= 1000 ? (v/1000)+'K€' : v+'€' } }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

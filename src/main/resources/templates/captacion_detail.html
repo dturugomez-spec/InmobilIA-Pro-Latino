@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Campaña de captación</title></head>
+<body><div layout:fragment="content">
+
+<a href="/captacion" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-blue-700 mb-3">
+    <i data-lucide="arrow-left" class="h-4 w-4"></i> Volver a campañas
+</a>
+
+<div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="target" class="h-6 w-6"></i> <span th:text="${c.get('nombre')}">—</span>
+    </h2>
+    <p class="text-sm text-white/80 mt-1">
+        <span th:if="${c.get('zona')}" th:text="' ' + ${c.get('zona')} + ' · '">—</span>
+        <span th:text="${angulos.getOrDefault(c.get('angulo'), c.get('angulo'))}">—</span>
+    </p>
+</div>
+
+<!-- Mensajes generados -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5" x-data="{copied:''}">
+    <!-- WhatsApp -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-bold text-emerald-700 flex items-center gap-1.5"><i data-lucide="message-circle" class="h-4 w-4"></i> WhatsApp / SMS</p>
+            <button @click="navigator.clipboard.writeText($refs.wa.innerText); copied='wa'; setTimeout(()=>copied='',1500)"
+                    class="text-xs text-slate-400 hover:text-blue-700 flex items-center gap-1">
+                <i data-lucide="copy" class="h-3.5 w-3.5"></i><span x-text="copied==='wa' ? '¡Copiado!' : 'Copiar'">Copiar</span>
+            </button>
+        </div>
+        <p x-ref="wa" class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line flex-1" th:text="${c.get('mensaje_whatsapp')}">—</p>
+    </div>
+    <!-- Email -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-bold text-blue-700 flex items-center gap-1.5"><i data-lucide="mail" class="h-4 w-4"></i> Email</p>
+            <button @click="navigator.clipboard.writeText($refs.em.innerText); copied='em'; setTimeout(()=>copied='',1500)"
+                    class="text-xs text-slate-400 hover:text-blue-700 flex items-center gap-1">
+                <i data-lucide="copy" class="h-3.5 w-3.5"></i><span x-text="copied==='em' ? '¡Copiado!' : 'Copiar'">Copiar</span>
+            </button>
+        </div>
+        <p x-ref="em" class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line flex-1" th:text="${c.get('mensaje_email')}">—</p>
+    </div>
+    <!-- Carta -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="file-text" class="h-4 w-4"></i> Carta postal</p>
+            <button @click="navigator.clipboard.writeText($refs.ca.innerText); copied='ca'; setTimeout(()=>copied='',1500)"
+                    class="text-xs text-slate-400 hover:text-blue-700 flex items-center gap-1">
+                <i data-lucide="copy" class="h-3.5 w-3.5"></i><span x-text="copied==='ca' ? '¡Copiado!' : 'Copiar'">Copiar</span>
+            </button>
+        </div>
+        <p x-ref="ca" class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line flex-1" th:text="${c.get('mensaje_carta')}">—</p>
+    </div>
+</div>
+
+<!-- Regenerar -->
+<form th:action="@{|/captacion/${c.get('id')}/regenerar|}" method="post"
+      class="rounded-xl bg-slate-50 dark:bg-neutral-800/50 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 mb-5 flex flex-wrap items-end gap-3">
+    <div class="flex-1 min-w-[180px]">
+        <label class="block text-xs font-semibold mb-1 text-slate-600">Cambiar ángulo y regenerar</label>
+        <select name="angulo" class="w-full px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-900 focus:border-blue-600 outline-none text-sm">
+            <option th:each="a : ${angulos}" th:value="${a.key}" th:text="${a.value}" th:selected="${a.key == c.get('angulo')}">—</option>
+        </select>
+    </div>
+    <div class="flex-1 min-w-[180px]">
+        <label class="block text-xs font-semibold mb-1 text-slate-600">Contexto adicional (opcional)</label>
+        <input name="extra" class="w-full px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-900 focus:border-blue-600 outline-none text-sm">
+    </div>
+    <button class="px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold flex items-center gap-1.5">
+        <i data-lucide="refresh-cw" class="h-4 w-4"></i> Regenerar
+    </button>
+</form>
+
+<!-- Destinatarios -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4"><i data-lucide="users" class="h-4 w-4"></i> Destinatarios</p>
+
+    <!-- Añadir -->
+    <form th:action="@{|/captacion/${c.get('id')}/destinatario|}" method="post" class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
+        <input name="nombre" placeholder="Nombre" class="px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 focus:border-blue-600 outline-none text-sm">
+        <input name="direccion" placeholder="Dirección" class="px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 focus:border-blue-600 outline-none text-sm">
+        <input name="telefono" placeholder="Teléfono" class="px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 focus:border-blue-600 outline-none text-sm">
+        <input name="email" placeholder="Email" class="px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 focus:border-blue-600 outline-none text-sm">
+        <button class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold">+ Añadir</button>
+    </form>
+
+    <div th:if="${#lists.isEmpty(destinatarios)}" class="text-center text-sm text-slate-400 py-6">
+        Añade los propietarios a contactar y ve marcando su estado.
+    </div>
+
+    <div class="space-y-2">
+        <div th:each="d : ${destinatarios}" class="flex items-center justify-between gap-3 flex-wrap rounded-lg bg-slate-50 dark:bg-neutral-800 p-3">
+            <div class="min-w-0">
+                <p class="font-semibold text-sm" th:text="${d.get('nombre') ?: 'Sin nombre'}">—</p>
+                <p class="text-xs text-slate-500 truncate" th:text="${d.get('direccion')}">—</p>
+                <div class="flex flex-wrap gap-x-3 text-xs text-slate-400 mt-0.5">
+                    <span th:if="${d.get('telefono')}" th:text="' ' + ${d.get('telefono')}">—</span>
+                    <span th:if="${d.get('email')}" th:text="' ' + ${d.get('email')}">—</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a th:if="${d.get('telefono')}"
+                   th:href="${'https://wa.me/' + #strings.replace(#strings.replace(#strings.replace(d.get('telefono'),' ',''),'+',''),'-','') + '?text=' + #uris.escapeQueryParam(c.get('mensaje_whatsapp'))}"
+                   target="_blank"
+                   class="px-2.5 py-1.5 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100 text-xs font-semibold flex items-center gap-1">
+                    <i data-lucide="message-circle" class="h-3.5 w-3.5"></i> WhatsApp
+                </a>
+                <form th:action="@{|/captacion/destinatario/${d.get('id')}/estado|}" method="post" class="flex items-center gap-1">
+                    <input type="hidden" name="campanaId" th:value="${c.get('id')}">
+                    <select name="estado" onchange="this.form.submit()"
+                            class="px-2 py-1.5 rounded-md border-2 text-xs font-semibold outline-none"
+                            th:classappend="${d.get('estado') == 'captado' ? 'border-emerald-300 text-emerald-700 bg-emerald-50' : (d.get('estado') == 'descartado' ? 'border-slate-200 text-slate-400' : 'border-slate-200 text-slate-600')}">
+                        <option value="pendiente" th:selected="${d.get('estado') == 'pendiente'}">⏳ Pendiente</option>
+                        <option value="contactado" th:selected="${d.get('estado') == 'contactado'}"> Contactado</option>
+                        <option value="respondido" th:selected="${d.get('estado') == 'respondido'}"> Respondió</option>
+                        <option value="captado" th:selected="${d.get('estado') == 'captado'}"> Captado</option>
+                        <option value="descartado" th:selected="${d.get('estado') == 'descartado'}"> Descartado</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Hipoteca</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/finanzas/hipoteca" class="form-card">
+        <h3>Estructuracion de deuda</h3>
+        <div class="form-grid cols-4">
+            <label>Capital (EUR) <input type="number" step="0.01" name="capital" required th:value="${capital}"></label>
+            <label>TAE (%) <input type="number" step="0.01" name="tae" required th:value="${tae}"></label>
+            <label>Plazo (anos) <input type="number" name="anios" required th:value="${anios ?: 25}"></label>
+            <label>Sistema
+                <select name="sistema">
+                    <option value="frances" th:selected="${sistema == 'frances'}">Frances</option>
+                    <option value="aleman"  th:selected="${sistema == 'aleman'}">Aleman</option>
+                </select>
+            </label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Calcular</button></div>
+    </form>
+
+    <div th:if="${rows != null and !rows.isEmpty()}">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Cuota inicial</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(cuotaInicial,0,'POINT',2,'COMMA')} + ' EUR'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Total intereses</div>
+                <div class="kpi-value neg" th:text="${#numbers.formatDecimal(totalInteres,0,'POINT',2,'COMMA')} + ' EUR'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Total pagado</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(totalPagado,0,'POINT',2,'COMMA')} + ' EUR'">—</div></div>
+        </div>
+
+        <details>
+            <summary>Cuadro de amortizacion (<span th:text="${rows.size()}">0</span> meses)</summary>
+            <div class="crud-table-wrap">
+                <table class="crud-table">
+                    <thead>
+                    <tr><th>Mes</th><th>Cuota</th><th>Intereses</th><th>Amortizacion</th><th>Saldo</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${rows}">
+                        <td th:text="${r.mes()}">1</td>
+                        <td th:text="${#numbers.formatDecimal(r.cuota(),0,'POINT',2,'COMMA')}">0</td>
+                        <td th:text="${#numbers.formatDecimal(r.interes(),0,'POINT',2,'COMMA')}">0</td>
+                        <td th:text="${#numbers.formatDecimal(r.amortizacion(),0,'POINT',2,'COMMA')}">0</td>
+                        <td th:text="${#numbers.formatDecimal(r.saldo(),0,'POINT',2,'COMMA')}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+</div>
+</body>
+</html>

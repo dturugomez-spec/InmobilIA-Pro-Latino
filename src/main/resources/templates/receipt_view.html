@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Recibo</title>
+<style>@media print { .no-print { display: none !important; } body { background: white !important; } }</style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="no-print flex items-center gap-2 mb-4 max-w-3xl mx-auto">
+        <a href="/receipts" class="px-3 py-2 rounded-lg bg-white ring-1 ring-slate-200 hover:bg-slate-50 text-sm font-medium"><i data-lucide="arrow-left" class="h-4 w-4 inline"></i> Volver</a>
+        <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
+            <i data-lucide="printer" class="h-4 w-4"></i> Imprimir / PDF
+        </button>
+    </div>
+
+    <div class="max-w-3xl mx-auto bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-xl overflow-hidden shadow-card-lg">
+
+        <!-- Cabecera -->
+        <div class="px-10 py-8 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between">
+            <div>
+                <img th:if="${profile.get('logo_url')}" th:src="${profile.get('logo_url')}" class="h-12 mb-3 object-contain">
+                <div class="font-semibold text-base" th:text="${rec.get('emisor_nombre') ?: profile.get('legal_name')}">Emisor</div>
+                <div class="text-xs text-slate-500 dark:text-neutral-400 space-y-0.5 mt-1">
+                    <div th:if="${rec.get('emisor_nif')}">NIF: <span class="font-mono" th:text="${rec.get('emisor_nif')}">—</span></div>
+                    <div th:text="${rec.get('emisor_direccion') ?: profile.get('address')}">—</div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Recibo de alquiler</div>
+                <div class="text-3xl font-bold font-mono mt-1" th:text="${rec.get('full_number')}">R/00001</div>
+                <div class="text-xs text-slate-500 mt-2">Período: <strong th:text="${rec.get('period_month') + '/' + rec.get('period_year')}">—</strong></div>
+            </div>
+        </div>
+
+        <!-- Inquilino -->
+        <div class="px-10 py-6 border-b border-slate-200 dark:border-neutral-800 grid grid-cols-2 gap-8">
+            <div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Recibí de</div>
+                <div class="font-semibold" th:text="${rec.get('inquilino_nombre')}">—</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400 space-y-0.5 mt-1">
+                    <div th:if="${rec.get('inquilino_nif')}">NIF: <span class="font-mono" th:text="${rec.get('inquilino_nif')}">—</span></div>
+                    <div th:text="${rec.get('inquilino_direccion')}">—</div>
+                </div>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Concepto</div>
+                <div class="text-sm" th:text="${rec.get('concepto')}">Alquiler vivienda</div>
+                <div class="text-xs text-slate-500 mt-2" th:if="${rec.get('property_name')}">
+                     <span th:text="${rec.get('property_name')}">propiedad</span>
+                </div>
+                <div class="text-xs text-slate-500" th:if="${rec.get('catastro_ref')}">
+                    Ref. catastral: <span class="font-mono" th:text="${rec.get('catastro_ref')}">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Importes -->
+        <div class="px-10 py-6">
+            <div class="ml-auto max-w-xs space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-600 dark:text-slate-400">Importe alquiler</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(rec.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</span>
+                </div>
+                <div class="flex justify-between" th:if="${rec.get('irpf_amount') != null and rec.get('irpf_amount') > 0}">
+                    <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${rec.get('irpf_pct') + '%'}">19%</span>)</span>
+                    <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(rec.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €'}">—</span>
+                </div>
+                <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
+                    <span class="font-bold">TOTAL RECIBIDO</span>
+                    <span class="text-xl font-mono font-bold" th:text="${#numbers.formatDecimal(rec.get('total_pagado') ?: rec.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pago -->
+        <div class="px-10 py-4 bg-slate-50 dark:bg-neutral-800/40 border-t border-slate-200 dark:border-neutral-800 flex items-center gap-6 text-sm">
+            <div>
+                <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Forma de pago</span>
+                <div th:text="${rec.get('metodo_pago') ?: 'Transferencia'}">Transferencia</div>
+            </div>
+            <div th:if="${profile.get('iban')}">
+                <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">IBAN</span>
+                <div class="font-mono text-xs" th:text="${profile.get('iban')}">—</div>
+            </div>
+            <div class="ml-auto">
+                <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Fecha</span>
+                <div class="font-mono" th:text="${rec.get('fecha_emision') != null ? #strings.substring(rec.get('fecha_emision'),0,10) : '—'}">—</div>
+            </div>
+        </div>
+
+        <!-- Footer legal -->
+        <div class="px-10 py-5 text-center text-[10px] text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800" th:if="${profile.get('receipt_footer') != null and !#strings.isEmpty(profile.get('receipt_footer'))}">
+            <p class="whitespace-pre-line" th:text="${profile.get('receipt_footer')}">—</p>
+        </div>
+        <div class="px-10 py-3 text-center text-[10px] text-slate-400 border-t border-slate-200 dark:border-neutral-800">
+            Recibo válido a efectos fiscales · Conserve durante 4 años (prescripción Ley General Tributaria)
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

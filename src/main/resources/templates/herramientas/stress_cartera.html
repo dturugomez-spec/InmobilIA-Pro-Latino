@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Stress Test de Cartera</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ═══ Hero ═══ -->
+    <div class="audit-hero" style="background:linear-gradient(135deg,#3a1d1d 0%,#5a2d2d 50%,#1a2a3a 100%)">
+        <div class="audit-hero-left">
+            <div class="audit-hero-tag"> STRESS AGREGADO · NIVEL INSTITUCIONAL</div>
+            <h2 class="audit-hero-title">Stress Test de Cartera</h2>
+            <p class="audit-hero-desc">
+                Simula simultaneamente <b>shocks macro y operativos</b> sobre toda tu cartera:
+                subidas Euribor, vacancia, morosidad e inflacion de OPEX.
+                Los softwares retail solo miden propiedad a propiedad.
+            </p>
+            <div class="audit-hero-meta">
+                <span> Activos: <b th:text="${report.nProps()}">0</b></span>
+                <span> Euribor base: <b th:text="${#numbers.formatDecimal(euribor,1,3)} + '%'">—</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ KPIs base ═══ -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Rentas anuales base</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.rentasAnualesBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-hint">Ingresos brutos teoricos</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">OPEX anual</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.opexAnualBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-hint">IBI + comunidad + seguros + mant.</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Servicio deuda anual</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.deudaAnualBase(),1,'POINT',0,'COMMA') + ' €'}">—</div>
+            <div class="kpi-hint">Cuotas hipotecarias</div>
+        </div>
+        <div class="kpi-card" th:style="|border-left:4px solid ${report.base().veredictoColor()}|">
+            <div class="kpi-label">DSCR base</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(report.base().dscrAgregado(),1,2)}">—</div>
+            <div class="kpi-hint" th:text="${report.base().veredicto()}">—</div>
+        </div>
+    </div>
+
+    <!-- ═══ Resumen ejecutivo ═══ -->
+    <div class="verdict-cta"
+         th:style="|border-left:6px solid ${report.base().veredictoColor()}|">
+        <div>
+            <h4 style="margin:0 0 .4rem"> Resumen ejecutivo</h4>
+            <p style="margin:0" th:text="${report.resumenEjecutivo()}">—</p>
+        </div>
+    </div>
+
+    <!-- ═══ Escenarios ═══ -->
+    <section class="form-card">
+        <div class="news-head">
+            <h3 style="margin:0"> Matriz de escenarios</h3>
+            <span class="news-sub">7 escenarios desde base hasta apocaliptico (estilo crisis 2008)</span>
+        </div>
+
+        <div style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Escenario</th>
+                        <th class="num">Δ Euribor</th>
+                        <th class="num">Vacancia +</th>
+                        <th class="num">OPEX +</th>
+                        <th class="num">Cashflow</th>
+                        <th class="num">DSCR</th>
+                        <th class="num">Props rojo</th>
+                        <th>Veredicto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background:rgba(67,97,238,.06)">
+                        <td><b th:text="${report.base().name()}">—</b><br/>
+                            <small th:text="${report.base().descripcion()}">—</small></td>
+                        <td class="num">—</td>
+                        <td class="num">—</td>
+                        <td class="num">—</td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(report.base().cashflowAnual(),1,'POINT',0,'COMMA')} + ' €'">—</b></td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(report.base().dscrAgregado(),1,2)}">—</b></td>
+                        <td class="num" th:text="${report.base().propsEnRojo() + '/' + report.base().propsTotal()}">—</td>
+                        <td><span class="pill" th:style="|background:${report.base().veredictoColor()}|"
+                                  th:text="${report.base().veredicto()}">—</span></td>
+                    </tr>
+                    <tr th:each="s : ${report.escenarios()}">
+                        <td><b th:text="${s.name()}">—</b><br/>
+                            <small th:text="${s.descripcion()}">—</small></td>
+                        <td class="num" th:text="${'+' + #numbers.formatDecimal(s.euriborDeltaPp(),1,1) + ' pp'}">—</td>
+                        <td class="num" th:text="${'+' + #numbers.formatDecimal(s.vacanciaPctExtra(),1,0) + '%'}">—</td>
+                        <td class="num" th:text="${'+' + #numbers.formatDecimal(s.opexInflacion(),1,0) + '%'}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(s.cashflowAnual(),1,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(s.dscrAgregado(),1,2)}">—</b></td>
+                        <td class="num" th:text="${s.propsEnRojo() + '/' + s.propsTotal()}">—</td>
+                        <td><span class="pill" th:style="|background:${s.veredictoColor()}|"
+                                  th:text="${s.veredicto()}">—</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ═══ Detalle por propiedad ═══ -->
+    <section class="form-card" th:if="${report.propiedadesDetalle() != null and !report.propiedadesDetalle().isEmpty()}">
+        <div class="news-head">
+            <h3 style="margin:0"> Salud por activo (escenario base)</h3>
+            <span class="news-sub">DSCR &lt; 1.0 = critico · 1.0-1.25 = frontera · &gt; 1.25 = saludable</span>
+        </div>
+        <div style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Propiedad</th><th class="num">Renta</th><th class="num">OPEX</th>
+                        <th class="num">Deuda</th><th class="num">NOI</th><th class="num">DSCR</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${report.propiedadesDetalle()}">
+                        <td th:text="${p.nombre}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.renta,1,'POINT',0,'COMMA')}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.opex,1,'POINT',0,'COMMA')}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(p.cuota,1,'POINT',0,'COMMA')}">—</td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(p.noi,1,'POINT',0,'COMMA')}">—</b></td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(p.dscr,1,2)}">—</b></td>
+                        <td th:text="${p.estado}">—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ═══ CTA ═══ -->
+    <div class="verdict-cta">
+        <a href="/finanzas/stress" class="btn btn-ghost"> Stress por activo individual</a>
+        <a href="/herramientas/auditoria" class="btn btn-primary"> Auditor IA de Cartera</a>
+        <a href="/herramientas/euribor" class="btn btn-ghost"> Euribor en vivo</a>
+    </div>
+
+</div>
+</body>
+</html>

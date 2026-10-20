@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Co-broking</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-teal-700 to-emerald-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="handshake" class="h-6 w-6"></i> Co-broking · Red MLS
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Comparte propiedades con otras agencias y divide comisiones.</p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Agencias en mi red</p>
+            <p class="text-xl font-bold mt-1" th:text="${miRed.size()}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Ingresos totales</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(ingresoTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0 €</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Operaciones</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${operaciones}">0</p>
+        </div>
+        <div class="rounded-xl bg-fuchsia-50 ring-1 ring-fuchsia-200 p-4">
+            <p class="text-[10px] uppercase text-fuchsia-700">Compartidas</p>
+            <p class="text-xl font-bold mt-1 text-fuchsia-700" th:text="${compartidasPorMi.size() + compartidasConmigo.size()}">0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Mi red -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                <i data-lucide="network" class="h-4 w-4"></i> Mi red
+            </h3>
+            <ul class="space-y-2 mb-4">
+                <li th:each="r : ${miRed}" class="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-neutral-800/50">
+                    <span class="text-sm" th:text="${r.get('nombre_red')}">—</span>
+                    <span class="text-[10px] text-emerald-700 font-bold" th:text="${r.get('comision_default_pct')} + '%'">—</span>
+                </li>
+                <li th:if="${miRed.isEmpty()}" class="text-xs text-slate-400 italic text-center py-4">Sin agencias en tu red aún.</li>
+            </ul>
+            <form method="post" action="/cobroking/invitar" class="space-y-2 pt-3 border-t border-slate-100 dark:border-neutral-800">
+                <p class="text-xs font-semibold">+ Invitar agencia</p>
+                <input type="email" name="email" placeholder="Email de la agencia" required class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                <input type="text" name="nombreRed" placeholder="Nombre de la red" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-slate-500">Mi comisión:</span>
+                    <input type="number" name="comisionDefault" value="50" min="0" max="100" class="w-16 px-2 py-1 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                    <span class="text-[10px]">%</span>
+                </div>
+                <button class="w-full px-2 py-1.5 text-xs rounded bg-emerald-700 hover:bg-emerald-800 text-white"> Invitar</button>
+            </form>
+        </div>
+
+        <!-- Propiedades que comparto -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                <i data-lucide="share-2" class="h-4 w-4"></i> Mis listados compartidos
+            </h3>
+            <ul class="space-y-2">
+                <li th:each="p : ${compartidasPorMi}" class="p-2 rounded bg-slate-50 dark:bg-neutral-800/50">
+                    <p class="text-sm font-medium" th:text="${p.get('propiedad_id')}">—</p>
+                    <p class="text-[10px] text-slate-500">
+                        Captador: <span th:text="${p.get('comision_captador_pct')}">50</span>% ·
+                        Oferente: <span th:text="${p.get('comision_oferente_pct')}">50</span>%
+                    </p>
+                </li>
+                <li th:if="${compartidasPorMi.isEmpty()}" class="text-xs text-slate-400 italic text-center py-4">No compartes propiedades aún.</li>
+            </ul>
+        </div>
+
+        <!-- Disponibles en mi red -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                <i data-lucide="search" class="h-4 w-4"></i> Propiedades disponibles en mi red
+            </h3>
+            <ul class="space-y-2">
+                <li th:each="p : ${compartidasConmigo}" class="p-2 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200">
+                    <p class="text-sm font-medium" th:text="${p.get('propiedad') != null ? p.get('propiedad').get('direccion') : '—'}">—</p>
+                    <p class="text-[10px] text-emerald-700 mt-0.5">
+                         Ganarías <strong th:text="${p.get('comision_oferente_pct')} + '%'">—</strong> de comisión
+                    </p>
+                </li>
+                <li th:if="${compartidasConmigo.isEmpty()}" class="text-xs text-slate-400 italic text-center py-4">Tu red aún no comparte propiedades.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

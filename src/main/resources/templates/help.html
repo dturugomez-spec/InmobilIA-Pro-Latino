@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Centro de ayuda</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Hero -->
+    <div class="rounded-xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 mb-6 ring-1 ring-brand-800 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+        <div class="relative flex items-center gap-4 text-white">
+            <div class="h-12 w-12 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                <i data-lucide="life-buoy" class="h-6 w-6"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Centro de ayuda</h2>
+                <p class="text-sm text-white/70">Guía rápida para sacar el máximo de InmobilIA Pro</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick start -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="h-9 w-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center mb-3">
+                <span class="font-bold text-brand-700 dark:text-brand-400">1</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Añade tu cartera</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Empieza añadiendo tus propiedades en la sección <strong>Cartera</strong>. Sube fotos pegando URLs públicas (Imgur, Drive...).</p>
+            <a href="/crud/propiedades/new" class="text-xs text-brand-700 dark:text-brand-400 mt-3 inline-flex items-center gap-1 hover:underline">
+                Crear primera propiedad <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="h-9 w-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center mb-3">
+                <span class="font-bold text-emerald-700 dark:text-emerald-400">2</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Registra tus inquilinos</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Crea fichas de tus inquilinos con renta, fechas de contrato, etc. Vincúlalos a una propiedad para autocompletar.</p>
+            <a href="/crud/inquilinos/new" class="text-xs text-brand-700 dark:text-brand-400 mt-3 inline-flex items-center gap-1 hover:underline">
+                Añadir inquilino <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="h-9 w-9 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mb-3">
+                <span class="font-bold text-amber-700 dark:text-amber-400">3</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Controla los cobros</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">En <strong>Cobros</strong> verás un semáforo con cada inquilino y mes. Click en un mes pendiente y se marca como cobrado.</p>
+            <a href="/payments" class="text-xs text-brand-700 dark:text-brand-400 mt-3 inline-flex items-center gap-1 hover:underline">
+                Ir a Cobros <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="space-y-3 mb-6" x-data="{ open: 0 }">
+        <h2 class="text-lg font-bold tracking-tight mb-3">Preguntas frecuentes</h2>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 1 ? 0 : 1" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Cómo invito a mi equipo?</span>
+                <i data-lucide="chevron-down" :class="open === 1 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 1" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                Ve a <strong>Equipo</strong> en el menú izquierdo y click en <strong>"Añadir empleado"</strong>. Elige uno de los 7 roles predefinidos (admin, comercial, contable, RRHH, técnico, lectura). Cada rol tendrá acceso solo a las secciones que le corresponden.
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 2 ? 0 : 2" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Cómo emito una factura?</span>
+                <i data-lucide="chevron-down" :class="open === 2 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 2" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                Ve a <strong>Facturación</strong> → <strong>Nueva factura</strong>. Rellena datos de cliente, base imponible, elige IVA (4/10/21%) y retención IRPF si aplica (típico 19% en alquileres). El número se asigna automáticamente. Después puedes imprimirla a PDF desde la vista de la factura.
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 3 ? 0 : 3" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Cómo importo movimientos del banco?</span>
+                <i data-lucide="chevron-down" :class="open === 3 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 3" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                Descarga el extracto CSV desde tu banca online. Ve a <strong>Integraciones → Importar movimientos bancarios</strong>, elige tu banco (BBVA, Santander, ING, CaixaBank, Sabadell) y sube el archivo. La app auto-conciliará los ingresos que coincidan con tus alquileres.
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 4 ? 0 : 4" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Cómo configuro mi email para enviar avisos?</span>
+                <i data-lucide="chevron-down" :class="open === 4 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 4" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                Ve a <strong>Configuración → Email</strong>. Si usas Gmail, necesitas crear una <strong>App Password</strong> en <a href="https://myaccount.google.com/apppasswords" class="text-brand-700 underline">myaccount.google.com/apppasswords</a> (necesitas verificación en 2 pasos activada). Luego pega esa contraseña aquí.
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 5 ? 0 : 5" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Mis datos están seguros?</span>
+                <i data-lucide="chevron-down" :class="open === 5 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 5" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                Sí. Cifrado HTTPS/TLS en tránsito, contraseñas con hash bcrypt, base de datos en Supabase con backups automáticos, control de acceso por rol. Puedes <strong>exportar todos tus datos</strong> en formato JSON o <strong>eliminar tu cuenta</strong> en cualquier momento desde <a href="/account" class="text-brand-700 underline">Mi cuenta</a>. Cumplimos RGPD.
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <button @click="open = open === 6 ? 0 : 6" class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">
+                <span class="font-semibold text-sm">¿Cómo subo fotos a las propiedades?</span>
+                <i data-lucide="chevron-down" :class="open === 6 ? 'rotate-180' : ''" class="h-4 w-4 text-slate-400 transition-transform"></i>
+            </button>
+            <div x-show="open === 6" x-collapse class="px-4 pb-4 text-sm text-slate-600 dark:text-slate-400">
+                En la ficha de cada propiedad, hay un campo <strong>Featured photo</strong>. Pega ahí la URL pública de una imagen (sirven Imgur, Google Drive con enlace público, Dropbox, o cualquier hosting). Pronto añadiremos subida directa.
+            </div>
+        </div>
+    </div>
+
+    <!-- Soporte -->
+    <div class="rounded-xl bg-gradient-to-br from-slate-50 to-white dark:from-neutral-800/50 dark:to-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 text-center">
+        <i data-lucide="message-circle-question" class="h-8 w-8 text-brand-600 mx-auto mb-3"></i>
+        <h3 class="font-bold text-base mb-1">¿No encuentras lo que buscas?</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Escríbenos directamente y te respondemos lo antes posible.</p>
+        <a href="mailto:inmobilia.support@gmail.com?subject=Soporte%20InmobilIA%20Pro"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="mail" class="h-4 w-4"></i>
+            Contactar soporte
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

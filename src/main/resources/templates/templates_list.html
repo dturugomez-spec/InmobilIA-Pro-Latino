@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Plantillas</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="flex items-center gap-2 mb-4">
+        <a href="/templates/new" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nueva plantilla
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div th:each="t : ${rows}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:shadow-card-lg transition-all">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="inline-block px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-[10px] font-semibold uppercase" th:text="${t.get('type')}">tipo</span>
+            </div>
+            <h3 class="font-semibold mb-1" th:text="${t.get('name')}">nombre</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 truncate" th:text="${t.get('subject') ?: t.get('body')}">contenido</p>
+            <div class="flex items-center gap-2 mt-3">
+                <a th:href="@{|/templates/${t.get('id')}/edit|}" class="text-xs text-brand-700 hover:underline">Editar</a>
+                <form th:action="@{|/templates/${t.get('id')}/delete|}" method="post" class="inline">
+                    <button type="submit" class="text-xs text-red-600 hover:underline" onclick="return confirm('Eliminar?')">Borrar</button>
+                </form>
+            </div>
+        </div>
+        <div th:if="${rows.isEmpty()}" class="col-span-full text-center py-12 text-sm text-slate-500">
+            No tienes plantillas. <a href="/templates/new" class="text-brand-700 hover:underline">Crea la primera</a>.
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Seguridad</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="max-w-3xl mx-auto space-y-5">
+
+        <!-- 2FA obligatorio pendiente -->
+        <div th:if="${forzado}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-300 dark:ring-amber-800 p-4 flex items-start gap-3">
+            <i data-lucide="shield-alert" class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+            <div class="text-sm text-amber-900 dark:text-amber-200">
+                <p class="font-semibold">Tu inmobiliaria exige la verificación en dos pasos</p>
+                <p class="mt-0.5">Actívala abajo para seguir usando InmobilIA Pro. Se tarda unos 2 minutos.</p>
+            </div>
+        </div>
+
+        <!-- ═══ Verificación en dos pasos ═══ -->
+        <div id="activar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-3">
+                <h2 class="font-semibold text-base flex items-center gap-2">
+                    <i data-lucide="smartphone" class="h-5 w-5 text-brand-600"></i>
+                    Verificación en dos pasos
+                </h2>
+                <span th:if="${activo2fa}" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-2.5 py-1">
+                    <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i> Activada
+                </span>
+                <span th:unless="${activo2fa}" class="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 text-xs font-semibold px-2.5 py-1">
+                    Desactivada
+                </span>
+            </div>
+
+            <div class="p-6 text-sm">
+
+                <!-- A) Desactivada, sin empezar -->
+                <div th:if="${!activo2fa and qrSvg == null}">
+                    <p class="text-slate-600 dark:text-slate-400">
+                        Al entrar, además de la contraseña te pediremos un código de 6 cifras que genera tu móvil.
+                        Aunque alguien consiguiera tu contraseña, <strong>sin tu móvil no podría entrar</strong>.
+                    </p>
+                    <form method="post" action="/seguridad/2fa/iniciar" class="mt-4">
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
+                            <i data-lucide="shield-check" class="h-4 w-4"></i>
+                            Activar verificación en dos pasos
+                        </button>
+                    </form>
+                </div>
+
+                <!-- B) Alta en curso: QR + código -->
+                <div th:if="${!activo2fa and qrSvg != null}" class="space-y-5">
+                    <div class="flex gap-3">
+                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">1</span>
+                        <p class="text-slate-700 dark:text-slate-300">Instala en tu móvil <strong>Google Authenticator</strong> o <strong>Microsoft Authenticator</strong> (gratis en App Store y Google Play). Si ya usas 1Password, Authy o similar, también vale.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">2</span>
+                        <div class="flex-1">
+                            <p class="text-slate-700 dark:text-slate-300">En la app, pulsa <strong>+</strong> y escanea este código:</p>
+                            <div class="mt-3 w-48 h-48 rounded-lg ring-1 ring-slate-200 bg-white p-2" th:utext="${qrSvg}"></div>
+                            <p class="mt-3 text-xs text-slate-500 dark:text-neutral-400">¿No puedes escanearlo? Elige «Introducir clave» y escribe:</p>
+                            <p class="mt-1 font-mono text-sm tracking-wider bg-slate-50 dark:bg-neutral-800 rounded-lg px-3 py-2 inline-block select-all" th:text="${secretoLegible}">XXXX XXXX</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">3</span>
+                        <div class="flex-1">
+                            <p class="text-slate-700 dark:text-slate-300">Escribe el código de 6 cifras que aparece en la app:</p>
+                            <form method="post" action="/seguridad/2fa/activar" class="mt-3 flex flex-wrap gap-2">
+                                <input type="text" name="codigo" required inputmode="numeric" autocomplete="one-time-code"
+                                       pattern="[0-9 ]{6,7}" maxlength="7" placeholder="000000"
+                                       class="w-36 px-3 py-2 text-lg tracking-widest text-center font-mono bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium">
+                                    <i data-lucide="check" class="h-4 w-4"></i> Confirmar y activar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <form method="post" action="/seguridad/2fa/cancelar">
+                        <button type="submit" class="text-xs text-slate-500 hover:text-slate-700 underline">Cancelar</button>
+                    </form>
+                </div>
+
+                <!-- C) Activada -->
+                <div th:if="${activo2fa}" class="space-y-5">
+                    <p class="text-slate-600 dark:text-slate-400">
+                        Cada vez que entres te pediremos el código de tu app.
+                        Te quedan <strong th:text="${codigosRestantes}">10</strong> códigos de recuperación para cuando no tengas el móvil.
+                    </p>
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <form method="post" action="/seguridad/2fa/codigos" class="rounded-lg ring-1 ring-slate-200 dark:ring-neutral-800 p-4 space-y-2">
+                            <p class="font-medium text-slate-800 dark:text-slate-200">Generar códigos de recuperación nuevos</p>
+                            <p class="text-xs text-slate-500 dark:text-neutral-400">Los anteriores dejarán de servir.</p>
+                            <input type="text" name="codigo" required inputmode="numeric" autocomplete="one-time-code" maxlength="7"
+                                   placeholder="Código de la app"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                            <button type="submit" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-neutral-800 ring-1 ring-slate-300 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-neutral-700">Generar códigos</button>
+                        </form>
+
+                        <form th:if="${!exigido}" method="post" action="/seguridad/2fa/desactivar" class="rounded-lg ring-1 ring-red-200 dark:ring-red-900/40 p-4 space-y-2"
+                              onsubmit="return confirm('¿Seguro? Tu cuenta quedará protegida solo con la contraseña.');">
+                            <p class="font-medium text-red-800 dark:text-red-300">Desactivar</p>
+                            <input type="password" name="password" required autocomplete="current-password" placeholder="Tu contraseña"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                            <input type="text" name="codigo" required autocomplete="one-time-code" maxlength="12" placeholder="Código de la app o de recuperación"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                            <button type="submit" class="w-full px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium">Desactivar</button>
+                        </form>
+                        <div th:if="${exigido}" class="rounded-lg ring-1 ring-slate-200 dark:ring-neutral-800 p-4 text-xs text-slate-500 dark:text-neutral-400">
+                            Tu inmobiliaria exige la verificación en dos pasos, así que no se puede desactivar.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Códigos de recuperación recién generados (se muestran UNA vez) -->
+        <div id="codigos" th:if="${codigosNuevos != null}"
+             class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-2 ring-amber-400 dark:ring-amber-700 p-6">
+            <h2 class="font-semibold text-base flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                <i data-lucide="key-round" class="h-5 w-5"></i>
+                Tus códigos de recuperación
+            </h2>
+            <p class="mt-1 text-sm text-amber-900 dark:text-amber-200">
+                Guárdalos ahora en un lugar seguro (gestor de contraseñas o impresos). Sirven para entrar si pierdes el móvil.
+                Cada uno funciona <strong>una sola vez</strong> y <strong>no volveremos a enseñarlos</strong>.
+            </p>
+            <ul id="lista-codigos" class="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-sm">
+                <li th:each="c : ${codigosNuevos}" th:text="${c}"
+                    class="bg-white dark:bg-neutral-900 rounded-lg px-2 py-1.5 text-center ring-1 ring-amber-200 dark:ring-amber-800">abcd-2345</li>
+            </ul>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button type="button" onclick="copiarCodigos(this)" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-amber-300 dark:ring-amber-700 text-sm font-medium">
+                    <i data-lucide="copy" class="h-4 w-4"></i> Copiar
+                </button>
+                <button type="button" onclick="descargarCodigos()" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-amber-300 dark:ring-amber-700 text-sm font-medium">
+                    <i data-lucide="download" class="h-4 w-4"></i> Descargar .txt
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══ Equipo (solo el administrador) ═══ -->
+        <div th:if="${esAdminOrg}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2">
+                    <i data-lucide="users-round" class="h-5 w-5 text-brand-600"></i>
+                    Seguridad del equipo
+                </h2>
+            </div>
+            <div class="p-6 text-sm space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="font-medium text-slate-800 dark:text-slate-200">Verificación en dos pasos obligatoria</p>
+                        <p class="text-slate-500 dark:text-neutral-400 text-xs mt-0.5" th:text="${exigido} ? 'Activada: nadie del equipo puede entrar sin ella.' : 'Si la activas, quien no la tenga deberá configurarla la próxima vez que use la app.'">—</p>
+                    </div>
+                    <form method="post" action="/seguridad/exigir-2fa">
+                        <input type="hidden" name="exigir" th:value="${!exigido}">
+                        <button type="submit" th:if="${!exigido}" th:disabled="${!activo2fa}"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium"
+                                th:title="${!activo2fa} ? 'Activa primero tu propia verificación' : ''">
+                            <i data-lucide="lock" class="h-4 w-4"></i> Hacer obligatoria
+                        </button>
+                        <button type="submit" th:if="${exigido}" onclick="return confirm('¿Quitar la obligación? El equipo podrá entrar solo con contraseña.');"
+                                class="px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 ring-1 ring-slate-300 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-neutral-700">
+                            Quitar obligación
+                        </button>
+                    </form>
+                </div>
+
+                <div class="overflow-x-auto -mx-6 px-6">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-slate-500 dark:text-neutral-400 border-b border-slate-200 dark:border-neutral-800">
+                            <tr><th class="py-2 pr-3 font-medium">Persona</th><th class="py-2 pr-3 font-medium">Rol</th><th class="py-2 font-medium">Dos pasos</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${equipo}" class="border-b border-slate-100 dark:border-neutral-800/60 last:border-0">
+                                <td class="py-2 pr-3">
+                                    <div class="font-medium text-slate-800 dark:text-slate-200" th:text="${m.nombre}">Nombre</div>
+                                    <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${m.email}">email</div>
+                                </td>
+                                <td class="py-2 pr-3 text-slate-600 dark:text-slate-400" th:text="${m.rol}">admin</td>
+                                <td class="py-2">
+                                    <span th:if="${m.con2fa}" class="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs font-semibold"><i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i> Activada</span>
+                                    <span th:unless="${m.con2fa}" class="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 text-xs font-semibold"><i data-lucide="alert-triangle" class="h-3.5 w-3.5"></i> Pendiente</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ Cambiar contraseña ═══ -->
+        <div id="password" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2">
+                    <i data-lucide="key" class="h-5 w-5 text-brand-600"></i>
+                    Cambiar contraseña
+                </h2>
+            </div>
+            <form method="post" action="/seguridad/password" class="p-6 grid sm:grid-cols-3 gap-3 text-sm">
+                <input type="password" name="actual" required autocomplete="current-password" placeholder="Contraseña actual"
+                       class="px-3 py-2 bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                <input type="password" name="nueva" required minlength="10" maxlength="72" autocomplete="new-password" placeholder="Nueva (mín. 10 caracteres)"
+                       class="px-3 py-2 bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                <input type="password" name="repetir" required minlength="10" maxlength="72" autocomplete="new-password" placeholder="Repite la nueva"
+                       class="px-3 py-2 bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg">
+                <p class="sm:col-span-2 text-xs text-slate-500 dark:text-neutral-400 self-center">Consejo: una frase de varias palabras es más fácil de recordar y más difícil de adivinar.</p>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white font-medium">Guardar contraseña</button>
+            </form>
+        </div>
+
+        <!-- ═══ Actividad reciente ═══ -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                <h2 class="font-semibold text-base flex items-center gap-2">
+                    <i data-lucide="history" class="h-5 w-5 text-brand-600"></i>
+                    Actividad reciente de tu cuenta
+                </h2>
+                <a th:if="${esAdminOrg}" href="/auditoria" class="text-xs text-brand-700 dark:text-brand-400 hover:underline">Ver registro completo →</a>
+            </div>
+            <div class="p-6 text-sm">
+                <p th:if="${#lists.isEmpty(eventos)}" class="text-slate-500 dark:text-neutral-400">Aún no hay actividad registrada.</p>
+                <ul th:unless="${#lists.isEmpty(eventos)}" class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <li th:each="e : ${eventos}" class="py-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                        <span class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full flex-shrink-0"
+                                  th:classappend="${e.nivel == 'critical' or e.nivel == 'warning'} ? 'bg-amber-500' : 'bg-emerald-500'"></span>
+                            <span class="text-slate-800 dark:text-slate-200" th:text="${e.descripcion}">Inicio de sesión</span>
+                        </span>
+                        <span class="text-xs text-slate-500 dark:text-neutral-400 font-mono" th:text="${e.fecha + (e.ip != null ? ' · ' + e.ip : '')}">08/10/2026 10:15 · 1.2.3.4</span>
+                    </li>
+                </ul>
+                <p class="mt-4 text-xs text-slate-500 dark:text-neutral-400">¿Ves algo que no reconoces? Cambia tu contraseña y avisa a tu administrador.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function codigosTexto() {
+            return Array.from(document.querySelectorAll('#lista-codigos li')).map(function (li) { return li.textContent.trim(); }).join('\n');
+        }
+        function copiarCodigos(btn) {
+            navigator.clipboard.writeText(codigosTexto()).then(function () { btn.lastChild.textContent = ' ¡Copiados!'; });
+        }
+        function descargarCodigos() {
+            var txt = 'Códigos de recuperación de InmobilIA Pro\nCada código sirve una sola vez.\n\n' + codigosTexto() + '\n';
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+            a.download = 'inmobilia-codigos-recuperacion.txt';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+    </script>
+</div>
+</body>
+</html>

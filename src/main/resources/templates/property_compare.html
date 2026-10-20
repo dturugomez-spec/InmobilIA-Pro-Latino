@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comparar propiedades</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-cyan-700 to-blue-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="git-compare-arrows" class="h-6 w-6"></i> Comparar propiedades
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Lado a lado, con badges "mejor en X" automáticos. Útil para enseñar a clientes.</p>
+    </div>
+
+    <!-- Selector -->
+    <form method="get" action="/comparar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <p class="text-sm font-semibold mb-3">Selecciona 2-4 propiedades para comparar:</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
+            <label th:each="p : ${propiedades}" class="flex items-center gap-2 p-2 rounded border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs">
+                <input type="checkbox" name="ids" th:value="${p.get('id')}" th:checked="${seleccion != null and #lists.contains(seleccion.![get('id')], p.get('id'))}" class="rounded">
+                <span class="truncate" th:text="${p.get('direccion')}">—</span>
+            </label>
+        </div>
+        <button type="submit" class="mt-3 px-4 py-2 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white text-sm font-medium">
+            <i data-lucide="git-compare" class="h-4 w-4 inline-block"></i> Comparar
+        </button>
+    </form>
+
+    <!-- Comparativa -->
+    <div th:if="${seleccion != null and !seleccion.isEmpty()}" class="overflow-x-auto">
+        <table class="w-full text-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-neutral-800">
+            <thead class="bg-slate-50 dark:bg-neutral-800">
+                <tr>
+                    <th class="text-left px-4 py-3 text-xs uppercase text-slate-500">Atributo</th>
+                    <th th:each="p, st : ${seleccion}" class="px-4 py-3 text-left font-semibold">
+                        <p class="truncate max-w-xs" th:text="${p.get('direccion')}">—</p>
+                        <p class="text-xs font-normal text-slate-500 capitalize" th:text="${p.get('tipo')}">—</p>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Precio</td>
+                    <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
+                        <span th:text="${#numbers.formatDecimal(p.get('precio') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</span>
+                        <span th:if="${st.index == mejorPrecio}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> MEJOR</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> m² construidos</td>
+                    <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
+                        <span th:text="${p.get('metros_cuadrados') ?: '—'} + ' m²'">—</span>
+                        <span th:if="${st.index == mejorM2}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> MAYOR</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> €/m²</td>
+                    <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
+                        <span th:text="${p.get('precio_m2') != null ? #numbers.formatDecimal(p.get('precio_m2'), 1, 'POINT', 0, 'COMMA') + ' €' : '—'}">—</span>
+                        <span th:if="${st.index == mejorPrecioM2}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> MEJOR RATIO</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Habitaciones</td>
+                    <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
+                        <span th:text="${p.get('habitaciones') ?: '—'}">—</span>
+                        <span th:if="${st.index == mejorHab}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Baños</td>
+                    <td th:each="p, st : ${seleccion}" class="px-4 py-3 font-mono">
+                        <span th:text="${p.get('banos') ?: '—'}">—</span>
+                        <span th:if="${st.index == mejorBanos}" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Ubicación</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 text-xs" th:text="${p.get('municipio') ?: '—'}">—</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Eficiencia</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3">
+                        <span th:if="${p.get('eficiencia_energetica')}"
+                              class="inline-flex items-center justify-center w-7 h-7 rounded font-bold text-white text-xs"
+                              th:text="${p.get('eficiencia_energetica')}"
+                              th:style="|background-color: ${p.get('eficiencia_energetica') == 'A' ? '#00a651' : (p.get('eficiencia_energetica') == 'B' ? '#50b748' : (p.get('eficiencia_energetica') == 'C' ? '#bfd730' : (p.get('eficiencia_energetica') == 'D' ? '#fff200' : (p.get('eficiencia_energetica') == 'E' ? '#fdb913' : (p.get('eficiencia_energetica') == 'F' ? '#ef7c00' : '#e30613')))))}">—</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Garaje</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 text-xs" th:text="${p.get('garaje') == true ? '' : '—'}">—</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Ascensor</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 text-xs" th:text="${p.get('ascensor') == true ? '' : '—'}">—</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Terraza</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 text-xs" th:text="${p.get('terraza') == true ? '' : '—'}">—</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-3 font-medium text-xs"> Piscina</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 text-xs" th:text="${p.get('piscina') == true ? '' : '—'}">—</td>
+                </tr>
+                <tr class="bg-emerald-50 dark:bg-emerald-900/20">
+                    <td class="px-4 py-3 font-medium text-xs"> Tu comisión (3%)</td>
+                    <td th:each="p : ${seleccion}" class="px-4 py-3 font-mono text-emerald-700 font-bold"
+                        th:text="${#numbers.formatDecimal(p.get('comision_estimada') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

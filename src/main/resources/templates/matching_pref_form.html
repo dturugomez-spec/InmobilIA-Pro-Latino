@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Preferencias de búsqueda</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-pink-700 to-fuchsia-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="h-5 w-5"></i> Preferencias de búsqueda
+        </h2>
+        <p class="text-xs text-white/70 mt-1">El motor cruzará automáticamente estas preferencias con tus propiedades.</p>
+    </div>
+
+    <form method="post" action="/matches/preferencias/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-5">
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Cliente</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Lead</label>
+                    <select name="lead_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">— Seleccionar —</option>
+                        <option th:each="l : ${leads}" th:value="${l.get('id')}" th:text="${l.get('nombre') + ' — ' + (l.get('email') ?: '')}">—</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">o Inquilino</label>
+                    <select name="inquilino_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">— Seleccionar —</option>
+                        <option th:each="i : ${inquilinos}" th:value="${i.get('id')}" th:text="${i.get('nombre')}">—</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Tipo de operación y propiedad</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Operación</label>
+                    <select name="operacion" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="venta">Venta</option>
+                        <option value="alquiler">Alquiler</option>
+                        <option value="alquiler_temporal">Alquiler temporal</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Tipos (coma)</label>
+                    <input type="text" name="tipo_propiedad" placeholder="piso,casa,atico" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Presupuesto</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Mínimo (€)</label>
+                    <input type="number" name="presupuesto_min" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Máximo (€)</label>
+                    <input type="number" name="presupuesto_max" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Ubicación</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Zonas (coma)</label>
+                    <input type="text" name="zonas" placeholder="Salamanca,Chamberí" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Municipios (coma)</label>
+                    <input type="text" name="municipios" placeholder="Madrid,Pozuelo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Características</h3>
+            <div class="grid grid-cols-4 gap-2">
+                <div><label class="block text-[10px] font-medium mb-1">Hab. mín</label><input type="number" name="habitaciones_min" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-[10px] font-medium mb-1">Hab. máx</label><input type="number" name="habitaciones_max" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-[10px] font-medium mb-1">Baños mín</label><input type="number" name="banos_min" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-[10px] font-medium mb-1">Eficiencia mín</label>
+                    <select name="eficiencia_min" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+                    </select>
+                </div>
+                <div><label class="block text-[10px] font-medium mb-1">Sup. mín (m²)</label><input type="number" name="superficie_min" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                <div><label class="block text-[10px] font-medium mb-1">Sup. máx (m²)</label><input type="number" name="superficie_max" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Extras deseados</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                <label class="flex items-center gap-2"><input type="checkbox" name="requiere_garaje" class="rounded"> Garaje</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="requiere_ascensor" class="rounded"> Ascensor</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="requiere_terraza" class="rounded"> Terraza</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="requiere_piscina" class="rounded"> Piscina</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="requiere_amueblado" class="rounded"> Amueblado</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="permite_mascotas" class="rounded"> Mascotas</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="obra_nueva" class="rounded"> Obra nueva</label>
+            </div>
+        </section>
+
+        <section class="pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <h3 class="font-semibold text-sm mb-3 text-fuchsia-700"> Automatización</h3>
+            <label class="flex items-center gap-2 text-sm mb-1"><input type="checkbox" name="auto_match" checked class="rounded"> Auto-matching cada 12h</label>
+            <label class="flex items-center gap-2 text-sm mb-1"><input type="checkbox" name="notificar_email" checked class="rounded"> Notificar al cliente por email cuando haya match ≥ 70%</label>
+        </section>
+
+        <div>
+            <label class="block text-xs font-medium mb-1">Notas</label>
+            <textarea name="notas" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <a href="/matches" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-fuchsia-700 hover:bg-fuchsia-800 text-white text-sm font-medium">
+                <i data-lucide="save" class="h-4 w-4"></i> Guardar y ejecutar matching
+            </button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

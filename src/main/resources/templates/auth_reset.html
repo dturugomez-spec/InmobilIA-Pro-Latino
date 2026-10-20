@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restablecer contraseña · InmobilIA Pro</title>
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .grid-bg {
+            background-image:
+                radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
+                radial-gradient(circle at 75% 80%, rgba(99, 102, 241, 0.18), transparent 50%),
+                linear-gradient(135deg, #0c1f4d 0%, #1e3a8a 50%, #312e81 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-white text-slate-900 antialiased">
+
+<div class="min-h-screen grid lg:grid-cols-2">
+    <aside class="hidden lg:flex relative grid-bg overflow-hidden">
+        <div class="relative z-10 flex flex-col justify-between w-full p-12 text-white">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                    <i data-lucide="key-round" class="h-5 w-5 text-white"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight">InmobilIA<span class="text-blue-400"> Pro</span></span>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold leading-tight tracking-tight" th:text="${bienvenida} ? 'Bienvenido a InmobilIA Pro' : 'Define tu nueva contraseña'">Define tu nueva contraseña</h1>
+                <p class="text-white/70 text-lg mt-4">Mínimo 10 caracteres. Una frase fácil de recordar es más segura que una palabra con símbolos.</p>
+            </div>
+            <div class="text-xs text-white/40">© 2026 InmobilIA Pro · <span th:replace="~{fragments/grupo :: sello(true)}"></span></div>
+        </div>
+    </aside>
+
+    <main class="flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div class="w-full max-w-md">
+            <h2 class="text-2xl font-bold tracking-tight" th:text="${bienvenida} ? 'Crea tu contraseña' : 'Nueva contraseña'">Nueva contraseña</h2>
+            <p class="text-sm text-slate-500 mt-1.5" th:text="${bienvenida} ? 'Tu cuenta está lista. Elige la contraseña con la que entrarás.' : 'Introduce la contraseña que usarás a partir de ahora.'">Introduce la contraseña que usarás a partir de ahora.</p>
+
+            <div th:if="${error}" class="mt-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+                <i data-lucide="alert-circle" class="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-sm text-red-800" th:text="${error}">Error</p>
+                    <a href="/forgot" class="text-xs text-red-700 hover:underline mt-1 inline-block">Solicitar un nuevo enlace</a>
+                </div>
+            </div>
+
+            <form method="post" action="/reset" class="mt-6 space-y-4" th:if="${token != null}">
+                <input type="hidden" name="token" th:value="${token}">
+                <input type="hidden" name="bienvenida" th:if="${bienvenida}" value="1">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Nueva contraseña</label>
+                    <div class="relative" x-data="{ show: false }">
+                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input :type="show ? 'text' : 'password'" name="password" required minlength="10" maxlength="72" autofocus
+                               autocomplete="new-password" placeholder="Mínimo 10 caracteres"
+                               class="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i :data-lucide="show ? 'eye-off' : 'eye'" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium text-sm py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="h-4 w-4"></i>
+                    <span th:text="${bienvenida} ? 'Guardar y entrar' : 'Establecer nueva contraseña'">Establecer nueva contraseña</span>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="/login" class="text-sm text-blue-700 hover:text-blue-900 font-medium">Volver al login</a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>API Keys</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold"> API Keys</h2>
+        <p class="text-sm text-white/70 mt-1">Genera tokens para integrar InmobilIA Pro con tus sistemas externos.</p>
+        <div class="mt-3 text-xs font-mono bg-black/20 p-2 rounded">
+            curl https://inmobiliapro.es/api/v1/properties \<br>
+            &nbsp;&nbsp;-H "Authorization: Bearer ipro_..."
+        </div>
+    </div>
+
+    <form action="/api-keys" method="post" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <h3 class="font-semibold text-sm mb-3">Crear nueva key</h3>
+        <div class="flex gap-2">
+            <input type="text" name="name" required placeholder="Ej. Integración con CRM externo" class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium">
+                <i data-lucide="plus" class="h-4 w-4"></i> Generar
+            </button>
+        </div>
+    </form>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="text-left px-4 py-3">Nombre</th>
+                    <th class="text-left px-4 py-3">Prefijo</th>
+                    <th class="text-left px-4 py-3">Creada</th>
+                    <th class="text-left px-4 py-3">Último uso</th>
+                    <th class="text-left px-4 py-3">Estado</th>
+                    <th class="text-right px-4 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="k : ${keys}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3 font-medium" th:text="${k.get('name')}">—</td>
+                    <td class="px-4 py-3 font-mono text-xs" th:text="${k.get('prefix') + '...'}">ipro_xx...</td>
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${k.get('created_at') != null ? #strings.substring(k.get('created_at'),0,10) : '—'}">—</td>
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${k.get('last_used') != null ? #strings.substring(k.get('last_used'),0,10) : 'Nunca'}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:if="${k.get('revoked_at') == null}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Activa</span>
+                        <span th:if="${k.get('revoked_at') != null}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Revocada</span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <form th:if="${k.get('revoked_at') == null}" th:action="@{|/api-keys/${k.get('id')}/revoke|}" method="post" class="inline">
+                            <button type="submit" onclick="return confirm('¿Revocar esta key permanentemente?')" class="text-xs text-red-600 hover:underline">Revocar</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${keys.isEmpty()}"><td colspan="6" class="py-12 text-center text-slate-500 text-sm">Sin API keys.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

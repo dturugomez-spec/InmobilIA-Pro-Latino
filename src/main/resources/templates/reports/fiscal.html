@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Resumen fiscal</title>
+    <style>@media print { .no-print { display: none !important; } body { background: white !important; } .card-print { page-break-inside: avoid; } }</style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="no-print flex items-center gap-2 mb-4">
+        <a href="/reports" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i> Reportes
+        </a>
+        <div class="flex items-center bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-lg p-0.5">
+            <a th:href="@{|/reports/fiscal?year=${yearAnt}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-left" class="h-4 w-4"></i></a>
+            <span class="px-3 py-1.5 text-sm font-semibold font-mono">Ejercicio <span th:text="${year}">2025</span></span>
+            <a th:href="@{|/reports/fiscal?year=${yearSig}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-right" class="h-4 w-4"></i></a>
+        </div>
+        <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="printer" class="h-4 w-4"></i> Imprimir / PDF
+        </button>
+    </div>
+
+    <!-- Banner -->
+    <div class="card-print rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/40 dark:to-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-900/40 p-5 mb-5">
+        <div class="flex items-start gap-3">
+            <div class="h-10 w-10 rounded-lg bg-white dark:bg-amber-950/60 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="landmark" class="h-5 w-5 text-amber-700 dark:text-amber-400"></i>
+            </div>
+            <div>
+                <h2 class="font-semibold text-base text-amber-900 dark:text-amber-200">Resumen fiscal · ejercicio <span th:text="${year}">—</span></h2>
+                <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">Datos preliminares para presentación de modelos AEAT. Verifica con tu asesor fiscal antes de presentar.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- IVA por trimestre (modelo 303) -->
+    <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-5">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+            <h3 class="text-base font-semibold flex items-center gap-2"><i data-lucide="file-text" class="h-4 w-4 text-brand-600"></i> IVA · Modelo 303 (trimestral)</h3>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400" th:text="${nFacturas} + ' facturas'">0 facturas</span>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                    <th class="text-left font-semibold px-5 py-2.5">Trimestre</th>
+                    <th class="text-right font-semibold px-5 py-2.5">Base imponible</th>
+                    <th class="text-right font-semibold px-5 py-2.5">IVA repercutido</th>
+                    <th class="text-right font-semibold px-5 py-2.5">Retenido (IRPF)</th>
+                    <th class="text-right font-semibold px-5 py-2.5">A ingresar</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="i : ${#numbers.sequence(0,3)}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-5 py-3 font-medium">
+                        <span th:text="${'T' + (i + 1)}">T1</span>
+                        <span class="ml-2 text-xs text-slate-500" th:switch="${i}">
+                            <span th:case="0">Ene-Mar</span>
+                            <span th:case="1">Abr-Jun</span>
+                            <span th:case="2">Jul-Sep</span>
+                            <span th:case="3">Oct-Dic</span>
+                        </span>
+                    </td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${irpfTrim[i] > 0 ? '-' + #numbers.formatDecimal(irpfTrim[i],0,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-5 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(ivaTrim[i] - irpfTrim[i],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                </tr>
+            </tbody>
+            <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold border-t-2 border-slate-200 dark:border-neutral-700">
+                <tr>
+                    <td class="px-5 py-3">TOTAL ejercicio</td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(baseTrim[0]+baseTrim[1]+baseTrim[2]+baseTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3],0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                    <td class="px-5 py-3 font-mono text-right" th:text="${#numbers.formatDecimal((ivaTrim[0]+ivaTrim[1]+ivaTrim[2]+ivaTrim[3]) - (irpfTrim[0]+irpfTrim[1]+irpfTrim[2]+irpfTrim[3]),0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- IRPF rendimientos inmobiliarios (modelo 100) -->
+    <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <h3 class="text-base font-semibold mb-4 flex items-center gap-2"><i data-lucide="home" class="h-4 w-4 text-brand-600"></i> IRPF · Rendimientos inmobiliarios (Modelo 100)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos íntegros</div>
+                <div class="text-lg font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(rentaInmobiliaria,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 mt-1">Rentas de alquiler</div>
+            </div>
+            <div class="rounded-lg bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40 p-4">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos deducibles</div>
+                <div class="text-lg font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(gastosDeducibles,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-[10px] text-red-700/80 dark:text-red-400/80 mt-1">IBI, comunidad, mantenimiento, intereses</div>
+            </div>
+            <div class="rounded-lg bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-200 dark:ring-brand-900/40 p-4">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400">Rendimiento neto</div>
+                <div class="text-lg font-bold font-mono mt-1 text-brand-700 dark:text-brand-400" th:classappend="${rendimientoNeto >= 0 ? '' : 'text-red-700 dark:text-red-400'}" th:text="${#numbers.formatDecimal(rendimientoNeto,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+                <div class="text-[10px] text-brand-700/80 dark:text-brand-400/80 mt-1">Antes de reducción 60% vivienda habitual</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gastos por categoría -->
+    <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-5">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+            <h3 class="text-base font-semibold">Gastos por categoría</h3>
+        </div>
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="e : ${gastosCat}">
+                    <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
+                    <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                </tr>
+                <tr th:if="${gastosCat.isEmpty()}"><td colspan="2" class="px-5 py-6 text-center text-sm text-slate-500">Sin gastos registrados.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-[10px] text-slate-400 dark:text-neutral-500 italic px-1">
+         Este resumen es orientativo y se basa exclusivamente en los datos registrados en la plataforma.
+        No sustituye al asesoramiento fiscal profesional. Consulta con tu gestor antes de presentar declaraciones a la AEAT.
+    </div>
+
+</div>
+</body>
+</html>

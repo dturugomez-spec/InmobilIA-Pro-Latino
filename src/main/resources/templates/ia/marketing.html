@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Marketing IA</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/marketing" class="form-card">
+        <h3>Marketing & captacion</h3>
+        <div class="form-grid cols-3">
+            <label>Activo <input type="text" name="activo" required></label>
+            <label>Audiencia <input type="text" name="audiencia" required></label>
+            <label>Canal
+                <select name="canal">
+                    <option>Instagram</option><option>Idealista</option>
+                    <option>LinkedIn</option><option>Email</option><option>Google Ads</option>
+                </select>
+            </label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Generar campana</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+</div>
+</body>
+</html>

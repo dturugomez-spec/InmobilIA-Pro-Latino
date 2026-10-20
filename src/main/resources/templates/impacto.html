@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Impacto del Agente IA</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="award" class="h-6 w-6"></i> Impacto del Agente IA
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Lo que tu agente ha hecho por ti en los últimos 30 días — y las horas de trabajo manual que te ha ahorrado.</p>
+</div>
+
+<!-- Horas ahorradas (destacado) -->
+<div class="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-7 mb-5 text-white text-center">
+    <p class="text-sm uppercase tracking-wider text-white/70">⏱ Tiempo de trabajo ahorrado (estimado)</p>
+    <p class="text-5xl font-extrabold mt-2">
+        <span th:text="${horas}">0</span> h <span th:if="${minutos > 0}" th:text="${minutos} + ' min'" class="text-3xl"></span>
+    </p>
+    <p class="text-white/80 mt-2 text-sm" th:text="${totalAcciones} + ' acciones automáticas en total'">—</p>
+</div>
+
+<!-- Narrativa IA -->
+<div th:if="${narrativa != null}" class="bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-xl p-6 mb-5">
+    <p class="text-xs font-bold text-violet-600 uppercase tracking-wider mb-2"> Tu agente resume su trabajo</p>
+    <p class="text-slate-700 dark:text-slate-200 leading-relaxed" th:text="${narrativa}">—</p>
+</div>
+
+<!-- Desglose -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Mensajes IA</p>
+        <p class="text-2xl font-bold mt-1" th:text="${mensajesIA}">0</p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Acciones ejecutadas</p>
+        <p class="text-2xl font-bold mt-1" th:text="${otrasAcciones}">0</p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> En seguimiento auto</p>
+        <p class="text-2xl font-bold mt-1" th:text="${enSeguimiento}">0</p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Tareas creadas</p>
+        <p class="text-2xl font-bold mt-1" th:text="${tareasIA}">0</p>
+    </div>
+</div>
+
+<!-- Captación automática -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3"> Captación automática (30 días)</p>
+    <div class="grid grid-cols-2 gap-3">
+        <a href="/valoracion" class="rounded-lg bg-blue-50 ring-1 ring-blue-200 p-4 hover:bg-blue-100 transition">
+            <p class="text-[11px] uppercase text-blue-700"> Valoraciones captadas</p>
+            <p class="text-2xl font-bold mt-1 text-blue-700" th:text="${valoraciones}">0</p>
+        </a>
+        <a href="/simulador" class="rounded-lg bg-emerald-50 ring-1 ring-emerald-200 p-4 hover:bg-emerald-100 transition">
+            <p class="text-[11px] uppercase text-emerald-700"> Simulaciones captadas</p>
+            <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${simulaciones}">0</p>
+        </a>
+    </div>
+    <p class="text-xs text-slate-400 mt-3">Pasos de seguimiento ejecutados: <strong th:text="${pasosSeguimiento}">0</strong></p>
+</div>
+
+<p class="text-center text-xs text-slate-400 mt-6">Tiempo ahorrado estimado a partir del trabajo manual equivalente de cada acción. Un agente que trabaja por ti, día y noche. </p>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

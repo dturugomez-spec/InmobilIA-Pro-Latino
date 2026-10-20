@@ -1,0 +1,51 @@
+# ─── Build / compilados ───
+target/
+build/
+out/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ─── IDEs ───
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+
+# ─── Sistema operativo ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ───
+*.log
+logs/
+
+# ─── Variables de entorno y secretos ───
+.env
+.env.local
+.env.production
+application-local.properties
+application-secret.properties
+
+
+# ─── Maven ───
+.mvn/timing.properties
+# NO ignorar .mvn/wrapper/maven-wrapper.properties — lo necesita el Dockerfile en Render
+
+# ─── Misc ───
+*.tmp
+*.bak
+*.swp
+node_modules/
+dist/
+
+# Vídeos promocionales renderizados (se regeneran desde marketing/video-vertical.html)
+marketing/*.mp4
+marketing/*.pdf
+marketing/estado-whatsapp/

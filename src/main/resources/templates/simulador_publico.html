@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Cuánto puedo pagar de hipoteca? · Calcula tu capacidad de compra</title>
+    <meta name="description" content="Calcula gratis tu cuota de hipoteca y hasta cuánto puedes comprar. Sin compromiso.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        [x-cloak] { display: none !important; }
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center">
+    <p class="text-slate-500" th:text="${error}">—</p>
+</div>
+
+<div th:unless="${error}" x-data="simulador()" class="max-w-2xl mx-auto px-4 py-10">
+
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-4">
+             Simulador gratuito · sin compromiso
+        </div>
+        <h1 class="display text-3xl md:text-4xl font-extrabold">¿Hasta cuánto puedo comprar?</h1>
+        <p class="text-slate-600 mt-2">Calcula tu cuota y tu capacidad real de compra en 30 segundos.</p>
+        <p class="text-xs text-slate-400 mt-1" th:text="'Ofrecido por ' + ${empresa}">—</p>
+    </div>
+
+    <!-- PASO 1 -->
+    <div x-show="paso === 1" x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Precio de la vivienda (€)</label>
+                <input x-model="f.precio_objetivo" type="number" placeholder="Ej. 250000" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Ahorro disponible (€)</label>
+                <input x-model="f.ahorro" type="number" placeholder="Ej. 60000" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Ingresos netos del hogar (€/mes)</label>
+                <input x-model="f.ingresos_mensuales" type="number" placeholder="Ej. 2800" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Plazo (años)</label>
+                <select x-model="f.plazo_anos" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                    <option value="20">20 años</option><option value="25">25 años</option>
+                    <option value="30" selected>30 años</option><option value="35">35 años</option>
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-semibold mb-1">Tipo de interés estimado (%) <span class="text-slate-400 font-normal">— opcional</span></label>
+                <input x-model="f.tipo_interes" type="number" step="0.1" placeholder="3.0" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+        </div>
+        <button @click="calcular()" :disabled="loading || !f.precio_objetivo || !f.ingresos_mensuales"
+                class="w-full mt-6 px-6 py-4 rounded-xl brand-grad text-white font-bold text-lg disabled:opacity-50 transition">
+            <span x-show="!loading">Calcular mi hipoteca →</span>
+            <span x-show="loading">⏳ Calculando...</span>
+        </button>
+        <p class="text-center text-xs text-slate-400 mt-3">Cálculo orientativo. No constituye asesoramiento financiero ni oferta vinculante.</p>
+    </div>
+
+    <!-- PASO 2 -->
+    <div x-show="paso === 2" x-cloak x-transition class="space-y-5">
+        <div class="brand-grad rounded-2xl shadow-xl p-8 text-white text-center">
+            <p class="text-sm text-white/70 uppercase tracking-wider">Cuota mensual estimada</p>
+            <p class="display text-4xl md:text-5xl font-extrabold mt-2" x-text="fmt(r.cuota_estimada) + ' €/mes'"></p>
+            <div class="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-full text-xs"
+                 :class="r.viable ? 'bg-emerald-400/20 text-emerald-100' : 'bg-amber-400/20 text-amber-100'">
+                <span x-text="r.viable ? ' Operación viable' : ' Esfuerzo elevado'"></span> ·
+                <span x-text="'esfuerzo ' + r.esfuerzo_pct + '%'"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+                <p class="text-xs text-slate-500">Capacidad máx. de compra</p>
+                <p class="display text-2xl font-extrabold text-emerald-600 mt-1" x-text="fmt(r.capacidad_max) + ' €'"></p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+                <p class="text-xs text-slate-500">Préstamo necesario</p>
+                <p class="display text-2xl font-extrabold text-slate-900 mt-1" x-text="fmt(r.capital_prestamo) + ' €'"></p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+                <p class="text-xs text-slate-500">Entrada + gastos</p>
+                <p class="text-lg font-bold text-slate-900 mt-1" x-text="fmt(r.entrada_necesaria) + ' €'"></p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+                <p class="text-xs text-slate-500">Intereses totales</p>
+                <p class="text-lg font-bold text-slate-900 mt-1" x-text="fmt(r.total_intereses) + ' €'"></p>
+            </div>
+        </div>
+
+        <!-- Captura -->
+        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 md:p-8">
+            <h2 class="display text-xl font-bold mb-1">¿Quieres ver casas que encajan con tu presupuesto?</h2>
+            <p class="text-sm text-slate-600 mb-5">Un agente te envía gratis una selección a tu medida y te ayuda con la financiación.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input x-model="c.nombre" type="text" placeholder="Tu nombre *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <input x-model="c.telefono" type="tel" placeholder="Teléfono *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <input x-model="c.email" type="email" placeholder="Email *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <input x-model="c.zona_interes" type="text" placeholder="¿En qué zona buscas?" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <button @click="enviarContacto()" :disabled="enviando || !c.nombre || !c.telefono || !c.email"
+                    class="w-full px-6 py-4 rounded-xl brand-grad text-white font-bold disabled:opacity-50 transition">
+                <span x-show="!enviando">Quiero ver casas a mi medida</span>
+                <span x-show="enviando">⏳ Enviando...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div x-show="paso === 3" x-cloak x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-10 text-center">
+        <div class="text-6xl mb-4"></div>
+        <h2 class="display text-2xl font-bold">¡Gracias!</h2>
+        <p class="text-slate-600 mt-2">Un agente te enviará muy pronto una selección de viviendas que encajan con tu presupuesto.</p>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">Powered by <strong>InmobilIA Pro</strong></p>
+</div>
+
+<script th:inline="javascript">
+const TOKEN = /*[[${token}]]*/ '';
+function simulador() {
+    return {
+        paso: 1, loading: false, enviando: false,
+        f: { precio_objetivo:'', ahorro:'', ingresos_mensuales:'', plazo_anos:'30', tipo_interes:'' },
+        c: { nombre:'', telefono:'', email:'', zona_interes:'' },
+        r: {},
+        fmt(v){ return new Intl.NumberFormat('es-ES').format(Math.round(v||0)); },
+        async calcular() {
+            this.loading = true;
+            try {
+                const res = await fetch('/h/'+TOKEN+'/calcular', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.f)});
+                this.r = await res.json();
+                if (this.r.ok) this.paso = 2;
+            } catch(e){ alert('Error al calcular. Inténtalo de nuevo.'); }
+            this.loading = false;
+        },
+        async enviarContacto() {
+            this.enviando = true;
+            try {
+                const payload = Object.assign({}, this.f, this.c);
+                await fetch('/h/'+TOKEN+'/contacto', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+                this.paso = 3;
+            } catch(e){ alert('Error al enviar.'); }
+            this.enviando = false;
+        }
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Auditor IA de Cartera</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ═══ Hero banner ═══ -->
+    <div class="audit-hero">
+        <div class="audit-hero-left">
+            <div class="audit-hero-tag"> ÚNICO EN EL MERCADO</div>
+            <h2 class="audit-hero-title">Auditor IA de Cartera</h2>
+            <p class="audit-hero-desc">
+                Escaneo completo de tu cartera cruzado con datos oficiales
+                (Catastro, BCE, INE, BOE). Cada hallazgo lleva <b>impacto estimado en €</b>
+                y acción recomendada.
+            </p>
+            <div class="audit-hero-meta">
+                <span> Informe generado: <b th:text="${report.generatedAt()}">—</b></span>
+                <span> Activos analizados: <b th:text="${report.nProps()}">0</b></span>
+            </div>
+        </div>
+        <div class="audit-score-wrap">
+            <div class="audit-score-ring" th:attr="data-score=${report.globalScore()}"
+                 th:style="|--score-color: ${report.verdictColor()}|">
+                <svg viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="52" class="ring-bg"/>
+                    <circle cx="60" cy="60" r="52" class="ring-fg"
+                            th:attr="stroke-dasharray=${report.globalScore() * 3.27} + ' 327'"/>
+                </svg>
+                <div class="audit-score-center">
+                    <div class="audit-score-num" th:text="${report.globalScore()}">0</div>
+                    <div class="audit-score-lbl">/ 100</div>
+                </div>
+            </div>
+            <div class="audit-verdict" th:text="${report.verdict()}"
+                 th:style="|color: ${report.verdictColor()}; border-color: ${report.verdictColor()}|">—</div>
+        </div>
+    </div>
+
+    <!-- ═══ Resumen de hallazgos ═══ -->
+    <div class="kpi-grid">
+        <div class="kpi-card tone-err">
+            <div class="kpi-label">Hallazgos críticos</div>
+            <div class="kpi-value" th:text="${report.nCritical()}">0</div>
+            <div class="kpi-hint">Acción inmediata</div>
+        </div>
+        <div class="kpi-card tone-warn">
+            <div class="kpi-label">Advertencias</div>
+            <div class="kpi-value" th:text="${report.nWarning()}">0</div>
+            <div class="kpi-hint">Resolver este trimestre</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Informativos</div>
+            <div class="kpi-value" th:text="${report.nInfo()}">0</div>
+            <div class="kpi-hint">Para tu información</div>
+        </div>
+        <div class="kpi-card tone-ok">
+            <div class="kpi-label">Impacto económico estimado</div>
+            <div class="kpi-value mono"
+                 th:text="${#numbers.formatDecimal(report.totalImpactEur(),0,'POINT',0,'COMMA')} + ' €'">—</div>
+            <div class="kpi-hint">Coste evitable anual</div>
+        </div>
+    </div>
+
+    <!-- ═══ Radar por areas ═══ -->
+    <section class="form-card">
+        <h3> Salud por área</h3>
+        <div class="audit-areas-grid">
+            <div th:each="a : ${areas}" class="audit-area"
+                 th:classappend="${a.score() < 50} ? 'audit-area-crit' : (${a.score() < 75} ? 'audit-area-warn' : 'audit-area-ok')">
+                <div class="audit-area-head">
+                    <span class="audit-area-icon" th:text="${a.area().icon}"></span>
+                    <span class="audit-area-name" th:text="${a.area().label}">Area</span>
+                </div>
+                <div class="audit-area-bar">
+                    <div class="audit-area-fill" th:style="|width: ${a.score()}%|"></div>
+                </div>
+                <div class="audit-area-meta">
+                    <span class="audit-area-score" th:text="${a.score()} + '/100'">—</span>
+                    <span class="audit-area-count" th:text="${a.findings()} + ' hallazgos'">—</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Lista priorizada de hallazgos ═══ -->
+    <section class="form-card">
+        <h3> Plan de acción priorizado</h3>
+        <p class="form-hint">Hallazgos ordenados por severidad e impacto económico. Los críticos requieren acción inmediata.</p>
+
+        <div class="empty empty-ind" th:if="${findings.isEmpty()}">
+            <div class="empty-icon"></div>
+            <div class="empty-title">Cartera impecable</div>
+            <div class="empty-sub">No se han detectado incidencias. Tu cartera está en excelente estado.</div>
+        </div>
+
+        <div class="finding-list">
+            <div th:each="f : ${findings}" class="finding"
+                 th:classappend="'finding-' + ${#strings.toLowerCase(f.severity().name())}">
+                <div class="finding-icon"
+                     th:text="${f.severity().name() == 'CRITICAL'} ? '' : (${f.severity().name() == 'WARNING'} ? '' : '')">●</div>
+                <div class="finding-body">
+                    <div class="finding-head">
+                        <span class="finding-area-tag"
+                              th:text="${f.area().icon} + ' ' + ${f.area().label}">Area</span>
+                        <span class="finding-sev"
+                              th:classappend="'sev-' + ${#strings.toLowerCase(f.severity().name())}"
+                              th:text="${f.severity().name()}">SEV</span>
+                    </div>
+                    <div class="finding-title" th:text="${f.title()}">—</div>
+                    <div class="finding-detail" th:text="${f.detail()}">—</div>
+                    <div class="finding-foot">
+                        <span class="finding-impact" th:if="${f.impactEur() > 0}">
+                             Impacto: <b th:text="${#numbers.formatDecimal(f.impactEur(),0,'POINT',0,'COMMA')} + ' €'">—</b>
+                        </span>
+                        <a th:href="${f.actionUrl()}" class="btn-mini btn-action"
+                           th:target="${#strings.startsWith(f.actionUrl(), 'http')} ? '_blank' : '_self'"
+                           th:text="'→ ' + ${f.action()}">Acción</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Acciones rapidas ═══ -->
+    <section class="form-card">
+        <h3> Re-ejecutar y exportar</h3>
+        <div class="verdict-cta">
+            <a href="/herramientas/auditoria" class="btn btn-primary"> Re-ejecutar auditoría</a>
+            <a href="/dashboard" class="btn btn-ghost">← Volver al dashboard</a>
+            <a href="/herramientas/datos-oficiales" class="btn btn-ghost"> Consultar datos oficiales</a>
+        </div>
+    </section>
+
+    <div th:replace="~{fragments/official-links :: panel('fiscal,legal,alquiler,due-diligence,propiedad,mercado')}"></div>
+
+</div>
+</body>
+</html>

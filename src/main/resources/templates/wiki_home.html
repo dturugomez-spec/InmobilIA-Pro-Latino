@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Wiki</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="book-open" class="h-6 w-6"></i> Wiki interna
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Base de conocimiento: procesos, plantillas, marco legal y FAQs.</p>
+
+        <form method="get" action="/wiki" class="mt-4">
+            <input type="search" name="q" th:value="${q}" placeholder=" Buscar en la wiki..." class="w-full max-w-xl px-4 py-2 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/60">
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <!-- Lateral categorías -->
+        <aside class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-sm"> Categorías</h3>
+                <a href="/wiki/nuevo" class="text-xs text-purple-700 hover:underline">+ Nuevo</a>
+            </div>
+            <ul class="space-y-1">
+                <li th:each="c : ${categorias}">
+                    <a href="#" class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 text-sm">
+                        <span th:text="${c.get('icono')}"></span>
+                        <span th:text="${c.get('nombre')}">—</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Contenido -->
+        <div class="lg:col-span-3 space-y-3">
+            <h3 class="font-semibold text-sm" th:if="${q != null}" th:text="'Resultados para: ' + ${q}">—</h3>
+
+            <a th:each="a : ${articulos}" th:href="@{|/wiki/articulo/${a.get('slug')}|}"
+               class="block rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:shadow transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1">
+                        <p class="font-bold text-sm" th:text="${a.get('titulo')}">—</p>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2" th:text="${a.get('resumen')}">—</p>
+                        <p class="text-[10px] text-slate-400 mt-2">
+                             <span th:text="${a.get('veces_leido') ?: 0}">0</span> ·
+                             <span th:text="${a.get('util_count') ?: 0}">0</span> ·
+                            <span th:text="${#strings.substring(a.get('updated_at'), 0, 10)}">—</span>
+                        </p>
+                    </div>
+                    <span th:if="${a.get('fijado')}" class="text-amber-500"></span>
+                </div>
+            </a>
+
+            <div th:if="${articulos.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 py-12 text-center">
+                <p class="text-slate-500 text-sm">No hay artículos.</p>
+                <a href="/wiki/nuevo" class="inline-block mt-3 text-purple-700 hover:underline text-sm">Crear el primero →</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

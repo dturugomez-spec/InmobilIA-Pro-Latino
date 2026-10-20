@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Programa referidos</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-fuchsia-700 to-pink-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="gift" class="h-6 w-6"></i> Programa de referidos
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Recompensa a quienes te traigan clientes. Boca a boca incentivado.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Activos</p>
+            <p class="text-xl font-bold mt-1" th:text="${activos}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Cerrados</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${cerrados}">0</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Valor generado</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${#numbers.formatDecimal(valorTotal, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+            <p class="text-[10px] uppercase text-amber-700">Premios pendientes</p>
+            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(premiosPendientes, 1, 'POINT', 0, 'COMMA')} + ' €'">0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Config + nuevo código -->
+        <div class="lg:col-span-1 space-y-4">
+            <form method="post" action="/referidos/config" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <h3 class="font-semibold text-sm"> Configuración</h3>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="activo" th:checked="${cfg.get('activo')}" class="rounded">
+                    Programa activo
+                </label>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Premio referente (quien recomienda)</label>
+                    <input type="text" name="premio_referente" th:value="${cfg.get('premio_referente')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Premio referido (nuevo cliente)</label>
+                    <input type="text" name="premio_referido" th:value="${cfg.get('premio_referido')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Valor premio (€)</label>
+                    <input type="number" step="0.01" name="premio_valor" th:value="${cfg.get('premio_valor')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                </div>
+                <button class="w-full px-4 py-2 rounded-lg bg-fuchsia-700 hover:bg-fuchsia-800 text-white text-sm font-medium"> Guardar</button>
+            </form>
+
+            <form method="post" action="/referidos/generar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <h3 class="font-semibold text-sm"> Generar código para referente</h3>
+                <input type="text" name="referente_nombre" required placeholder="Nombre" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                <input type="email" name="referente_email" required placeholder="Email" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                <input type="tel" name="referente_telefono" placeholder="Teléfono" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                <button class="w-full px-4 py-2 rounded-lg bg-pink-700 hover:bg-pink-800 text-white text-sm font-medium"> Generar código</button>
+            </form>
+        </div>
+
+        <!-- Listado -->
+        <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 dark:border-neutral-800">
+                <h3 class="font-semibold text-sm"> Referidos activos</h3>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50">
+                <tr class="text-[10px] uppercase text-slate-500">
+                    <th class="text-left px-3 py-2">Referente</th>
+                    <th class="text-left px-3 py-2">Código</th>
+                    <th class="text-left px-3 py-2">Cliente</th>
+                    <th class="text-left px-3 py-2">Estado</th>
+                    <th class="text-right px-3 py-2">€</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="r : ${referidos}">
+                    <td class="px-3 py-2 text-xs" th:text="${r.get('referente_nombre')}">—</td>
+                    <td class="px-3 py-2 font-mono text-xs">
+                        <a th:href="${'/referidos/codigo/' + r.get('codigo')}" target="_blank" class="text-blue-700 hover:underline" th:text="${r.get('codigo')}">—</a>
+                    </td>
+                    <td class="px-3 py-2 text-xs" th:text="${r.get('referido_nombre') ?: '—'}">—</td>
+                    <td class="px-3 py-2">
+                        <span th:switch="${r.get('estado')}">
+                            <span th:case="'pendiente'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">Pendiente</span>
+                            <span th:case="'contactado'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Contactado</span>
+                            <span th:case="'calificado'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Calificado</span>
+                            <span th:case="'cerrado_ok'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> Cerrado</span>
+                            <span th:case="'cerrado_ko'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700"> Perdido</span>
+                        </span>
+                    </td>
+                    <td class="px-3 py-2 text-right font-mono text-xs" th:text="${r.get('valor_operacion') != null ? #numbers.formatDecimal(r.get('valor_operacion'),1,'POINT',0,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-3 py-2 text-right">
+                        <form th:if="${r.get('estado') != 'cerrado_ok' and r.get('estado') != 'cerrado_ko'}" th:action="@{|/referidos/${r.get('id')}/cerrar|}" method="post" class="inline" onsubmit="this.querySelector('input').value = prompt('Valor operación (€):') || ''">
+                            <input type="hidden" name="valor">
+                            <button class="text-[10px] text-emerald-700 hover:underline">Cerrar OK</button>
+                        </form>
+                        <form th:if="${r.get('estado') == 'cerrado_ok' and #bools.isFalse(r.get('premio_concedido'))}" th:action="@{|/referidos/${r.get('id')}/pagar-premio|}" method="post" class="inline">
+                            <button class="text-[10px] text-fuchsia-700 hover:underline"> Pagar premio</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${referidos.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500 text-xs">Sin referidos aún.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

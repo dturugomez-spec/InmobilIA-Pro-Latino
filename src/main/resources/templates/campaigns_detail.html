@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Detalle campaña</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/campanas" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-4">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-pink-600 to-rose-900 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <p class="text-xs text-white/60 uppercase">Campaña</p>
+                <h2 class="text-xl font-bold mt-1" th:text="${campana.get('nombre')}">—</h2>
+                <p class="text-sm text-white/80 mt-1" th:text="${campana.get('asunto')}">—</p>
+            </div>
+            <div class="text-right">
+                <span th:switch="${campana.get('estado')}" class="inline-flex text-xs font-bold px-3 py-1 rounded-full">
+                    <span th:case="'borrador'" class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full">Borrador</span>
+                    <span th:case="'programada'" class="bg-amber-100 text-amber-900 px-3 py-1 rounded-full">Programada</span>
+                    <span th:case="'enviando'" class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full">Enviando...</span>
+                    <span th:case="'enviada'" class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full"> Enviada</span>
+                    <span th:case="'pausada'" class="bg-orange-100 text-orange-900 px-3 py-1 rounded-full">Pausada</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Destinatarios</p>
+            <p class="text-xl font-bold mt-1" th:text="${campana.get('destinatarios_total')}">0</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Enviados</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${campana.get('enviados')}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Aperturas</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${campana.get('abiertos')}">0</p>
+            <p class="text-[10px] text-emerald-700" th:text="${#numbers.formatDecimal(tasaApertura, 1, 1)} + '%'">0%</p>
+        </div>
+        <div class="rounded-xl bg-fuchsia-50 ring-1 ring-fuchsia-200 p-4">
+            <p class="text-[10px] uppercase text-fuchsia-700">Clicks</p>
+            <p class="text-xl font-bold mt-1 text-fuchsia-700" th:text="${campana.get('clicks')}">0</p>
+            <p class="text-[10px] text-fuchsia-700" th:text="${#numbers.formatDecimal(tasaClick, 1, 1)} + '%'">0%</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+            <p class="text-[10px] uppercase text-amber-700">Rebotes</p>
+            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${campana.get('rebotes')}">0</p>
+        </div>
+        <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
+            <p class="text-[10px] uppercase text-red-700">Bajas</p>
+            <p class="text-xl font-bold mt-1 text-red-700" th:text="${campana.get('bajas')}">0</p>
+        </div>
+    </div>
+
+    <!-- Acción lanzar -->
+    <div th:if="${campana.get('estado') == 'borrador'}" class="mb-5 rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-center justify-between">
+        <p class="text-sm text-amber-900">⏸ La campaña está en borrador. Cuando quieras, púlsala.</p>
+        <form method="post" th:action="@{|/campanas/${campana.get('id')}/lanzar|}">
+            <button class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium">
+                 Lanzar ahora
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Preview -->
+        <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Vista previa</h3>
+            <div class="border-2 border-slate-200 rounded-lg overflow-hidden">
+                <div class="bg-slate-100 dark:bg-neutral-800 p-3 border-b">
+                    <p class="text-xs text-slate-500">De: <strong th:text="${campana.get('from_name') ?: 'InmobilIA Pro'}">—</strong> &lt;<span th:text="${campana.get('from_email') ?: 'noreply@inmobilia.com'}">—</span>&gt;</p>
+                    <p class="text-sm font-semibold mt-1" th:text="${campana.get('asunto')}">—</p>
+                    <p class="text-xs text-slate-500" th:if="${campana.get('preheader')}" th:text="${campana.get('preheader')}">—</p>
+                </div>
+                <div class="p-4 bg-white max-h-96 overflow-y-auto" th:utext="${campana.get('contenido')}"></div>
+            </div>
+        </div>
+
+        <!-- Últimos envíos -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Últimos envíos</h3>
+            <ul class="space-y-2 text-xs max-h-96 overflow-y-auto">
+                <li th:each="e : ${envios}" class="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-neutral-800/30">
+                    <div class="min-w-0 flex-1">
+                        <p class="font-medium truncate" th:text="${e.get('destinatario_email')}">—</p>
+                        <p class="text-[10px] text-slate-500">
+                            <span th:if="${e.get('primer_abierto_at')}" class="text-emerald-700"> abrió</span>
+                            <span th:if="${e.get('primer_click_at')}" class="text-fuchsia-700">·  click</span>
+                        </p>
+                    </div>
+                    <span th:switch="${e.get('estado')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">
+                        <span th:case="'pendiente'" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">⌛</span>
+                        <span th:case="'enviado'" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"></span>
+                        <span th:case="'abierto'" class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full"></span>
+                        <span th:case="'click'" class="bg-fuchsia-100 text-fuchsia-700 px-2 py-0.5 rounded-full"></span>
+                        <span th:case="'rebote'" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">↩</span>
+                        <span th:case="'baja'" class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full"></span>
+                        <span th:case="'fallido'" class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full"></span>
+                    </span>
+                </li>
+                <li th:if="${envios.isEmpty()}" class="text-slate-500 italic py-4 text-center">Sin envíos aún.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "name": "InmobilIA Pro",
+  "short_name": "InmobilIA",
+  "description": "Plataforma profesional inmobiliaria con IA, datos oficiales en vivo y auditor de cartera. Unico en el mercado.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e1428",
+  "theme_color": "#4361ee",
+  "lang": "es-ES",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Auditor IA",
+      "short_name": "Auditor",
+      "description": "Auditoria de cartera con impacto economico",
+      "url": "/herramientas/auditoria",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Radar de Mercado",
+      "short_name": "Radar",
+      "description": "Noticias y datos oficiales en vivo",
+      "url": "/herramientas/radar",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Subastas BOE",
+      "short_name": "Subastas",
+      "description": "Cazador de subastas inmobiliarias",
+      "url": "/herramientas/subastas-boe",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Inicio",
+      "description": "Panel de control",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

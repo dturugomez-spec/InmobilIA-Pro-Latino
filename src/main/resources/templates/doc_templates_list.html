@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Plantillas de documentos</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="file-text" class="h-6 w-6"></i> Plantillas de documentos
+                </h2>
+                <p class="text-sm text-white/80 mt-1">
+                    Contratos, mandatos, arras y comunicaciones con variables automáticas.
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/plantillas-doc/historial" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">
+                    <i data-lucide="history" class="h-4 w-4 inline-block"></i> Historial
+                </a>
+                <a href="/plantillas-doc/nueva" class="px-4 py-2 rounded-lg bg-white text-purple-900 hover:bg-white/90 text-sm font-medium">
+                    <i data-lucide="plus" class="h-4 w-4 inline-block"></i> Nueva plantilla
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros categoría -->
+    <div class="flex flex-wrap gap-2 mb-5 text-xs">
+        <a href="/plantillas-doc" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">Todas</a>
+        <a href="/plantillas-doc?categoria=contrato_alquiler" class="px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700"> Alquiler</a>
+        <a href="/plantillas-doc?categoria=contrato_venta" class="px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700"> Venta</a>
+        <a href="/plantillas-doc?categoria=mandato" class="px-3 py-1.5 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700"> Mandatos</a>
+        <a href="/plantillas-doc?categoria=arras" class="px-3 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-700"> Arras</a>
+        <a href="/plantillas-doc?categoria=reserva" class="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700"> Reservas</a>
+        <a href="/plantillas-doc?categoria=comunicacion" class="px-3 py-1.5 rounded-full bg-cyan-50 hover:bg-cyan-100 text-cyan-700"> Comunicaciones</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div th:each="p : ${plantillas}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 hover:shadow-md transition group">
+
+            <div class="flex items-start justify-between mb-2">
+                <div class="text-3xl" th:text="${p.get('icono') ?: ''}"></div>
+                <div class="flex gap-1">
+                    <button th:data-id="${p.get('id')}" onclick="toggleFav(this.dataset.id)" class="text-slate-300 hover:text-amber-500 text-lg">
+                        <span th:text="${p.get('favorita') == true ? '★' : '☆'}" th:classappend="${p.get('favorita') == true} ? 'text-amber-500'"></span>
+                    </button>
+                    <span th:if="${p.get('es_sistema')}" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">SISTEMA</span>
+                </div>
+            </div>
+
+            <p class="font-semibold text-sm" th:text="${p.get('nombre')}">—</p>
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2" th:text="${p.get('descripcion')}">—</p>
+
+            <div class="mt-3 flex items-center justify-between text-[10px] text-slate-400">
+                <span class="capitalize" th:text="${p.get('categoria')}">—</span>
+                <span th:text="${(p.get('veces_usada') ?: 0)} + ' usos'">0 usos</span>
+            </div>
+
+            <!-- Vars detectadas -->
+            <div th:if="${p.get('variables_detectadas') != null and !p.get('variables_detectadas').isEmpty()}" class="mt-2 flex flex-wrap gap-1">
+                <span th:each="v, st : ${p.get('variables_detectadas')}"
+                      th:if="${st.size <= 4 or st.count <= 3}"
+                      class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-50 dark:bg-neutral-800 text-slate-500" th:text="${v}">—</span>
+                <span th:if="${#lists.size(p.get('variables_detectadas')) > 4}" class="text-[9px] text-slate-400">+más</span>
+            </div>
+
+            <div class="mt-3 flex gap-1">
+                <a th:href="@{|/plantillas-doc/${p.get('id')}/generar|}" class="flex-1 px-3 py-1.5 text-xs rounded bg-purple-700 hover:bg-purple-800 text-white text-center font-medium"> Generar</a>
+                <a th:href="@{|/plantillas-doc/${p.get('id')}/editar|}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">Editar</a>
+            </div>
+        </div>
+
+        <div th:if="${plantillas.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">
+            Sin plantillas. <a href="/plantillas-doc/nueva" class="text-purple-700 hover:underline">Crear la primera →</a>
+        </div>
+    </div>
+
+    <script>
+        async function toggleFav(id) {
+            const res = await fetch('/plantillas-doc/' + id + '/favorita', { method: 'POST' });
+            const data = await res.json();
+            if (data.ok) location.reload();
+        }
+    </script>
+
+</div>
+</body>
+</html>

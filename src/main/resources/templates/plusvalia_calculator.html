@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora plusvalía municipal 2026 · InmobilIA Pro</title>
+    <meta name="description" content="Calcula la plusvalía municipal (IIVTNU) en España. Método real vs objetivo. Elige el más bajo. STC 182/2021.">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Inter',sans-serif} [x-cloak]{display:none!important}</style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-amber-50 min-h-screen">
+
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5"><div class="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-950 flex items-center justify-center text-sm"></div><span class="font-bold tracking-tight">InmobilIA<span class="text-blue-700"> Pro</span></span></a>
+        <a href="/login" class="text-sm font-medium text-blue-700">Acceder</a>
+    </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-6 py-12">
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Calculadora plusvalía municipal</h1>
+        <p class="text-slate-600">Método real vs objetivo. Elige el que más te conviene · STC 182/2021 + RDL 26/2021.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl ring-1 ring-slate-200 p-6 sm:p-8" x-data="plusCalc()">
+
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Precio de compra (€) *</label>
+                    <input type="number" x-model.number="precioCompra" step="1000" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Precio de venta (€) *</label>
+                    <input type="number" x-model.number="precioVenta" step="1000" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Fecha de compra *</label>
+                    <input type="date" x-model="fechaCompra" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Fecha de venta *</label>
+                    <input type="date" x-model="fechaVenta" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valor catastral del suelo (€) *</label>
+                    <input type="number" x-model.number="valorCatastralSuelo" step="100" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg">
+                    <p class="text-xs text-slate-500 mt-1">Lo encuentras en el último recibo del IBI</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo impositivo municipal (%)</label>
+                    <input type="number" x-model.number="tipoMunicipal" step="0.1" placeholder="30 (máximo)" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg">
+                    <p class="text-xs text-slate-500 mt-1">Tu ayuntamiento lo fija (máx 30%)</p>
+                </div>
+            </div>
+
+            <button @click="calc()" :disabled="!valid" :class="!valid ? 'opacity-50 cursor-not-allowed' : ''"
+                    class="w-full px-5 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold">
+                Calcular plusvalía →
+            </button>
+        </div>
+
+        <!-- Resultado -->
+        <div x-show="result?.ok" x-cloak class="mt-8 pt-8 border-t border-slate-200">
+
+            <!-- No procede -->
+            <div x-show="result?.noProcede" class="rounded-xl bg-emerald-50 border border-emerald-200 p-5 text-center">
+                <div class="text-3xl mb-2"></div>
+                <h2 class="text-xl font-bold text-emerald-900 mb-2">No procede el impuesto</h2>
+                <p class="text-sm text-emerald-800" x-text="result?.msg">—</p>
+            </div>
+
+            <!-- Procede -->
+            <div x-show="!result?.noProcede">
+                <h2 class="text-xl font-bold mb-4 text-center"> Comparativa de métodos</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                    <div class="rounded-xl p-5 ring-1" :class="result?.metodoElegido === 'REAL' ? 'bg-emerald-50 ring-emerald-300' : 'bg-slate-50 ring-slate-200'">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Método REAL</div>
+                        <div class="text-2xl font-bold font-mono mt-1" x-text="fmt(result?.cuotaReal)"></div>
+                        <div class="text-xs text-slate-500 mt-2">
+                            Plusvalía: <span x-text="fmt(result?.plusvaliaReal)"></span><br>
+                            Base imp.: <span x-text="fmt(result?.baseImpReal)"></span>
+                        </div>
+                        <div x-show="result?.metodoElegido === 'REAL'" class="mt-3 text-xs font-bold text-emerald-700"> MÁS BAJO</div>
+                    </div>
+
+                    <div class="rounded-xl p-5 ring-1" :class="result?.metodoElegido === 'OBJETIVO' ? 'bg-emerald-50 ring-emerald-300' : 'bg-slate-50 ring-slate-200'">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Método OBJETIVO</div>
+                        <div class="text-2xl font-bold font-mono mt-1" x-text="fmt(result?.cuotaObjetivo)"></div>
+                        <div class="text-xs text-slate-500 mt-2">
+                            Coef. <span x-text="(result?.coefObjetivo * 100).toFixed(0) + '%'"></span> · <span x-text="result?.years"></span> años<br>
+                            Base imp.: <span x-text="fmt(result?.baseImpObjetivo)"></span>
+                        </div>
+                        <div x-show="result?.metodoElegido === 'OBJETIVO'" class="mt-3 text-xs font-bold text-emerald-700"> MÁS BAJO</div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-blue-700 text-white p-5 text-center">
+                    <div class="text-blue-200 text-xs uppercase tracking-wider mb-1">Cuota a pagar (elige el más bajo)</div>
+                    <div class="text-3xl font-bold tracking-tight" x-text="fmt(result?.cuotaFinal)"></div>
+                    <div class="text-blue-200 text-sm mt-1">Método óptimo: <strong x-text="result?.metodoElegido"></strong></div>
+                </div>
+
+                <div class="mt-4 p-3 rounded-lg bg-emerald-50 text-xs text-emerald-900">
+                     <strong>Ahorro respecto al otro método:</strong> <span x-text="fmt(result?.ahorro)"></span>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="result?.error" x-cloak class="mt-4 p-3 rounded-lg bg-red-50 text-red-800 text-sm" x-text="result?.error"></div>
+
+    </div>
+
+    <div class="mt-8 text-center text-xs text-slate-500">
+         Cálculo orientativo. La normativa varía por municipio. Consulta con tu asesor fiscal antes de presentar la autoliquidación.
+    </div>
+</main>
+
+<script>
+function plusCalc() {
+    return {
+        precioCompra: null, precioVenta: null, fechaCompra: '', fechaVenta: '', valorCatastralSuelo: null, tipoMunicipal: 30, result: null,
+        get valid() { return this.precioCompra && this.precioVenta && this.fechaCompra && this.fechaVenta && this.valorCatastralSuelo; },
+        async calc() {
+            const r = await fetch('/calculadora-plusvalia', {
+                method: 'POST', headers: { 'Content-Type':'application/json' },
+                body: JSON.stringify({ precioCompra: this.precioCompra, precioVenta: this.precioVenta, fechaCompra: this.fechaCompra, fechaVenta: this.fechaVenta, valorCatastralSuelo: this.valorCatastralSuelo, tipoMunicipal: this.tipoMunicipal })
+            });
+            this.result = await r.json();
+        },
+        fmt(n) { return (n||0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+    };
+}
+</script>
+</body>
+</html>

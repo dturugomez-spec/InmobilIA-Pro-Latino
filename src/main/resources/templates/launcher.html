@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Launcher</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header categoría -->
+    <div class="rounded-xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 mb-6 ring-1 ring-brand-800 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+        <div class="relative flex items-center gap-4 text-white">
+            <div class="h-12 w-12 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center text-2xl">
+                <span th:text="${cat.icon()}"></span>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold tracking-tight" th:text="${cat.name()}">Categoría</h2>
+                <p class="text-sm text-white/70">Todas las herramientas disponibles en este módulo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de herramientas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <a th:each="tool : ${cat.tools()}"
+           th:href="@{${toolRoutes.route(tool.name())}}"
+           class="group p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-2.5">
+                <div class="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center text-xl">
+                    <span th:text="${tool.icon()}"></span>
+                </div>
+                <i data-lucide="arrow-up-right" class="h-4 w-4 text-slate-400 group-hover:text-brand-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+            </div>
+            <h3 class="font-semibold text-sm mb-1" th:text="${tool.name()}">Herramienta</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 leading-snug" th:text="${tool.desc()}">Descripción</p>
+        </a>
+    </div>
+
+    <div th:if="${cat.tools().isEmpty()}" class="text-center py-16">
+        <div class="inline-flex h-14 w-14 rounded-2xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3">
+            <i data-lucide="folder-open" class="h-6 w-6 text-slate-400"></i>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-neutral-400">Sin herramientas disponibles en esta categoría todavía.</p>
+    </div>
+
+</div>
+</body>
+</html>

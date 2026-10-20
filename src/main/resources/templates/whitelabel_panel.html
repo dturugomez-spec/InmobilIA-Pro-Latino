@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Whitelabel</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="palette" class="h-6 w-6"></i> Whitelabel</h2>
+    <p class="text-sm text-white/70 mt-1">Personaliza marca, dominio y colores para tu agencia.</p>
+</div>
+<form method="post" action="/whitelabel/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4 max-w-3xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div><label class="block text-xs font-medium mb-1">Nombre marca</label><input type="text" name="nombre_marca" th:value="${cfg.get('nombre_marca')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Subdominio</label><input type="text" name="subdominio" th:value="${cfg.get('subdominio')}" placeholder="miagencia" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">URL Logo</label><input type="url" name="logo_url" th:value="${cfg.get('logo_url')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">URL Favicon</label><input type="url" name="favicon_url" th:value="${cfg.get('favicon_url')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Color primario</label><input type="color" name="color_primario" th:value="${cfg.get('color_primario') ?: '#3b82f6'}" class="w-full h-10 border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Color secundario</label><input type="color" name="color_secundario" th:value="${cfg.get('color_secundario') ?: '#1e40af'}" class="w-full h-10 border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Color acento</label><input type="color" name="color_acento" th:value="${cfg.get('color_acento') ?: '#10b981'}" class="w-full h-10 border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Email remitente</label><input type="email" name="email_remitente" th:value="${cfg.get('email_remitente')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Soporte teléfono</label><input type="tel" name="soporte_telefono" th:value="${cfg.get('soporte_telefono')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+        <div><label class="block text-xs font-medium mb-1">Sitio web</label><input type="url" name="sitio_web" th:value="${cfg.get('sitio_web')}" class="w-full px-3 py-2 text-sm border rounded"></div>
+    </div>
+    <div>
+        <label class="block text-xs font-medium mb-1">CSS personalizado</label>
+        <textarea name="css_personalizado" rows="6" th:text="${cfg.get('css_personalizado')}" class="w-full px-3 py-2 text-xs font-mono border rounded"></textarea>
+    </div>
+    <button class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium"> Guardar</button>
+</form>
+</div></body></html>

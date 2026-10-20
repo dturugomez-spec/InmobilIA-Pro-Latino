@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Automatizaciones</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-yellow-500 to-orange-700 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="zap" class="h-6 w-6"></i> Automatizaciones
+                </h2>
+                <p class="text-sm text-white/90 mt-1">Cuando ocurre un evento → ejecuta acciones automáticamente. Ahorra horas cada día.</p>
+            </div>
+            <a href="/workflows/nuevo" class="px-4 py-2 rounded-lg bg-white text-orange-900 hover:bg-white/90 text-sm font-medium">
+                <i data-lucide="plus" class="h-4 w-4 inline-block"></i> Nueva automatización
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Total workflows</p>
+            <p class="text-xl font-bold mt-1" th:text="${workflows.size()}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Activos</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${activos}">0</p>
+        </div>
+        <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+            <p class="text-[10px] uppercase text-blue-700">Ejecuciones</p>
+            <p class="text-xl font-bold mt-1 text-blue-700" th:text="${totalEjecuciones}">0</p>
+        </div>
+        <div class="rounded-xl bg-fuchsia-50 ring-1 ring-fuchsia-200 p-4">
+            <p class="text-[10px] uppercase text-fuchsia-700">Tasa éxito</p>
+            <p class="text-xl font-bold mt-1 text-fuchsia-700" th:text="${#numbers.formatDecimal(tasaExito, 1, 1)} + '%'">0%</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Workflows -->
+        <div class="lg:col-span-2 space-y-3">
+            <div th:each="w : ${workflows}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 hover:shadow transition">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full" th:classappend="${w.get('activo')} ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                            <span th:text="${w.get('nombre')}">—</span>
+                        </p>
+                        <p class="text-xs text-slate-500 mt-1" th:text="${w.get('descripcion')}">—</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button th:data-id="${w.get('id')}" onclick="toggleWf(this.dataset.id)" class="px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200" th:title="${#bools.isTrue(w.get('activo')) ? 'Desactivar' : 'Activar'}">
+                            <span th:text="${#bools.isTrue(w.get('activo')) ? '⏸' : '▶'}">—</span>
+                        </button>
+                        <a th:href="@{|/workflows/${w.get('id')}/editar|}" class="px-2 py-1 text-xs rounded bg-slate-100 hover:bg-slate-200"></a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                         <span th:text="${#strings.replace(w.get('trigger_evento'), '_', ' ')}">—</span>
+                    </span>
+                    <span class="text-slate-500" th:text="${(w.get('veces_ejecutado') ?: 0) + ' ejecuciones'}">—</span>
+                    <span class="text-slate-400" th:if="${w.get('ultima_ejecucion')}" th:text="'Última: ' + ${#strings.substring(w.get('ultima_ejecucion'), 0, 16)}">—</span>
+                </div>
+            </div>
+
+            <div th:if="${workflows.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 py-12 text-center">
+                <i data-lucide="zap" class="h-10 w-10 mx-auto text-slate-300"></i>
+                <p class="text-slate-500 text-sm mt-3">Sin automatizaciones aún.</p>
+                <a href="/workflows/nuevo" class="inline-block mt-3 text-blue-700 text-sm hover:underline">Crear la primera →</a>
+            </div>
+        </div>
+
+        <!-- Últimas ejecuciones -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                <i data-lucide="activity" class="h-4 w-4"></i> Últimas ejecuciones
+            </h3>
+            <ul class="space-y-2 text-xs max-h-96 overflow-y-auto">
+                <li th:each="e : ${ejecuciones}" class="border-l-2 pl-2 py-1"
+                    th:classappend="${e.get('estado') == 'exitoso' ? 'border-emerald-500' : (e.get('estado') == 'error' ? 'border-red-500' : 'border-amber-500')}">
+                    <p class="font-medium truncate" th:text="${e.get('trigger_evento')}">—</p>
+                    <p class="text-[10px] text-slate-500" th:text="${#strings.substring(e.get('iniciado_at'), 0, 16) + ' · ' + (e.get('duracion_ms') ?: 0) + 'ms'}">—</p>
+                    <p class="text-[10px]" th:if="${e.get('error_mensaje')}" th:text="${e.get('error_mensaje')}" style="color:red"></p>
+                </li>
+                <li th:if="${ejecuciones.isEmpty()}" class="text-slate-400 italic">Sin ejecuciones aún.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function toggleWf(id) {
+            const res = await fetch('/workflows/' + id + '/toggle', { method: 'POST' });
+            const data = await res.json();
+            if (data.ok) location.reload();
+        }
+    </script>
+
+</div>
+</body>
+</html>

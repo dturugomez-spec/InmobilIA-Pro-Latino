@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="InmobilIA Pro">
+  <rect width="64" height="64" rx="15" fill="#0f172a"/>
+  <path d="M13 32 L32 16 L51 32" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="29" r="4.6" fill="#3b82f6"/>
+  <rect x="28" y="36" width="8" height="17" rx="4" fill="#ffffff"/>
+  <text x="80" y="43" font-family="'Plus Jakarta Sans','Segoe UI',Arial,sans-serif" font-size="30" font-weight="800" letter-spacing="-0.6" fill="#0f172a">Inmobil<tspan fill="#2563eb">IA</tspan><tspan fill="#64748b" font-weight="600"> Pro</tspan></text>
+</svg>

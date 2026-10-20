@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Pipelines</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-teal-700 to-cyan-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="layout-grid" class="h-6 w-6"></i> Pipelines Kanban
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Tableros visuales para gestionar el embudo de ventas, captación y ofertas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a th:each="p : ${pipelines}" th:href="@{|/pipelines/${p.get('id')}|}"
+           class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 hover:shadow-lg transition group">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                    <p class="font-semibold text-base group-hover:text-teal-700 transition" th:text="${p.get('nombre')}">—</p>
+                    <p class="text-xs text-slate-500 mt-1" th:text="${p.get('descripcion')}">—</p>
+                </div>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800 capitalize" th:text="${p.get('tipo')}">—</span>
+            </div>
+
+            <!-- Mini preview columnas -->
+            <div class="flex gap-1 mb-3">
+                <div th:each="c : ${p.get('columnas')}"
+                     class="flex-1 h-1.5 rounded-full"
+                     th:style="|background-color: ${c.get('color') ?: '#94a3b8'}|"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500" th:text="${p.get('total_cards')} + ' tarjetas'">0</span>
+                <span class="font-mono font-bold text-emerald-700" th:text="${#numbers.formatDecimal(p.get('valor_total') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">0 €</span>
+            </div>
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

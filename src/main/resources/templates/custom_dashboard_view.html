@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title th:text="${dashboard.get('nombre')}">Dashboard</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="flex items-center justify-between mb-5">
+        <div>
+            <a href="/dashboards" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-2">
+                <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Mis dashboards
+            </a>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <span th:text="${dashboard.get('icono')}"></span>
+                <span th:text="${dashboard.get('nombre')}">—</span>
+            </h2>
+            <p class="text-xs text-slate-500" th:text="${dashboard.get('descripcion')}">—</p>
+        </div>
+        <a th:href="@{|/dashboards/${dashboard.get('id')}/editar|}" class="px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-xs"> Editar</a>
+    </div>
+
+    <!-- Grid widgets -->
+    <div class="grid grid-cols-12 gap-3">
+        <div th:each="w : ${dashboard.get('widgets')}"
+             class="rounded-xl ring-1 ring-slate-200 dark:ring-neutral-800 p-5"
+             th:classappend="|col-span-${w.get('w') ?: 3}|"
+             th:style="|background: linear-gradient(135deg, ${w.get('color')}10, ${w.get('color')}30); border-left: 4px solid ${w.get('color')}|">
+            <p class="text-xs uppercase tracking-wider text-slate-600 mb-1" th:text="${w.get('titulo')}">—</p>
+            <p class="text-3xl font-bold" th:style="|color: ${w.get('color')}|" th:text="${datos.get(w.get('campo')) ?: 0}">0</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

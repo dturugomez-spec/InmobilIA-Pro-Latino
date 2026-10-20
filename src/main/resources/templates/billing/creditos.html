@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Créditos de IA</title></head>
+<body>
+<div layout:fragment="content">
+
+    <section class="form-card">
+        <h3>⚡ Créditos de IA</h3>
+        <p>Saldo actual: <strong th:text="${saldo}">0</strong> créditos.</p>
+        <p style="color:#64748b;font-size:14px">
+            Cada acción de IA (descripciones, lead scoring, transcripciones, staging virtual…) consume créditos.
+            Recarga cuando quieras — se suman al instante tras el pago.
+        </p>
+        <p th:unless="${stripeConfigured}" class="info-banner">
+            Los packs estarán disponibles en cuanto se configure el pago (Stripe).
+        </p>
+    </section>
+
+    <div class="form-grid cols-2">
+        <section class="form-card" th:each="p : ${packs}" style="text-align:center">
+            <h3 th:text="|${#numbers.formatInteger(p.credits(), 0, 'POINT')} créditos|">créditos</h3>
+            <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|≈ ${p.eurHint()} €|">€</p>
+            <form method="post" th:action="@{/billing/credits/{k}(k=${p.key()})}">
+                <button class="btn btn-primary" th:disabled="${!stripeConfigured or !p.configured()}">Comprar</button>
+            </form>
+            <p th:if="${stripeConfigured and !p.configured()}" style="color:#b45309;font-size:12px;margin-top:8px">
+                Falta configurar el precio de este pack en Stripe.
+            </p>
+        </section>
+    </div>
+
+</div>
+</body>
+</html>

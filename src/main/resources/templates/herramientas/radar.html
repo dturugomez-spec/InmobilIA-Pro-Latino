@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Radar de mercado</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ═══ Hero ═══ -->
+    <div class="info-banner">
+        <span class="info-banner-icon"></span>
+        <div class="info-banner-txt">
+            <b>Radar de Mercado en tiempo real</b>
+            <span>Noticias de alquiler y precios · Boletín Oficial · Índices económicos · Actualización cada 30 min</span>
+        </div>
+    </div>
+
+    <!-- ═══ Indicadores clave ═══ -->
+    <div class="kpi-grid" th:if="${euribor != null}">
+        <div class="kpi-card live-card">
+            <div class="kpi-label">Euribor 12M</div>
+            <div class="kpi-value" th:text="${euribor.valor() != null ? #numbers.formatDecimal(euribor.valor(),1,3) + '%' : '—'}">—</div>
+            <div class="kpi-hint"><span class="live-dot"></span> BCE · <span th:text="${euribor.fecha() ?: '—'}">—</span></div>
+        </div>
+        <div class="kpi-card" th:if="${euriborDelta != null}"
+             th:classappend="${euriborDelta > 0} ? 'tone-err' : 'tone-ok'">
+            <div class="kpi-label">Variacion 12M</div>
+            <div class="kpi-value" th:text="${(euriborDelta > 0 ? '+' : '') + #numbers.formatDecimal(euriborDelta,1,3) + ' pp'}">—</div>
+            <div class="kpi-hint" th:text="${euriborDelta > 0} ? 'Presion al alza' : 'Relajacion monetaria'">—</div>
+        </div>
+        <div class="kpi-card" th:if="${tedr != null and tedr.tedrNuevo() != null}">
+            <div class="kpi-label">TEDR hipoteca</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(tedr.tedrNuevo(),1,2) + '%'}">—</div>
+            <div class="kpi-hint">Banco de Espana</div>
+        </div>
+        <div class="kpi-card" th:if="${ipvYoY != null}"
+             th:classappend="${ipvYoY > 0} ? 'tone-ok' : 'tone-err'">
+            <div class="kpi-label">IPV interanual</div>
+            <div class="kpi-value" th:text="${(ipvYoY > 0 ? '+' : '') + #numbers.formatDecimal(ipvYoY,1,2) + '%'}">—</div>
+            <div class="kpi-hint">INE · Indice Precio Vivienda</div>
+        </div>
+    </div>
+
+    <!-- ═══ NOTICIAS DE MERCADO (alquiler, precios) ═══ -->
+    <section class="form-card">
+        <div class="news-head">
+            <h3 style="margin:0"> Últimas noticias de alquiler y precios</h3>
+            <span class="news-sub">Fuentes: El Confidencial · Expansión · Europa Press · El País · El Economista · Idealista</span>
+        </div>
+
+        <div class="news-grid" th:if="${marketNews != null and !marketNews.isEmpty()}">
+            <a th:each="n : ${marketNews}"
+               th:href="${n.url()}" target="_blank" rel="noopener"
+               class="news-card">
+                <div class="news-card-head">
+                    <span class="news-source">
+                        <span th:text="${n.sourceIcon()}"></span>
+                        <span th:text="${n.source()}">Fuente</span>
+                    </span>
+                    <span class="news-date mono" th:text="${n.pubDate()}">—</span>
+                </div>
+                <div class="news-title" th:text="${n.title()}">Titular</div>
+                <div class="news-summary" th:text="${n.summary()}">Resumen</div>
+                <div class="news-foot">
+                    <span class="news-cat" th:text="${n.category()}">Cat</span>
+                    <span class="news-go">Leer →</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="empty empty-ind" th:if="${marketNews == null or marketNews.isEmpty()}">
+            <div class="empty-icon"></div>
+            <div class="empty-title">Sin señal de los feeds RSS</div>
+            <div class="empty-sub">Las fuentes pueden estar temporalmente no disponibles. Reintenta en unos minutos.</div>
+        </div>
+    </section>
+
+    <!-- ═══ REGULATORIO BOE ═══ -->
+    <section class="form-card">
+        <div class="news-head">
+            <h3 style="margin:0"> Radar regulatorio · BOE</h3>
+            <span class="news-sub">Publicaciones oficiales filtradas: vivienda, alquiler, hipoteca, urbanismo</span>
+        </div>
+
+        <div class="regulatory-list" th:if="${regulatoryNews != null and !regulatoryNews.isEmpty()}">
+            <a th:each="r : ${regulatoryNews}"
+               th:href="${r.url()}" target="_blank" rel="noopener"
+               class="regulatory-item">
+                <span class="regulatory-badge" th:text="${r.sourceIcon() + ' ' + r.source()}"> BOE</span>
+                <div class="regulatory-body">
+                    <div class="regulatory-title" th:text="${r.title()}">Titular</div>
+                    <div class="regulatory-summary" th:text="${r.summary()}">Detalle</div>
+                </div>
+                <span class="regulatory-date mono" th:text="${r.pubDate()}">—</span>
+            </a>
+        </div>
+
+        <div class="empty empty-ind" th:if="${regulatoryNews == null or regulatoryNews.isEmpty()}">
+            <div class="empty-icon"></div>
+            <div class="empty-title">Sin publicaciones recientes filtradas</div>
+            <div class="empty-sub">No hay normativa reciente específica de vivienda en el feed BOE de hoy.</div>
+        </div>
+
+        <div class="verdict-cta" style="margin-top:1rem">
+            <a href="/herramientas/datos-oficiales#boe" class="btn btn-primary"> Búsqueda avanzada BOE</a>
+            <a href="https://subastas.boe.es/" target="_blank" rel="noopener" class="btn btn-ghost"> Subastas BOE</a>
+        </div>
+    </section>
+
+    <!-- ═══ Enlaces oficiales ═══ -->
+    <div th:replace="~{fragments/official-links :: panel('mercado,ipv,alquiler,zona,europa,boe,tipos,internacional')}"></div>
+
+</div>
+</body>
+</html>

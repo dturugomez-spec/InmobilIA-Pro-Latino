@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Chat del equipo</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="flex gap-3 h-[calc(100vh-180px)]">
+
+        <!-- Sidebar canales -->
+        <aside class="w-64 flex-shrink-0 rounded-xl bg-slate-900 text-white overflow-y-auto">
+            <div class="p-4 border-b border-slate-700">
+                <h2 class="font-bold text-base flex items-center gap-2">
+                    <i data-lucide="messages-square" class="h-5 w-5"></i> Chat equipo
+                </h2>
+            </div>
+
+            <div class="p-3">
+                <p class="text-[10px] uppercase text-slate-400 mb-2 px-2">Canales</p>
+                <ul class="space-y-0.5">
+                    <li th:each="c : ${canales}" th:if="${c.get('tipo') == 'publico' or c.get('tipo') == 'privado'}">
+                        <a th:href="@{|/equipo-chat?canal=${c.get('id')}|}"
+                           class="flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-slate-800 transition"
+                           th:classappend="${canalActivo != null and canalActivo.get('id') == c.get('id')} ? 'bg-blue-700 hover:bg-blue-700' : ''">
+                            <span class="flex items-center gap-2 truncate">
+                                <span class="text-slate-400" th:text="${c.get('icono')}">#</span>
+                                <span class="truncate" th:text="${c.get('nombre')}">—</span>
+                            </span>
+                            <span th:if="${noLeidos.get(c.get('id')) != null and noLeidos.get(c.get('id')) > 0}"
+                                  class="ml-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500 text-white"
+                                  th:text="${noLeidos.get(c.get('id'))}">0</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <button onclick="document.getElementById('newCanal').classList.toggle('hidden')" class="mt-3 w-full text-left px-2 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition">
+                    + Crear canal
+                </button>
+
+                <form id="newCanal" method="post" action="/equipo-chat/canal/crear" class="hidden mt-2 space-y-1 p-2 bg-slate-800 rounded-md">
+                    <input type="text" name="nombre" placeholder="nombre-canal" required class="w-full px-2 py-1 text-xs rounded bg-slate-700 text-white border border-slate-600">
+                    <input type="text" name="descripcion" placeholder="Descripción" class="w-full px-2 py-1 text-xs rounded bg-slate-700 text-white border border-slate-600">
+                    <select name="tipo" class="w-full px-2 py-1 text-xs rounded bg-slate-700 text-white border border-slate-600">
+                        <option value="publico">Público</option>
+                        <option value="privado">Privado </option>
+                    </select>
+                    <button class="w-full px-2 py-1 text-xs rounded bg-blue-600 hover:bg-blue-700 text-white">Crear</button>
+                </form>
+            </div>
+
+            <!-- Miembros (DMs) -->
+            <div class="p-3 border-t border-slate-700">
+                <p class="text-[10px] uppercase text-slate-400 mb-2 px-2">Miembros</p>
+                <ul class="space-y-0.5">
+                    <li th:each="m : ${miembros}" th:if="${m.get('id') != realUid}">
+                        <a th:href="@{|/equipo-chat?dm=${m.get('id')}|}" class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-slate-800 transition">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="truncate" th:text="${m.get('name')}">—</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Área de chat -->
+        <main class="flex-1 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 flex flex-col">
+
+            <div th:if="${canalActivo != null}" class="flex flex-col h-full">
+                <!-- Header canal -->
+                <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-base flex items-center gap-2">
+                            <span class="text-slate-400" th:text="${canalActivo.get('icono')}">#</span>
+                            <span th:text="${canalActivo.get('nombre')}">—</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5" th:text="${canalActivo.get('descripcion')}">—</p>
+                    </div>
+                </div>
+
+                <!-- Mensajes -->
+                <div id="mensajesContainer" class="flex-1 overflow-y-auto p-5 space-y-3">
+                    <div th:each="m : ${mensajes}" th:attr="data-id=${m.get('id')}" class="msg-row flex gap-3 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 py-1 rounded">
+                        <div class="w-9 h-9 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm"
+                             th:text="${m.get('autor_nombre') != null ? #strings.substring(m.get('autor_nombre'), 0, 1).toUpperCase() : '?'}">A</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-baseline gap-2">
+                                <p class="font-semibold text-sm" th:text="${m.get('autor_nombre') ?: 'Anónimo'}">—</p>
+                                <p class="text-[10px] text-slate-400" th:text="${#strings.substring(m.get('created_at'), 11, 16)}">—</p>
+                                <span th:if="${m.get('editado')}" class="text-[9px] text-slate-400 italic">(editado)</span>
+                            </div>
+                            <div th:if="${m.get('contenido_html') != null}" class="text-sm text-slate-700 dark:text-slate-200 mt-0.5" th:utext="${m.get('contenido_html')}">—</div>
+                            <div th:unless="${m.get('contenido_html') != null}" class="text-sm text-slate-700 dark:text-slate-200 mt-0.5 whitespace-pre-line" th:text="${m.get('contenido')}">—</div>
+
+                            <!-- Reacciones -->
+                            <div th:if="${m.get('reacciones') != null and !m.get('reacciones').isEmpty()}" class="flex gap-1 mt-1">
+                                <button th:each="r : ${m.get('reacciones')}"
+                                        th:data-id="${m.get('id')}" th:data-r="${r.key}"
+                                        onclick="reaccionar(this.dataset.id, this.dataset.r)"
+                                        class="text-xs px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">
+                                    <span th:text="${r.key}">—</span>
+                                    <span class="font-bold" th:text="${r.value.size()}">0</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex gap-1 transition">
+                            <button th:data-id="${m.get('id')}" onclick="reaccionar(this.dataset.id, '')" class="text-xs px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700"></button>
+                            <button th:data-id="${m.get('id')}" onclick="reaccionar(this.dataset.id, '')" class="text-xs px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700"></button>
+                            <button th:data-id="${m.get('id')}" onclick="reaccionar(this.dataset.id, '')" class="text-xs px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700"></button>
+                            <button th:if="${m.get('autor_id') == realUid}" th:data-id="${m.get('id')}" onclick="eliminar(this.dataset.id)" class="text-xs px-1.5 py-0.5 rounded hover:bg-red-100 text-red-600"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="p-3 border-t border-slate-200 dark:border-neutral-800">
+                    <form onsubmit="enviar(event)" class="flex gap-2 items-end">
+                        <textarea id="msgInput" rows="1" placeholder="Escribe un mensaje... (Shift+Enter = nueva línea)"
+                            onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();this.form.requestSubmit();}"
+                            class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 resize-none"></textarea>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium">
+                            <i data-lucide="send" class="h-4 w-4"></i>
+                        </button>
+                    </form>
+                    <p class="text-[10px] text-slate-400 mt-1 px-1"> Usa <code>@nombre</code> para mencionar, <code>**negrita**</code>, <code>`código`</code></p>
+                </div>
+            </div>
+
+            <div th:if="${canalActivo == null}" class="flex-1 flex items-center justify-center text-slate-400">
+                <p>Selecciona un canal para empezar a chatear</p>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        const canalId = /*[[${canalActivo != null ? canalActivo.get('id') : null}]]*/ null;
+        let lastMsgId = /*[[${!mensajes.isEmpty() ? mensajes.get(mensajes.size() - 1).get('id') : 0}]]*/ 0;
+        const realUid = /*[[${realUid}]]*/ '';
+
+        async function enviar(e) {
+            e.preventDefault();
+            const input = document.getElementById('msgInput');
+            const txt = input.value.trim();
+            if (!txt || !canalId) return;
+            input.value = '';
+            const res = await fetch('/equipo-chat/mensaje', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({canal_id: canalId, contenido: txt})
+            });
+            const data = await res.json();
+            if (data.ok) poll();
+        }
+
+        async function poll() {
+            if (!canalId) return;
+            try {
+                const res = await fetch('/equipo-chat/api/' + canalId + '/nuevos?desde=' + lastMsgId);
+                const nuevos = await res.json();
+                const cont = document.getElementById('mensajesContainer');
+                for (const m of nuevos) {
+                    if (m.id <= lastMsgId) continue;
+                    const div = document.createElement('div');
+                    div.className = 'msg-row flex gap-3 group hover:bg-slate-50 -mx-2 px-2 py-1 rounded';
+                    div.dataset.id = m.id;
+                    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                    const initial = esc((m.autor_nombre || '?').charAt(0).toUpperCase());
+                    const hora = esc((m.created_at || '').substring(11, 16));
+                    // contenido_html ya viene escapado del servidor; el resto se escapa aquí
+                    div.innerHTML = `
+                        <div class="w-9 h-9 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">${initial}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-baseline gap-2">
+                                <p class="font-semibold text-sm">${esc(m.autor_nombre || 'Anónimo')}</p>
+                                <p class="text-[10px] text-slate-400">${hora}</p>
+                            </div>
+                            <div class="text-sm text-slate-700 mt-0.5">${m.contenido_html || esc(m.contenido)}</div>
+                        </div>`;
+                    cont.appendChild(div);
+                    lastMsgId = m.id;
+                }
+                if (nuevos.length > 0) cont.scrollTop = cont.scrollHeight;
+            } catch(e) {}
+        }
+
+        async function reaccionar(id, emoji) {
+            await fetch('/equipo-chat/mensaje/' + id + '/reaccionar', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({emoji})
+            });
+            location.reload();
+        }
+
+        async function eliminar(id) {
+            if (!confirm('¿Eliminar mensaje?')) return;
+            await fetch('/equipo-chat/mensaje/' + id + '/eliminar', { method: 'POST' });
+            document.querySelector(`[data-id="${id}"]`)?.remove();
+        }
+
+        // Polling cada 3 segundos
+        if (canalId) {
+            setInterval(poll, 3000);
+            // Scroll inicial al final
+            window.addEventListener('load', () => {
+                const cont = document.getElementById('mensajesContainer');
+                if (cont) cont.scrollTop = cont.scrollHeight;
+            });
+        }
+    </script>
+
+</div>
+</body>
+</html>

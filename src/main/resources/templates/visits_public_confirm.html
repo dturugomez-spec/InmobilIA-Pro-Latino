@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de visita - InmobilIA Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div th:if="${yaConfirmada}" class="text-blue-600">
+            <div class="text-6xl mb-4">ℹ</div>
+            <h1 class="text-2xl font-bold mb-2">Visita ya gestionada</h1>
+            <p class="text-slate-600">Esta visita ya fue confirmada previamente o ya está realizada.</p>
+        </div>
+
+        <div th:unless="${yaConfirmada}" class="text-emerald-600">
+            <div class="text-6xl mb-4"></div>
+            <h1 class="text-2xl font-bold mb-3 text-slate-900">¡Visita confirmada!</h1>
+            <p class="text-slate-600 mb-6">Hola <strong th:text="${visita.get('visitante_nombre')}">—</strong>, hemos registrado tu confirmación.</p>
+
+            <div class="bg-slate-50 rounded-xl p-4 text-left">
+                <p class="text-xs text-slate-500 uppercase tracking-wider mb-2">Detalles de tu visita</p>
+                <p class="text-sm font-semibold"> <span th:text="${#strings.substring(visita.get('fecha_inicio'), 0, 16)}">—</span></p>
+                <p class="text-sm mt-1">⏱ <span th:text="${visita.get('duracion_min')} + ' minutos'">—</span></p>
+                <p class="text-sm mt-1 capitalize"> <span th:text="${visita.get('tipo')}">—</span></p>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-6">
+                Recibirás recordatorios automáticos 24h y 1h antes. Si necesitas cancelar o cambiar la cita, responde al email que te enviamos.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

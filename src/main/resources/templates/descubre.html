@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra tu piso · Desliza y enamórate</title>
+    <meta name="description" content="Descubre pisos en venta deslizando. Gratis, sin registro. Marca los que te gustan y la agencia te contacta.">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        [x-cloak] { display: none !important; }
+        .card-anim { transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s; }
+        .swipe-right { transform: translateX(120%) rotate(12deg) !important; opacity: 0 !important; }
+        .swipe-left { transform: translateX(-120%) rotate(-12deg) !important; opacity: 0 !important; }
+        .swipe-up { transform: translateY(-120%) scale(.9) !important; opacity: 0 !important; }
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<header class="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-slate-200/60">
+    <div class="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 font-bold display">
+            <img src="/brand/logo-mark.svg" alt="" width="28" height="28" class="w-7 h-7 rounded-lg">
+            <span th:text="${agenciaNombre != null and !#strings.isEmpty(agenciaNombre)} ? ${agenciaNombre} : 'InmobilIA'">InmobilIA</span>
+        </a>
+        <span class="text-xs text-slate-400">Gratis · sin registro</span>
+    </div>
+</header>
+
+<div x-data="tinder()" x-init="cargar()" class="max-w-md mx-auto px-4 py-6">
+
+    <!-- Filtros -->
+    <div x-show="!started" x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6">
+        <div class="text-center mb-5">
+            <h1 class="display text-3xl font-extrabold">Encuentra tu piso </h1>
+            <p class="text-slate-600 mt-2 text-sm">Desliza, marca tus favoritos y deja que la agencia te contacte. Sin buscar entre mil anuncios.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+                <label class="block text-xs font-semibold mb-1">¿En qué zona?</label>
+                <input x-model="filtros.zona" placeholder="Ej. Madrid" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Presupuesto máx.</label>
+                <input x-model="filtros.presupuesto" type="number" placeholder="€" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Hab. mínimas</label>
+                <input x-model="filtros.habitaciones" type="number" placeholder="Ej. 2" class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+            </div>
+        </div>
+        <button @click="empezar()" class="w-full mt-5 px-6 py-3.5 rounded-xl brand-grad text-white font-bold text-lg">
+            Empezar a descubrir →
+        </button>
+        <p class="text-center text-xs text-slate-400 mt-3">100% gratis para ti. Solo verás pisos de agencias verificadas.</p>
+    </div>
+
+    <!-- Stack de cartas -->
+    <div x-show="started && !finished" x-cloak class="relative" style="height: 70vh; min-height: 460px;">
+        <template x-if="actual()">
+            <div :class="anim" class="card-anim absolute inset-0 rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-200 bg-slate-900">
+                <img x-show="actual().foto" :src="actual().foto" class="absolute inset-0 w-full h-full object-cover" alt="">
+                <div x-show="!actual().foto" class="absolute inset-0 flex items-center justify-center text-7xl bg-gradient-to-br from-slate-700 to-slate-900"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/20"></div>
+
+                <div class="absolute top-4 left-4 right-4 flex justify-between">
+                    <span class="px-3 py-1 rounded-full bg-white/90 text-slate-900 text-sm font-extrabold" x-text="fmt(actual().precio) + ' €'"></span>
+                    <span x-show="actual().agencia" class="px-3 py-1 rounded-full bg-black/40 text-white text-xs backdrop-blur" x-text="actual().agencia"></span>
+                </div>
+
+                <div class="absolute bottom-0 inset-x-0 p-6 text-white">
+                    <h2 class="display text-2xl font-extrabold" x-text="actual().titulo"></h2>
+                    <p class="text-white/80 text-sm mt-1">
+                        <span x-text="actual().ciudad"></span>
+                        <span x-show="actual().tipo" x-text="' · ' + actual().tipo"></span>
+                    </p>
+                    <div class="flex gap-4 mt-3 text-sm">
+                        <span x-show="actual().habitaciones" x-text="' ' + actual().habitaciones"></span>
+                        <span x-show="actual().banos" x-text="' ' + actual().banos"></span>
+                        <span x-show="actual().metros" x-text="' ' + actual().metros + ' m²'"></span>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Botones -->
+    <div x-show="started && !finished" x-cloak class="flex items-center justify-center gap-5 mt-5">
+        <button @click="swipe('pass')" class="h-16 w-16 rounded-full bg-white shadow-lg ring-1 ring-slate-200 text-2xl hover:scale-110 transition flex items-center justify-center" title="No me encaja"></button>
+        <button @click="swipe('superlike')" class="h-14 w-14 rounded-full bg-amber-400 shadow-lg text-2xl hover:scale-110 transition flex items-center justify-center" title="¡Me encanta!"></button>
+        <button @click="swipe('like')" class="h-16 w-16 rounded-full brand-grad shadow-lg text-2xl hover:scale-110 transition flex items-center justify-center" title="Me gusta"></button>
+    </div>
+    <p x-show="started && !finished" x-cloak class="text-center text-xs text-slate-400 mt-3">
+        <span x-text="favoritos.length"></span> favoritos · desliza con los botones
+    </p>
+
+    <!-- Final / favoritos + contacto -->
+    <div x-show="finished" x-cloak class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6">
+        <template x-if="!sent">
+            <div>
+                <div class="text-center mb-4">
+                    <div class="text-5xl mb-2"></div>
+                    <h2 class="display text-2xl font-bold" x-text="favoritos.length > 0 ? '¡Tienes ' + favoritos.length + ' favoritos!' : 'Eso es todo por ahora'"></h2>
+                    <p class="text-slate-600 text-sm mt-1" x-text="favoritos.length > 0 ? 'Déjanos tus datos y la agencia te contacta sobre ellos.' : 'Vuelve pronto: cada día se añaden nuevos pisos.'"></p>
+                </div>
+
+                <div x-show="favoritos.length > 0">
+                    <div class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                        <template x-for="f in favoritos" :key="f.id">
+                            <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-2">
+                                <img x-show="f.foto" :src="f.foto" class="h-10 w-12 object-cover rounded" alt="">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold truncate" x-text="f.titulo"></p>
+                                    <p class="text-xs text-slate-400" x-text="fmt(f.precio) + ' € · ' + (f.ciudad||'')"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <input x-model="contact.nombre" placeholder="Tu nombre *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+                        <input x-model="contact.telefono" type="tel" placeholder="Teléfono *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+                        <input x-model="contact.email" type="email" placeholder="Email *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+                    </div>
+                    <button @click="enviar()" :disabled="enviando || !contact.nombre || !contact.telefono || !contact.email"
+                            class="w-full mt-4 px-6 py-3.5 rounded-xl brand-grad text-white font-bold disabled:opacity-50">
+                        <span x-show="!enviando">Que me contacten </span><span x-show="enviando">⏳ Enviando...</span>
+                    </button>
+                </div>
+                <button @click="reiniciar()" class="w-full mt-3 text-sm text-slate-500 hover:text-slate-900">Seguir descubriendo</button>
+            </div>
+        </template>
+        <div x-show="sent" x-cloak class="text-center py-6">
+            <div class="text-5xl mb-3"></div>
+            <h2 class="display text-2xl font-bold">¡Hecho!</h2>
+            <p class="text-slate-600 mt-1">Las agencias de tus favoritos te contactarán muy pronto.</p>
+        </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">
+        ¿Eres una agencia? <a href="/#contacto" class="underline hover:text-slate-700">Publica tus pisos aquí</a> · Powered by InmobilIA Pro
+    </p>
+</div>
+
+<!-- Slug de la agencia (vacío = buscador global de la red) -->
+<script th:inline="javascript">window.IP_AGENCIA = /*[[${agenciaSlug}]]*/ '';</script>
+<script>
+function tinder() {
+    return {
+        filtros: { zona:'', presupuesto:'', habitaciones:'' },
+        agencia: (window.IP_AGENCIA || ''),
+        cards: [], idx: 0, favoritos: [], started: false, finished: false,
+        anim: '', enviando: false, sent: false,
+        contact: { nombre:'', telefono:'', email:'' },
+        device: (localStorage.getItem('ip_device') || (() => { const d = 'd'+Math.random().toString(36).slice(2); localStorage.setItem('ip_device', d); return d; })()),
+        seen: JSON.parse(localStorage.getItem('ip_seen') || '[]'),
+        fmt(v){ return new Intl.NumberFormat('es-ES').format(v||0); },
+        actual(){ return this.cards[this.idx] || null; },
+        async cargar() {
+            try {
+                const res = await fetch('/descubre/pool', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({filtros:this.filtros, excluir:this.seen, agencia:this.agencia})});
+                const d = await res.json();
+                this.cards = d.cards || []; this.idx = 0;
+            } catch(e){ this.cards = []; }
+        },
+        async empezar() { await this.cargar(); this.started = true; if (this.cards.length === 0) this.finished = true; },
+        swipe(accion) {
+            const c = this.actual(); if (!c) return;
+            this.anim = accion === 'like' ? 'swipe-right' : (accion === 'superlike' ? 'swipe-up' : 'swipe-left');
+            if (accion === 'like' || accion === 'superlike') { c._accion = accion; this.favoritos.push(c); }
+            this.seen.push(c.id); localStorage.setItem('ip_seen', JSON.stringify(this.seen.slice(-300)));
+            setTimeout(() => {
+                this.anim = ''; this.idx++;
+                if (this.idx >= this.cards.length) this.finished = true;
+            }, 300);
+        },
+        async enviar() {
+            this.enviando = true;
+            try {
+                for (const f of this.favoritos) {
+                    await fetch('/descubre/swipe', {method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({propiedad_id:f.id, accion:f._accion || 'like', device:this.device,
+                            nombre:this.contact.nombre, email:this.contact.email, telefono:this.contact.telefono, zona:this.filtros.zona})});
+                }
+                this.sent = true;
+            } catch(e){ alert('Error al enviar.'); }
+            this.enviando = false;
+        },
+        async reiniciar() {
+            // Mantener 'finished' en true mientras recargamos evita el parpadeo de la
+            // pantalla vacía con los botones de swipe sin tarjeta.
+            this.favoritos = [];
+            this.cards = []; this.idx = 0;
+            await this.cargar();
+            // Si no quedan pisos NUEVOS por ver, reiniciamos el historial para poder
+            // volver a recorrer los disponibles ("seguir descubriendo" de verdad).
+            if (this.cards.length === 0) {
+                this.seen = []; localStorage.setItem('ip_seen', '[]');
+                await this.cargar();
+            }
+            this.idx = 0;
+            this.started = true;
+            // Solo mostramos "Eso es todo" si REALMENTE no hay pisos publicados.
+            this.finished = this.cards.length === 0;
+        }
+    }
+}
+</script>
+</body>
+</html>

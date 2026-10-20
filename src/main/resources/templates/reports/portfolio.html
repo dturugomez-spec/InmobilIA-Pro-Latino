@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Rentabilidad cartera</title>
+    <style>@media print { .no-print { display: none !important; } body { background: white !important; } }</style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="no-print flex items-center gap-2 mb-4">
+        <a href="/reports" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i> Reportes
+        </a>
+        <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="printer" class="h-4 w-4"></i> Imprimir / PDF
+        </button>
+    </div>
+
+    <!-- KPIs agregados -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Valor cartera</div>
+            <div class="text-base font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalValor,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos totales</div>
+            <div class="text-base font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos totales</div>
+            <div class="text-base font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">NOI total</div>
+            <div class="text-base font-bold font-mono mt-1" th:classappend="${totalNOI >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(totalNOI,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-200 dark:ring-brand-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400">Cap rate medio</div>
+            <div class="text-base font-bold font-mono mt-1 text-brand-700 dark:text-brand-400" th:text="${#numbers.formatDecimal(capRateMedio,1,2)} + '%'">0%</div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="overflow-x-auto scroll-thin">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                    <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                        <th class="text-left font-semibold px-4 py-3">#</th>
+                        <th class="text-left font-semibold px-4 py-3">Propiedad</th>
+                        <th class="text-left font-semibold px-4 py-3">Ciudad</th>
+                        <th class="text-right font-semibold px-3 py-3">Compra</th>
+                        <th class="text-right font-semibold px-3 py-3">Valor</th>
+                        <th class="text-right font-semibold px-3 py-3">Plusvalía</th>
+                        <th class="text-right font-semibold px-3 py-3">Ingresos</th>
+                        <th class="text-right font-semibold px-3 py-3">Gastos</th>
+                        <th class="text-right font-semibold px-3 py-3">NOI</th>
+                        <th class="text-right font-semibold px-3 py-3">Cap rate</th>
+                        <th class="text-right font-semibold px-3 py-3">Yield</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="r,it : ${rows}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-4 py-3 text-center">
+                            <span th:if="${it.index == 0}" class="text-base"></span>
+                            <span th:if="${it.index == 1}" class="text-base"></span>
+                            <span th:if="${it.index == 2}" class="text-base"></span>
+                            <span th:if="${it.index >= 3}" th:text="${it.index + 1}" class="font-mono text-xs text-slate-400">4</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <a th:href="@{|/entity/propiedad/${r.get('id')}|}" class="font-medium hover:text-brand-700 dark:hover:text-brand-400">
+                                <span th:text="${r.get('name')}">propiedad</span>
+                            </a>
+                            <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('type')}">tipo</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-400" th:text="${r.get('city') ?: '—'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-xs text-slate-500" th:text="${#numbers.formatDecimal(r.get('compra'),0,'POINT',0,'COMMA') + ' €'}">— €</td>
+                        <td class="px-3 py-3 font-mono text-right font-semibold" th:text="${#numbers.formatDecimal(r.get('valor'),0,'POINT',0,'COMMA') + ' €'}">— €</td>
+                        <td class="px-3 py-3 font-mono text-right" th:classappend="${r.get('plusvalia') >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${(r.get('plusvalia') >= 0 ? '+' : '') + #numbers.formatDecimal(r.get('plusvalia'),1,2) + '%'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(r.get('ingresos'),0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-red-600 dark:text-red-400" th:text="${#numbers.formatDecimal(r.get('gastos'),0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right font-semibold" th:classappend="${r.get('noi') >= 0 ? 'text-emerald-600' : 'text-red-600'}" th:text="${#numbers.formatDecimal(r.get('noi'),0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold"
+                                  th:classappend="${r.get('capRate') >= 5 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : (r.get('capRate') >= 3 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400')}"
+                                  th:text="${#numbers.formatDecimal(r.get('capRate'),1,2) + '%'}">0%</span>
+                        </td>
+                        <td class="px-3 py-3 font-mono text-right text-slate-600 dark:text-slate-400" th:text="${#numbers.formatDecimal(r.get('yield'),1,2) + '%'}">0%</td>
+                    </tr>
+                    <tr th:if="${rows.isEmpty()}">
+                        <td colspan="11" class="py-12 text-center text-sm text-slate-500">Sin propiedades en la cartera.</td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold border-t-2 border-slate-200 dark:border-neutral-700" th:if="${!rows.isEmpty()}">
+                    <tr>
+                        <td colspan="3" class="px-4 py-3">Total cartera</td>
+                        <td colspan="2" class="px-3 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(totalValor,0,'POINT',0,'COMMA') + ' €'}">— €</td>
+                        <td></td>
+                        <td class="px-3 py-3 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right" th:classappend="${totalNOI >= 0 ? 'text-emerald-700' : 'text-red-700'}" th:text="${#numbers.formatDecimal(totalNOI,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-brand-700 dark:text-brand-400" th:text="${#numbers.formatDecimal(capRateMedio,1,2) + '%'}">—</td>
+                        <td class="px-3 py-3 font-mono text-right text-slate-600" th:text="${#numbers.formatDecimal(yieldMedio,1,2) + '%'}">—</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

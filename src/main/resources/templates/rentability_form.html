@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Análisis de rentabilidad</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-emerald-700 to-green-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="trending-up" class="h-6 w-6"></i> Analizador de rentabilidad
+        </h2>
+        <p class="text-sm text-white/80 mt-1">
+            Bruta · Neta · Cash-on-Cash · TIR · ROI · Cashflow a 10-30 años con hipoteca, IPC, vacancia y revalorización.
+        </p>
+    </div>
+
+    <div x-data="rentAnalyzer()" class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+
+        <!-- Formulario -->
+        <div class="xl:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4">
+
+            <details open class="group">
+                <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
+                    <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Inversión inicial
+                </summary>
+                <div class="mt-3 space-y-2 pl-5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Precio compra (€)</label>
+                            <input type="number" x-model.number="precioCompra" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Gastos compra (€)</label>
+                            <input type="number" x-model.number="gastosCompra" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Reformas (€)</label>
+                            <input type="number" x-model.number="reformas" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Mobiliario (€)</label>
+                            <input type="number" x-model.number="mobiliario" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="group">
+                <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
+                    <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Hipoteca
+                </summary>
+                <div class="mt-3 space-y-2 pl-5">
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" x-model="hipoteca" class="rounded"> Financiar con hipoteca
+                    </label>
+                    <div x-show="hipoteca" class="grid grid-cols-3 gap-2">
+                        <div><label class="block text-[10px] font-medium mb-1">Capital (€)</label>
+                            <input type="number" x-model.number="capitalHipoteca" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">TIN (%)</label>
+                            <input type="number" step="0.05" x-model.number="tipoInteres" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Plazo (años)</label>
+                            <input type="number" x-model.number="plazoAnos" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="group">
+                <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
+                    <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Ingresos
+                </summary>
+                <div class="mt-3 space-y-2 pl-5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-xs font-medium mb-1">Renta mensual (€)</label>
+                            <input type="number" x-model.number="rentaMensual" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-xs font-medium mb-1">Incremento anual (%)</label>
+                            <input type="number" step="0.1" x-model.number="incrementoRentaAnual" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="group">
+                <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
+                    <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Gastos anuales
+                </summary>
+                <div class="mt-3 space-y-2 pl-5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-[10px] font-medium mb-1">IBI/año (€)</label>
+                            <input type="number" x-model.number="ibi" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Comunidad/mes (€)</label>
+                            <input type="number" x-model.number="comunidad" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Seguro hogar/año</label>
+                            <input type="number" x-model.number="seguroHogar" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Seguro impago/año</label>
+                            <input type="number" x-model.number="seguroImpago" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Mantenimiento/año</label>
+                            <input type="number" x-model.number="mantenimiento" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Gestión (% renta)</label>
+                            <input type="number" step="0.5" x-model.number="gestion" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Otros gastos/año</label>
+                            <input type="number" x-model.number="otrosGastos" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-[10px] font-medium mb-1">Tasa vacancia (%)</label>
+                            <input type="number" step="0.5" x-model.number="tasaVacancia" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700"></div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="group">
+                <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
+                    <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Proyección
+                </summary>
+                <div class="mt-3 space-y-2 pl-5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-xs font-medium mb-1">Revalorización anual (%)</label>
+                            <input type="number" step="0.1" x-model.number="revalorizacionAnual" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                        <div><label class="block text-xs font-medium mb-1">Horizonte (años)</label>
+                            <input type="number" x-model.number="horizonteAnos" min="1" max="30" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></div>
+                    </div>
+                </div>
+            </details>
+
+            <button @click="calc()" :disabled="loading"
+                    class="w-full mt-3 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium disabled:opacity-60">
+                <i data-lucide="calculator" class="h-4 w-4"></i> <span x-text="loading ? 'Calculando...' : 'Analizar rentabilidad'"></span>
+            </button>
+        </div>
+
+        <!-- Resultados -->
+        <div class="xl:col-span-3 space-y-5" x-show="result.ok" x-transition>
+
+            <!-- Banner evaluación -->
+            <div class="rounded-xl p-4 border-2"
+                 :class="{ 'bg-emerald-50 border-emerald-300 text-emerald-900': result.evaluacionColor === 'emerald' || result.evaluacionColor === 'green',
+                           'bg-amber-50 border-amber-300 text-amber-900': result.evaluacionColor === 'amber' || result.evaluacionColor === 'orange',
+                           'bg-red-50 border-red-300 text-red-900': result.evaluacionColor === 'red' }">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider opacity-70">Veredicto</p>
+                        <p class="text-xl font-bold" x-text="result.evaluacion"></p>
+                    </div>
+                    <i data-lucide="award" class="h-10 w-10 opacity-30"></i>
+                </div>
+            </div>
+
+            <!-- KPIs principales -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+                    <p class="text-[10px] uppercase text-slate-500">Rent. bruta</p>
+                    <p class="text-xl font-bold" x-text="result.rentabilidadBruta + ' %'"></p>
+                </div>
+                <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+                    <p class="text-[10px] uppercase text-emerald-700">Rent. neta</p>
+                    <p class="text-xl font-bold text-emerald-700" x-text="result.rentabilidadNeta + ' %'"></p>
+                </div>
+                <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+                    <p class="text-[10px] uppercase text-blue-700">Cash-on-Cash</p>
+                    <p class="text-xl font-bold text-blue-700" x-text="result.cashOnCash + ' %'"></p>
+                </div>
+                <div class="rounded-xl bg-purple-50 ring-1 ring-purple-200 p-4">
+                    <p class="text-[10px] uppercase text-purple-700">TIR estimada</p>
+                    <p class="text-xl font-bold text-purple-700" x-text="result.tir + ' %'"></p>
+                </div>
+            </div>
+
+            <!-- Datos derivados -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3"> Resumen año 1</h3>
+                <dl class="grid grid-cols-2 gap-3 text-sm">
+                    <div><dt class="text-xs text-slate-500">Inversión total</dt><dd class="font-mono font-bold" x-text="fmt(result.inversionTotal) + ' €'"></dd></div>
+                    <div><dt class="text-xs text-slate-500">Capital propio aportado</dt><dd class="font-mono font-bold" x-text="fmt(result.inversionInicial) + ' €'"></dd></div>
+                    <div><dt class="text-xs text-slate-500">Cuota hipoteca/mes</dt><dd class="font-mono" x-text="fmt(result.cuotaMensualHipoteca) + ' €'"></dd></div>
+                    <div><dt class="text-xs text-slate-500">Ingresos netos/año</dt><dd class="font-mono text-emerald-700" x-text="fmt(result.ingresosNetos) + ' €'"></dd></div>
+                    <div><dt class="text-xs text-slate-500">Gastos/año</dt><dd class="font-mono text-amber-700" x-text="fmt(result.gastosAnuales) + ' €'"></dd></div>
+                    <div><dt class="text-xs text-slate-500">Flujo neto/año</dt><dd class="font-mono font-bold" :class="result.flujoNetoAnual >= 0 ? 'text-emerald-700' : 'text-red-700'" x-text="fmt(result.flujoNetoAnual) + ' €'"></dd></div>
+                </dl>
+            </div>
+
+            <!-- Gráfico patrimonio -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                    <i data-lucide="line-chart" class="h-4 w-4"></i> Evolución del patrimonio
+                </h3>
+                <canvas id="rentChart" height="120"></canvas>
+            </div>
+
+            <!-- Tabla proyección -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-neutral-800">
+                    <h3 class="font-semibold text-sm flex items-center gap-1.5">
+                        <i data-lucide="table" class="h-4 w-4"></i> Proyección año a año
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead class="bg-slate-50 dark:bg-neutral-800/50">
+                        <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                            <th class="text-left px-3 py-2">Año</th>
+                            <th class="text-right px-3 py-2">Renta/mes</th>
+                            <th class="text-right px-3 py-2">Ingresos</th>
+                            <th class="text-right px-3 py-2">Gastos</th>
+                            <th class="text-right px-3 py-2">Hipoteca</th>
+                            <th class="text-right px-3 py-2">Cashflow</th>
+                            <th class="text-right px-3 py-2">Valor prop.</th>
+                            <th class="text-right px-3 py-2">Patrimonio</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                        <template x-for="r in result.proyeccion">
+                            <tr>
+                                <td class="px-3 py-2 font-mono font-bold" x-text="r.year"></td>
+                                <td class="px-3 py-2 text-right font-mono" x-text="fmt(r.rentaMensual) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono text-emerald-700" x-text="fmt(r.ingresos) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono text-amber-700" x-text="fmt(r.gastos) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono text-red-700" x-text="fmt(r.hipoteca) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono font-bold" :class="r.cashflow >= 0 ? 'text-emerald-700' : 'text-red-700'" x-text="fmt(r.cashflow) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono" x-text="fmt(r.valorPropiedad) + ' €'"></td>
+                                <td class="px-3 py-2 text-right font-mono font-bold text-purple-700" x-text="fmt(r.patrimonioNeto) + ' €'"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ROI Total -->
+            <div class="rounded-xl bg-gradient-to-r from-emerald-700 to-teal-800 p-5 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider opacity-80">ROI total al año <span x-text="horizonteAnos"></span></p>
+                        <p class="text-3xl font-bold" x-text="result.roiTotal + ' %'"></p>
+                        <p class="text-xs mt-1 opacity-80">Patrimonio final: <span class="font-mono font-bold" x-text="fmt(result.patrimonioFinal) + ' €'"></span></p>
+                    </div>
+                    <i data-lucide="trophy" class="h-16 w-16 opacity-30"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function rentAnalyzer() {
+            return {
+                precioCompra: 200000, gastosCompra: 20000, reformas: 10000, mobiliario: 5000,
+                hipoteca: true, capitalHipoteca: 150000, tipoInteres: 3.25, plazoAnos: 25,
+                rentaMensual: 1100, incrementoRentaAnual: 2.0,
+                ibi: 400, comunidad: 50, seguroHogar: 250, seguroImpago: 350,
+                mantenimiento: 600, gestion: 0, otrosGastos: 100, tasaVacancia: 5.0,
+                revalorizacionAnual: 3.0, horizonteAnos: 15,
+                loading: false, result: {}, chart: null,
+                fmt(v) { return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0); },
+                async calc() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch('/rentabilidad/calcular', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.$data)
+                        });
+                        this.result = await res.json();
+                        this.$nextTick(() => { this.render(); if (window.lucide) window.lucide.createIcons(); });
+                    } catch(e) { this.result = { error: 'Error' }; }
+                    this.loading = false;
+                },
+                render() {
+                    if (!this.result.ok) return;
+                    const ctx = document.getElementById('rentChart');
+                    if (!ctx) return;
+                    if (this.chart) this.chart.destroy();
+                    const labels = this.result.proyeccion.map(r => 'Año ' + r.year);
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [
+                                { label: 'Patrimonio neto', data: this.result.proyeccion.map(r => r.patrimonioNeto), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,0.15)', fill: true, tension: 0.3 },
+                                { label: 'Valor propiedad', data: this.result.proyeccion.map(r => r.valorPropiedad), borderColor: '#10b981', tension: 0.3 },
+                                { label: 'Saldo hipoteca', data: this.result.proyeccion.map(r => r.saldoHipoteca), borderColor: '#ef4444', tension: 0.3 }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            interaction: { mode: 'index', intersect: false },
+                            scales: { y: { ticks: { callback: v => new Intl.NumberFormat('es-ES').format(v) + ' €' } } }
+                        }
+                    });
+                },
+                init() { this.calc(); }
+            };
+        }
+    </script>
+</div>
+</body>
+</html>

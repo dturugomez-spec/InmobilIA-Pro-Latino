@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comisiones</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="flex items-center gap-2 mb-5">
+        <a href="/commissions/new" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nueva comisión
+        </a>
+    </div>
+
+    <!-- Ranking comerciales -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-5">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+            <h3 class="font-semibold"> Ranking comerciales</h3>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="text-left px-4 py-2.5">#</th>
+                    <th class="text-left px-4 py-2.5">Comercial</th>
+                    <th class="text-right px-4 py-2.5">Operaciones</th>
+                    <th class="text-right px-4 py-2.5">Total generado</th>
+                    <th class="text-right px-4 py-2.5">Pagado</th>
+                    <th class="text-right px-4 py-2.5">Pendiente</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="a,it : ${agents}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3 text-center">
+                        <span th:if="${it.index == 0}"></span>
+                        <span th:if="${it.index == 1}"></span>
+                        <span th:if="${it.index == 2}"></span>
+                        <span th:if="${it.index >= 3}" th:text="${it.index + 1}" class="font-mono text-xs text-slate-400">4</span>
+                    </td>
+                    <td class="px-4 py-3 font-medium" th:text="${a.get('name')}">—</td>
+                    <td class="px-4 py-3 text-right font-mono" th:text="${a.get('ops')}">0</td>
+                    <td class="px-4 py-3 text-right font-mono font-semibold" th:text="${#numbers.formatDecimal(a.get('total'),0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 text-right font-mono text-emerald-600" th:text="${#numbers.formatDecimal(a.get('paid'),0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 text-right font-mono text-amber-600" th:text="${#numbers.formatDecimal(a.get('pending'),0,'POINT',2,'COMMA') + ' €'}">—</td>
+                </tr>
+                <tr th:if="${agents.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500 text-sm">Sin comisiones registradas.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Listado completo -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+            <h3 class="font-semibold">Histórico de comisiones</h3>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="text-left px-4 py-2.5">Fecha</th>
+                    <th class="text-left px-4 py-2.5">Comercial</th>
+                    <th class="text-left px-4 py-2.5">Tipo</th>
+                    <th class="text-left px-4 py-2.5">Propiedad / Cliente</th>
+                    <th class="text-right px-4 py-2.5">Valor op.</th>
+                    <th class="text-right px-4 py-2.5">%</th>
+                    <th class="text-right px-4 py-2.5">Comisión</th>
+                    <th class="text-left px-4 py-2.5">Estado</th>
+                    <th class="text-right px-4 py-2.5"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="r : ${rows}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${r.get('operation_date') != null ? #strings.substring(r.get('operation_date'),0,10) : '—'}">—</td>
+                    <td class="px-4 py-3 font-medium" th:text="${r.get('agent_name') ?: '—'}">—</td>
+                    <td class="px-4 py-3"><span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800" th:text="${r.get('operation_type')}">—</span></td>
+                    <td class="px-4 py-3 text-xs">
+                        <div th:text="${r.get('property_name')}">—</div>
+                        <div class="text-slate-500" th:text="${r.get('client_name')}">—</div>
+                    </td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(r.get('operation_value') ?: 0,0,'POINT',0,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('commission_pct') + '%'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${#numbers.formatDecimal(r.get('commission_amount') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:text="${r.get('status')}" th:classappend="${#strings.equalsIgnoreCase(r.get('status'),'Pagada') ? 'bg-emerald-100 text-emerald-700' : (#strings.equalsIgnoreCase(r.get('status'),'Anulada') ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-700')}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full">—</span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <form th:if="${!#strings.equalsIgnoreCase(r.get('status'),'Pagada')}" th:action="@{|/commissions/${r.get('id')}/status|}" method="post" class="inline">
+                            <input type="hidden" name="status" value="Pagada">
+                            <button type="submit" class="text-xs text-emerald-700 hover:underline">Marcar pagada</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${rows.isEmpty()}"><td colspan="9" class="py-12 text-center text-slate-500 text-sm">Sin comisiones registradas.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

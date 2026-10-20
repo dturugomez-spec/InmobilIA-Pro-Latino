@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+
+<!-- Sello «Un producto de Grupo Kivasa». Estilos en línea para que funcione igual
+     en las páginas con Tailwind por CDN y en las que usan /css/tw.css.
+     oscuro = true en fondos oscuros (añade un borde claro al logo). -->
+<span th:fragment="sello(oscuro)" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
+    <span>Un producto de</span>
+    <img src="/brand/grupo-kivasa.svg" alt="" width="16" height="16"
+         style="width:16px;height:16px;border-radius:4px"
+         th:style="${oscuro} ? 'width:16px;height:16px;border-radius:4px;box-shadow:0 0 0 1px rgba(255,255,255,.35)' : 'width:16px;height:16px;border-radius:4px'">
+    <strong style="font-weight:700;letter-spacing:.02em">Grupo Kivasa</strong>
+</span>
+
+</body>
+</html>

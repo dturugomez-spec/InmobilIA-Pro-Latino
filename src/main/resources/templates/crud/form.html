@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Formulario</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="max-w-4xl mx-auto">
+
+        <form th:action="@{|/crud/${table}|}" method="post"
+              class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+
+            <input type="hidden" name="id" th:value="${row.get('id')}" th:if="${editing}">
+
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center">
+                        <i th:data-lucide="${editing} ? 'pencil' : 'plus'" class="h-5 w-5 text-brand-700 dark:text-brand-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold" th:text="${editing} ? 'Editar registro' : 'Crear nuevo registro'">Crear</h2>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Rellena los campos. Los obligatorios aparecen marcados.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos -->
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div th:each="f : ${fields}"
+                     th:classappend="${f.type().name() == 'TEXTAREA'} ? 'md:col-span-2' : ''"
+                     class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300" th:text="${f.label()}">Campo</label>
+
+                    <textarea th:if="${f.type().name() == 'TEXTAREA'}"
+                              th:name="${f.name()}"
+                              th:text="${row.get(f.name())}"
+                              th:placeholder="${f.placeholder()}"
+                              rows="3"
+                              class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400 resize-y"></textarea>
+
+                    <input th:if="${f.type().name() == 'NUM'}"
+                           type="number" step="0.01"
+                           th:name="${f.name()}"
+                           th:value="${row.get(f.name())}"
+                           th:placeholder="${f.placeholder()}"
+                           class="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+
+                    <input th:if="${f.type().name() == 'INT'}"
+                           type="number" step="1"
+                           th:name="${f.name()}"
+                           th:value="${row.get(f.name())}"
+                           th:placeholder="${f.placeholder()}"
+                           class="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+
+                    <input th:if="${f.type().name() == 'DATE'}"
+                           type="date"
+                           th:name="${f.name()}"
+                           th:value="${row.get(f.name()) != null ? #strings.substring(row.get(f.name()), 0, 10) : ''}"
+                           class="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+
+                    <input th:if="${f.type().name() == 'TIME'}"
+                           type="time"
+                           th:name="${f.name()}"
+                           th:value="${row.get(f.name())}"
+                           class="w-full px-3 py-2 text-sm font-mono bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all">
+
+                    <label th:if="${f.type().name() == 'BOOL'}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-neutral-600 transition-colors">
+                        <input type="checkbox" th:name="${f.name()}"
+                               th:checked="${row.get(f.name()) == true or row.get(f.name()) == 'true'}"
+                               class="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500/30">
+                        <span class="text-sm text-slate-700 dark:text-slate-300" th:text="${f.hint() != null ? f.hint() : 'Activo'}">Activo</span>
+                    </label>
+
+                    <input th:if="${f.type().name() == 'TEXT'}"
+                           type="text"
+                           th:name="${f.name()}"
+                           th:value="${row.get(f.name())}"
+                           th:placeholder="${f.placeholder()}"
+                           th:list="${f.name() == 'property_name' ? 'list-properties' : (f.name() == 'tenant_name' ? 'list-tenants' : (f.name() == 'client_name' ? 'list-clients' : null))}"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+
+                    <p th:if="${f.hint() != null and f.type().name() != 'BOOL'}"
+                       class="text-xs text-slate-500 dark:text-neutral-400"
+                       th:text="${f.hint()}"></p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30 flex items-center justify-end gap-2">
+                <a th:href="@{|/crud/${table}|}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-100 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors">
+                    <span>Cancelar</span>
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+                    <i data-lucide="save" class="h-4 w-4"></i>
+                    <span th:text="${editing} ? 'Guardar cambios' : 'Crear registro'">Guardar</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- ─── Datalists para autocompletado ─── -->
+        <datalist id="list-properties" th:if="${autocompleteProperties != null}">
+            <option th:each="p : ${autocompleteProperties}" th:value="${p}"></option>
+        </datalist>
+        <datalist id="list-tenants" th:if="${autocompleteTenants != null}">
+            <option th:each="t : ${autocompleteTenants}" th:value="${t}"></option>
+        </datalist>
+        <datalist id="list-clients" th:if="${autocompleteClients != null}">
+            <option th:each="c : ${autocompleteClients}" th:value="${c}"></option>
+        </datalist>
+
+    </div>
+
+</div>
+</body>
+</html>

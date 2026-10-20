@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Newsletter</title>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+    <div th:if="${suscrito}"><div class="text-6xl mb-4"></div><h1 class="text-2xl font-bold text-blue-700">¡Casi listo!</h1><p class="text-slate-600 mt-2">Revisa tu email para confirmar.</p></div>
+    <div th:if="${confirmado}"><div class="text-6xl mb-4"></div><h1 class="text-2xl font-bold text-emerald-700">¡Suscripción confirmada!</h1></div>
+    <div th:if="${baja}"><div class="text-6xl mb-4"></div><h1 class="text-2xl font-bold">Te has dado de baja</h1></div>
+    <div th:if="${error}"><div class="text-6xl mb-4"></div><p>Enlace no válido</p></div>
+</div>
+</body></html>

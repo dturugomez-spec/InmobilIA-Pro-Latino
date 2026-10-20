@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Nuevo Open House</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-purple-600 to-pink-800 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold"> Nuevo Open House</h2>
+    </div>
+
+    <form method="post" action="/open-house/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-medium mb-1">Título del evento *</label>
+                <input type="text" name="titulo" required placeholder="Open House · Piso Salamanca" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">Propiedad *</label>
+                <select name="propiedad_id" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    <option value="">— Seleccionar —</option>
+                    <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}">—</option>
+                </select>
+            </div>
+        </div>
+
+        <textarea name="descripcion" rows="3" placeholder="Descripción del evento..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-xs font-medium mb-1">Fecha *</label>
+                <input type="date" name="fecha" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">Inicio *</label>
+                <input type="time" name="hora_inicio" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">Fin *</label>
+                <input type="time" name="hora_fin" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium mb-1">Aforo máximo (opcional)</label>
+            <input type="number" name="max_asistentes" class="w-32 px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-2">
+            <p class="text-xs font-semibold"> Extras del evento</p>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="incluye_aperitivo" class="rounded">  Aperitivo / catering</label>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="incluye_valoracion" class="rounded">  Valoración gratuita de propiedad</label>
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="incluye_financiacion" class="rounded">  Asesor de financiación presente</label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <a href="/open-house" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-pink-700 hover:bg-pink-800 text-white text-sm font-medium"> Crear evento</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

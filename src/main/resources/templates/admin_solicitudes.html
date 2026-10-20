@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Solicitudes de cuenta</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="inbox" class="h-6 w-6"></i> Solicitudes de cuenta
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Aprueba o rechaza las solicitudes de nuevos clientes desde la landing.</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <a href="/admin/solicitudes?estado=pendiente" class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4 hover:bg-amber-100">
+        <p class="text-[10px] uppercase text-amber-700">⏳ Pendientes</p>
+        <p class="text-2xl font-bold mt-1 text-amber-700" th:text="${pendientes}">0</p>
+    </a>
+    <a href="/admin/solicitudes?estado=aprobada" class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4 hover:bg-emerald-100">
+        <p class="text-[10px] uppercase text-emerald-700"> Aprobadas</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${aprobadas}">0</p>
+    </a>
+    <a href="/admin/solicitudes?estado=rechazada" class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4 hover:bg-red-100">
+        <p class="text-[10px] uppercase text-red-700"> Rechazadas</p>
+        <p class="text-2xl font-bold mt-1 text-red-700" th:text="${rechazadas}">0</p>
+    </a>
+</div>
+
+<div class="space-y-3">
+    <div th:each="s : ${solicitudes}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-2">
+                    <p class="font-bold text-lg" th:text="${s.get('nombre')}">—</p>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-bold"
+                          th:classappend="${s.get('plan') == 'agency' ? 'bg-purple-100 text-purple-700' : (s.get('plan') == 'enterprise' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700')}"
+                          th:text="${'Plan ' + #strings.capitalize(s.get('plan'))}">—</span>
+                    <span th:switch="${s.get('estado')}">
+                        <span th:case="'pendiente'" class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold">⏳ Pendiente</span>
+                        <span th:case="'aprobada'" class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold"> Aprobada</span>
+                        <span th:case="'rechazada'" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold"> Rechazada</span>
+                    </span>
+                </div>
+                <p class="text-sm font-semibold text-slate-700" th:text="${' ' + s.get('empresa')}">—</p>
+                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                    <span> <a th:href="${'mailto:' + s.get('email')}" class="hover:underline" th:text="${s.get('email')}">—</a></span>
+                    <span> <a th:href="${'tel:' + s.get('telefono')}" class="hover:underline" th:text="${s.get('telefono')}">—</a></span>
+                    <span th:if="${s.get('num_propiedades')}" th:text="${' ' + s.get('num_propiedades') + ' propiedades'}">—</span>
+                    <span class="font-mono" th:text="${#strings.substring(s.get('created_at'), 0, 16)}">—</span>
+                </div>
+                <p th:if="${s.get('mensaje')}" class="mt-3 text-sm text-slate-600 bg-slate-50 dark:bg-neutral-800 p-3 rounded" th:text="${s.get('mensaje')}">—</p>
+            </div>
+
+            <div th:if="${s.get('estado') == 'pendiente'}" class="flex flex-col gap-2 flex-shrink-0">
+                <form th:action="@{|/admin/solicitudes/${s.get('id')}/aprobar|}" method="post" onsubmit="return confirm('Aprobar cuenta y enviar credenciales por email?')">
+                    <button class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold whitespace-nowrap"> Aprobar</button>
+                </form>
+                <form th:action="@{|/admin/solicitudes/${s.get('id')}/rechazar|}" method="post" onsubmit="this.querySelector('input').value = prompt('Motivo del rechazo:') || ''; if(!this.querySelector('input').value) return false;">
+                    <input type="hidden" name="motivo">
+                    <button class="px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-sm font-bold whitespace-nowrap"> Rechazar</button>
+                </form>
+            </div>
+
+            <div th:if="${s.get('estado') == 'aprobada'}" class="flex-shrink-0 text-xs text-emerald-700 bg-emerald-50 p-2 rounded">
+                 Aprobada<br>
+                <span th:text="${#strings.substring(s.get('aprobada_at'), 0, 10)}">—</span>
+            </div>
+        </div>
+
+        <details class="mt-3 text-xs">
+            <summary class="cursor-pointer text-slate-500 hover:text-slate-700"> Notas internas</summary>
+            <form th:action="@{|/admin/solicitudes/${s.get('id')}/notas|}" method="post" class="mt-2 flex gap-2">
+                <input type="text" name="notas" th:value="${s.get('notas_admin')}" placeholder="Notas privadas..." class="flex-1 px-3 py-1.5 text-xs border rounded">
+                <button class="px-3 py-1.5 text-xs rounded bg-slate-600 text-white"></button>
+            </form>
+        </details>
+    </div>
+    <div th:if="${solicitudes.isEmpty()}" class="rounded-xl bg-white py-12 text-center text-slate-500">
+        Sin solicitudes en este filtro.
+    </div>
+</div>
+
+</div></body></html>

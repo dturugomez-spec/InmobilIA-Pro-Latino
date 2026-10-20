@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Investment Memo</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/memo" class="form-card">
+        <h3>Investment Memorandum</h3>
+        <div class="form-grid cols-2">
+            <label>Activo <input type="text" name="propiedad" required></label>
+            <label>Zona <input type="text" name="zona" required></label>
+            <label>Precio <input type="number" step="0.01" name="precio" required></label>
+            <label>Renta mensual <input type="number" step="0.01" name="rentaMensual" required></label>
+            <label class="full">Tesis de inversion
+                <textarea name="tesis" rows="3" required></textarea>
+            </label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Generar memorando</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Exportar AEAT</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/integrations" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4">
+        <i data-lucide="arrow-left" class="h-3 w-3"></i> Integraciones
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 ring-1 ring-amber-200 dark:ring-amber-900/40 p-5 mb-5">
+        <div class="flex items-start gap-3">
+            <div class="h-10 w-10 rounded-lg bg-white dark:bg-amber-950/60 flex items-center justify-center">
+                <i data-lucide="landmark" class="h-5 w-5 text-amber-700 dark:text-amber-400"></i>
+            </div>
+            <div>
+                <h2 class="font-semibold text-base text-amber-900 dark:text-amber-200">Exportar a la Agencia Tributaria</h2>
+                <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">Genera CSVs listos para importar en programas AEAT o pasar a tu gestor fiscal.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selector de año -->
+    <div class="flex items-center gap-2 mb-5">
+        <span class="text-sm text-slate-500">Ejercicio fiscal:</span>
+        <div class="flex items-center bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-lg p-0.5">
+            <a th:href="@{|/integrations/aeat?year=${yearAnt}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-left" class="h-4 w-4"></i></a>
+            <span class="px-3 py-1.5 text-sm font-bold font-mono" th:text="${year}">2025</span>
+            <a th:href="@{|/integrations/aeat?year=${yearSig}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-right" class="h-4 w-4"></i></a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Modelo 303 -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+                        <i data-lucide="file-text" class="h-5 w-5 text-emerald-700 dark:text-emerald-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-base">Modelo 303 · IVA</h3>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Trimestral · Autoliquidación IVA</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">CSV con todas las facturas emitidas en <span class="font-semibold" th:text="${year}">—</span>: número, fecha, cliente, NIF, base imponible, IVA repercutido, retenciones IRPF y total.</p>
+                <ul class="text-xs text-slate-500 dark:text-neutral-400 space-y-1 mb-5">
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Una fila por factura emitida</li>
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Codificación UTF-8 con BOM (Excel)</li>
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Separador punto y coma (;)</li>
+                </ul>
+                <a th:href="@{|/integrations/aeat/303.csv?year=${year}|}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors shadow-card w-full justify-center">
+                    <i data-lucide="download" class="h-4 w-4"></i>
+                    Descargar modelo303-<span th:text="${year}">—</span>.csv
+                </a>
+            </div>
+        </div>
+
+        <!-- Modelo 100 -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center">
+                        <i data-lucide="home" class="h-5 w-5 text-brand-700 dark:text-brand-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-base">Modelo 100 · IRPF</h3>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Anual · Rendimientos inmobiliarios</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">CSV con todas las transacciones del año: ingresos por alquileres y gastos deducibles para el cálculo del rendimiento neto inmobiliario.</p>
+                <ul class="text-xs text-slate-500 dark:text-neutral-400 space-y-1 mb-5">
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Fecha · Tipo · Categoría · Inmueble</li>
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Importe + flag de deducible</li>
+                    <li class="flex items-start gap-1.5"><i data-lucide="check" class="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0"></i> Compatible con Excel y gestores</li>
+                </ul>
+                <a th:href="@{|/integrations/aeat/100.csv?year=${year}|}"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card w-full justify-center">
+                    <i data-lucide="download" class="h-4 w-4"></i>
+                    Descargar modelo100-rentas-<span th:text="${year}">—</span>.csv
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 p-3 flex items-start gap-2.5">
+        <i data-lucide="info" class="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"></i>
+        <div class="text-xs text-blue-800 dark:text-blue-300">
+            <p class="font-semibold mb-0.5">¿Qué hago con estos CSV?</p>
+            <p>Pásalos a tu gestor o asesor fiscal por email, súbelos a su software (A3, Sage, Contasol...) o úsalos como soporte para rellenar los modelos en la sede electrónica de la AEAT.</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

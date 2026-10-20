@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Rendimiento del equipo</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-emerald-600 to-teal-800 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="trending-up" class="h-6 w-6"></i> Rendimiento del equipo
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Cómo va cada agente: leads asignados, firmas, visitas y conversión. Reparte los leads con el Agente IA ("asigna el lead X a Ana") y aquí verás quién rinde.</p>
+</div>
+
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Agentes</p>
+        <p class="text-2xl font-bold mt-1" th:text="${nMiembros}">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+        <p class="text-[10px] uppercase text-blue-700"> Leads totales</p>
+        <p class="text-2xl font-bold mt-1 text-blue-700" th:text="${totalLeads}">0</p>
+    </div>
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700"> Sin asignar</p>
+        <p class="text-2xl font-bold mt-1 text-amber-700" th:text="${sinAsignar}">0</p>
+    </div>
+</div>
+
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Ranking por actividad</p>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-xs text-slate-400 border-b border-slate-100 dark:border-neutral-800">
+                    <th class="py-2 pr-2">#</th>
+                    <th class="py-2 pr-2">Agente</th>
+                    <th class="py-2 px-2 text-right">Leads</th>
+                    <th class="py-2 px-2 text-right">Visitas</th>
+                    <th class="py-2 px-2 text-right">Firmas</th>
+                    <th class="py-2 pl-2 text-right">Conversión</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="f, st : ${filas}" class="border-b border-slate-50 dark:border-neutral-800">
+                    <td class="py-2.5 pr-2">
+                        <span th:if="${st.index == 0 and f.get('actividad') > 0}"></span>
+                        <span th:if="${st.index == 1 and f.get('actividad') > 0}"></span>
+                        <span th:if="${st.index == 2 and f.get('actividad') > 0}"></span>
+                        <span th:if="${st.index > 2 or f.get('actividad') == 0}" class="text-slate-400" th:text="${st.count}">—</span>
+                    </td>
+                    <td class="py-2.5 pr-2 font-semibold">
+                        <span th:text="${f.get('nombre')}">—</span>
+                        <span th:if="${f.get('esAdmin')}" class="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">director</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-right" th:text="${f.get('leads')}">0</td>
+                    <td class="py-2.5 px-2 text-right" th:text="${f.get('visitas')}">0</td>
+                    <td class="py-2.5 px-2 text-right font-bold text-emerald-600" th:text="${f.get('firmados')}">0</td>
+                    <td class="py-2.5 pl-2 text-right"><span th:text="${f.get('conversion')}">0</span>%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p th:if="${sinAsignar > 0}" class="text-xs text-amber-600 mt-3"> Tienes <strong th:text="${sinAsignar}">0</strong> leads sin asignar. Repártelos entre tu equipo para que nadie se quede sin seguimiento.</p>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

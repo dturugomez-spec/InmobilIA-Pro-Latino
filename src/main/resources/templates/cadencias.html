@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Seguimiento automático</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="repeat" class="h-6 w-6"></i> Seguimiento automático
+            </h2>
+            <p class="text-sm text-white/80 mt-1">El Agente sigue a cada lead nuevo por ti con una cadencia inteligente. Cada mensaje lo redacta la IA y la cadencia se para sola cuando el lead avanza. Nunca más pierdas un lead por no dar seguimiento.</p>
+        </div>
+        <form th:action="@{/cadencias/ejecutar}" method="post">
+            <button class="px-4 py-2.5 rounded-lg bg-white text-violet-800 text-sm font-bold whitespace-nowrap flex items-center gap-2 hover:bg-white/90">
+                <i data-lucide="play" class="h-4 w-4"></i> Ejecutar ahora
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Config -->
+<form th:action="@{/cadencias/config}" method="post"
+      class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5"
+      th:attr="x-data='{activo: ' + ${activo} + ', envia: ' + ${envia} + '}'">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+            <p class="font-bold text-slate-800 dark:text-slate-100">Seguimiento automático de leads nuevos</p>
+            <p class="text-sm text-slate-500">Inscribe automáticamente cada lead nuevo en la cadencia de 4 pasos.</p>
+        </div>
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="activo" value="true" x-model="activo" class="sr-only peer">
+            <span class="w-11 h-6 rounded-full bg-slate-200 peer-checked:bg-violet-600 relative transition-colors">
+                <span class="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform" :class="activo && 'translate-x-5'"></span>
+            </span>
+            <span class="text-sm font-semibold" x-text="activo ? 'Activado' : 'Desactivado'"></span>
+        </label>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-neutral-800" x-show="activo" x-cloak>
+        <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" name="envia" value="true" x-model="envia" class="mt-1 rounded">
+            <span class="text-sm">
+                <span class="font-semibold">Enviar los emails automáticamente</span><br>
+                <span class="text-slate-500">Si lo dejas desactivado (recomendado), cada paso entra como <strong>propuesta en el Autopiloto</strong> para que lo revises antes de enviar. Los WhatsApp y las llamadas siempre se proponen.</span>
+            </span>
+        </label>
+    </div>
+    <button class="mt-4 px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">Guardar</button>
+</form>
+
+<!-- La cadencia -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">La cadencia (4 pasos)</p>
+    <div class="flex flex-wrap items-center gap-2">
+        <div th:each="p, st : ${pasos}" class="flex items-center gap-2">
+            <div class="rounded-lg bg-violet-50 dark:bg-violet-900/20 ring-1 ring-violet-200 px-3 py-2 text-center">
+                <p class="text-[10px] uppercase text-violet-600 font-bold" th:text="'Día ' + ${p.dia()}">—</p>
+                <p class="text-sm font-semibold" th:switch="${p.canal()}">
+                    <span th:case="'email'"> Email</span>
+                    <span th:case="'whatsapp'"> WhatsApp</span>
+                    <span th:case="'tarea'"> Llamada</span>
+                </p>
+            </div>
+            <i th:if="${!st.last}" data-lucide="arrow-right" class="h-4 w-4 text-slate-300"></i>
+        </div>
+    </div>
+    <p class="text-xs text-slate-400 mt-3">⏹ Se detiene automáticamente en cuanto el lead pasa a Visita/Oferta/Firmado (ya no hace falta insistir).</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-violet-50 ring-1 ring-violet-200 p-4">
+        <p class="text-[10px] uppercase text-violet-700"> En seguimiento</p>
+        <p class="text-2xl font-bold mt-1 text-violet-700" th:text="${activas}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Completadas</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${completadas}">0</p>
+    </div>
+    <div class="rounded-xl bg-slate-50 ring-1 ring-slate-200 p-4">
+        <p class="text-[10px] uppercase text-slate-700"> Total</p>
+        <p class="text-2xl font-bold mt-1 text-slate-700" th:text="${#lists.size(inscripciones)}">0</p>
+    </div>
+</div>
+
+<!-- Inscripciones -->
+<div th:if="${#lists.isEmpty(inscripciones)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-10 text-center">
+    <i data-lucide="repeat" class="h-10 w-10 mx-auto text-slate-300"></i>
+    <p class="mt-3 font-semibold text-slate-600">Aún no hay leads en seguimiento</p>
+    <p class="text-sm text-slate-400 mt-1">Activa el seguimiento automático y pulsa "Ejecutar ahora" para inscribir tus leads nuevos.</p>
+</div>
+
+<div class="space-y-2">
+    <div th:each="i : ${inscripciones}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 flex items-center justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+            <p class="font-semibold text-sm" th:text="${i.get('lead_nombre') ?: 'Lead'}">—</p>
+            <div class="flex flex-wrap gap-x-3 text-xs text-slate-400 mt-0.5">
+                <span th:text="${'Paso ' + (i.get('paso') + 1) + ' de 4'}">—</span>
+                <span th:if="${#bools.isTrue(i.get('proximo_at')) and i.get('estado') == 'activa'}" th:text="'próximo: ' + ${#strings.substring(i.get('proximo_at'), 0, 10)}">—</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <span th:switch="${i.get('estado')}" class="text-xs font-bold px-2 py-1 rounded-full">
+                <span th:case="'activa'" class="bg-violet-100 text-violet-700 px-2 py-1 rounded-full"> Activa</span>
+                <span th:case="'completada'" class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full"> Completada</span>
+                <span th:case="'pausada'" class="bg-amber-100 text-amber-700 px-2 py-1 rounded-full">⏸ Pausada</span>
+                <span th:case="*" class="bg-slate-100 text-slate-500 px-2 py-1 rounded-full">⏹ Parada</span>
+            </span>
+            <form th:if="${i.get('estado') == 'activa'}" th:action="@{|/cadencias/${i.get('id')}/pausar|}" method="post">
+                <button class="text-xs text-slate-400 hover:text-amber-600">Pausar</button>
+            </form>
+            <form th:if="${i.get('estado') == 'pausada'}" th:action="@{|/cadencias/${i.get('id')}/reanudar|}" method="post">
+                <button class="text-xs text-violet-600 hover:underline">Reanudar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Permisos por persona</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="shield" class="h-6 w-6"></i> Permisos por persona</h2>
+    <p class="text-sm text-white/70 mt-1">Cada persona tiene lo que da su rol. Aquí puedes darle acceso a una sección más o quitárselo, sin cambiarle el rol. Los cambios se aplican en menos de un minuto.</p>
+</div>
+
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-6">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-neutral-800/60 text-slate-600 dark:text-slate-300">
+            <tr>
+                <th class="text-left px-4 py-2.5 font-semibold">Persona</th>
+                <th class="text-left px-3 py-2.5 font-semibold">Rol</th>
+                <th class="text-left px-3 py-2.5 font-semibold">Ajustes</th>
+                <th class="text-right px-4 py-2.5"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+        <tr th:each="u : ${usuarios}">
+            <td class="px-4 py-2.5">
+                <div class="font-medium" th:text="${u.get('name')}">—</div>
+                <div class="text-xs text-slate-500" th:text="${u.get('email')}">—</div>
+            </td>
+            <td class="px-3 py-2.5"><span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800" th:text="${u.get('rolNombre')}">—</span></td>
+            <td class="px-3 py-2.5 text-xs text-slate-500">
+                <span th:if="${u.get('esAdmin') == true}">Acceso total</span>
+                <span th:if="${u.get('esAdmin') != true and u.get('numAjustes') == 0}">Según su rol</span>
+                <span th:if="${u.get('esAdmin') != true and u.get('numAjustes') > 0}" class="font-semibold text-amber-700 dark:text-amber-400"
+                      th:text="${u.get('numAjustes') == 1 ? '1 sección ajustada' : u.get('numAjustes') + ' secciones ajustadas'}">—</span>
+            </td>
+            <td class="px-4 py-2.5 text-right">
+                <a th:if="${u.get('esAdmin') != true}" th:href="@{|/permisos-granulares/${u.get('id')}|}"
+                   class="inline-flex px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-white hover:bg-slate-900">Ajustar permisos</a>
+            </td>
+        </tr>
+        <tr th:if="${usuarios.isEmpty()}">
+            <td colspan="4" class="px-4 py-8 text-center text-slate-500">Todavía no hay más personas en tu equipo. Invítalas desde <a href="/equipo" class="text-blue-700 hover:underline">Equipo</a>.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<h3 class="text-sm font-bold mb-2">Qué da cada rol</h3>
+<p class="text-xs text-slate-500 mb-3">Referencia de lo que tiene cada rol antes de ajustes. <b>Modificar</b> incluye ver; los administradores lo pueden todo.</p>
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-x-auto">
+    <table class="w-full text-xs">
+        <thead class="bg-slate-50 dark:bg-neutral-800/60 text-slate-600 dark:text-slate-300">
+            <tr>
+                <th class="text-left px-3 py-2 font-semibold">Sección</th>
+                <th th:each="r : ${roles}" class="px-2 py-2 font-semibold text-center whitespace-nowrap" th:text="${roleLabels.get(r)}">—</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="f : ${matriz}">
+                <td class="px-3 py-1.5 font-medium whitespace-nowrap" th:text="${f.get('nombre')}">—</td>
+                <td th:each="r : ${roles}" class="px-2 py-1.5 text-center">
+                    <span th:switch="${f.get('porRol').get(r)}">
+                        <span th:case="'WRITE'" class="text-emerald-700 dark:text-emerald-400 font-semibold">Modificar</span>
+                        <span th:case="'READ'" class="text-blue-700 dark:text-blue-400">Ver</span>
+                        <span th:case="*" class="text-slate-300 dark:text-neutral-600">—</span>
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div></body></html>

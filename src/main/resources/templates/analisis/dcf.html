@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>DCF</title></head>
+<body>
+<div layout:fragment="content">
+
+    <form method="post" action="/finanzas/dcf" class="form-card">
+        <h3>Inputs del modelo</h3>
+        <div class="form-grid cols-4">
+            <label>Precio (EUR) <input type="number" step="0.01" name="price" required th:value="${in?.price()}"></label>
+            <label>Renta mensual (EUR) <input type="number" step="0.01" name="rentMonthly" required th:value="${in?.rentMonthly()}"></label>
+            <label>Vacancy (%) <input type="number" step="0.1" name="vacancyPct" th:value="${in?.vacancyPct() ?: 5}"></label>
+            <label>OPEX (%) <input type="number" step="0.1" name="opexPct" th:value="${in?.opexPct() ?: 25}"></label>
+            <label>Anos <input type="number" name="years" th:value="${in?.years() ?: 10}"></label>
+            <label>Crec. rentas (%) <input type="number" step="0.1" name="growthPct" th:value="${in?.growthPct() ?: 2}"></label>
+            <label>Crec. gastos (%) <input type="number" step="0.1" name="growthExpPct" th:value="${in?.growthExpPct() ?: 2.5}"></label>
+            <label>Exit cap (%) <input type="number" step="0.1" name="exitCapPct" th:value="${in?.exitCapPct() ?: 5.5}"></label>
+            <label>Tasa descuento (%) <input type="number" step="0.1" name="discountPct" th:value="${in?.discountPct() ?: 8}"></label>
+            <label>Costes compra (%) <input type="number" step="0.1" name="buyingCostsPct" th:value="${in?.buyingCostsPct() ?: 10}"></label>
+            <label>LTV (%) <input type="number" step="0.1" name="ltvPct" th:value="${in?.ltvPct() ?: 70}"></label>
+            <label>Interes (%) <input type="number" step="0.01" name="interestPct" th:value="${in?.interestPct() ?: 4}"></label>
+            <label>Plazo (anos) <input type="number" name="loanTerm" th:value="${in?.loanTerm() ?: 25}"></label>
+            <label>Capex (%) <input type="number" step="0.1" name="capexPct" th:value="${in?.capexPct() ?: 1}"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Calcular DCF</button></div>
+    </form>
+
+    <div th:if="${out != null}">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">IRR levered</div>
+                <div class="kpi-value" th:text="${out.irrLevered() != null ? #numbers.formatDecimal(out.irrLevered() * 100,1,2) + '%' : '—'}">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">IRR unlevered</div>
+                <div class="kpi-value" th:text="${out.irrUnlevered() != null ? #numbers.formatDecimal(out.irrUnlevered() * 100,1,2) + '%' : '—'}">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">NPV</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.npv(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">MOIC</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.moic(),1,2)} + 'x'">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Cash-on-Cash</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.coc(),1,2)} + '%'">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Cap rate entrada</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.capRateIn(),1,2)} + '%'">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Equity</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.equityInvested(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Deuda</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.debt(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            </div>
+        </div>
+
+        <h3>Flujo por ano</h3>
+        <div class="crud-table-wrap">
+            <table class="crud-table">
+                <thead>
+                <tr>
+                    <th>Ano</th><th>EGI</th><th>OPEX</th><th>NOI</th><th>CAPEX</th>
+                    <th>CF pre-deuda</th><th>Serv. deuda</th><th>CF equity</th><th>Saldo deuda</th><th>DSCR</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="y : ${out.years()}">
+                    <td th:text="${y.year()}">1</td>
+                    <td th:text="${#numbers.formatDecimal(y.egi(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.opex(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.noi(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.capex(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.cfBeforeDebt(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.debtSvc(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.cfEquity(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.debtBalance(),0,'POINT',0,'COMMA')}">0</td>
+                    <td th:text="${#numbers.formatDecimal(y.dscr(),1,2)}">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Mi negocio</title></head>
+<body>
+<div layout:fragment="content">
+
+    <form action="/business" method="post" class="max-w-4xl mx-auto">
+    <div th:if="${!puedeEditar}" class="mb-5 rounded-xl bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-800 px-4 py-3 text-sm text-amber-900 dark:text-amber-200 flex items-start gap-2">
+        <i data-lucide="lock" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+        <span>Puedes consultar estos datos, pero no modificarlos. Si hay que cambiar algo, pídeselo al administrador.</span>
+    </div>
+    <fieldset th:disabled="${!puedeEditar}" class="space-y-5 min-w-0">
+
+        <!-- Datos fiscales -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2"><i data-lucide="building" class="h-5 w-5 text-brand-600"></i> Datos fiscales</h2>
+                <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Aparecen automáticamente en facturas, recibos y contratos.</p>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1.5">Razón social *</label>
+                    <input type="text" name="legal_name" required th:value="${profile.get('legal_name')}" placeholder="Inmuebles Madrid Centro S.L." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">NIF / CIF *</label>
+                    <input type="text" name="tax_id" required th:value="${profile.get('tax_id')}" placeholder="B12345678" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">IBAN para cobros</label>
+                    <input type="text" name="iban" th:value="${profile.get('iban')}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                    <p class="text-[11px] text-slate-500 dark:text-neutral-400 mt-1.5 flex items-start gap-1">
+                        <i data-lucide="shield-check" class="h-3.5 w-3.5 flex-shrink-0 mt-px"></i>
+                        <span>Sale en facturas y recibos. Cada cambio queda registrado y se avisa por email al titular de la cuenta.</span>
+                    </p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1.5">Dirección</label>
+                    <input type="text" name="address" th:value="${profile.get('address')}" placeholder="Calle Gran Vía 42" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Ciudad</label>
+                    <input type="text" name="city" th:value="${profile.get('city')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">CP</label>
+                    <input type="text" name="postal_code" th:value="${profile.get('postal_code')}" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Provincia</label>
+                    <input type="text" name="province" th:value="${profile.get('province')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">País</label>
+                    <input type="text" name="country" th:value="${profile.get('country') ?: 'España'}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2"><i data-lucide="mail" class="h-5 w-5 text-brand-600"></i> Contacto</h2>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Persona de contacto</label>
+                    <input type="text" name="contact_name" th:value="${profile.get('contact_name')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Email comercial</label>
+                    <input type="email" name="contact_email" th:value="${profile.get('contact_email')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Teléfono</label>
+                    <input type="tel" name="contact_phone" th:value="${profile.get('contact_phone')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Sitio web</label>
+                    <input type="url" name="website" th:value="${profile.get('website')}" placeholder="https://" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1.5">Horario de atención</label>
+                    <input type="text" name="business_hours" th:value="${profile.get('business_hours')}" placeholder="L-V 9:00-14:00 y 16:00-19:00" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2"><i data-lucide="palette" class="h-5 w-5 text-brand-600"></i> Branding</h2>
+                <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Personaliza facturas y emails con tu identidad.</p>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1.5">URL del logo</label>
+                    <input type="url" name="logo_url" th:value="${profile.get('logo_url')}" placeholder="https://... (recomendado 400x100px PNG transparente)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500">
+                    <img th:if="${profile.get('logo_url')}" th:src="${profile.get('logo_url')}" class="mt-3 h-16 object-contain bg-slate-100 rounded p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Color de marca</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" name="brand_color" th:value="${profile.get('brand_color') ?: '#1e40af'}" class="h-10 w-14 rounded cursor-pointer">
+                        <span class="text-xs font-mono text-slate-500" th:text="${profile.get('brand_color') ?: '#1e40af'}">#1e40af</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notas legales -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base flex items-center gap-2"><i data-lucide="scroll" class="h-5 w-5 text-brand-600"></i> Textos por defecto</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Notas en facturas</label>
+                    <textarea name="notes_invoice" rows="3" th:text="${profile.get('notes_invoice')}" placeholder="Plazo de pago: 30 días. Operación sujeta al régimen general de IVA..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Pie de recibos</label>
+                    <textarea name="receipt_footer" rows="2" th:text="${profile.get('receipt_footer')}" placeholder="Recibí pagado en concepto de alquiler. Conserve este recibo para su declaración." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${puedeEditar}" class="flex justify-end gap-2">
+            <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold shadow-card">
+                <i data-lucide="save" class="h-4 w-4"></i>
+                Guardar configuración
+            </button>
+        </div>
+    </fieldset>
+    </form>
+
+</div>
+</body>
+</html>

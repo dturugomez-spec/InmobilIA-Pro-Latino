@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrato de arrendamiento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 50px; color: #0f172a; line-height: 1.65; font-size: 13px; background: white; }
+        h1 { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
+        h2 { font-size: 14px; font-weight: 700; margin-top: 24px; margin-bottom: 8px; }
+        .header-meta { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 32px; }
+        p { margin: 8px 0; text-align: justify; }
+        ol { padding-left: 24px; }
+        ol li { margin-bottom: 12px; text-align: justify; }
+        .parties { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0; }
+        .parties strong { color: #1e40af; }
+        .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 60px; }
+        .sig-block { border-top: 1px solid #475569; padding-top: 8px; text-align: center; font-size: 11px; }
+        .toolbar { position: sticky; top: 0; background: white; border-bottom: 1px solid #e2e8f0; padding: 10px 0; margin: -40px -50px 30px; padding-left: 50px; padding-right: 50px; display: flex; gap: 8px; }
+        .btn { padding: 6px 14px; border-radius: 6px; font-weight: 500; font-size: 12px; cursor: pointer; border: 1px solid #e2e8f0; background: white; }
+        .btn-primary { background: #1e40af; color: white; border-color: #1e40af; }
+        @media print { .toolbar { display: none; } body { padding: 0; } }
+    </style>
+</head>
+<body>
+<div class="toolbar">
+    <a href="javascript:history.back()" class="btn">← Volver</a>
+    <button onclick="window.print()" class="btn btn-primary"> Imprimir / PDF</button>
+</div>
+
+<h1>CONTRATO DE ARRENDAMIENTO DE VIVIENDA</h1>
+<div class="header-meta">
+    Conforme a la <strong>Ley 29/1994 de Arrendamientos Urbanos (LAU)</strong> y modificaciones posteriores
+</div>
+
+<div class="parties">
+    <p>En <strong>[CIUDAD]</strong>, a <strong th:text="${hoy}">— de — de —</strong></p>
+    <p style="margin-top: 12px;"><strong>REUNIDOS</strong></p>
+    <p>De una parte, como <strong>ARRENDADOR/A</strong>:</p>
+    <p style="padding-left: 16px;">
+        <strong>D./Dña.</strong> <span th:text="${emisor.get('name') ?: emisor.get('email')}">—</span><br>
+        <strong>Email:</strong> <span th:text="${emisor.get('email')}">—</span><br>
+        <strong>Teléfono:</strong> <span th:text="${emisor.get('phone') ?: '—'}">—</span>
+    </p>
+    <p style="margin-top: 12px;">De otra parte, como <strong>ARRENDATARIO/A</strong>:</p>
+    <p style="padding-left: 16px;">
+        <strong>D./Dña.</strong> <span th:text="${inquilino.get('name')}">—</span><br>
+        <strong>DNI/NIE:</strong> <span th:text="${inquilino.get('id_number') ?: '—'}">—</span><br>
+        <strong>Nacionalidad:</strong> <span th:text="${inquilino.get('nationality') ?: 'Española'}">—</span><br>
+        <strong>Email:</strong> <span th:text="${inquilino.get('email') ?: '—'}">—</span><br>
+        <strong>Teléfono:</strong> <span th:text="${inquilino.get('phone') ?: '—'}">—</span>
+    </p>
+</div>
+
+<p>Ambas partes, con la capacidad legal necesaria para este acto, formalizan el presente contrato bajo las siguientes <strong>CLÁUSULAS</strong>:</p>
+
+<h2>PRIMERA · OBJETO</h2>
+<p>El ARRENDADOR cede en arrendamiento al ARRENDATARIO la vivienda situada en:</p>
+<p style="padding-left: 16px;">
+    <strong>Dirección:</strong> <span th:text="${prop.get('address')}">—</span><br>
+    <strong>Localidad:</strong> <span th:text="${(prop.get('city') ?: '') + ' (' + (prop.get('postal_code') ?: '') + ')'}">—</span><br>
+    <strong>Superficie:</strong> <span th:text="${prop.get('area_m2') != null ? prop.get('area_m2') + ' m²' : '—'}">—</span><br>
+    <strong>Referencia catastral:</strong> <span th:text="${prop.get('referencia_catastral') ?: '________________'}">—</span>
+</p>
+<p>El destino del inmueble es exclusivamente para <strong>vivienda habitual y permanente</strong> del ARRENDATARIO y su unidad familiar, conforme al artículo 2 LAU.</p>
+
+<h2>SEGUNDA · DURACIÓN</h2>
+<p>La duración del presente contrato será de <strong>5 años</strong> (7 años si el ARRENDADOR es persona jurídica), iniciándose el <strong th:text="${contrato.get('start_date') != null ? #strings.substring(contrato.get('start_date'),0,10) : '________'}">—</strong> y finalizando el <strong th:text="${contrato.get('end_date') != null ? #strings.substring(contrato.get('end_date'),0,10) : '________'}">—</strong>.</p>
+<p>De conformidad con el artículo 9 LAU, llegado el día del vencimiento, si ninguna de las partes hubiese notificado a la otra, al menos con cuatro meses de antelación a aquella fecha en el caso del ARRENDADOR y dos meses en el del ARRENDATARIO, su voluntad de no renovarlo, el contrato se prorrogará obligatoriamente por plazos anuales hasta un máximo de tres años.</p>
+
+<h2>TERCERA · RENTA</h2>
+<p>La renta mensual pactada es de <strong th:text="${contrato.get('rent') != null ? contrato.get('rent') + ' €' : '________ €'}">—</strong> (<em>importe en letra</em>), pagaderos por mensualidades anticipadas dentro de los siete primeros días de cada mes mediante transferencia bancaria a la cuenta indicada por el ARRENDADOR.</p>
+
+<h2>CUARTA · ACTUALIZACIÓN DE LA RENTA</h2>
+<p>La renta podrá actualizarse anualmente conforme al <strong>Índice de Referencia para Arrendamiento de Vivienda (IRAV)</strong> publicado por el INE, conforme al artículo 18 LAU y la Ley 12/2023 de vivienda. La actualización tendrá efectos a partir del mes siguiente al cumplimiento de cada año de vigencia del contrato, mediante notificación escrita.</p>
+
+<h2>QUINTA · FIANZA Y GARANTÍAS</h2>
+<p>El ARRENDATARIO entrega en este acto, en concepto de <strong>fianza legal</strong>, la cantidad de <strong th:text="${contrato.get('deposit') != null ? contrato.get('deposit') + ' €' : '________ €'}">—</strong>, equivalente a una mensualidad de renta, conforme al artículo 36 LAU. Esta cantidad será depositada en el organismo competente de la Comunidad Autónoma.</p>
+<p>La fianza será devuelta al ARRENDATARIO a la finalización del contrato, una vez comprobado el estado del inmueble y el cumplimiento de las obligaciones contractuales.</p>
+
+<h2>SEXTA · GASTOS Y SERVICIOS</h2>
+<p>Serán a cargo del ARRENDATARIO los gastos de los suministros (electricidad, agua, gas, telefonía, internet) que se contraten a su nombre. Los gastos de comunidad y el IBI serán por cuenta del ARRENDADOR, salvo pacto expreso en contrario.</p>
+
+<h2>SÉPTIMA · CONSERVACIÓN, REPARACIONES Y MEJORAS</h2>
+<p>Las pequeñas reparaciones que exija el desgaste por el uso ordinario de la vivienda serán de cargo del ARRENDATARIO. El ARRENDADOR está obligado a realizar las reparaciones necesarias para conservar la vivienda en condiciones de habitabilidad, conforme al artículo 21 LAU.</p>
+
+<h2>OCTAVA · CESIÓN Y SUBARRIENDO</h2>
+<p>El ARRENDATARIO no podrá ceder ni subarrendar total o parcialmente el inmueble sin el consentimiento expreso y por escrito del ARRENDADOR.</p>
+
+<h2>NOVENA · DESISTIMIENTO</h2>
+<p>El ARRENDATARIO podrá desistir del contrato una vez transcurridos al menos <strong>seis meses</strong>, comunicándoselo al ARRENDADOR con una antelación mínima de <strong>treinta días</strong>. Las partes podrán pactar una indemnización equivalente a una mensualidad de renta por cada año de contrato que reste por cumplir, conforme al artículo 11 LAU.</p>
+
+<h2>DÉCIMA · CAUSAS DE RESOLUCIÓN</h2>
+<p>Serán causas de resolución del presente contrato, además de las previstas en el artículo 27 LAU:</p>
+<ol>
+    <li>Falta de pago de la renta o cantidades asimiladas.</li>
+    <li>La realización de daños dolosos en la vivienda o las obras no consentidas.</li>
+    <li>La realización de actividades molestas, insalubres, nocivas, peligrosas o ilícitas.</li>
+    <li>El destino del inmueble a uso distinto al de vivienda habitual.</li>
+</ol>
+
+<h2>UNDÉCIMA · PROTECCIÓN DE DATOS</h2>
+<p>Los datos personales facilitados se tratarán conforme al RGPD (UE 2016/679) y la LOPDGDD (LO 3/2018), con la finalidad exclusiva de gestionar el presente contrato. Los interesados podrán ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo al ARRENDADOR.</p>
+
+<h2>DUODÉCIMA · LEGISLACIÓN APLICABLE</h2>
+<p>El presente contrato se rige por la Ley 29/1994 de Arrendamientos Urbanos (LAU), con las modificaciones operadas por la Ley 12/2023 por el derecho a la vivienda y demás normativa concordante. Para cuanto no esté expresamente previsto, será de aplicación supletoria el Código Civil. Las partes se someten a los Juzgados y Tribunales del lugar donde radica el inmueble arrendado.</p>
+
+<p style="margin-top: 32px;">Y en prueba de conformidad, las partes firman el presente contrato por duplicado y a un solo efecto, en el lugar y fecha indicados al inicio.</p>
+
+<div class="signatures">
+    <div class="sig-block">
+        <strong>EL ARRENDADOR</strong><br>
+        <span style="color: #64748b;" th:text="${emisor.get('name') ?: emisor.get('email')}">—</span>
+    </div>
+    <div class="sig-block">
+        <strong>EL ARRENDATARIO</strong><br>
+        <span style="color: #64748b;" th:text="${inquilino.get('name')}">—</span>
+    </div>
+</div>
+
+</body>
+</html>

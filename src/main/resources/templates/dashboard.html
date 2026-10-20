@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ═══════════ TU AGENTE HOY ═══════════ -->
+    <div class="mb-6 rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-5 text-white flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-4 flex-wrap">
+            <div>
+                <p class="text-xs uppercase tracking-wider text-white/60"> Tu Agente hoy</p>
+                <div class="flex items-center gap-5 mt-1">
+                    <div>
+                        <span class="text-2xl font-extrabold" th:text="${agLeadsCalientes}">0</span>
+                        <span class="text-sm text-white/70"> leads calientes</span>
+                    </div>
+                    <div th:if="${agAutopiloto > 0}">
+                        <span class="text-2xl font-extrabold" th:text="${agAutopiloto}">0</span>
+                        <span class="text-sm text-white/70"> acciones por aprobar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <a href="/agente" class="px-4 py-2 rounded-lg bg-white text-indigo-900 text-sm font-bold">Abrir Agente →</a>
+            <a th:if="${agAutopiloto > 0}" href="/autopiloto" class="px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm font-bold"> Autopiloto</a>
+        </div>
+    </div>
+
+    <!-- ═══════════ TU DÍA · plan de acciones priorizadas (carga async) ═══════════ -->
+    <div id="tu-dia-card" style="display:none"
+         class="mb-6 rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-card overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-neutral-800">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">📋</span>
+                <h2 class="font-bold text-slate-800 dark:text-neutral-100">Tu día</h2>
+                <span id="tu-dia-count" class="text-xs text-slate-400 dark:text-neutral-500"></span>
+            </div>
+            <a href="/agente" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Ver todo →</a>
+        </div>
+        <ul id="tu-dia-list" class="divide-y divide-slate-100 dark:divide-neutral-800"></ul>
+    </div>
+    <script>
+    (function () {
+        fetch('/api/tu-dia', { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (items) {
+                if (!Array.isArray(items) || items.length === 0) return;
+                var list = document.getElementById('tu-dia-list');
+                items.forEach(function (p) {
+                    var li = document.createElement('li');
+                    li.className = 'flex items-center gap-3 px-5 py-3';
+                    var ico = document.createElement('span');
+                    ico.className = 'text-xl shrink-0';
+                    ico.textContent = p.icono || '•';
+                    var box = document.createElement('div');
+                    box.className = 'min-w-0 flex-1';
+                    var a = document.createElement('a');
+                    a.href = p.link || '#';
+                    a.className = 'font-medium text-slate-800 dark:text-neutral-100 hover:text-indigo-600 dark:hover:text-indigo-400';
+                    a.textContent = p.accion || '';
+                    box.appendChild(a);
+                    if (p.motivo) {
+                        var pm = document.createElement('p');
+                        pm.className = 'text-xs text-slate-500 dark:text-neutral-400';
+                        pm.textContent = p.motivo;
+                        box.appendChild(pm);
+                    }
+                    li.appendChild(ico); li.appendChild(box);
+                    list.appendChild(li);
+                });
+                document.getElementById('tu-dia-count').textContent = items.length + ' cosas por hacer';
+                document.getElementById('tu-dia-card').style.display = '';
+            })
+            .catch(function () { /* silencioso: si falla, la tarjeta no aparece */ });
+    })();
+    </script>
+
+    <!-- ═══════════ STATUS BAR ═══════════ -->
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 px-4 py-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-card">
+        <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Sistema</span>
+            <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400">Operativo</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Activos</span>
+            <span class="font-mono text-sm font-semibold" th:text="${nProps}">0</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Inquilinos</span>
+            <span class="font-mono text-sm font-semibold" th:text="${nTenants}">0</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Contratos</span>
+            <span class="font-mono text-sm font-semibold" th:text="${nContratos}">0</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full"
+                  th:classappend="${alertCountCrit > 0} ? 'bg-red-500' : (${alertCountWarn > 0} ? 'bg-amber-500' : 'bg-emerald-500')"></span>
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Alertas</span>
+            <span class="font-mono text-sm font-semibold" th:text="${alertTotal}">0</span>
+            <div class="flex gap-1" th:if="${alertTotal > 0}">
+                <span th:if="${alertCountCrit > 0}" th:text="${alertCountCrit}"
+                      class="text-[10px] font-mono font-semibold px-1.5 rounded bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300">0</span>
+                <span th:if="${alertCountWarn > 0}" th:text="${alertCountWarn}"
+                      class="text-[10px] font-mono font-semibold px-1.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">0</span>
+                <span th:if="${alertCountInfo > 0}" th:text="${alertCountInfo}"
+                      class="text-[10px] font-mono font-semibold px-1.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">0</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 ml-auto">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Actualizado</span>
+            <span class="font-mono text-xs text-slate-600 dark:text-slate-400" th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">--:--:--</span>
+        </div>
+    </div>
+
+    <!-- ═══════════ NEWS TICKER ═══════════ -->
+    <section class="mb-6 rounded-xl bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 ring-1 ring-brand-800 overflow-hidden" th:if="${newsTicker != null and !newsTicker.isEmpty()}">
+        <div class="flex items-center gap-3 px-5 py-2 border-b border-white/10">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-white/90">Noticias mercado en vivo</span>
+            <a href="/herramientas/radar" class="ml-auto text-xs text-white/70 hover:text-white transition-colors">Ver todas →</a>
+        </div>
+        <div class="flex gap-1 px-2 py-2 overflow-x-auto scroll-thin">
+            <a th:each="n : ${newsTicker}"
+               th:href="${n.url()}" target="_blank" rel="noopener"
+               th:title="${n.summary()}"
+               class="flex-shrink-0 max-w-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/90 transition-colors group">
+                <div class="flex items-center gap-2 text-[10px] uppercase tracking-wider text-white/60 mb-0.5">
+                    <span th:text="${n.sourceIcon() + ' ' + n.source()}"></span>
+                    <span class="font-mono ml-auto" th:text="${n.pubDate()}">—</span>
+                </div>
+                <div class="text-xs font-medium truncate" th:text="${n.title()}">Titular</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ═══════════ CTA AUDITOR IA ═══════════ -->
+    <a href="/herramientas/auditoria"
+       class="group relative flex items-center gap-5 mb-6 p-5 rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 hover:from-brand-800 hover:via-brand-900 hover:to-brand-950 ring-1 ring-brand-700 transition-all hover:shadow-card-xl overflow-hidden"
+       th:if="${hasData}">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-500/20 blur-3xl"></div>
+        <div class="absolute right-20 bottom-0 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="relative h-14 w-14 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="trophy" class="h-6 w-6 text-amber-300"></i>
+        </div>
+        <div class="relative flex-1 min-w-0">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300/90 mb-0.5"> Único en el mercado</div>
+            <h3 class="text-lg font-bold text-white">Audita tu cartera en 1 clic</h3>
+            <p class="text-sm text-white/70">15 chequeos automáticos · Impacto económico en € · Plan de acción priorizado</p>
+        </div>
+        <i data-lucide="arrow-right" class="relative h-5 w-5 text-white/80 group-hover:translate-x-1 transition-transform flex-shrink-0"></i>
+    </a>
+
+    <!-- ═══════════ EMPTY STATE ═══════════ -->
+    <div th:if="${!hasData}" class="text-center py-20 px-6 bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-slate-300 dark:border-neutral-700">
+        <div class="inline-flex h-20 w-20 rounded-2xl bg-brand-50 dark:bg-brand-950/40 items-center justify-center mb-5">
+            <i data-lucide="building-2" class="h-9 w-9 text-brand-700 dark:text-brand-400"></i>
+        </div>
+        <h2 class="text-xl font-bold mb-2">Empieza a operar tu cartera</h2>
+        <p class="text-sm text-slate-500 dark:text-neutral-400 max-w-md mx-auto mb-6">Añade tu primera propiedad, inquilino o transacción para empezar a ver tu dashboard con datos reales.</p>
+        <div class="flex flex-wrap items-center justify-center gap-2.5">
+            <a href="/crud/propiedades/new" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+                <i data-lucide="plus" class="h-4 w-4"></i> Añadir propiedad
+            </a>
+            <a href="/crud/inquilinos/new" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors">
+                <i data-lucide="user-plus" class="h-4 w-4"></i> Añadir inquilino
+            </a>
+            <a href="/crud/transacciones/new" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors">
+                <i data-lucide="receipt" class="h-4 w-4"></i> Registrar transacción
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══════════ DASHBOARD CON DATOS ═══════════ -->
+    <div th:if="${hasData}" class="space-y-6">
+
+        <!-- ───── KPIs OPERATIVOS ───── -->
+        <section>
+            <div class="flex items-end justify-between mb-3">
+                <div>
+                    <h3 class="text-base font-semibold">Operativa &amp; Cartera</h3>
+                    <p class="text-xs text-slate-500 dark:text-neutral-400">Métricas en tiempo real</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <!-- Valor cartera -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center">
+                            <i data-lucide="building" class="h-3.5 w-3.5 text-brand-700 dark:text-brand-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Valor cartera</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${valorCartera}">0 €</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">
+                        <span th:text="${nProps}">0</span> activos · avg <span th:text="${precioMedio}">0 €</span>
+                    </div>
+                </div>
+
+                <!-- Plusvalía -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center">
+                            <i data-lucide="trending-up" class="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Plusvalía</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight"
+                         th:classappend="${plusvaliaPct >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+                         th:text="${plusvalia}">0 €</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">
+                        <span th:text="${#numbers.formatDecimal(plusvaliaPct,1,2)} + '%'">0%</span> vs compra
+                    </div>
+                </div>
+
+                <!-- Ocupación -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center">
+                            <i data-lucide="key" class="h-3.5 w-3.5 text-blue-700 dark:text-blue-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Ocupación</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight"
+                         th:classappend="${occRate >= 80} ? 'text-emerald-600 dark:text-emerald-400' : (${occRate >= 50} ? '' : 'text-red-600 dark:text-red-400')"
+                         th:text="${#numbers.formatDecimal(occRate,1,1)} + '%'">0%</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">
+                        <span th:text="${nOcc}">0</span>/<span th:text="${nProps}">0</span> · <span th:text="${nVac}">0</span> vacantes
+                    </div>
+                </div>
+
+                <!-- NOI -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center">
+                            <i data-lucide="coins" class="h-3.5 w-3.5 text-amber-700 dark:text-amber-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">NOI mensual</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${noiMes}">0 €</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">anual <span th:text="${noiAnual}">0 €</span></div>
+                </div>
+
+                <!-- Cash Flow -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center">
+                            <i data-lucide="banknote" class="h-3.5 w-3.5 text-purple-700 dark:text-purple-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Cash flow mes</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight"
+                         th:classappend="${cashflowMesNum >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+                         th:text="${cashflowMes}">0 €</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">tras hipoteca <span th:text="${mortgageMes}">0 €</span></div>
+                </div>
+
+                <!-- Cap rate -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-cyan-50 dark:bg-cyan-950/50 flex items-center justify-center">
+                            <i data-lucide="percent" class="h-3.5 w-3.5 text-cyan-700 dark:text-cyan-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Cap rate</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight" th:text="${#numbers.formatDecimal(capRate,1,2)} + '%'">0%</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">yield <span th:text="${#numbers.formatDecimal(grossYield,1,2)} + '%'">0%</span></div>
+                </div>
+
+                <!-- DSCR -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="h-3.5 w-3.5 text-indigo-700 dark:text-indigo-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">DSCR</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight"
+                         th:classappend="${dscr >= 1.2} ? 'text-emerald-600 dark:text-emerald-400' : (${dscr >= 1} ? '' : 'text-red-600 dark:text-red-400')"
+                         th:text="${#numbers.formatDecimal(dscr,1,2)} + 'x'">0x</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">cobertura deuda</div>
+                </div>
+
+                <!-- Morosidad -->
+                <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="h-7 w-7 rounded-lg bg-red-50 dark:bg-red-950/50 flex items-center justify-center">
+                            <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-700 dark:text-red-400"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Morosidad</span>
+                    </div>
+                    <div class="text-2xl font-bold font-mono tracking-tight"
+                         th:classappend="${nMor > 0} ? 'text-red-600 dark:text-red-400' : ''"
+                         th:text="${nMor}">0</div>
+                    <div class="text-[11px] text-slate-500 dark:text-neutral-500 mt-1">sobre <span th:text="${nTenants}">0</span> inquilinos</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ───── TESORERIA + GRAFICA ───── -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            <!-- KPIs Tesorería -->
+            <div class="lg:col-span-1 space-y-3">
+                <h3 class="text-base font-semibold">Tesorería · flujo real</h3>
+                <p class="text-xs text-slate-500 dark:text-neutral-400 -mt-2">Desde transacciones registradas</p>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                        <span class="text-xs text-slate-500 dark:text-neutral-400">Ingresos mes</span>
+                        <span class="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400" th:text="${revMes}">0 €</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                        <span class="text-xs text-slate-500 dark:text-neutral-400">Gastos mes</span>
+                        <span class="font-mono font-semibold text-sm text-red-600 dark:text-red-400" th:text="${expMes}">0 €</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                        <span class="text-xs text-slate-500 dark:text-neutral-400">Cashflow YTD</span>
+                        <span class="font-mono font-semibold text-sm" th:classappend="${cashflowYtdNum >= 0} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" th:text="${cashflowYtd}">0 €</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                        <span class="text-xs text-slate-500 dark:text-neutral-400">Ingresos 12M</span>
+                        <span class="font-mono font-semibold text-sm" th:text="${revUlt12}">0 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica cashflow -->
+            <div class="lg:col-span-2 p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                <div class="flex items-end justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-semibold">Cash flow · últimos 6 meses</h3>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Ingresos vs gastos mensuales</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px] text-slate-500 dark:text-neutral-400">
+                        <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded bg-emerald-500"></span>Ingresos</span>
+                        <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded bg-red-400"></span>Gastos</span>
+                    </div>
+                </div>
+                <canvas id="cashflowChart" height="120"></canvas>
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    const cashflowData = /*[[${cashflowChart}]]*/ [];
+                    /*]]>*/
+                </script>
+            </div>
+        </section>
+
+        <!-- ───── DATOS OFICIALES EN VIVO ───── -->
+        <section class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${liveEuribor != null}">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <h3 class="text-base font-semibold">Datos oficiales en vivo</h3>
+                <span class="text-xs text-slate-500 dark:text-neutral-400">BCE · Banco de España · INE</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <a href="/herramientas/euribor" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">Euribor 12M</div>
+                    <div class="text-lg font-bold font-mono mt-1" th:text="${liveEuribor.valor() != null ? #numbers.formatDecimal(liveEuribor.valor(),1,3) + '%' : '—'}">—</div>
+                    <div class="text-[10px] mt-0.5" th:if="${liveEuriborDelta != null}"
+                         th:classappend="${liveEuriborDelta > 0} ? 'text-red-600' : 'text-emerald-600'"
+                         th:text="${(liveEuriborDelta > 0 ? '▲ +' : '▼ ') + #numbers.formatDecimal(liveEuriborDelta,1,2) + ' pp'}">—</div>
+                </a>
+                <a href="/herramientas/euribor" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors" th:if="${liveTedr != null and liveTedr.tedrNuevo() != null}">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">TEDR hipoteca</div>
+                    <div class="text-lg font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(liveTedr.tedrNuevo(),1,2) + '%'}">—</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">BdE</div>
+                </a>
+                <a href="/herramientas/datos-oficiales#ine" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors" th:if="${liveIpvYoy != null}">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">IPV interanual</div>
+                    <div class="text-lg font-bold font-mono mt-1" th:text="${(liveIpvYoy > 0 ? '+' : '') + #numbers.formatDecimal(liveIpvYoy,1,2) + '%'}">—</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">INE</div>
+                </a>
+                <a href="/herramientas/datos-oficiales#boe" class="block p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 font-semibold">Boletín Oficial</div>
+                    <div class="text-lg font-bold mt-1"> BOE</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">Búsqueda</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ───── ALERTAS + HEALTH SCORE ───── -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            <!-- Alertas -->
+            <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                    <h3 class="text-base font-semibold">Panel de alertas</h3>
+                    <div class="flex items-center gap-1.5">
+                        <span th:if="${alertCountCrit > 0}" th:text="${alertCountCrit} + ' críticas'" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300">0 crit</span>
+                        <span th:if="${alertCountWarn > 0}" th:text="${alertCountWarn} + ' avisos'" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">0 warn</span>
+                        <span th:if="${alertCountInfo > 0}" th:text="${alertCountInfo} + ' info'" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">0 info</span>
+                    </div>
+                </div>
+                <div class="p-3 max-h-80 overflow-y-auto scroll-thin space-y-1.5">
+                    <div th:if="${alertTotal == 0}" class="text-center py-8 text-sm text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle-2" class="h-4 w-4"></i>
+                        Sin alertas. Todo bajo control.
+                    </div>
+                    <a th:each="a : ${alertsCrit}" th:href="${a.url}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors">
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                        <span class="text-[10px] font-mono font-bold uppercase text-red-700 dark:text-red-400 flex-shrink-0" th:text="${a.cat}">CAT</span>
+                        <span class="text-sm text-slate-700 dark:text-slate-300 flex-1 truncate" th:text="${a.text}">texto</span>
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-slate-400"></i>
+                    </a>
+                    <a th:each="a : ${alertsWarn}" th:href="${a.url}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors">
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+                        <span class="text-[10px] font-mono font-bold uppercase text-amber-700 dark:text-amber-400 flex-shrink-0" th:text="${a.cat}">CAT</span>
+                        <span class="text-sm text-slate-700 dark:text-slate-300 flex-1 truncate" th:text="${a.text}">texto</span>
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-slate-400"></i>
+                    </a>
+                    <a th:each="a : ${alertsInfo}" th:href="${a.url}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 ring-1 ring-blue-200 dark:ring-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-colors">
+                        <span class="h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                        <span class="text-[10px] font-mono font-bold uppercase text-blue-700 dark:text-blue-400 flex-shrink-0" th:text="${a.cat}">CAT</span>
+                        <span class="text-sm text-slate-700 dark:text-slate-300 flex-1 truncate" th:text="${a.text}">texto</span>
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-slate-400"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Health Score -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                    <h3 class="text-base font-semibold">Health Score</h3>
+                    <span class="text-[10px] font-mono uppercase text-slate-400" th:if="${healthAvailable}">0-100</span>
+                </div>
+                <div class="p-5" th:if="${healthAvailable}">
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="relative h-32 w-32">
+                            <svg class="h-32 w-32 -rotate-90">
+                                <circle cx="64" cy="64" r="54" stroke="currentColor" stroke-width="10" fill="none" class="text-slate-100 dark:text-neutral-800"/>
+                                <circle cx="64" cy="64" r="54" stroke="currentColor" stroke-width="10" fill="none"
+                                        stroke-linecap="round"
+                                        th:attr="stroke-dasharray=339.292,stroke-dashoffset=${339.292 - (339.292 * healthScore / 100)}"
+                                        class="text-brand-600 transition-all"/>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-3xl font-bold font-mono" th:text="${healthScore}">0</span>
+                                <span class="text-[10px] uppercase tracking-wider text-slate-400">/100</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Dimensiones</div>
+                        <div th:each="d : ${healthDims}" class="flex items-center gap-2">
+                            <span class="text-xs text-slate-600 dark:text-slate-400 w-20 truncate" th:text="${d.key}">dim</span>
+                            <div class="flex-1 h-1.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                <div th:style="|width:${d.value * 5}%|"
+                                     th:classappend="${d.value >= 16} ? 'bg-emerald-500' : (${d.value >= 10} ? 'bg-amber-500' : 'bg-red-500')"
+                                     class="h-full transition-all"></div>
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-500 w-10 text-right" th:text="${d.value} + '/20'">0/20</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 text-center text-sm text-slate-500 dark:text-neutral-400" th:if="${!healthAvailable}">
+                    Datos insuficientes para calcular el score.
+                </div>
+            </div>
+        </section>
+
+        <!-- ───── ÚLTIMAS TX + PRÓXIMOS VENCIMIENTOS ───── -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+            <!-- Últimas transacciones -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                    <h3 class="text-base font-semibold">Últimas transacciones</h3>
+                    <a href="/crud/transacciones" class="text-xs text-brand-700 dark:text-brand-400 hover:text-brand-800 transition-colors">Ver todas →</a>
+                </div>
+                <div class="p-3">
+                    <div th:if="${recentTx.isEmpty()}" class="text-center py-8 text-sm text-slate-500 dark:text-neutral-400">Sin transacciones registradas.</div>
+                    <table class="w-full text-sm" th:if="${!recentTx.isEmpty()}">
+                        <thead><tr class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                            <th class="text-left font-semibold py-2 px-2">Fecha</th>
+                            <th class="text-left font-semibold py-2 px-2">Tipo</th>
+                            <th class="text-left font-semibold py-2 px-2">Activo</th>
+                            <th class="text-right font-semibold py-2 px-2">Importe</th>
+                        </tr></thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                        <tr th:each="t : ${recentTx}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors">
+                            <td class="py-2.5 px-2 font-mono text-xs text-slate-500" th:text="${t.date != null ? #strings.substring(t.date,0,10) : '—'}">—</td>
+                            <td class="py-2.5 px-2">
+                                <span th:text="${t.type}"
+                                      th:classappend="${t.type != null and #strings.equalsIgnoreCase(t.type,'Ingreso')} ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400'"
+                                      class="text-[10px] font-semibold px-2 py-0.5 rounded">—</span>
+                            </td>
+                            <td class="py-2.5 px-2 truncate max-w-[140px]" th:text="${t.property_name}">—</td>
+                            <td class="py-2.5 px-2 font-mono text-right font-semibold"
+                                th:classappend="${t.type != null and #strings.equalsIgnoreCase(t.type,'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+                                th:text="${#numbers.formatDecimal(t.amount != null ? t.amount : 0,0,'POINT',0,'COMMA')} + ' €'">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Próximos vencimientos -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                    <h3 class="text-base font-semibold">Próximos vencimientos</h3>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 mb-2">Contratos</h4>
+                        <div th:if="${nextLeases.isEmpty()}" class="text-xs text-slate-500 dark:text-neutral-400">Sin contratos próximos.</div>
+                        <ul class="space-y-1.5" th:if="${!nextLeases.isEmpty()}">
+                            <li th:each="c : ${nextLeases}" class="flex items-center gap-3 text-sm">
+                                <span class="font-mono text-xs text-slate-500 dark:text-neutral-400 w-20 flex-shrink-0" th:text="${c.end_date != null ? #strings.substring(c.end_date,0,10) : '—'}">—</span>
+                                <span class="font-medium truncate flex-1" th:text="${c.property_name}">—</span>
+                                <span class="text-xs text-slate-500 dark:text-neutral-400 truncate" th:text="${c.tenant_name}">—</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 mb-2">Mantenimiento programado</h4>
+                        <div th:if="${nextMaint.isEmpty()}" class="text-xs text-slate-500 dark:text-neutral-400">Sin trabajos programados.</div>
+                        <ul class="space-y-1.5" th:if="${!nextMaint.isEmpty()}">
+                            <li th:each="m : ${nextMaint}" class="flex items-center gap-3 text-sm">
+                                <span class="font-mono text-xs text-slate-500 dark:text-neutral-400 w-20 flex-shrink-0" th:text="${m.scheduled_date != null ? #strings.substring(m.scheduled_date,0,10) : '—'}">—</span>
+                                <span class="font-medium truncate flex-1" th:text="${m.title}">—</span>
+                                <span class="text-xs text-slate-500 dark:text-neutral-400 truncate" th:text="${m.property_name}">—</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ═══════════ ACCESOS RÁPIDOS ═══════════ -->
+    <section class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mt-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold">Accesos rápidos</h3>
+        </div>
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            <a href="/crud/propiedades"        class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="building" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Cartera</span>
+            </a>
+            <a href="/crud/inquilinos"         class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="users" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Inquilinos</span>
+            </a>
+            <a href="/crud/contratos"          class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="file-text" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Contratos</span>
+            </a>
+            <a href="/crud/transacciones"      class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="receipt" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Finanzas</span>
+            </a>
+            <a href="/crud/mantenimiento"      class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="wrench" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Mantenim.</span>
+            </a>
+            <a href="/crud/tareas"             class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="check-square" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Tareas</span>
+            </a>
+            <a href="/crud/reservas"           class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="calendar" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Visitas</span>
+            </a>
+            <a href="/crud/leads"              class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="user-plus" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Leads</span>
+            </a>
+            <a href="/herramientas/euribor"    class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="trending-down" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Euríbor</span>
+            </a>
+            <a href="/ia/analyzer"             class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="sparkles" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">IA Analyzer</span>
+            </a>
+            <a href="/herramientas/datos-oficiales" class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="landmark" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Catastro</span>
+            </a>
+            <a href="/herramientas/fiscal"     class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-transparent hover:ring-slate-200 dark:hover:ring-neutral-700 transition-all group">
+                <i data-lucide="calculator" class="h-5 w-5 text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                <span class="text-xs font-medium">Fiscal ES</span>
+            </a>
+        </div>
+    </section>
+
+</div>
+
+<!-- Chart cashflow -->
+<script th:if="${hasData}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('cashflowChart');
+        if (!ctx || !window.cashflowData) return;
+        const isDark = document.documentElement.classList.contains('dark');
+        const grid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+        const text = isDark ? '#94a3b8' : '#64748b';
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: cashflowData.map(m => m.label),
+                datasets: [
+                    { label: 'Ingresos', data: cashflowData.map(m => m.rev), backgroundColor: '#10b981', borderRadius: 6, barPercentage: 0.7 },
+                    { label: 'Gastos',   data: cashflowData.map(m => m.exp), backgroundColor: '#f87171', borderRadius: 6, barPercentage: 0.7 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', padding: 10, cornerRadius: 8, titleFont: { size: 11 }, bodyFont: { size: 12 } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: text, font: { size: 11 } } },
+                    y: { grid: { color: grid, drawBorder: false }, ticks: { color: text, font: { size: 11 }, callback: v => v >= 1000 ? (v/1000) + 'K €' : v + ' €' } }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

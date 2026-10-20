@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InmobilIA Pro · Acceso</title>
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        .grid-bg {
+            background-image:
+                radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
+                radial-gradient(circle at 75% 80%, rgba(99, 102, 241, 0.18), transparent 50%),
+                linear-gradient(135deg, #0c1f4d 0%, #1e3a8a 50%, #312e81 100%);
+        }
+        .grid-pattern {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .input-modern:focus {
+            box-shadow: 0 0 0 4px rgb(59 130 246 / 0.15);
+            border-color: #3b82f6;
+        }
+        .fade-in { animation: fadeIn .35s ease-out both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    <!-- Al iniciar sesión, el menú lateral empieza con todas las secciones cerradas -->
+    <script>try { sessionStorage.removeItem('nav_abiertos'); } catch (e) {}</script>
+</head>
+<body class="min-h-screen bg-white text-slate-900 antialiased">
+
+<div class="min-h-screen grid lg:grid-cols-2">
+
+    <!-- PANEL IZQUIERDO: marca + decoración -->
+    <aside class="hidden lg:flex relative grid-bg overflow-hidden">
+        <div class="absolute inset-0 grid-pattern opacity-60"></div>
+        <div class="relative z-10 flex flex-col justify-between w-full p-12 text-white">
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <img src="/brand/logo-mark.svg" alt="" width="40" height="40" class="h-10 w-10 rounded-lg">
+                <span class="font-bold text-xl tracking-tight">Inmobil<span class="text-brand-400">IA</span> Pro</span>
+            </div>
+
+            <!-- Mensaje central -->
+            <div class="space-y-6">
+                <h1 class="text-4xl xl:text-5xl font-bold leading-tight tracking-tight">
+                    La plataforma que tu equipo<br>
+                    estaba esperando.
+                </h1>
+                <p class="text-white/70 text-lg max-w-md leading-relaxed">
+                    Gestión inmobiliaria profesional, CRM, contabilidad y analítica IA en un solo sitio.
+                </p>
+
+                <!-- Stats decorativas -->
+                <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                    <div>
+                        <div class="text-2xl font-bold font-mono">15+</div>
+                        <div class="text-xs text-white/50 uppercase tracking-wider mt-1">Módulos pro</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-mono">24/7</div>
+                        <div class="text-xs text-white/50 uppercase tracking-wider mt-1">Disponibilidad</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-mono">100%</div>
+                        <div class="text-xs text-white/50 uppercase tracking-wider mt-1">Cloud</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between text-xs text-white/40">
+                <span>© 2026 InmobilIA Pro · <span th:replace="~{fragments/grupo :: sello(true)}"></span></span>
+                <div class="flex gap-4">
+                    <span class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema activo</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- PANEL DERECHO: formularios -->
+    <main class="flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div class="w-full max-w-md fade-in" x-data="{ tab: 'login' }">
+
+            <!-- Logo móvil -->
+            <div class="lg:hidden flex items-center gap-2 mb-10">
+                <img src="/brand/logo-mark.svg" alt="" width="36" height="36" class="h-9 w-9 rounded-lg">
+                <span class="font-bold text-lg tracking-tight text-slate-900">Inmobil<span class="text-brand-700">IA</span> Pro</span>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900" x-text="tab === 'login' ? 'Bienvenido de vuelta' : 'Crear tu cuenta'">Bienvenido de vuelta</h2>
+                <p class="text-sm text-slate-500 mt-1.5" x-text="tab === 'login' ? 'Accede a tu workspace de gestión inmobiliaria' : 'Empieza tu prueba con 50 créditos IA gratis'">Accede a tu workspace de gestión inmobiliaria</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="relative mb-6 grid grid-cols-2 bg-slate-100 rounded-lg p-1">
+                <button type="button"
+                        @click="tab = 'login'"
+                        :class="tab === 'login' ? 'bg-white shadow-card text-slate-900' : 'text-slate-500 hover:text-slate-700'"
+                        class="relative py-2 text-sm font-medium rounded-md transition-all duration-200">
+                    Iniciar sesión
+                </button>
+                <!-- El alta es por solicitud (el registro libre está desactivado): lleva al formulario -->
+                <a href="/#contacto"
+                   class="relative py-2 text-sm font-medium rounded-md transition-all duration-200 text-center text-slate-500 hover:text-slate-700">
+                    Solicitar acceso
+                </a>
+            </div>
+
+            <!-- Mensaje de éxito tras registro -->
+            <div th:if="${regOk}" class="mb-5 p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+                <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-emerald-800" th:text="${regOk}">OK</p>
+            </div>
+
+            <!-- FORM LOGIN -->
+            <form method="post" action="/login" class="space-y-4" x-show="tab === 'login'" x-transition.opacity.duration.200ms>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Usuario o email</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input type="text" name="email" required autofocus
+                               placeholder="tu@email.com"
+                               class="input-modern w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none transition-all placeholder-slate-400">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-medium text-slate-700">Contraseña</label>
+                        <a href="/forgot" class="text-xs text-brand-700 hover:text-brand-800 font-medium">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    <div class="relative" x-data="{ show: false }">
+                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input :type="show ? 'text' : 'password'" name="password" required
+                               placeholder="••••••••"
+                               class="input-modern w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none transition-all placeholder-slate-400">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i :data-lucide="show ? 'eye-off' : 'eye'" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error login -->
+                <div th:if="${error}" class="p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2.5">
+                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-sm text-red-800" th:text="${error}">Error</p>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-brand-800 hover:bg-brand-900 text-white font-medium text-sm py-2.5 rounded-lg transition-all shadow-card hover:shadow-card-lg flex items-center justify-center gap-2">
+                    <span>Acceder al workspace</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                </button>
+            </form>
+
+            <!-- FORM REGISTER -->
+            <form method="post" action="/register" class="space-y-4" x-show="tab === 'register'" x-transition.opacity.duration.200ms style="display: none;">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Usuario</label>
+                    <div class="relative">
+                        <i data-lucide="at-sign" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input type="text" name="email" required
+                               placeholder="ej. juan_perez"
+                               class="input-modern w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none transition-all placeholder-slate-400">
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1.5">Solo letras, números y guion bajo. Mínimo 3 caracteres.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Contraseña</label>
+                    <div class="relative" x-data="{ show: false }">
+                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+                        <input :type="show ? 'text' : 'password'" name="password" required minlength="10" maxlength="72"
+                               placeholder="Mínimo 10 caracteres"
+                               class="input-modern w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none transition-all placeholder-slate-400">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i :data-lucide="show ? 'eye-off' : 'eye'" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error registro -->
+                <div th:if="${regError}" class="p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2.5">
+                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-sm text-red-800" th:text="${regError}">Error</p>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-brand-800 hover:bg-brand-900 text-white font-medium text-sm py-2.5 rounded-lg transition-all shadow-card hover:shadow-card-lg flex items-center justify-center gap-2">
+                    <span>Crear cuenta gratis</span>
+                    <i data-lucide="sparkles" class="h-4 w-4"></i>
+                </button>
+
+                <p class="text-xs text-slate-500 text-center pt-2">
+                    Al crear una cuenta aceptas los <a href="/terms" class="text-brand-700 hover:underline">términos de uso</a>
+                    y la <a href="/privacy" class="text-brand-700 hover:underline">política de privacidad</a>.
+                </p>
+            </form>
+
+            <!-- Trust badges -->
+            <div class="mt-10 pt-6 border-t border-slate-100">
+                <div class="flex items-center justify-center gap-6 text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="h-3.5 w-3.5"></i> Conexión cifrada</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="lock" class="h-3.5 w-3.5"></i> RGPD</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="zap" class="h-3.5 w-3.5"></i> 14 días gratis</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        // re-render lucide tras cada toggle de tab
+        lucide.createIcons();
+        document.addEventListener('click', () => setTimeout(() => lucide.createIcons(), 0));
+    });
+    lucide.createIcons();
+</script>
+</body>
+</html>

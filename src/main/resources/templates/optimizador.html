@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Optimizador de anuncios</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="megaphone" class="h-6 w-6"></i> Optimizador de anuncios
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Cada inmueble con su "Anuncio Score": qué le falta y si está fuera de precio. Mejora los flojos para vender más rápido.</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Score medio</p>
+        <p class="text-2xl font-bold mt-1"><span th:text="${media}">0</span>/100</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Buenos (80+)</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${buenos}">0</p>
+    </div>
+    <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
+        <p class="text-[10px] uppercase text-red-700"> Flojos (&lt;50)</p>
+        <p class="text-2xl font-bold mt-1 text-red-700" th:text="${flojos}">0</p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Inmuebles</p>
+        <p class="text-2xl font-bold mt-1" th:text="${total}">0</p>
+    </div>
+</div>
+
+<div th:if="${#lists.isEmpty(items)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-10 text-center">
+    <i data-lucide="megaphone" class="h-10 w-10 mx-auto text-slate-300"></i>
+    <p class="mt-3 font-semibold text-slate-600">No hay inmuebles en la cartera</p>
+</div>
+
+<div class="space-y-3">
+    <div th:each="it : ${items}" th:with="ev=${it.get('eval')}"
+         class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden"
+         x-data="{open:false, consejo:'', loading:false}">
+        <div class="flex items-center gap-4 p-4">
+            <img th:if="${it.get('foto')}" th:src="${it.get('foto')}" class="h-14 w-18 object-cover rounded-lg flex-shrink-0" style="width:72px" alt="">
+            <div th:unless="${it.get('foto')}" class="h-14 flex items-center justify-center bg-slate-100 dark:bg-neutral-800 rounded-lg flex-shrink-0 text-slate-300" style="width:72px"><i data-lucide="image" class="h-5 w-5"></i></div>
+
+            <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm truncate" th:text="${it.get('titulo')}">—</p>
+                <p class="text-xs text-slate-500" th:text="${it.get('ciudad')}">—</p>
+                <p th:if="${ev.get('precio_msg')}" class="text-xs mt-1 inline-flex items-center gap-1"
+                   th:classappend="${ev.get('precio_nivel') == 'ok' ? 'text-emerald-600' : (ev.get('precio_nivel') == 'alto' ? 'text-red-600' : 'text-amber-600')}"
+                   th:text="${(ev.get('precio_nivel') == 'ok' ? ' ' : ' ') + ev.get('precio_msg')}">—</p>
+            </div>
+
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <div class="text-center">
+                    <p class="text-2xl font-extrabold leading-none"
+                       th:classappend="${ev.get('nivel') == 'alto' ? 'text-emerald-600' : (ev.get('nivel') == 'medio' ? 'text-amber-600' : 'text-red-500')}"
+                       th:text="${ev.get('score')}">0</p>
+                    <p class="text-[10px] text-slate-400">/100</p>
+                </div>
+                <button @click="open=!open" class="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800">
+                    <i data-lucide="chevron-down" class="h-4 w-4" :class="open && 'rotate-180'"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Detalle expandible -->
+        <div x-show="open" x-cloak class="border-t border-slate-100 dark:border-neutral-800 p-4 bg-slate-50/50 dark:bg-neutral-800/30">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5 mb-4">
+                <div th:each="c : ${ev.get('checklist')}" class="flex items-center gap-2 text-sm">
+                    <span th:text="${#bools.isTrue(c.get('ok')) ? '' : ''}"></span>
+                    <span th:classappend="${#bools.isTrue(c.get('ok')) ? 'text-slate-500' : 'text-slate-800 dark:text-slate-200 font-medium'}" th:text="${c.get('label')}">—</span>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center">
+                <button th:data-id="${it.get('id')}"
+                        @click="loading=true; fetch('/optimizador/'+$el.dataset.id+'/consejo', {method:'POST'}).then(r=>r.json()).then(d=>{consejo=d.consejo; loading=false}).catch(()=>{consejo='Error'; loading=false})"
+                        :disabled="loading"
+                        class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                    <i data-lucide="sparkles" class="h-3.5 w-3.5"></i><span x-text="loading ? 'Pensando...' : ' Consejo IA'"> Consejo IA</span>
+                </button>
+                <a th:href="@{|/crud/propiedades/${it.get('id')}/edit|}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold"> Editar</a>
+                <a href="/descripcion-ia" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold"> Mejorar descripción</a>
+            </div>
+            <p x-show="consejo" x-cloak class="mt-3 text-sm text-slate-700 dark:text-slate-200 bg-violet-50 dark:bg-violet-900/20 border-l-4 border-violet-500 rounded p-3 whitespace-pre-line" x-text="consejo"></p>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

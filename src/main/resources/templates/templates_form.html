@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Plantilla</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <form action="/templates" method="post" class="max-w-4xl mx-auto" x-data="tplEditor()">
+        <input type="hidden" name="id" th:value="${tpl.get('id')}" th:if="${editing}">
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-neutral-800">
+                <h2 class="font-semibold text-base" th:text="${editing} ? 'Editar plantilla' : 'Nueva plantilla'">Nueva plantilla</h2>
+                <p class="text-xs text-slate-500 mt-1">Usa <code class="bg-slate-100 dark:bg-neutral-800 px-1 rounded">{{inquilino}}</code>, <code class="bg-slate-100 dark:bg-neutral-800 px-1 rounded">{{renta}}</code>, <code class="bg-slate-100 dark:bg-neutral-800 px-1 rounded">{{mes}}</code> como variables sustituibles.</p>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Tipo *</label>
+                    <select name="type" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="email" th:selected="${tpl.get('type') == 'email'}"> Email</option>
+                        <option value="contract_clause" th:selected="${tpl.get('type') == 'contract_clause'}"> Cláusula contrato</option>
+                        <option value="description" th:selected="${tpl.get('type') == 'description'}"> Descripción propiedad</option>
+                        <option value="whatsapp" th:selected="${tpl.get('type') == 'whatsapp'}"> WhatsApp</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Nombre interno *</label>
+                    <input type="text" name="name" required th:value="${tpl.get('name')}" placeholder="Ej. Recordatorio cobro mensual" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Asunto (solo email)</label>
+                    <input type="text" name="subject" th:value="${tpl.get('subject')}" placeholder="Recordatorio: pago alquiler {{mes}}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <!-- Toolbar WYSIWYG -->
+                <div class="flex items-center gap-1 flex-wrap p-2 bg-slate-50 dark:bg-neutral-800/40 rounded-t-lg border border-slate-200 dark:border-neutral-700 border-b-0">
+                    <button type="button" @click="insertVar('{{inquilino}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Inquilino</button>
+                    <button type="button" @click="insertVar('{{propiedad}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Propiedad</button>
+                    <button type="button" @click="insertVar('{{renta}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Renta</button>
+                    <button type="button" @click="insertVar('{{mes}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Mes</button>
+                    <button type="button" @click="insertVar('{{año}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Año</button>
+                    <button type="button" @click="insertVar('{{importe_pendiente}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Pendiente</button>
+                    <button type="button" @click="insertVar('{{fecha_vencimiento}}')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-brand-50 dark:hover:bg-brand-950/30 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs">⏰ Vencimiento</button>
+                    <div class="ml-auto flex items-center gap-1">
+                        <button type="button" @click="wrap('**','**')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs font-bold">B</button>
+                        <button type="button" @click="wrap('*','*')" class="px-2 py-1 rounded bg-white dark:bg-neutral-800 ring-1 ring-slate-200 dark:ring-neutral-700 text-xs italic">I</button>
+                        <button type="button" @click="showPreview = !showPreview" :class="showPreview ? 'bg-brand-100 text-brand-800' : 'bg-white dark:bg-neutral-800'" class="px-2 py-1 rounded ring-1 ring-slate-200 dark:ring-neutral-700 text-xs"> Preview</button>
+                    </div>
+                </div>
+
+                <div :class="showPreview ? 'grid grid-cols-2 gap-0' : ''">
+                    <textarea name="body" required rows="12" x-ref="editor" x-model="body" placeholder="Hola {{inquilino}},&#10;&#10;Te recordamos amablemente que..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-b-lg dark:bg-neutral-800 dark:border-neutral-700 font-mono focus:outline-none focus:border-brand-500" :class="showPreview ? 'rounded-bl-lg !rounded-br-none' : 'rounded-b-lg'"></textarea>
+                    <div x-show="showPreview" x-cloak class="prose prose-sm p-4 bg-white dark:bg-neutral-900 border border-l-0 border-slate-200 dark:border-neutral-700 rounded-br-lg overflow-y-auto" x-html="renderedBody" style="max-height: 320px;"></div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-neutral-800 flex justify-end gap-2">
+                <a href="/templates" class="px-4 py-2 rounded-lg bg-white ring-1 ring-slate-200 hover:bg-slate-50 text-sm">Cancelar</a>
+                <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold">
+                    <i data-lucide="save" class="h-4 w-4"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        const initialBody = /*[[${tpl.get('body')}]]*/ '';
+        function tplEditor() {
+            return {
+                body: initialBody || '',
+                showPreview: false,
+                get renderedBody() {
+                    let html = marked.parse(this.body || '');
+                    // Resaltar variables {{var}}
+                    html = html.replace(/\{\{([^}]+)\}\}/g, '<span style="background:#dbeafe;color:#1e40af;padding:1px 4px;border-radius:3px;font-weight:600">{{$1}}</span>');
+                    return html;
+                },
+                insertVar(v) {
+                    const el = this.$refs.editor;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    this.body = this.body.substring(0, start) + v + this.body.substring(end);
+                    this.$nextTick(() => {
+                        el.focus();
+                        el.setSelectionRange(start + v.length, start + v.length);
+                    });
+                },
+                wrap(open, close) {
+                    const el = this.$refs.editor;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const selected = this.body.substring(start, end);
+                    this.body = this.body.substring(0, start) + open + selected + close + this.body.substring(end);
+                    this.$nextTick(() => {
+                        el.focus();
+                        el.setSelectionRange(start + open.length, start + open.length + selected.length);
+                    });
+                }
+            };
+        }
+    </script>
+
+</div>
+</body>
+</html>

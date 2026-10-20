@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>P&amp;L</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .card-print { box-shadow: none !important; ring-width: 0 !important; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Toolbar -->
+    <div class="no-print flex items-center gap-2 mb-4">
+        <a href="/reports" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i> Reportes
+        </a>
+        <div class="flex items-center bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-lg p-0.5">
+            <a th:href="@{|/reports/pnl?year=${yearAnt}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-left" class="h-4 w-4"></i></a>
+            <span class="px-3 py-1.5 text-sm font-semibold font-mono" th:text="${year}">2026</span>
+            <a th:href="@{|/reports/pnl?year=${yearSig}|}" class="inline-flex items-center justify-center h-8 w-8 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"><i data-lucide="chevron-right" class="h-4 w-4"></i></a>
+        </div>
+        <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="printer" class="h-4 w-4"></i> Imprimir / PDF
+        </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="card-print p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Ingresos</div>
+            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="card-print p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Gastos</div>
+            <div class="text-xl font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="card-print p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Beneficio bruto</div>
+            <div class="text-xl font-bold font-mono mt-1"
+                 th:classappend="${beneficioBruto >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}"
+                 th:text="${#numbers.formatDecimal(beneficioBruto,0,'POINT',2,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="card-print p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Margen</div>
+            <div class="text-xl font-bold font-mono mt-1"
+                 th:classappend="${margen >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}"
+                 th:text="${#numbers.formatDecimal(margen,1,2)} + '%'">0%</div>
+        </div>
+    </div>
+
+    <!-- Gráfica -->
+    <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <div class="flex items-end justify-between mb-4">
+            <div>
+                <h3 class="text-base font-semibold">Evolución mensual</h3>
+                <p class="text-xs text-slate-500 dark:text-neutral-400">Ingresos vs gastos por mes (€)</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] text-slate-500 dark:text-neutral-400">
+                <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded bg-emerald-500"></span>Ingresos</span>
+                <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded bg-red-400"></span>Gastos</span>
+            </div>
+        </div>
+        <canvas id="pnlChart" height="100"></canvas>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            window.pnlData = {
+                ingresos: /*[[${ingresosMes}]]*/ [],
+                gastos:   /*[[${gastosMes}]]*/ []
+            };
+            /*]]>*/
+        </script>
+    </div>
+
+    <!-- Tabla por categoría -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                <h3 class="text-base font-semibold">Ingresos por categoría</h3>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="e : ${ingresosCat}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-emerald-600 dark:text-emerald-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-xs text-slate-500" th:text="${totalIngresos > 0 ? #numbers.formatDecimal(e.value * 100 / totalIngresos,1,1) + '%' : '—'}">—</td>
+                    </tr>
+                    <tr th:if="${ingresosCat.isEmpty()}"><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sin ingresos registrados.</td></tr>
+                </tbody>
+                <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold">
+                    <tr>
+                        <td class="px-5 py-2.5">Total</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalIngresos,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-xs">100%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="card-print rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+                <h3 class="text-base font-semibold">Gastos por categoría</h3>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="e : ${gastosCat}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-5 py-2.5 font-medium" th:text="${e.key}">categoría</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-red-600 dark:text-red-400 font-semibold" th:text="${#numbers.formatDecimal(e.value,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-xs text-slate-500" th:text="${totalGastos > 0 ? #numbers.formatDecimal(e.value * 100 / totalGastos,1,1) + '%' : '—'}">—</td>
+                    </tr>
+                    <tr th:if="${gastosCat.isEmpty()}"><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sin gastos registrados.</td></tr>
+                </tbody>
+                <tfoot class="bg-slate-50 dark:bg-neutral-800/40 font-bold">
+                    <tr>
+                        <td class="px-5 py-2.5">Total</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-red-700 dark:text-red-400" th:text="${#numbers.formatDecimal(totalGastos,0,'POINT',2,'COMMA')} + ' €'">0 €</td>
+                        <td class="px-5 py-2.5 font-mono text-right text-xs">100%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('pnlChart');
+    if (!ctx || !window.pnlData) return;
+    const isDark = document.documentElement.classList.contains('dark');
+    const grid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+    const text = isDark ? '#94a3b8' : '#64748b';
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+            datasets: [
+                { label: 'Ingresos', data: pnlData.ingresos, backgroundColor: '#10b981', borderRadius: 6 },
+                { label: 'Gastos',   data: pnlData.gastos,   backgroundColor: '#f87171', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: text } },
+                y: { grid: { color: grid }, ticks: { color: text, callback: v => v >= 1000 ? (v/1000)+'K€' : v+'€' } }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

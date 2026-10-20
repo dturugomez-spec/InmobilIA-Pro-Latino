@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Sensibilidad</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/finanzas/sensibilidad" class="form-card">
+        <h3>Analisis de sensibilidad</h3>
+        <div class="form-grid cols-2">
+            <label>Precio base (EUR) <input type="number" step="0.01" name="price" required></label>
+            <label>Renta mensual base <input type="number" step="0.01" name="rentMonthly" required></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Simular</button></div>
+    </form>
+    <div th:if="${grid != null}" class="crud-table-wrap">
+        <table class="crud-table">
+            <thead><tr><th>Precio / Renta</th>
+                <th th:each="rf : ${rentFactors}" th:text="${#numbers.formatDecimal(rf * 100,0,0)} + '%'">100%</th>
+            </tr></thead>
+            <tbody>
+                <tr th:each="row : ${grid}">
+                    <td><b th:text="${#numbers.formatDecimal(row.precio,0,'POINT',0,'COMMA')} + ' EUR'">—</b></td>
+                    <td th:each="y : ${row.yields}" th:text="${#numbers.formatDecimal(y,1,2)} + '%'">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

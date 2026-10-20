@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoja de visita</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: Georgia, 'Times New Roman', serif; color: #1e293b; }
+        .doc { max-width: 800px; }
+        @media print { .no-print { display:none !important; } body { background:#fff; } .doc { box-shadow:none; margin:0; } }
+    </style>
+</head>
+<body class="bg-slate-100 py-8 px-4">
+
+<div class="no-print max-w-3xl mx-auto mb-4 flex items-center justify-between gap-2">
+    <a href="/hoja-visita" class="text-sm text-slate-500 hover:text-slate-900">← Volver</a>
+    <button onclick="window.print()" class="px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold"> Imprimir / Guardar PDF</button>
+</div>
+
+<div class="doc mx-auto bg-white shadow-lg p-10 md:p-14 rounded">
+
+    <h1 class="text-center text-2xl font-bold mb-1" style="letter-spacing:.02em">HOJA DE VISITA</h1>
+    <p class="text-center text-sm text-slate-500 mb-8">Documento acreditativo de visita a inmueble</p>
+
+    <table class="w-full text-sm mb-6">
+        <tr><td class="py-1 w-40 text-slate-500">Agencia</td>
+            <td class="py-1 font-semibold" th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '____________')}">—</td></tr>
+        <tr><td class="py-1 text-slate-500">NIF/CIF</td>
+            <td class="py-1" th:text="${agencia.get('tax_id') ?: '____________'}">—</td></tr>
+        <tr><td class="py-1 text-slate-500">Fecha de la visita</td>
+            <td class="py-1" th:text="${h.get('fecha_visita') ?: '____________'}">—</td></tr>
+    </table>
+
+    <h2 class="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">Datos del visitante</h2>
+    <table class="w-full text-sm mb-6">
+        <tr><td class="py-1 w-40 text-slate-500">Nombre y apellidos</td>
+            <td class="py-1 font-semibold" th:text="${h.get('visitante_nombre') ?: '____________'}">—</td></tr>
+        <tr><td class="py-1 text-slate-500">DNI/NIF</td>
+            <td class="py-1" th:text="${h.get('visitante_dni') ?: '____________'}">—</td></tr>
+        <tr><td class="py-1 text-slate-500">Teléfono</td>
+            <td class="py-1" th:text="${h.get('visitante_telefono') ?: '____________'}">—</td></tr>
+        <tr><td class="py-1 text-slate-500">Email</td>
+            <td class="py-1" th:text="${h.get('visitante_email') ?: '____________'}">—</td></tr>
+    </table>
+
+    <h2 class="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">Inmueble visitado</h2>
+    <p class="text-sm mb-6 pl-4 border-l-2 border-slate-300" th:text="${h.get('inmueble_texto')}">—</p>
+
+    <p class="text-sm leading-relaxed mb-4">
+        El visitante identificado reconoce y declara que <strong>ha visitado el inmueble arriba indicado acompañado y gestionado
+        por LA AGENCIA</strong>, quien le ha dado a conocer dicha propiedad. En consecuencia, el visitante se compromete a no
+        realizar ninguna operación de compra, arras o reserva sobre el inmueble de forma directa con la propiedad o a través de
+        terceros, eludiendo la intermediación de LA AGENCIA, durante un plazo de <strong>doce (12) meses</strong> desde la fecha
+        de esta visita. El incumplimiento facultará a LA AGENCIA a reclamar los honorarios correspondientes.
+    </p>
+
+    <p class="text-sm mb-4" th:if="${h.get('observaciones') != null and !h.get('observaciones').isEmpty()}">
+        <strong>Observaciones:</strong> <span th:text="${h.get('observaciones')}">—</span>
+    </p>
+
+    <p class="text-xs text-slate-500 mb-10">
+        <strong>Protección de datos.</strong> Los datos facilitados se tratarán conforme al RGPD y la LOPDGDD con la finalidad
+        de gestionar la visita y el posible interés en el inmueble. Puede ejercer sus derechos ante LA AGENCIA.
+    </p>
+
+    <div class="grid grid-cols-2 gap-8 mt-12">
+        <div class="text-center">
+            <div class="border-t border-slate-400 pt-2 text-sm">Firma del VISITANTE</div>
+        </div>
+        <div class="text-center">
+            <div class="border-t border-slate-400 pt-2 text-sm">Firma / sello de LA AGENCIA</div>
+        </div>
+    </div>
+
+    <p class="text-[10px] text-slate-400 mt-10 border-t border-slate-100 pt-3">
+        Documento generado por InmobilIA Pro como plantilla orientativa. Revísalo y adáptalo con tu asesor legal.
+        No constituye asesoramiento jurídico.
+    </p>
+</div>
+
+</body>
+</html>

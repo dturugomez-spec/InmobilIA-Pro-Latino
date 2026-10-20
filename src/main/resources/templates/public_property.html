@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|${prop.get('name')} · ${prop.get('city')} · InmobilIA Pro|">Propiedad</title>
+    <meta name="description" th:content="|${prop.get('name')} en ${prop.get('city')}. ${prop.get('area_m2')} m². ${prop.get('bedrooms')} hab. ${prop.get('current_value')}€|">
+    <meta property="og:title" th:content="${prop.get('name')}">
+    <meta property="og:description" th:content="|${prop.get('city')} · ${prop.get('area_m2')}m² · ${prop.get('current_value')}€|">
+    <meta property="og:image" th:content="${prop.get('featured_photo')}">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; } [x-cloak] { display: none !important; }</style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center">
+                <i data-lucide="building-2" class="h-4 w-4 text-white"></i>
+            </div>
+            <span class="font-bold tracking-tight">InmobilIA<span class="text-blue-700"> Pro</span></span>
+        </a>
+        <a href="#contact" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium">
+            <i data-lucide="phone" class="h-4 w-4"></i>
+            Contactar
+        </a>
+    </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Foto principal -->
+    <div class="rounded-2xl overflow-hidden bg-slate-200 aspect-[16/9] mb-6 relative">
+        <img th:if="${prop.get('featured_photo')}" th:src="${prop.get('featured_photo')}" th:alt="${prop.get('name')}"
+             class="w-full h-full object-cover">
+        <div th:unless="${prop.get('featured_photo')}" class="w-full h-full flex items-center justify-center">
+            <i data-lucide="image" class="h-20 w-20 text-slate-400"></i>
+        </div>
+
+        <!-- Ref. y status overlay -->
+        <div class="absolute top-4 left-4 flex items-center gap-2">
+            <span th:text="${prop.get('reference')}" class="font-mono text-xs font-bold px-2.5 py-1 rounded-full bg-white/90 backdrop-blur text-slate-900">REF</span>
+            <span th:if="${prop.get('status')}" th:text="${prop.get('status')}" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-800 text-white">Estado</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Datos principales -->
+        <div class="lg:col-span-2 space-y-5">
+            <div>
+                <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-1">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i>
+                    <span th:text="${prop.get('city') + (prop.get('postal_code') != null ? ' · ' + prop.get('postal_code') : '')}">ciudad</span>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight mb-2" th:text="${prop.get('name')}">Nombre</h1>
+                <p class="text-base text-slate-600" th:text="${prop.get('address')}">dirección</p>
+            </div>
+
+            <!-- Métricas -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="p-4 rounded-xl bg-white ring-1 ring-slate-200">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Superficie</div>
+                    <div class="text-xl font-bold mt-1" th:text="${prop.get('area_m2') != null ? prop.get('area_m2') + ' m²' : '—'}">—</div>
+                </div>
+                <div class="p-4 rounded-xl bg-white ring-1 ring-slate-200">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Habitaciones</div>
+                    <div class="text-xl font-bold mt-1" th:text="${prop.get('bedrooms') ?: '—'}">—</div>
+                </div>
+                <div class="p-4 rounded-xl bg-white ring-1 ring-slate-200">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Baños</div>
+                    <div class="text-xl font-bold mt-1" th:text="${prop.get('bathrooms') ?: '—'}">—</div>
+                </div>
+                <div class="p-4 rounded-xl bg-white ring-1 ring-slate-200">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Año</div>
+                    <div class="text-xl font-bold mt-1" th:text="${prop.get('year_built') ?: '—'}">—</div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5" th:if="${prop.get('notes')}">
+                <h2 class="text-base font-semibold mb-2">Descripción</h2>
+                <p class="text-sm text-slate-700 whitespace-pre-line" th:text="${prop.get('notes')}">descripción</p>
+            </div>
+
+            <!-- Características técnicas -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
+                <h2 class="text-base font-semibold mb-3">Características</h2>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-sm">
+                    <div class="flex justify-between"><dt class="text-slate-500">Tipo</dt><dd class="font-medium" th:text="${prop.get('type') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Estado</dt><dd class="font-medium" th:text="${prop.get('status') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Calificación energética</dt><dd class="font-medium" th:text="${prop.get('cee_calificacion') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Ref. catastral</dt><dd class="font-mono text-xs truncate" th:text="${prop.get('referencia_catastral') ?: '—'}">—</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Sticky right: precio y contacto -->
+        <aside class="space-y-4 lg:sticky lg:top-24 self-start">
+            <div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 text-white p-5 ring-1 ring-blue-800 shadow-xl">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200">Precio</div>
+                <div class="text-3xl font-bold tracking-tight mt-1" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : 'Consultar'}">— €</div>
+                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="${'o ' + prop.get('rental_income') + ' €/mes alquiler'}">—</div>
+
+                <a href="#contact" class="block w-full text-center mt-4 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-blue-800 text-sm font-bold transition-colors">
+                    Solicitar visita
+                </a>
+            </div>
+
+            <!-- Contacto agencia -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5" th:if="${owner.get('email')}">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vendedor / Anunciante</div>
+                <div class="font-semibold mt-1" th:text="${owner.get('name') ?: owner.get('email')}">Anunciante</div>
+                <div class="text-sm text-slate-500 mt-2 space-y-1">
+                    <div class="flex items-center gap-1.5" th:if="${owner.get('phone')}"><i data-lucide="phone" class="h-3 w-3"></i><span th:text="${owner.get('phone')}">tel</span></div>
+                    <div class="flex items-center gap-1.5"><i data-lucide="mail" class="h-3 w-3"></i><span th:text="${owner.get('email')}">email</span></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Formulario de contacto -->
+    <section id="contact" class="mt-12 mb-12">
+        <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-6 sm:p-8 max-w-2xl mx-auto"
+             x-data="{ sent: false, sending: false, name: '', email: '', phone: '', message: '' }">
+            <h2 class="text-2xl font-bold tracking-tight mb-2">Solicitar información</h2>
+            <p class="text-sm text-slate-600 mb-6">Déjanos tus datos y te contactamos en menos de 24h.</p>
+
+            <div x-show="sent" x-cloak class="rounded-lg bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
+                <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="font-semibold text-emerald-900">¡Mensaje enviado!</p>
+                    <p class="text-sm text-emerald-800">Recibirás respuesta en breve.</p>
+                </div>
+            </div>
+
+            <form x-show="!sent" @submit.prevent="
+                    sending = true;
+                    fetch(window.location.pathname + '/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, phone, message })
+                    }).then(r => r.json()).then(d => { sent = d.ok; sending = false; })
+                    .catch(() => { sending = false; });
+                  " class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nombre *</label>
+                        <input type="text" x-model="name" required class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Teléfono</label>
+                        <input type="tel" x-model="phone" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Email *</label>
+                    <input type="email" x-model="email" required class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Mensaje</label>
+                    <textarea x-model="message" rows="4" placeholder="Cuéntanos qué buscas..." class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15"></textarea>
+                </div>
+                <button type="submit" :disabled="sending"
+                        class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-card">
+                    <i data-lucide="send" class="h-4 w-4"></i>
+                    <span x-text="sending ? 'Enviando...' : 'Enviar mensaje'">Enviar</span>
+                </button>
+                <p class="text-xs text-slate-500 text-center">Al enviar aceptas la <a href="/privacy" class="text-blue-700 underline">política de privacidad</a>.</p>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-slate-900 text-slate-400 py-8 text-center text-xs">
+    <p>Anuncio gestionado con <a href="/" class="text-white font-bold hover:underline">InmobilIA Pro</a></p>
+    <div style="margin-top:10px"><span th:replace="~{fragments/grupo :: sello(true)}"></span></div>
+</footer>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Inquilino 360º</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div x-data="{ tab: 'datos' }">
+
+        <!-- ═══════════ HEADER FICHA ═══════════ -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-5">
+            <div class="bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+                <div class="relative flex items-start gap-5">
+                    <div class="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0"
+                         th:text="${tenant.get('name') != null ? #strings.toUpperCase(#strings.substring(tenant.get('name'), 0, 1)) : 'I'}">I</div>
+                    <div class="flex-1 min-w-0 text-white">
+                        <div class="flex items-center gap-2 text-white/70 text-xs uppercase tracking-wider font-semibold mb-1">
+                            <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                            <span>Inquilino</span>
+                            <span th:if="${tenant.get('status')}" th:text="${tenant.get('status')}"
+                                  class="ml-2 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur text-[10px] font-bold">Estado</span>
+                        </div>
+                        <h2 class="text-2xl font-bold tracking-tight" th:text="${tenant.get('name')}">Nombre</h2>
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3 text-sm text-white/80">
+                            <span class="flex items-center gap-1.5" th:if="${tenant.get('email')}">
+                                <i data-lucide="mail" class="h-3.5 w-3.5"></i>
+                                <span th:text="${tenant.get('email')}">email</span>
+                            </span>
+                            <span class="flex items-center gap-1.5" th:if="${tenant.get('phone')}">
+                                <i data-lucide="phone" class="h-3.5 w-3.5"></i>
+                                <span th:text="${tenant.get('phone')}">tel</span>
+                            </span>
+                            <span class="flex items-center gap-1.5" th:if="${tenant.get('id_number')}">
+                                <i data-lucide="badge" class="h-3.5 w-3.5"></i>
+                                <span class="font-mono" th:text="${tenant.get('id_number')}">DNI</span>
+                            </span>
+                            <span class="flex items-center gap-1.5" th:if="${tenant.get('property_name')}">
+                                <i data-lucide="building" class="h-3.5 w-3.5"></i>
+                                <span th:text="${tenant.get('property_name')}">propiedad</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 flex-shrink-0">
+                        <a th:href="@{|/crud/inquilinos/${tenant.get('id')}/edit|}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur ring-1 ring-white/20 text-white text-sm font-medium transition-colors">
+                            <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                            <span>Editar</span>
+                        </a>
+                        <a href="/crud/inquilinos"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i>
+                            <span>Volver</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs ficha -->
+            <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200 dark:divide-neutral-800 border-t border-slate-200 dark:border-neutral-800">
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Renta</div>
+                    <div class="text-lg font-bold font-mono mt-0.5" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' €' : '—'}">— €</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Pagos cobrados</div>
+                    <div class="text-lg font-bold font-mono mt-0.5" th:text="${pagosCount}">0</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Total cobrado</div>
+                    <div class="text-lg font-bold font-mono mt-0.5 text-emerald-600 dark:text-emerald-400" th:text="${#numbers.formatDecimal(pagosTotal,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Score</div>
+                    <div class="text-lg font-bold font-mono mt-0.5" th:text="${tenant.get('score') != null ? tenant.get('score') + '/100' : '—'}">—/100</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ TABS INTERNOS ═══════════ -->
+        <div class="border-b border-slate-200 dark:border-neutral-800 mb-5">
+            <nav class="flex gap-1 overflow-x-auto scroll-thin -mb-px">
+                <button @click="tab = 'datos'" :class="tab === 'datos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="user" class="h-4 w-4"></i> Datos
+                </button>
+                <button @click="tab = 'contratos'" :class="tab === 'contratos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="file-text" class="h-4 w-4"></i>
+                    Contratos
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${contratos.size()}">0</span>
+                </button>
+                <button @click="tab = 'pagos'" :class="tab === 'pagos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="receipt" class="h-4 w-4"></i>
+                    Pagos
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${transacciones.size()}">0</span>
+                </button>
+                <button @click="tab = 'visitas'" :class="tab === 'visitas' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i>
+                    Visitas
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${reservas.size()}">0</span>
+                </button>
+                <button @click="tab = 'documentos'" :class="tab === 'documentos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="folder" class="h-4 w-4"></i>
+                    Documentos
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${documentos.size()}">0</span>
+                </button>
+                <button @click="tab = 'eventos'" :class="tab === 'eventos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'"
+                        class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="calendar" class="h-4 w-4"></i>
+                    Eventos
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${eventos.size()}">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- ═══════════ TAB: DATOS ═══════════ -->
+        <div x-show="tab === 'datos'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="user" class="h-4 w-4 text-brand-600"></i> Datos personales</h3>
+                <dl class="space-y-2.5 text-sm">
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Nombre</dt><dd class="font-medium" th:text="${tenant.get('name') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">DNI / NIE</dt><dd class="font-mono" th:text="${tenant.get('id_number') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Nacionalidad</dt><dd th:text="${tenant.get('nationality') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Email</dt><dd th:text="${tenant.get('email') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Teléfono</dt><dd th:text="${tenant.get('phone') ?: '—'}">—</dd></div>
+                </dl>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="key" class="h-4 w-4 text-brand-600"></i> Datos del alquiler</h3>
+                <dl class="space-y-2.5 text-sm">
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Propiedad</dt><dd class="font-medium truncate" th:text="${tenant.get('property_name') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Renta mensual</dt><dd class="font-mono font-semibold" th:text="${tenant.get('rent_amount') != null ? tenant.get('rent_amount') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Fianza</dt><dd class="font-mono" th:text="${tenant.get('deposit') != null ? tenant.get('deposit') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Inicio</dt><dd class="font-mono" th:text="${tenant.get('lease_start') != null ? #strings.substring(tenant.get('lease_start'),0,10) : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Fin</dt><dd class="font-mono" th:text="${tenant.get('lease_end') != null ? #strings.substring(tenant.get('lease_end'),0,10) : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Avalista</dt><dd th:text="${tenant.get('guarantor_name') ?: '—'}">—</dd></div>
+                </dl>
+            </div>
+            <div class="md:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${tenant.get('notes')}">
+                <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"><i data-lucide="sticky-note" class="h-4 w-4 text-brand-600"></i> Notas</h3>
+                <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line" th:text="${tenant.get('notes')}">—</p>
+            </div>
+        </div>
+
+        <!-- ═══════════ TAB: CONTRATOS ═══════════ -->
+        <div x-show="tab === 'contratos'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${contratos.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="file-text" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin contratos para este inquilino</p>
+            </div>
+            <table class="w-full text-sm" th:if="${!contratos.isEmpty()}">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                    <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                        <th class="text-left font-semibold px-4 py-3">Propiedad</th>
+                        <th class="text-left font-semibold px-4 py-3">Inicio</th>
+                        <th class="text-left font-semibold px-4 py-3">Fin</th>
+                        <th class="text-right font-semibold px-4 py-3">Renta</th>
+                        <th class="text-left font-semibold px-4 py-3">Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="c : ${contratos}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-4 py-3 font-medium" th:text="${c.get('property_name')}">—</td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('start_date') != null ? #strings.substring(c.get('start_date'),0,10) : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${c.get('end_date') != null ? #strings.substring(c.get('end_date'),0,10) : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${c.get('rent') != null ? c.get('rent') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3">
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300" th:text="${c.get('status') ?: 'Activo'}">Activo</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <a th:href="@{|/crud/contratos/${c.get('id')}/edit|}" class="text-brand-700 dark:text-brand-400 hover:underline text-xs font-medium">Ver →</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ═══════════ TAB: PAGOS ═══════════ -->
+        <div x-show="tab === 'pagos'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${transacciones.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="receipt" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin pagos registrados</p>
+            </div>
+            <table class="w-full text-sm" th:if="${!transacciones.isEmpty()}">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                    <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                        <th class="text-left font-semibold px-4 py-3">Fecha</th>
+                        <th class="text-left font-semibold px-4 py-3">Tipo</th>
+                        <th class="text-left font-semibold px-4 py-3">Categoría</th>
+                        <th class="text-right font-semibold px-4 py-3">Importe</th>
+                        <th class="text-left font-semibold px-4 py-3">Factura</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="t : ${transacciones}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${t.get('date') != null ? #strings.substring(t.get('date'),0,10) : '—'}">—</td>
+                        <td class="px-4 py-3">
+                            <span th:text="${t.get('type')}"
+                                  th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400'"
+                                  class="text-[10px] font-semibold px-2 py-0.5 rounded">—</span>
+                        </td>
+                        <td class="px-4 py-3" th:text="${t.get('category')}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold"
+                            th:classappend="${t.get('type') != null and #strings.equalsIgnoreCase(t.get('type'),'Ingreso')} ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+                            th:text="${t.get('amount') != null ? t.get('amount') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${t.get('invoice_number') ?: '—'}">—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ═══════════ TAB: VISITAS ═══════════ -->
+        <div x-show="tab === 'visitas'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${reservas.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="map-pin" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin visitas registradas</p>
+            </div>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800" th:if="${!reservas.isEmpty()}">
+                <li th:each="r : ${reservas}" class="px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <div class="flex items-center gap-4">
+                        <div class="text-center flex-shrink-0">
+                            <div class="font-mono text-xs text-slate-500" th:text="${r.get('date') != null ? #strings.substring(r.get('date'),0,10) : '—'}">—</div>
+                            <div class="font-mono text-xs font-bold" th:text="${r.get('time') ?: '—'}">—</div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium" th:text="${r.get('property_name')}">propiedad</div>
+                            <div class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5" th:text="${r.get('feedback') ?: r.get('type') ?: '—'}">feedback</div>
+                        </div>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300" th:text="${r.get('status') ?: 'Pendiente'}">Estado</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ═══════════ TAB: DOCUMENTOS ═══════════ -->
+        <div x-show="tab === 'documentos'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${documentos.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="folder" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin documentos asociados</p>
+            </div>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800" th:if="${!documentos.isEmpty()}">
+                <li th:each="d : ${documentos}" class="px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <a th:href="${d.get('url')}" target="_blank" class="flex items-center gap-3">
+                        <div class="h-9 w-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="file-text" class="h-4 w-4 text-brand-700 dark:text-brand-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm truncate" th:text="${d.get('name')}">documento</div>
+                            <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${d.get('doc_type') ?: '—'}">tipo</div>
+                        </div>
+                        <span class="text-xs text-slate-500 font-mono" th:text="${d.get('expiry_date') != null ? 'caduca ' + #strings.substring(d.get('expiry_date'),0,10) : ''}">—</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ═══════════ TAB: EVENTOS ═══════════ -->
+        <div x-show="tab === 'eventos'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${eventos.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="calendar" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin eventos registrados</p>
+            </div>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800" th:if="${!eventos.isEmpty()}">
+                <li th:each="e : ${eventos}" class="px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/40 flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="calendar" class="h-4 w-4 text-brand-700 dark:text-brand-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm" th:text="${e.get('title')}">evento</div>
+                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${e.get('description') ?: e.get('location') ?: '—'}">desc</div>
+                    </div>
+                    <div class="font-mono text-xs text-slate-500 text-right">
+                        <div th:text="${e.get('date') != null ? #strings.substring(e.get('date'),0,10) : '—'}">—</div>
+                        <div class="font-bold" th:text="${e.get('time') ?: ''}">—</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de mercado de tu inmueble</title>
+    <meta name="robots" content="noindex,nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        @media print { .no-print { display: none !important; } body { background: #fff; } }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center px-4">
+    <p class="text-slate-500 text-center" th:text="${error}">—</p>
+</div>
+
+<div th:unless="${error}" class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Cabecera -->
+    <div class="brand-grad rounded-2xl shadow-xl p-7 text-white mb-5">
+        <p class="text-xs uppercase tracking-wider text-white/60">Informe de mercado · Análisis comparativo</p>
+        <h1 class="display text-2xl md:text-3xl font-extrabold mt-1" th:text="${r.get('titulo')}">—</h1>
+        <p class="text-white/80 mt-1 text-sm">
+            <span th:text="${r.get('tipo')}">—</span> ·
+            <span th:text="${r.get('municipio')}">—</span> ·
+            <span th:if="${r.get('metros')}" th:text="${#numbers.formatInteger(r.get('metros'), 0)} + ' m²'">—</span>
+        </p>
+        <p class="text-white/50 text-xs mt-3" th:if="${r.get('propietario_nombre')}" th:text="'Preparado para ' + ${r.get('propietario_nombre')}">—</p>
+    </div>
+
+    <!-- Precio recomendado -->
+    <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-7 mb-5 text-center">
+        <p class="text-sm text-slate-500 uppercase tracking-wider">Precio de salida recomendado</p>
+        <p class="display text-4xl md:text-5xl font-extrabold text-slate-900 mt-2" th:text="${#numbers.formatInteger(r.get('precio_recomendado'), 0, 'POINT')} + ' €'">—</p>
+        <p class="text-slate-500 mt-2 text-sm">
+            Rango: <span th:text="${#numbers.formatInteger(r.get('precio_min'), 0, 'POINT')}">—</span> € –
+            <span th:text="${#numbers.formatInteger(r.get('precio_max'), 0, 'POINT')}">—</span> €
+        </p>
+        <div class="inline-flex items-center gap-3 mt-4 flex-wrap justify-center">
+            <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold" th:text="'~' + ${#numbers.formatInteger(r.get('eur_m2'), 0, 'POINT')} + ' €/m²'">—</span>
+            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold" th:text="'confianza ' + ${r.get('confianza')}">—</span>
+        </div>
+    </div>
+
+    <!-- Métricas de zona -->
+    <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-2xl font-extrabold text-blue-700" th:text="${r.get('n_comparables')}">0</p>
+            <p class="text-xs text-slate-500 mt-1">comparables</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-2xl font-extrabold text-slate-900" th:text="${r.get('eur_m2_zona') != null ? #numbers.formatInteger(r.get('eur_m2_zona'), 0, 'POINT') + ' €' : '—'}">—</p>
+            <p class="text-xs text-slate-500 mt-1">€/m² zona</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-2xl font-extrabold text-amber-600" th:text="${r.get('dias_medios_venta') != null ? r.get('dias_medios_venta') : '—'}">—</p>
+            <p class="text-xs text-slate-500 mt-1">días medios</p>
+        </div>
+    </div>
+
+    <!-- Análisis IA -->
+    <div th:if="${r.get('narrativa') != null}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
+        <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2"> Análisis de mercado</p>
+        <p class="text-slate-700 leading-relaxed whitespace-pre-line" th:text="${r.get('narrativa')}">—</p>
+    </div>
+
+    <!-- Comparables -->
+    <div th:if="${!#lists.isEmpty(comparables)}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
+        <h2 class="display text-lg font-bold mb-4">Inmuebles comparables en la zona</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs text-slate-400 border-b border-slate-100">
+                        <th class="py-2 pr-2">Inmueble</th>
+                        <th class="py-2 px-2 text-right">m²</th>
+                        <th class="py-2 px-2 text-right">Precio</th>
+                        <th class="py-2 px-2 text-right">€/m²</th>
+                        <th class="py-2 pl-2">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${comparables}" class="border-b border-slate-50">
+                        <td class="py-2 pr-2 text-slate-700 truncate max-w-[160px]" th:text="${c.get('direccion')}">—</td>
+                        <td class="py-2 px-2 text-right text-slate-600" th:text="${#numbers.formatInteger(c.get('metros'), 0)}">—</td>
+                        <td class="py-2 px-2 text-right font-semibold" th:text="${#numbers.formatInteger(c.get('precio'), 0, 'POINT')} + ' €'">—</td>
+                        <td class="py-2 px-2 text-right text-slate-600" th:text="${#numbers.formatInteger(c.get('eur_m2'), 0, 'POINT')}">—</td>
+                        <td class="py-2 pl-2">
+                            <span th:if="${c.get('vendida')}" class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Vendida</span>
+                            <span th:unless="${c.get('vendida')}" class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">En venta</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">Comparables seleccionados de la cartera de la agencia en la misma zona y tipología.</p>
+    </div>
+
+    <!-- Contacto agente -->
+    <div class="brand-grad rounded-2xl shadow-xl p-7 text-white text-center mb-5 no-print">
+        <h2 class="display text-xl font-bold">¿Hablamos de la estrategia de venta?</h2>
+        <p class="text-white/80 text-sm mt-1">Tu agente te explica este informe y prepara un plan a medida, sin compromiso.</p>
+        <div class="mt-4 flex flex-wrap gap-2 justify-center" th:if="${agente != null}">
+            <a th:if="${agente.get('telefono') != null and agente.get('telefono') != ''}" th:href="${'tel:' + agente.get('telefono')}"
+               class="px-5 py-2.5 rounded-xl bg-white text-blue-800 font-bold text-sm"> Llamar</a>
+            <a th:if="${agente.get('telefono') != null and agente.get('telefono') != ''}" th:href="${'https://wa.me/' + #strings.replace(#strings.replace(agente.get('telefono'),' ',''),'+','')}"
+               target="_blank" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm"> WhatsApp</a>
+            <a th:if="${agente.get('email') != null and agente.get('email') != ''}" th:href="${'mailto:' + agente.get('email')}"
+               class="px-5 py-2.5 rounded-xl bg-white/15 text-white font-bold text-sm"> Email</a>
+        </div>
+        <button onclick="window.print()" class="mt-4 text-white/60 text-xs underline">Descargar / imprimir informe</button>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6" th:text="${agente != null and agente.get('nombre') != '' ? (agente.get('nombre') + ' · Powered by InmobilIA Pro') : 'Powered by InmobilIA Pro'}">Powered by InmobilIA Pro</p>
+</div>
+
+</body>
+</html>

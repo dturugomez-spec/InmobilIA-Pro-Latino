@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Marketplace · Tinder de pisos</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-rose-600 to-blue-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="flame" class="h-6 w-6"></i> Marketplace · "Tinder de pisos" 
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Tus inmuebles publicados aparecen en el buscador público de compradores. Cada "me gusta" con contacto entra como lead en tu CRM. Captación de compradores en piloto automático.</p>
+</div>
+
+<!-- Buscador PROPIO de la agencia (solo TUS pisos, tu marca) -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 mb-5">
+    <p class="font-bold text-lg flex items-center gap-2"><i data-lucide="store" class="h-5 w-5 text-rose-600"></i> Tu buscador propio de pisos</p>
+    <p class="text-sm text-slate-500 mt-1">Un buscador tipo swipe con <strong>solo tus inmuebles</strong> y tu marca, para tu web, microsite o redes sociales. Independiente del marketplace compartido de la red.</p>
+    <div th:if="${buscadorUrl != null}" class="mt-4">
+        <div class="flex items-center gap-2 bg-slate-50 dark:bg-neutral-800 rounded-lg p-2 ring-1 ring-slate-200 dark:ring-neutral-700">
+            <input id="buscadorUrl" type="text" readonly th:value="${buscadorUrl}" class="flex-1 bg-transparent text-sm px-2 py-1 outline-none">
+            <button type="button" onclick="const i=document.getElementById('buscadorUrl');i.select();navigator.clipboard.writeText(i.value);this.textContent='¡Copiado!';setTimeout(()=>this.textContent='Copiar',1500);" class="px-3 py-1.5 rounded-md bg-brand-800 hover:bg-brand-900 text-white text-xs font-semibold whitespace-nowrap">Copiar</button>
+            <a th:href="${buscadorUrl}" target="_blank" class="px-3 py-1.5 rounded-md ring-1 ring-slate-300 dark:ring-neutral-600 text-xs font-semibold whitespace-nowrap">Abrir</a>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Solo aparecen los inmuebles marcados como <strong>publicados</strong>. No necesita el add-on de la red.</p>
+    </div>
+    <div th:unless="${buscadorUrl != null}" class="mt-4 rounded-lg bg-amber-50 ring-1 ring-amber-200 p-3">
+        <p class="text-sm text-amber-800">Para tener tu buscador propio, crea antes tu <a href="/microsite/admin" class="font-semibold underline">microsite</a> (te da un enlace público con tu marca).</p>
+    </div>
+</div>
+
+<!-- Estado del add-on -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 mb-5">
+    <div th:if="${activo}" class="flex items-start gap-4">
+        <div class="h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="check-circle-2" class="h-6 w-6"></i>
+        </div>
+        <div class="flex-1">
+            <p class="font-bold text-lg">Marketplace activo </p>
+            <p class="text-sm text-slate-500 mt-1">Tus inmuebles publicados ya aparecen para los compradores. Recibirás sus contactos como leads automáticamente.</p>
+            <p class="text-xs text-slate-400 mt-1">Add-on: <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes</strong> (+25% sobre tu plan).</p>
+            <a href="/descubre" target="_blank" class="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-blue-700 hover:underline">
+                <i data-lucide="external-link" class="h-4 w-4"></i> Ver el buscador público
+            </a>
+            <form th:action="@{/marketplace/toggle}" method="post" class="mt-4" onsubmit="return confirm('¿Desactivar el marketplace? Tus inmuebles dejarán de aparecer a los compradores.')">
+                <input type="hidden" name="activar" value="false">
+                <button class="text-xs text-red-500 hover:underline">Desactivar add-on</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:unless="${activo}">
+        <div th:if="${puede}" class="flex items-start gap-4">
+            <div class="h-12 w-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="flame" class="h-6 w-6"></i>
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-lg">Activa el marketplace de compradores</p>
+                <p class="text-sm text-slate-500 mt-1">Por <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes</strong> (+25% de tu plan <span th:text="${#strings.capitalize(plan)} + ' · ' + ${planPrice} + ' €'">—</span>), tus inmuebles aparecen en el buscador público tipo swipe y cada comprador interesado entra como lead en tu CRM.</p>
+                <ul class="text-sm text-slate-600 mt-3 space-y-1">
+                    <li> Captación de compradores 24/7 sin esfuerzo</li>
+                    <li> Leads con scoring (like 60 · super like 80)</li>
+                    <li> Notificación instantánea de cada interés</li>
+                </ul>
+                <form th:action="@{/marketplace/toggle}" method="post" class="mt-4">
+                    <input type="hidden" name="activar" value="true">
+                    <button class="px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">
+                        Activar por <span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'COMMA')}">0</span> €/mes
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div th:unless="${puede}" class="flex items-start gap-4">
+            <div class="h-12 w-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="lock" class="h-6 w-6"></i>
+            </div>
+            <div class="flex-1">
+                <p class="font-bold text-lg">Disponible en planes de pago</p>
+                <p class="text-sm text-slate-500 mt-1">El marketplace es un add-on (+25%) para planes Pro, Agency o Enterprise. Mejora tu plan para activarlo.</p>
+                <a href="/billing/upgrade" class="inline-block mt-3 px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">Ver planes</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-rose-50 ring-1 ring-rose-200 p-4">
+        <p class="text-[10px] uppercase text-rose-700"> Me gusta</p>
+        <p class="text-2xl font-bold mt-1 text-rose-700" th:text="${likes}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Leads generados</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${leadsGenerados}">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+        <p class="text-[10px] uppercase text-blue-700"> Interacciones</p>
+        <p class="text-2xl font-bold mt-1 text-blue-700" th:text="${totalSwipes}">0</p>
+    </div>
+</div>
+
+<!-- Interesados recientes -->
+<div th:if="${!#lists.isEmpty(swipesRecientes)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-3"><i data-lucide="users" class="h-4 w-4"></i> Compradores interesados</p>
+    <div class="space-y-2">
+        <div th:each="s : ${swipesRecientes}" class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-neutral-800 rounded-lg p-3">
+            <div class="min-w-0">
+                <p class="text-sm font-semibold" th:text="${s.get('buyer_nombre') ?: 'Comprador anónimo'}">—</p>
+                <div class="flex flex-wrap gap-x-3 text-xs text-slate-400">
+                    <span th:if="${s.get('buyer_email')}" th:text="' ' + ${s.get('buyer_email')}">—</span>
+                    <span th:if="${s.get('buyer_telefono')}" th:text="' ' + ${s.get('buyer_telefono')}">—</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-xs font-bold"
+                      th:classappend="${s.get('accion') == 'superlike' ? 'text-amber-600' : 'text-rose-600'}"
+                      th:text="${s.get('accion') == 'superlike' ? ' Super like' : ' Like'}">—</span>
+                <span th:if="${s.get('matched')}" class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-bold"> Match</span>
+                <form th:if="${#bools.isTrue(s.get('buyer_email')) and #bools.isFalse(s.get('matched'))}" th:action="@{/marketplace/match}" method="post">
+                    <input type="hidden" name="swipeId" th:value="${s.get('id')}">
+                    <button class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold whitespace-nowrap"> Hacer match</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

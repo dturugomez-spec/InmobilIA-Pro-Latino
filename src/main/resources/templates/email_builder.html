@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Email Builder</title></head>
+<body><div layout:fragment="content" x-data="emailBuilder()">
+
+<div class="rounded-xl bg-gradient-to-br from-pink-700 to-purple-900 p-5 mb-4 text-white">
+    <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="paintbrush" class="h-5 w-5"></i> Email Builder visual</h2>
+    <p class="text-xs text-white/70 mt-1">Drag&drop · bloques · preview live</p>
+</div>
+
+<div class="grid grid-cols-12 gap-3 h-[calc(100vh-200px)]">
+    <!-- Bloques disponibles -->
+    <aside class="col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-3 overflow-y-auto">
+        <h3 class="font-semibold text-xs mb-3 text-slate-500 uppercase">Bloques</h3>
+        <div class="space-y-2">
+            <button @click="addBlock('titulo')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs"> Título</button>
+            <button @click="addBlock('texto')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs">¶ Texto</button>
+            <button @click="addBlock('imagen')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs"> Imagen</button>
+            <button @click="addBlock('boton')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs"> Botón</button>
+            <button @click="addBlock('separador')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs">— Separador</button>
+            <button @click="addBlock('columnas')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs">⫴ 2 Columnas</button>
+            <button @click="addBlock('propiedad')" class="w-full text-left p-2 rounded bg-blue-50 hover:bg-blue-100 text-xs"> Card propiedad</button>
+            <button @click="addBlock('footer')" class="w-full text-left p-2 rounded bg-slate-50 hover:bg-slate-100 text-xs"> Footer</button>
+        </div>
+    </aside>
+
+    <!-- Editor central -->
+    <div class="col-span-6 rounded-xl bg-slate-100 dark:bg-neutral-800 p-5 overflow-y-auto">
+        <div class="max-w-xl mx-auto bg-white rounded-lg shadow p-4">
+            <template x-for="(b, idx) in bloques" :key="idx">
+                <div class="group relative border-2 border-dashed border-transparent hover:border-pink-300 mb-2 p-2">
+                    <button @click="bloques.splice(idx,1)" class="absolute top-0 right-0 hidden group-hover:block text-red-500 text-xs"></button>
+
+                    <h1 x-show="b.tipo === 'titulo'" contenteditable @blur="b.contenido = $el.innerText" class="text-2xl font-bold" x-text="b.contenido"></h1>
+                    <p x-show="b.tipo === 'texto'" contenteditable @blur="b.contenido = $el.innerText" class="text-sm leading-relaxed" x-text="b.contenido"></p>
+                    <div x-show="b.tipo === 'imagen'" class="w-full">
+                        <input type="url" x-model="b.contenido" placeholder="URL imagen" class="w-full px-2 py-1 text-xs border rounded mb-1">
+                        <img :src="b.contenido" class="w-full max-h-48 object-cover rounded">
+                    </div>
+                    <div x-show="b.tipo === 'boton'" class="text-center">
+                        <input x-model="b.contenido" class="px-4 py-2 rounded bg-pink-600 text-white text-sm">
+                        <input x-model="b.url" placeholder="URL destino" class="block mt-2 mx-auto w-full px-2 py-1 text-xs border rounded">
+                    </div>
+                    <hr x-show="b.tipo === 'separador'" class="my-3 border-slate-300">
+                    <div x-show="b.tipo === 'columnas'" class="grid grid-cols-2 gap-3">
+                        <p contenteditable @blur="b.col1 = $el.innerText" class="text-sm" x-text="b.col1"></p>
+                        <p contenteditable @blur="b.col2 = $el.innerText" class="text-sm" x-text="b.col2"></p>
+                    </div>
+                    <div x-show="b.tipo === 'propiedad'" class="border rounded-lg overflow-hidden">
+                        <div class="h-32 bg-slate-200 flex items-center justify-center"></div>
+                        <div class="p-3"><p class="font-bold text-sm">{propiedad.direccion}</p><p class="text-blue-700 font-bold mt-1">{%importe:propiedad.precio}</p></div>
+                    </div>
+                    <p x-show="b.tipo === 'footer'" class="text-[10px] text-slate-400 text-center mt-6 pt-3 border-t" x-text="b.contenido"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Output HTML -->
+    <div class="col-span-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm"> HTML resultado</h3>
+            <button @click="copiar()" class="px-3 py-1 rounded bg-pink-700 text-white text-xs"> Copiar</button>
+        </div>
+        <pre id="htmlOut" class="text-[10px] bg-slate-50 p-3 rounded overflow-auto max-h-[calc(100vh-280px)]" x-text="generarHtml()"></pre>
+    </div>
+</div>
+
+<script>
+function emailBuilder() {
+    return {
+        bloques: [
+            {tipo: 'titulo', contenido: ' Nuevas propiedades este mes'},
+            {tipo: 'texto', contenido: 'Hola {nombre}, te enviamos una selección de propiedades...'},
+            {tipo: 'separador'},
+            {tipo: 'boton', contenido: 'Ver catálogo', url: 'https://...'}
+        ],
+        addBlock(tipo) {
+            const def = {
+                titulo: {contenido: 'Tu título aquí'},
+                texto: {contenido: 'Tu texto aquí. Escribe lo que quieras...'},
+                imagen: {contenido: 'https://via.placeholder.com/500x250'},
+                boton: {contenido: 'Click aquí', url: 'https://'},
+                separador: {},
+                columnas: {col1: 'Columna izq', col2: 'Columna der'},
+                propiedad: {},
+                footer: {contenido: '© 2026 Mi Inmobiliaria. Date de baja aquí.'}
+            };
+            this.bloques.push({tipo, ...def[tipo]});
+        },
+        generarHtml() {
+            let html = '<div style="max-width:600px;margin:auto;font-family:sans-serif;background:#fff;padding:20px">';
+            for (const b of this.bloques) {
+                if (b.tipo === 'titulo') html += `<h1 style="font-size:24px;color:#1e293b">${b.contenido}</h1>`;
+                if (b.tipo === 'texto') html += `<p style="font-size:14px;line-height:1.6;color:#475569">${b.contenido}</p>`;
+                if (b.tipo === 'imagen') html += `<img src="${b.contenido}" style="width:100%;border-radius:8px">`;
+                if (b.tipo === 'boton') html += `<div style="text-align:center;margin:20px 0"><a href="${b.url}" style="display:inline-block;padding:12px 24px;background:#ec4899;color:white;text-decoration:none;border-radius:6px;font-weight:bold">${b.contenido}</a></div>`;
+                if (b.tipo === 'separador') html += `<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">`;
+                if (b.tipo === 'columnas') html += `<table width="100%"><tr><td style="padding:5px;font-size:14px">${b.col1}</td><td style="padding:5px;font-size:14px">${b.col2}</td></tr></table>`;
+                if (b.tipo === 'propiedad') html += `<div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin:10px 0"><div style="height:150px;background:#e2e8f0;text-align:center;line-height:150px;font-size:40px"></div><div style="padding:15px"><strong>{propiedad.direccion}</strong><br><span style="color:#3b82f6;font-weight:bold;font-size:18px">{%importe:propiedad.precio}</span></div></div>`;
+                if (b.tipo === 'footer') html += `<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:30px;padding-top:15px;border-top:1px solid #e2e8f0">${b.contenido}</p>`;
+            }
+            html += '</div>';
+            return html;
+        },
+        copiar() {
+            navigator.clipboard.writeText(this.generarHtml());
+            if (window.toast) toast('HTML copiado', 'ok');
+        }
+    }
+}
+</script>
+</div></body></html>

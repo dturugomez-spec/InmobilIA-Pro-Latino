@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Exportar datos</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="download" class="h-6 w-6"></i> Exportar datos
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Tus datos son tuyos. Descárgalos en CSV cuando quieras — para copia de seguridad, para abrirlos en Excel o para llevártelos a otro sitio. Sin ataduras.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6">
+        <div class="text-3xl mb-2"></div>
+        <h3 class="font-bold text-lg">Leads</h3>
+        <p class="text-sm text-slate-500 mt-1 mb-4">Nombre, contacto, interés, etapa, presupuesto, zona, origen y notas de todos tus leads.</p>
+        <a href="/exportar/leads.csv" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">
+            <i data-lucide="download" class="h-4 w-4"></i> Descargar leads.csv
+        </a>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6">
+        <div class="text-3xl mb-2"></div>
+        <h3 class="font-bold text-lg">Cartera</h3>
+        <p class="text-sm text-slate-500 mt-1 mb-4">Dirección, población, tipo, estado, habitaciones, superficie, precio y referencia de todos tus inmuebles.</p>
+        <a href="/exportar/propiedades.csv" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">
+            <i data-lucide="download" class="h-4 w-4"></i> Descargar cartera.csv
+        </a>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-5">Los CSV usan «;» como separador y codificación UTF-8, compatibles con Excel en español.</p>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

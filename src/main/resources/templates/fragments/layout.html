@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title th:text="|InmobilIA Pro · ${page}|">InmobilIA Pro</title>
+
+    <!-- ═══ PWA ═══ -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+    <meta name="application-name" content="InmobilIA Pro">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="InmobilIA">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+
+    <!-- ═══ STACK MODERNO ═══ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/modern.css}">
+    <link rel="stylesheet" th:href="@{/css/mobile.css}">
+
+    <!-- Aplicar tema antes del render para evitar flash -->
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'light';
+            document.documentElement.classList.toggle('dark', t === 'dark');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Geist Mono', 'JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            50:  '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
+                            300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6',
+                            600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af',
+                            900: '#1e3a8a', 950: '#172554'
+                        }
+                    },
+                    boxShadow: {
+                        'card':    '0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 0 rgb(0 0 0 / 0.06)',
+                        'card-lg': '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+                        'card-xl': '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
+                        'glow':    '0 0 0 4px rgb(59 130 246 / 0.15)'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.25s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+        .scroll-thin::-webkit-scrollbar-thumb { background: rgb(203 213 225 / 0.5); border-radius: 3px; }
+        .scroll-thin::-webkit-scrollbar-thumb:hover { background: rgb(148 163 184 / 0.7); }
+        .dark .scroll-thin::-webkit-scrollbar-thumb { background: rgb(64 64 64 / 0.5); }
+        /* Forzar que [hidden] gane a las clases Tailwind */
+        [hidden] { display: none !important; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-neutral-950 text-slate-900 dark:text-slate-100 antialiased">
+
+<!-- =================================================================== -->
+<!--                      LAYOUT PARA NO LOGUEADO                        -->
+<!-- =================================================================== -->
+<div th:if="${!logged}" layout:fragment="content">
+    <!-- las paginas sin sesion (auth, error) renderizan su propio body -->
+</div>
+
+<!-- =================================================================== -->
+<!--                      LAYOUT PARA LOGUEADO                           -->
+<!-- =================================================================== -->
+<div th:if="${logged}" x-data="{ sidebarOpen: false, sidebarCollapsed: false }" class="min-h-screen flex">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside :class="sidebarCollapsed ? 'lg:w-[68px]' : 'lg:w-64'"
+           class="fixed lg:sticky top-0 inset-y-0 z-40 w-64 bg-white dark:bg-neutral-900 border-r border-slate-200 dark:border-neutral-800 flex flex-col transition-all duration-200"
+           :style="sidebarOpen ? 'transform: translateX(0)' : ''"
+           x-cloak
+           x-bind:class="!sidebarOpen ? 'max-lg:-translate-x-full' : ''">
+
+        <!-- Logo -->
+        <div class="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-neutral-800">
+            <a href="/dashboard" class="flex items-center gap-2.5 min-w-0" x-show="!sidebarCollapsed">
+                <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="h-8 w-8 rounded-lg flex-shrink-0">
+                <span class="font-bold text-base tracking-tight whitespace-nowrap">Inmobil<span class="text-brand-600 dark:text-brand-500">IA</span> Pro</span>
+            </a>
+            <a href="/dashboard" x-show="sidebarCollapsed" class="mx-auto">
+                <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="h-8 w-8 rounded-lg">
+            </a>
+            <button @click="sidebarCollapsed = !sidebarCollapsed"
+                    x-show="!sidebarCollapsed"
+                    class="hidden lg:block p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-neutral-800 dark:hover:text-slate-200 transition-colors">
+                <i data-lucide="panel-left-close" class="h-4 w-4"></i>
+            </button>
+        </div>
+
+        <!-- Nav -->
+        <script>
+            // Secciones del menú: cerradas al iniciar sesión (auth.html borra 'nav_abiertos');
+            // las que abre el usuario se recuerdan mientras navega en esa pestaña.
+            window.navGroup = function (id) {
+                var abiertos = [];
+                try { abiertos = JSON.parse(sessionStorage.getItem('nav_abiertos') || '[]'); } catch (e) {}
+                return {
+                    open: abiertos.indexOf(id) >= 0,
+                    toggle: function () {
+                        this.open = !this.open;
+                        try {
+                            var a = JSON.parse(sessionStorage.getItem('nav_abiertos') || '[]').filter(function (x) { return x !== id; });
+                            if (this.open) a.push(id);
+                            sessionStorage.setItem('nav_abiertos', JSON.stringify(a));
+                        } catch (e) {}
+                    }
+                };
+            };
+        </script>
+        <nav class="flex-1 overflow-y-auto scroll-thin py-4 px-3 space-y-0.5">
+
+            <div x-data="navGroup('inicio')" data-nav-group="inicio" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="home" class="h-3.5 w-3.5"></i> Inicio</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/dashboard')}" href="/dashboard" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Dashboard">
+                    <i data-lucide="layout-dashboard" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Dashboard</span>
+                </a>
+                <a th:if="${nav.ve('/agente')}" href="/agente" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Agente IA">
+                    <i data-lucide="bot" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Agente IA</span>
+                </a>
+                <a th:if="${nav.ve('/autopiloto')}" href="/autopiloto" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Autopiloto">
+                    <i data-lucide="rocket" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Autopiloto</span>
+                </a>
+                <a th:if="${nav.ve('/cadencias')}" href="/cadencias" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Seguimiento">
+                    <i data-lucide="repeat" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Seguimiento</span>
+                </a>
+                <a th:if="${nav.ve('/impacto')}" href="/impacto" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Impacto del agente">
+                    <i data-lucide="award" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Impacto del agente</span>
+                </a>
+                <a th:if="${nav.ve('/analytics')}" href="/analytics" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Analítica">
+                    <i data-lucide="line-chart" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Analítica</span>
+                </a>
+                <a th:if="${nav.ve('/reports')}" href="/reports" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Informes">
+                    <i data-lucide="bar-chart-3" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Informes</span>
+                </a>
+                <a th:if="${nav.ve('/dashboards')}" href="/dashboards" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Cuadros de mando">
+                    <i data-lucide="layout-dashboard" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Cuadros de mando</span>
+                </a>
+                <a th:if="${nav.ve('/calendar')}" href="/calendar" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calendario">
+                    <i data-lucide="calendar-days" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Calendario</span>
+                </a>
+                <a th:if="${nav.ve('/primeros-pasos')}" href="/primeros-pasos" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Primeros pasos">
+                    <i data-lucide="rocket" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Primeros pasos</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('cartera')" data-nav-group="cartera" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="building" class="h-3.5 w-3.5"></i> Cartera</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/propiedades/grid')}" href="/propiedades/grid" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Propiedades">
+                    <i data-lucide="building" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Propiedades</span>
+                </a>
+                <a th:if="${nav.ve('/propiedades/mapa')}" href="/propiedades/mapa" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Mapa">
+                    <i data-lucide="map" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Mapa</span>
+                </a>
+                <a th:if="${nav.ve('/valoracion')}" href="/valoracion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Valoración">
+                    <i data-lucide="badge-euro" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Valoración</span>
+                </a>
+                <a th:if="${nav.ve('/rentabilidad')}" href="/rentabilidad" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Rentabilidad">
+                    <i data-lucide="bar-chart-3" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Rentabilidad</span>
+                </a>
+                <a th:if="${nav.ve('/comparar')}" href="/comparar" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Comparar">
+                    <i data-lucide="git-compare-arrows" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Comparar</span>
+                </a>
+                <a th:if="${nav.ve('/promociones')}" href="/promociones" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Promociones">
+                    <i data-lucide="building-2" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Promociones</span>
+                </a>
+                <a th:if="${nav.ve('/marketplace')}" href="/marketplace" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Marketplace">
+                    <i data-lucide="flame" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Marketplace</span>
+                </a>
+                <a th:if="${nav.ve('/tours-360')}" href="/tours-360" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Tours 360º">
+                    <i data-lucide="orbit" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Tours 360º</span>
+                </a>
+                <a th:if="${nav.ve('/staging-digital')}" href="/staging-digital" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Staging digital">
+                    <i data-lucide="sofa" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Staging digital</span>
+                </a>
+                <a th:if="${nav.ve('/reconocer-habitaciones')}" href="/reconocer-habitaciones" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Reconocer estancias">
+                    <i data-lucide="eye" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Reconocer estancias</span>
+                </a>
+                <a th:if="${nav.ve('/imagenes-ia')}" href="/imagenes-ia" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Imágenes IA">
+                    <i data-lucide="image" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Imágenes IA</span>
+                </a>
+                <a th:if="${nav.ve('/cee')}" href="/cee" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Certif. energético">
+                    <i data-lucide="leaf" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Certif. energético</span>
+                </a>
+                <a th:if="${nav.ve('/catastro')}" href="/catastro" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Catastro">
+                    <i data-lucide="map-pin" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Catastro</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('comercial')" data-nav-group="comercial" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="target" class="h-3.5 w-3.5"></i> Comercial / CRM</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/bandeja')}" href="/bandeja" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Bandeja de leads">
+                    <i data-lucide="inbox" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Bandeja de leads</span>
+                </a>
+                <a th:if="${nav.ve('/kanban/leads')}" href="/kanban/leads" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Pipeline de leads">
+                    <i data-lucide="kanban" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Pipeline de leads</span>
+                </a>
+                <a th:if="${nav.ve('/kanban/oportunidades')}" href="/kanban/oportunidades" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Oportunidades">
+                    <i data-lucide="target" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Oportunidades</span>
+                </a>
+                <a th:if="${nav.ve('/leads-scoring')}" href="/leads-scoring" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Lead scoring">
+                    <i data-lucide="flame" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Lead scoring</span>
+                </a>
+                <a th:if="${nav.ve('/captacion')}" href="/captacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Captación">
+                    <i data-lucide="crosshair" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Captación</span>
+                </a>
+                <a th:if="${nav.ve('/embudo')}" href="/embudo" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Embudo">
+                    <i data-lucide="filter" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Embudo</span>
+                </a>
+                <a th:if="${nav.ve('/visitas')}" href="/visitas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Visitas">
+                    <i data-lucide="calendar-check" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Visitas</span>
+                </a>
+                <a th:if="${nav.ve('/preparacion')}" href="/preparacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Preparación de visita">
+                    <i data-lucide="clipboard-check" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Preparación de visita</span>
+                </a>
+                <a th:if="${nav.ve('/hoja-visita')}" href="/hoja-visita" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Hoja de visita">
+                    <i data-lucide="clipboard-pen" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Hoja de visita</span>
+                </a>
+                <a th:if="${nav.ve('/nota-encargo')}" href="/nota-encargo" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Nota de encargo">
+                    <i data-lucide="file-signature" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Nota de encargo</span>
+                </a>
+                <a th:if="${nav.ve('/open-house')}" href="/open-house" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Open house">
+                    <i data-lucide="party-popper" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Open house</span>
+                </a>
+                <a th:if="${nav.ve('/reservas-online')}" href="/reservas-online" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Reservas online">
+                    <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Reservas online</span>
+                </a>
+                <a th:if="${nav.ve('/busquedas-guardadas')}" href="/busquedas-guardadas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Búsquedas guardadas">
+                    <i data-lucide="bell-ring" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Búsquedas guardadas</span>
+                </a>
+                <a th:if="${nav.ve('/cobroking')}" href="/cobroking" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Co-broking">
+                    <i data-lucide="handshake" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Co-broking</span>
+                </a>
+                <a th:if="${nav.ve('/portal-comprador')}" href="/portal-comprador" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Portal del comprador">
+                    <i data-lucide="heart-handshake" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Portal del comprador</span>
+                </a>
+                <a th:if="${nav.ve('/coach')}" href="/coach" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Coach de objeciones">
+                    <i data-lucide="drama" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Coach de objeciones</span>
+                </a>
+                <a th:if="${nav.ve('/informes')}" href="/informes" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Informes de mercado">
+                    <i data-lucide="bar-chart-3" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Informes de mercado</span>
+                </a>
+                <a th:if="${nav.ve('/simulador')}" href="/simulador" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Simulador hipoteca">
+                    <i data-lucide="landmark" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Simulador hipoteca</span>
+                </a>
+                <a th:if="${nav.ve('/notas-voz')}" href="/notas-voz" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Notas de voz">
+                    <i data-lucide="mic" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Notas de voz</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('marketing')" data-nav-group="marketing" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="megaphone" class="h-3.5 w-3.5"></i> Marketing</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/campanas')}" href="/campanas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Campañas">
+                    <i data-lucide="megaphone" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Campañas</span>
+                </a>
+                <a th:if="${nav.ve('/email-builder')}" href="/email-builder" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Email builder">
+                    <i data-lucide="paintbrush" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Email builder</span>
+                </a>
+                <a th:if="${nav.ve('/inbox')}" href="/inbox" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Bandeja de entrada">
+                    <i data-lucide="mail" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Bandeja de entrada</span>
+                </a>
+                <a th:if="${nav.ve('/whatsapp')}" href="/whatsapp" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="WhatsApp">
+                    <i data-lucide="message-square" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">WhatsApp</span>
+                </a>
+                <a th:if="${nav.ve('/sms')}" href="/sms" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="SMS">
+                    <i data-lucide="message-circle" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">SMS</span>
+                </a>
+                <a th:if="${nav.ve('/newsletter')}" href="/newsletter" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Newsletter">
+                    <i data-lucide="newspaper" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Newsletter</span>
+                </a>
+                <a th:if="${nav.ve('/redes')}" href="/redes" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Redes sociales">
+                    <i data-lucide="instagram" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Redes sociales</span>
+                </a>
+                <a th:if="${nav.ve('/optimizador')}" href="/optimizador" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Optimizador de anuncios">
+                    <i data-lucide="sparkles" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Optimizador de anuncios</span>
+                </a>
+                <a th:if="${nav.ve('/descripcion-ia')}" href="/descripcion-ia" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Descripción IA">
+                    <i data-lucide="wand-2" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Descripción IA</span>
+                </a>
+                <a th:if="${nav.ve('/notas-ia')}" href="/notas-ia" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Notas IA">
+                    <i data-lucide="sparkles" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Notas IA</span>
+                </a>
+                <a th:if="${nav.ve('/feeds')}" href="/feeds" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Portales (feeds)">
+                    <i data-lucide="rss" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Portales (feeds)</span>
+                </a>
+                <a th:if="${nav.ve('/microsite/admin')}" href="/microsite/admin" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Microsite">
+                    <i data-lucide="globe" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Microsite</span>
+                </a>
+                <a th:if="${nav.ve('/chatbot')}" href="/chatbot" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Chatbot web">
+                    <i data-lucide="bot" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Chatbot web</span>
+                </a>
+                <a th:if="${nav.ve('/reviews')}" href="/reviews" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Reseñas">
+                    <i data-lucide="star" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Reseñas</span>
+                </a>
+                <a th:if="${nav.ve('/referidos')}" href="/referidos" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Referidos">
+                    <i data-lucide="gift" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Referidos</span>
+                </a>
+                <a th:if="${nav.ve('/nps')}" href="/nps" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="NPS">
+                    <i data-lucide="thumbs-up" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">NPS</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/informe-captador')}" href="/herramientas/informe-captador" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Informe captador">
+                    <i data-lucide="clipboard-list" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Informe captador</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('clientes')" data-nav-group="clientes" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="users" class="h-3.5 w-3.5"></i> Clientes</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/crud/inquilinos')}" href="/crud/inquilinos" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Inquilinos">
+                    <i data-lucide="users" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Inquilinos</span>
+                </a>
+                <a th:if="${nav.ve('/cartera')}" href="/cartera" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Cartera de clientes">
+                    <i data-lucide="users-round" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Cartera de clientes</span>
+                </a>
+                <a th:if="${nav.ve('/admin/tenant-requests')}" href="/admin/tenant-requests" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Solicitudes de inquilinos">
+                    <i data-lucide="inbox" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Solicitudes de inquilinos</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('finanzas')" data-nav-group="finanzas" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="wallet" class="h-3.5 w-3.5"></i> Finanzas</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/crud/transacciones')}" href="/crud/transacciones" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Transacciones">
+                    <i data-lucide="receipt" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Transacciones</span>
+                </a>
+                <a th:if="${nav.ve('/payments')}" href="/payments" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Cobros">
+                    <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Cobros</span>
+                </a>
+                <a th:if="${nav.ve('/invoices')}" href="/invoices" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Facturación">
+                    <i data-lucide="file-text" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Facturación</span>
+                </a>
+                <a th:if="${nav.ve('/receipts')}" href="/receipts" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Recibos">
+                    <i data-lucide="receipt-text" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Recibos</span>
+                </a>
+                <a th:if="${nav.ve('/commissions')}" href="/commissions" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Comisiones">
+                    <i data-lucide="hand-coins" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Comisiones</span>
+                </a>
+                <a th:if="${nav.ve('/sepa')}" href="/sepa" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="SEPA">
+                    <i data-lucide="banknote" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">SEPA</span>
+                </a>
+                <a th:if="${nav.ve('/conciliacion')}" href="/conciliacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Conciliación bancaria">
+                    <i data-lucide="banknote" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Conciliación bancaria</span>
+                </a>
+                <a th:if="${nav.ve('/caja')}" href="/caja" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Caja">
+                    <i data-lucide="wallet" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Caja</span>
+                </a>
+                <a th:if="${nav.ve('/gastos-agente')}" href="/gastos-agente" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Gastos del agente">
+                    <i data-lucide="car" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Gastos del agente</span>
+                </a>
+                <a th:if="${nav.ve('/extractos')}" href="/extractos" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Extractos a propietarios">
+                    <i data-lucide="receipt-text" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Extractos a propietarios</span>
+                </a>
+                <a th:if="${nav.ve('/divisas')}" href="/divisas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Divisas">
+                    <i data-lucide="dollar-sign" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Divisas</span>
+                </a>
+                <a th:if="${nav.ve('/calculadora-hipoteca')}" href="/calculadora-hipoteca" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calc. hipoteca">
+                    <i data-lucide="calculator" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Calc. hipoteca</span>
+                </a>
+                <a th:if="${nav.ve('/calculadora-plusvalia')}" href="/calculadora-plusvalia" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calc. plusvalía">
+                    <i data-lucide="trending-up" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Calc. plusvalía</span>
+                </a>
+                <a th:if="${nav.ve('/calendario-fiscal')}" href="/calendario-fiscal" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Calendario fiscal">
+                    <i data-lucide="calendar-clock" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Calendario fiscal</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('documentos')" data-nav-group="documentos" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="file-text" class="h-3.5 w-3.5"></i> Documentos y legal</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/firmas')}" href="/firmas" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Firmas eIDAS">
+                    <i data-lucide="pen-tool" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Firmas eIDAS</span>
+                </a>
+                <a th:if="${nav.ve('/plantillas-doc')}" href="/plantillas-doc" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Plantillas de documentos">
+                    <i data-lucide="file-text" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Plantillas de documentos</span>
+                </a>
+                <a th:if="${nav.ve('/templates')}" href="/templates" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Plantillas de email">
+                    <i data-lucide="layout-template" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Plantillas de email</span>
+                </a>
+                <a th:if="${nav.ve('/ocr-dni')}" href="/ocr-dni" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="OCR de DNI">
+                    <i data-lucide="scan-line" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">OCR de DNI</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/ocr')}" href="/herramientas/ocr" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="OCR de documentos">
+                    <i data-lucide="scan-text" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">OCR de documentos</span>
+                </a>
+                <a th:if="${nav.ve('/seguros')}" href="/seguros" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Seguros">
+                    <i data-lucide="shield" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Seguros</span>
+                </a>
+                <a th:if="${userRole == 'admin' or userRole == 'director'}" href="/auditoria" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Auditoría">
+                    <i data-lucide="file-search" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Auditoría</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/comparador-renta')}" href="/herramientas/comparador-renta" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Comparador de renta (IRAV)">
+                    <i data-lucide="scale" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Comparador de renta (IRAV)</span>
+                </a>
+                <a th:if="${nav.ve('/wiki')}" href="/wiki" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Wiki">
+                    <i data-lucide="book-open" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Wiki</span>
+                </a>
+                </div>
+            </div>
+
+            <div x-data="navGroup('equipo')" data-nav-group="equipo" class="pt-2">
+                <button type="button" @click="toggle()" x-show="!sidebarCollapsed" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors">
+                    <span class="flex items-center gap-2"><i data-lucide="settings" class="h-3.5 w-3.5"></i> Equipo y ajustes</span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
+                </button>
+                <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/equipo')}" href="/equipo" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Equipo">
+                    <i data-lucide="users-round" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Equipo</span>
+                </a>
+                <a th:if="${userRole == 'admin'}" href="/permisos-granulares" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Permisos por usuario">
+                    <i data-lucide="shield-check" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Permisos por usuario</span>
+                </a>
+                <a th:if="${nav.ve('/rendimiento')}" href="/rendimiento" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Rendimiento del equipo">
+                    <i data-lucide="trending-up" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Rendimiento del equipo</span>
+                </a>
+                <a th:if="${nav.ve('/team/chat')}" href="/team/chat" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Chat del equipo">
+                    <i data-lucide="message-square" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Chat del equipo</span>
+                </a>
+                <a th:if="${nav.ve('/workflows')}" href="/workflows" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Automatizaciones">
+                    <i data-lucide="zap" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Automatizaciones</span>
+                </a>
+                <a th:if="${nav.ve('/business')}" href="/business" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Mi negocio">
+                    <i data-lucide="building" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Mi negocio</span>
+                </a>
+                <a th:if="${nav.ve('/whitelabel')}" href="/whitelabel" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Marca blanca">
+                    <i data-lucide="palette" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Marca blanca</span>
+                </a>
+                <a th:if="${nav.ve('/integrations')}" href="/integrations" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Integraciones">
+                    <i data-lucide="plug" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Integraciones</span>
+                </a>
+                <a th:if="${nav.ve('/holded')}" href="/holded" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Holded">
+                    <i data-lucide="link" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Holded</span>
+                </a>
+                <a th:if="${nav.ve('/google-calendar')}" href="/google-calendar" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Google Calendar">
+                    <i data-lucide="calendar-days" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Google Calendar</span>
+                </a>
+                <a th:if="${nav.ve('/api-keys')}" href="/api-keys" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="API keys">
+                    <i data-lucide="key-round" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">API keys</span>
+                </a>
+                <a th:if="${nav.ve('/import')}" href="/import" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Importar">
+                    <i data-lucide="upload" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Importar</span>
+                </a>
+                <a th:if="${nav.ve('/exportar')}" href="/exportar" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Exportar">
+                    <i data-lucide="download" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Exportar</span>
+                </a>
+                <a th:if="${nav.ve('/trash')}" href="/trash" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Papelera">
+                    <i data-lucide="trash-2" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Papelera</span>
+                </a>
+                <a th:if="${nav.ve('/dashboard/config')}" href="/dashboard/config" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Personalizar panel">
+                    <i data-lucide="layout-grid" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Personalizar panel</span>
+                </a>
+                <a th:if="${nav.ve('/billing')}" href="/billing" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Plan y facturación">
+                    <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Plan y facturación</span>
+                </a>
+                <a th:if="${nav.ve('/account')}" href="/account" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Mi cuenta">
+                    <i data-lucide="user-circle" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Mi cuenta</span>
+                </a>
+                <a th:if="${nav.ve('/seguridad')}" href="/seguridad" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Seguridad">
+                    <i data-lucide="shield-check" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Seguridad</span>
+                </a>
+                <a th:if="${nav.ve('/config')}" href="/config" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Configuración">
+                    <i data-lucide="settings" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Configuración</span>
+                </a>
+                <a th:if="${nav.ve('/help')}" href="/help" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Ayuda">
+                    <i data-lucide="life-buoy" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Ayuda</span>
+                </a>
+                </div>
+            </div>
+
+            <script>
+            // Grupos del menú sin ningún enlace visible para esta persona: fuera
+            document.querySelectorAll('nav [data-nav-group]').forEach(function (g) {
+                if (!g.querySelector('a[href]')) g.style.display = 'none';
+            });
+            </script>
+            <script>
+            document.addEventListener("alpine:initialized", () => {
+                const path = location.pathname;
+                document.querySelectorAll("nav a[href]").forEach(a => {
+                    if (a.getAttribute("href") === path) {
+                        a.classList.add("bg-brand-50","dark:bg-brand-950/40","text-brand-800","dark:text-brand-300");
+                    }
+                });
+            });
+            </script>
+
+        </nav>
+
+        <!-- Footer sidebar: créditos IA + perfil -->
+        <div class="p-3 border-t border-slate-200 dark:border-neutral-800 space-y-2">
+            <div th:if="${platformAiEnabled}" x-show="!sidebarCollapsed"
+                 class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 dark:bg-neutral-800/60 border border-slate-200/60 dark:border-neutral-700/60">
+                <i data-lucide="sparkles" class="h-4 w-4 text-brand-600 flex-shrink-0"></i>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-neutral-500 font-semibold">Créditos IA</div>
+                    <div class="text-sm font-semibold font-mono" th:text="${credits}">50</div>
+                </div>
+            </div>
+
+            <a href="/config"
+               :class="sidebarCollapsed ? 'justify-center' : ''"
+               class="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                <div class="h-7 w-7 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-xs font-semibold flex-shrink-0"
+                     th:text="${userName != null ? #strings.toUpperCase(#strings.substring(userName, 0, 1)) : 'U'}">U</div>
+                <div x-show="!sidebarCollapsed" class="min-w-0 flex-1">
+                    <div class="text-sm font-medium truncate" th:text="${userName}">Usuario</div>
+                    <div class="text-xs text-slate-500 dark:text-neutral-400 truncate flex items-center gap-1">
+                        <span th:text="${userRoleIcon ?: ''}"></span>
+                        <span class="truncate" th:text="${userRoleLabel ?: userEmail}">Rol</span>
+                    </div>
+                </div>
+                <i x-show="!sidebarCollapsed" data-lucide="settings" class="h-4 w-4 text-slate-400"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Backdrop móvil -->
+    <div x-show="sidebarOpen" @click="sidebarOpen = false"
+         x-transition.opacity
+         class="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" x-cloak></div>
+
+    <!-- ============ ÁREA PRINCIPAL ============ -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+        <!-- Topbar -->
+        <header class="h-16 sticky top-0 z-20 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-slate-200 dark:border-neutral-800 flex items-center px-4 lg:px-6 gap-3">
+            <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800">
+                <i data-lucide="menu" class="h-5 w-5"></i>
+            </button>
+
+            <button @click="sidebarCollapsed = !sidebarCollapsed" x-show="sidebarCollapsed"
+                    class="hidden lg:block p-2 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-700 dark:hover:text-slate-200" x-cloak>
+                <i data-lucide="panel-left-open" class="h-4 w-4"></i>
+            </button>
+
+            <!-- Buscador global -->
+            <button type="button" id="btn-palette"
+                    class="flex-1 max-w-md flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600 bg-slate-50 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800 transition-colors text-sm text-slate-500 dark:text-neutral-400">
+                <i data-lucide="search" class="h-4 w-4"></i>
+                <span class="flex-1 text-left">Buscar herramienta, tabla, acción...</span>
+                <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 h-5 text-[10px] font-mono bg-white dark:bg-neutral-700 border border-slate-200 dark:border-neutral-600 rounded text-slate-500 dark:text-neutral-400">⌘K</kbd>
+            </button>
+
+            <div class="flex-1 lg:hidden"></div>
+
+            <!-- Acciones derecha -->
+            <div class="flex items-center gap-1">
+                <!-- Notificaciones (campanita) -->
+                <div x-data="notificationsBell()" class="relative" @click.outside="open = false">
+                    <button @click="toggle()" class="relative p-2 rounded-md text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-700 dark:hover:text-slate-200" title="Notificaciones">
+                        <i data-lucide="bell" class="h-4 w-4"></i>
+                        <span x-show="unread > 0" x-cloak
+                              class="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center"
+                              x-text="unread > 9 ? '9+' : unread">0</span>
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div x-show="open" x-cloak x-transition.opacity.duration.200ms
+                         class="absolute right-0 top-full mt-2 w-80 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 shadow-card-xl overflow-hidden z-50">
+                        <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                            <h3 class="font-semibold text-sm">Notificaciones</h3>
+                            <button @click="markAllRead()" x-show="unread > 0" class="text-xs text-brand-700 dark:text-brand-400 hover:underline">
+                                Marcar todas leídas
+                            </button>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto scroll-thin">
+                            <template x-for="n in items" :key="n.id">
+                                <a :href="n.link || '#'"
+                                   @click="markRead(n.id)"
+                                   :class="!n.read_at || n.read_at === 'null' ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''"
+                                   class="block px-4 py-3 border-b border-slate-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors">
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-base flex-shrink-0" x-text="n.icon || (n.type === 'success' ? '' : n.type === 'warning' ? '' : n.type === 'error' ? '' : 'ℹ')"></span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-medium text-sm" x-text="n.title"></div>
+                                            <div class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5" x-text="n.message" x-show="n.message"></div>
+                                            <div class="text-[10px] text-slate-400 mt-1 font-mono" x-text="formatDate(n.created_at)"></div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </template>
+                            <div x-show="items.length === 0" class="px-4 py-12 text-center">
+                                <i data-lucide="bell-off" class="h-8 w-8 text-slate-300 mx-auto mb-2"></i>
+                                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin notificaciones</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-theme" class="p-2 rounded-md text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-700 dark:hover:text-slate-200" title="Cambiar tema">
+                    <i data-lucide="sun" class="h-4 w-4 dark:hidden"></i>
+                    <i data-lucide="moon" class="h-4 w-4 hidden dark:block"></i>
+                </button>
+                <a href="/logout" title="Cerrar sesión"
+                   class="p-2 rounded-md text-slate-500 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-400 transition-colors">
+                    <i data-lucide="log-out" class="h-4 w-4"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- ============ MULTI-PESTAÑAS (estilo Vortex) ============ -->
+        <div x-data="tabsManager()" x-init="init()" class="border-b border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/50" x-show="tabs.length > 0" x-cloak>
+            <div class="flex items-center px-2 gap-0.5 overflow-x-auto scroll-thin h-10">
+                <template x-for="(tab, idx) in tabs" :key="tab.url">
+                    <a :href="tab.url"
+                       :class="isCurrent(tab.url) ? 'bg-white dark:bg-neutral-800 text-slate-900 dark:text-slate-100 ring-1 ring-slate-200 dark:ring-neutral-700' : 'text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'"
+                       class="flex items-center gap-2 px-2.5 h-8 rounded-md text-xs font-medium transition-colors group flex-shrink-0 max-w-[200px]">
+                        <span class="text-base flex-shrink-0" x-text="tab.icon"></span>
+                        <span class="truncate" x-text="tab.title"></span>
+                        <button @click.prevent.stop="closeTab(idx)"
+                                class="flex-shrink-0 -mr-1 h-4 w-4 rounded inline-flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:text-slate-700 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-all">
+                            <i data-lucide="x" class="h-3 w-3"></i>
+                        </button>
+                    </a>
+                </template>
+                <button @click="closeAll()" x-show="tabs.length > 1"
+                        class="ml-1 px-2 h-8 rounded-md text-[11px] text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-slate-200 transition-colors flex-shrink-0">
+                    Cerrar todas
+                </button>
+            </div>
+        </div>
+
+        <!-- Banner trial (solo si está en trial Y quedan ≤5 días) -->
+        <div th:if="${planStatus != null and planStatus.isTrialing and planStatus.trialDaysLeft <= 5}"
+             class="px-4 lg:px-8 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/40 flex items-center gap-3">
+            <i data-lucide="zap" class="h-4 w-4 text-amber-600 flex-shrink-0"></i>
+            <span class="text-sm text-amber-800 dark:text-amber-300 flex-1">
+                Tu período de prueba acaba en <strong th:text="${planStatus.trialDaysLeft}">3</strong>
+                <span th:text="${planStatus.trialDaysLeft == 1 ? 'día' : 'días'}">días</span>.
+                Suscríbete para mantener todas las funciones.
+            </span>
+            <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium transition-colors flex-shrink-0">
+                Suscribirme
+                <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+
+        <!-- Prueba de Stripe (con tarjeta) a punto de acabar: aviso de cobro automático -->
+        <div th:if="${planStatus != null and planStatus.stripeTrial and planStatus.stripeTrialDaysLeft <= 3}"
+             class="px-4 lg:px-8 py-2.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-900/40 flex items-center gap-3">
+            <i data-lucide="calendar-clock" class="h-4 w-4 text-blue-700 flex-shrink-0"></i>
+            <span class="text-sm text-blue-900 dark:text-blue-300 flex-1">
+                Tu prueba gratis termina en <strong th:text="${planStatus.stripeTrialDaysLeft}">3</strong>
+                <span th:text="${planStatus.stripeTrialDaysLeft == 1 ? 'día' : 'días'}">días</span>.
+                Después se cobrará tu plan automáticamente.
+            </span>
+            <a th:if="${nav.ve('/billing')}" href="/billing" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium transition-colors flex-shrink-0">
+                Gestionar
+            </a>
+        </div>
+
+        <!-- Banner trial expirado (solo prueba SIN tarjeta; quien ya se suscribió nunca lo ve) -->
+        <div th:if="${planStatus != null and !planStatus.isTrialing and !planStatus.subscribed and planStatus.status == 'trialing'}"
+             class="px-4 lg:px-8 py-2.5 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="h-4 w-4 text-red-600 flex-shrink-0"></i>
+            <span class="text-sm text-red-800 dark:text-red-300 flex-1">
+                Tu período de prueba ha terminado. Suscríbete para seguir usando todas las funciones.
+            </span>
+            <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors flex-shrink-0">
+                Ver planes
+                <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+
+        <!-- Page header -->
+        <div class="px-4 lg:px-8 pt-6 pb-4 border-b border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+            <nav class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-neutral-400 mb-2">
+                <a href="/dashboard" class="hover:text-slate-700 dark:hover:text-slate-200 transition-colors">Inicio</a>
+                <i data-lucide="chevron-right" class="h-3 w-3"></i>
+                <span class="text-slate-700 dark:text-slate-300 font-medium" th:text="${page}">Página</span>
+            </nav>
+            <div class="flex items-end justify-between flex-wrap gap-3">
+                <h1 class="text-2xl font-bold tracking-tight" th:text="${page}">Página</h1>
+                <p class="text-sm text-slate-500 dark:text-neutral-400" th:text="${saludo != null ? saludo + ', ' + fechaLarga : ''}"></p>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <main class="flex-1 px-4 lg:px-8 py-6 animate-fade-in">
+            <div layout:fragment="content"></div>
+        </main>
+
+        <footer class="px-4 lg:px-8 py-4 border-t border-slate-200 dark:border-neutral-800 text-center text-xs text-slate-400 dark:text-neutral-500">
+            InmobilIA Pro · 2026 · <span th:replace="~{fragments/grupo :: sello(false)}"></span>
+        </footer>
+    </div>
+</div>
+
+<!-- ============ TOAST CONTAINER ============ -->
+<div id="toast-stack" class="fixed bottom-6 right-6 z-50 flex flex-col-reverse gap-2 pointer-events-none"
+     th:if="${flash != null}" th:attr="data-flash=${flash}"></div>
+
+<!-- ============ COMMAND PALETTE ============ -->
+<div id="cmdk" th:if="${logged}" hidden style="display: none;"
+     class="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm items-start justify-center pt-[12vh] px-4">
+    <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-card-xl ring-1 ring-slate-200 dark:ring-neutral-800 w-full max-w-xl overflow-hidden">
+        <div class="flex items-center gap-3 px-4 h-12 border-b border-slate-200 dark:border-neutral-800">
+            <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            <input type="text" id="cmdk-input" placeholder="Buscar herramienta, tabla, acción..."
+                   autocomplete="off"
+                   class="flex-1 bg-transparent border-0 outline-none text-sm placeholder-slate-400">
+            <kbd class="text-[10px] font-mono px-1.5 h-5 inline-flex items-center bg-slate-100 dark:bg-neutral-800 rounded text-slate-500">ESC</kbd>
+        </div>
+        <div id="cmdk-results" class="max-h-80 overflow-y-auto scroll-thin py-2"></div>
+        <div class="flex items-center gap-4 px-4 h-9 border-t border-slate-200 dark:border-neutral-800 text-[11px] text-slate-500 dark:text-neutral-400">
+            <span class="flex items-center gap-1"><kbd class="font-mono px-1 bg-slate-100 dark:bg-neutral-800 rounded">↑↓</kbd> navegar</span>
+            <span class="flex items-center gap-1"><kbd class="font-mono px-1 bg-slate-100 dark:bg-neutral-800 rounded">↵</kbd> abrir</span>
+            <span class="flex items-center gap-1 ml-auto"><kbd class="font-mono px-1 bg-slate-100 dark:bg-neutral-800 rounded">Esc</kbd> cerrar</span>
+        </div>
+    </div>
+</div>
+
+<!-- FAB crear rápido (solo mobile) -->
+<div th:if="${logged}" x-data="{ open: false }" @click.outside="open = false">
+    <div x-show="open" x-cloak x-transition class="fixed bottom-24 right-5 z-30 flex flex-col gap-2 items-end">
+        <a href="/crud/propiedades/new" class="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-card-lg ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50">
+            <span></span> Propiedad
+        </a>
+        <a href="/crud/inquilinos/new" class="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-card-lg ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50">
+            <span></span> Inquilino
+        </a>
+        <a href="/crud/leads/new" class="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-card-lg ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50">
+            <span></span> Lead
+        </a>
+        <a href="/crud/transacciones/new" class="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white dark:bg-neutral-800 shadow-card-lg ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium hover:bg-slate-50">
+            <span></span> Transacción
+        </a>
+    </div>
+    <button @click="open = !open" class="fab-create" :class="open ? 'rotate-45' : ''" title="Crear">
+        <i data-lucide="plus" class="h-6 w-6"></i>
+    </button>
+</div>
+
+<!-- ============ COOKIES BANNER ============ -->
+<div x-data="{
+        show: !localStorage.getItem('cookie_consent'),
+        accept() { localStorage.setItem('cookie_consent', 'accepted'); this.show = false; }
+    }"
+     x-show="show" x-transition.opacity.duration.300ms x-cloak
+     class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50">
+    <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-card-xl ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <div class="flex items-start gap-3 mb-3">
+            <i data-lucide="cookie" class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+            <div class="text-sm">
+                <p class="font-semibold text-slate-900 dark:text-slate-100 mb-1">Solo cookies técnicas</p>
+                <p class="text-xs text-slate-600 dark:text-neutral-400">Usamos cookies estrictamente necesarias para mantener tu sesión y preferencias. No usamos cookies de marketing ni de terceros.</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+            <a href="/cookies" class="text-xs text-brand-700 dark:text-brand-400 hover:underline">Saber más</a>
+            <button @click="accept()" class="px-3 py-1.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-xs font-medium">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ PWA INSTALL ============ -->
+<button id="pwa-install-btn" hidden type="button" aria-label="Instalar app"
+        class="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card-lg transition-colors">
+    <i data-lucide="download" class="h-4 w-4"></i>
+    <span>Instalar app</span>
+</button>
+
+<!-- ============ SCRIPTS ============ -->
+<script th:if="${logged}" th:inline="javascript">
+    /*<![CDATA[*/
+
+    // --- Theme toggle ---
+    const btnTheme = document.getElementById('btn-theme');
+    if (btnTheme) btnTheme.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        const next = isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+
+    // --- Toasts desde flash ---
+    function toast(msg, variant) {
+        variant = variant || 'info';
+        const colors = {
+            ok:    { bg: 'bg-emerald-50 dark:bg-emerald-950/40', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-800 dark:text-emerald-300', icon: 'check-circle-2' },
+            err:   { bg: 'bg-red-50 dark:bg-red-950/40',         border: 'border-red-200 dark:border-red-800',         text: 'text-red-800 dark:text-red-300',         icon: 'alert-circle' },
+            warn:  { bg: 'bg-amber-50 dark:bg-amber-950/40',     border: 'border-amber-200 dark:border-amber-800',     text: 'text-amber-800 dark:text-amber-300',     icon: 'alert-triangle' },
+            info:  { bg: 'bg-slate-50 dark:bg-neutral-800',      border: 'border-slate-200 dark:border-neutral-700',   text: 'text-slate-800 dark:text-slate-300',     icon: 'info' }
+        };
+        const c = colors[variant] || colors.info;
+        let s = document.getElementById('toast-stack');
+        if (!s) {
+            s = document.createElement('div');
+            s.id = 'toast-stack';
+            s.className = 'fixed bottom-6 right-6 z-50 flex flex-col-reverse gap-2 pointer-events-none';
+            document.body.appendChild(s);
+        }
+        const el = document.createElement('div');
+        el.className = `pointer-events-auto flex items-start gap-2.5 px-3.5 py-3 rounded-lg border shadow-card-lg max-w-sm animate-slide-up ${c.bg} ${c.border}`;
+        el.innerHTML = `<i data-lucide="${c.icon}" class="h-4 w-4 mt-0.5 flex-shrink-0 ${c.text}"></i>
+                        <p class="text-sm font-medium ${c.text} flex-1">${msg.replace(/</g,'&lt;')}</p>
+                        <button class="${c.text} opacity-60 hover:opacity-100 transition-opacity"><i data-lucide="x" class="h-3.5 w-3.5"></i></button>`;
+        el.querySelector('button').onclick = () => el.remove();
+        s.appendChild(el);
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => { el.style.transition = 'opacity 300ms, transform 300ms'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 320); }, 5000);
+    }
+    window.toast = toast;
+
+    const stack = document.getElementById('toast-stack');
+    if (stack && stack.dataset.flash) {
+        const msg = stack.dataset.flash;
+        const variant = /ERROR/i.test(msg) ? 'err'
+                      : /eliminad|advert/i.test(msg) ? 'warn'
+                      : /ok|creado|actualizado|guardado/i.test(msg) ? 'ok' : 'info';
+        toast(msg, variant);
+    }
+
+    // --- Command palette ---
+    const TOOLS = /*[[${paletteTools}]]*/ [];
+    const overlay = document.getElementById('cmdk');
+    const input = document.getElementById('cmdk-input');
+    const resultsEl = document.getElementById('cmdk-results');
+    let selected = 0, filtered = TOOLS;
+
+    function openPalette() {
+        if (!overlay) return;
+        overlay.removeAttribute('hidden');
+        overlay.style.display = 'flex';
+        input.value = ''; selected = 0; renderResults();
+        setTimeout(() => input.focus(), 10);
+    }
+    function closePalette() {
+        if (!overlay) return;
+        overlay.setAttribute('hidden', '');
+        overlay.style.display = 'none';
+    }
+    function renderResults() {
+        if (!resultsEl) return;
+        if (filtered.length === 0) {
+            resultsEl.innerHTML = '<div class="px-4 py-8 text-center text-sm text-slate-400">Sin resultados</div>';
+            return;
+        }
+        resultsEl.innerHTML = filtered.slice(0, 12).map((t, i) => `
+            <div class="cmdk-item flex items-center gap-3 px-3 mx-2 rounded-md cursor-pointer h-10 ${i === selected ? 'bg-brand-50 dark:bg-brand-950/40' : 'hover:bg-slate-50 dark:hover:bg-neutral-800'}" data-url="${t.url}">
+                <span class="text-base flex-shrink-0">${t.icon || '•'}</span>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-medium truncate ${i === selected ? 'text-brand-800 dark:text-brand-300' : ''}">${t.name}</div>
+                    <div class="text-xs text-slate-500 dark:text-neutral-400 truncate">${t.cat}</div>
+                </div>
+                <span class="text-slate-400 text-xs">↵</span>
+            </div>
+        `).join('');
+        resultsEl.querySelectorAll('.cmdk-item').forEach((el, i) => {
+            el.addEventListener('click', () => go(filtered[i].url));
+            el.addEventListener('mouseenter', () => { selected = i; renderResults(); });
+        });
+    }
+    function filterResults(q) {
+        q = q.toLowerCase().trim();
+        filtered = !q ? TOOLS : TOOLS.filter(t =>
+            t.name.toLowerCase().includes(q) ||
+            (t.cat || '').toLowerCase().includes(q)
+        );
+        selected = 0; renderResults();
+    }
+    function go(url) { closePalette(); window.location.href = url; }
+
+    if (input) {
+        input.addEventListener('input', e => filterResults(e.target.value));
+        input.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); selected = Math.min(selected + 1, Math.min(filtered.length, 12) - 1); renderResults(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selected = Math.max(selected - 1, 0); renderResults(); }
+            else if (e.key === 'Enter' && filtered[selected]) { e.preventDefault(); go(filtered[selected].url); }
+            else if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+        });
+    }
+    if (overlay) {
+        // Click fuera del modal interno = cerrar
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) closePalette();
+        });
+        // ESC global cuando el palette está abierto
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && !overlay.hasAttribute('hidden')) {
+                e.preventDefault();
+                closePalette();
+            }
+        });
+    }
+    const btnPal = document.getElementById('btn-palette');
+    if (btnPal) btnPal.addEventListener('click', e => { e.preventDefault(); openPalette(); });
+
+    // --- Notificaciones in-app (campanita) ---
+    window.notificationsBell = function() {
+        return {
+            open: false,
+            items: [],
+            unread: 0,
+            async load() {
+                try {
+                    const res = await fetch('/api/notifications/recent');
+                    const data = await res.json();
+                    if (data.ok) {
+                        this.items = data.items || [];
+                        this.unread = data.unread || 0;
+                        if (window.lucide) setTimeout(() => lucide.createIcons(), 50);
+                    }
+                } catch (e) {}
+            },
+            init() {
+                this.load();
+                setInterval(() => this.load(), 60000); // refrescar cada minuto
+            },
+            toggle() { this.open = !this.open; if (this.open) this.load(); },
+            async markRead(id) {
+                try {
+                    await fetch('/api/notifications/' + id + '/read', { method: 'POST' });
+                    const i = this.items.find(x => x.id === id);
+                    if (i) i.read_at = new Date().toISOString();
+                    this.unread = Math.max(0, this.unread - 1);
+                } catch(e) {}
+            },
+            async markAllRead() {
+                try {
+                    await fetch('/api/notifications/read-all', { method: 'POST' });
+                    this.items.forEach(i => i.read_at = new Date().toISOString());
+                    this.unread = 0;
+                } catch(e) {}
+            },
+            formatDate(s) {
+                if (!s) return '';
+                try {
+                    const d = new Date(s);
+                    const diff = (Date.now() - d.getTime()) / 1000;
+                    if (diff < 60) return 'Ahora';
+                    if (diff < 3600) return Math.floor(diff/60) + ' min';
+                    if (diff < 86400) return Math.floor(diff/3600) + ' h';
+                    if (diff < 604800) return Math.floor(diff/86400) + ' d';
+                    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                } catch(e) { return s.substring(0, 10); }
+            }
+        };
+    };
+
+    // --- Multi-pestañas estilo Vortex (persistente en localStorage) ---
+    window.tabsManager = function() {
+        return {
+            tabs: [],
+            currentPath: '',
+            init() {
+                this.currentPath = window.location.pathname;
+                this.tabs = JSON.parse(localStorage.getItem('open_tabs') || '[]');
+                // Detectar si la pagina actual es una entidad y registrarla como tab
+                this.autoRegister();
+                // Limpiar tabs duplicados
+                const seen = new Set();
+                this.tabs = this.tabs.filter(t => seen.has(t.url) ? false : (seen.add(t.url), true));
+                this.save();
+            },
+            autoRegister() {
+                const path = this.currentPath;
+                const url = path + window.location.search;
+                let tab = null;
+                // /entity/inquilino/{id}
+                if (path.match(/^\/entity\/inquilino\/[^/]+/)) {
+                    const title = document.title.replace('InmobilIA Pro · ', '').replace('Inquilino · ', '') || 'Inquilino';
+                    tab = { url, title, icon: '', type: 'inquilino' };
+                }
+                // /entity/propiedad/{id}
+                else if (path.match(/^\/entity\/propiedad\/[^/]+/)) {
+                    const title = document.title.replace('InmobilIA Pro · ', '').replace('Propiedad · ', '') || 'Propiedad';
+                    tab = { url, title, icon: '', type: 'propiedad' };
+                }
+                // /entity/lead/{id}
+                else if (path.match(/^\/entity\/lead\/[^/]+/)) {
+                    const title = document.title.replace('InmobilIA Pro · ', '').replace('Lead · ', '') || 'Lead';
+                    tab = { url, title, icon: '', type: 'lead' };
+                }
+                if (tab) {
+                    const existing = this.tabs.findIndex(t => t.url === tab.url);
+                    if (existing >= 0) this.tabs[existing] = tab;
+                    else this.tabs.push(tab);
+                    if (this.tabs.length > 12) this.tabs.shift(); // max 12 tabs
+                    this.save();
+                }
+            },
+            isCurrent(url) {
+                return url === this.currentPath || url === (this.currentPath + window.location.search);
+            },
+            closeTab(idx) {
+                this.tabs.splice(idx, 1);
+                this.save();
+                if (this.tabs.length === 0) {
+                    window.location.href = '/dashboard';
+                }
+            },
+            closeAll() {
+                this.tabs = [];
+                this.save();
+                window.location.href = '/dashboard';
+            },
+            save() { localStorage.setItem('open_tabs', JSON.stringify(this.tabs)); }
+        };
+    };
+
+    // --- Keyboard shortcuts globales ---
+    document.addEventListener('keydown', e => {
+        const tag = (e.target.tagName || '').toLowerCase();
+        const inField = tag === 'input' || tag === 'textarea' || tag === 'select';
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault(); openPalette();
+        } else if (e.key === 'Escape' && overlay && !overlay.hasAttribute('hidden')) {
+            closePalette();
+        } else if (!inField && e.key === '/' && !overlay?.matches(':not([hidden])')) {
+            const search = document.getElementById('crud-filter');
+            if (search) { e.preventDefault(); search.focus(); }
+        } else if (!inField && e.key.toLowerCase() === 'n') {
+            const newBtn = document.querySelector('[data-action="new"]');
+            if (newBtn && newBtn.href) { e.preventDefault(); window.location.href = newBtn.href; }
+        } else if (!inField && (e.key.toLowerCase() === 'z' && e.shiftKey)) {
+            // Shift+Z = modo concentración (oculta sidebar)
+            e.preventDefault();
+            document.body.classList.toggle('focus-mode');
+        } else if (!inField && e.key === '?') {
+            // ? = mostrar atajos
+            e.preventDefault();
+            alert('⌨ Atajos de teclado:\n\n⌘K / Ctrl+K → Buscador\n/ → Buscar en tabla\nN → Crear nuevo\nShift+Z → Modo concentración\n? → Esta ayuda\nEsc → Cerrar diálogos');
+        }
+    });
+
+    // Modo concentración: oculta sidebar
+    const style = document.createElement('style');
+    style.textContent = '.focus-mode aside.fixed, .focus-mode aside.lg\\:sticky { display: none !important; } .focus-mode > main { margin-left: 0 !important; }';
+    document.head.appendChild(style);
+    /*]]>*/
+</script>
+
+<!-- PWA service worker -->
+<script>
+(function() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(function(reg) { console.log('[PWA] SW registrado', reg.scope); })
+                .catch(function(err) { console.warn('[PWA] SW error', err); });
+        });
+    }
+
+    var deferredPrompt = null;
+    var btn = document.getElementById('pwa-install-btn');
+    var dismissed = localStorage.getItem('pwa-install-dismissed') === '1';
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!dismissed && btn) btn.hidden = false;
+    });
+
+    if (btn) {
+        btn.addEventListener('click', function() {
+            if (!deferredPrompt) return alert('Para instalar en iOS: Compartir → Añadir a pantalla de inicio');
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(c) {
+                if (c.outcome !== 'accepted') localStorage.setItem('pwa-install-dismissed', '1');
+                deferredPrompt = null; btn.hidden = true;
+            });
+        });
+    }
+
+    var isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isIos && !standalone && !dismissed && btn) btn.hidden = false;
+})();
+</script>
+
+<script src="/js/push.js" defer></script>
+<script>
+    // Render lucide icons (mantener al final)
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    document.addEventListener('alpine:init', () => setTimeout(() => lucide.createIcons(), 50));
+    setInterval(() => lucide.createIcons(), 1000); // re-render por seguridad tras transitions
+</script>
+
+</body>
+</html>

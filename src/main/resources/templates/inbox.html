@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Inbox</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-cyan-700 to-blue-900 p-5 mb-5 text-white">
+    <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="mail" class="h-5 w-5"></i> Inbox unificado</h2>
+    <p class="text-xs text-white/70 mt-1"><span th:text="${noLeidos}">0</span> sin leer</p>
+</div>
+<div th:if="${cuentas.isEmpty()}" class="rounded-xl bg-amber-50 border border-amber-200 p-5">
+    <form method="post" action="/inbox/cuenta/guardar" class="space-y-2 max-w-md">
+        <p class="font-semibold text-sm"> Añade tu primera cuenta IMAP</p>
+        <input type="email" name="email" required placeholder="Tu email" class="w-full px-3 py-2 text-sm border rounded">
+        <div class="grid grid-cols-2 gap-2">
+            <input type="text" name="imap_host" required placeholder="IMAP host (imap.gmail.com)" class="px-3 py-2 text-sm border rounded">
+            <input type="number" name="imap_port" value="993" class="px-3 py-2 text-sm border rounded">
+        </div>
+        <input type="text" name="imap_user" placeholder="Usuario IMAP" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="password" name="imap_pass" placeholder="Contraseña (app password)" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="smtp_host" placeholder="SMTP host" class="w-full px-3 py-2 text-sm border rounded">
+        <button class="px-4 py-2 rounded bg-cyan-700 text-white text-sm">+ Añadir cuenta</button>
+    </form>
+</div>
+<div th:unless="${cuentas.isEmpty()}" class="grid grid-cols-12 gap-3 h-[calc(100vh-220px)]">
+    <aside class="col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-3">
+        <ul class="space-y-1 text-sm">
+            <li><a href="/inbox?carpeta=inbox" class="block px-2 py-1.5 rounded hover:bg-slate-100"> Bandeja</a></li>
+            <li><a href="/inbox?carpeta=estrella" class="block px-2 py-1.5 rounded hover:bg-slate-100"> Estrella</a></li>
+            <li><a href="/inbox?carpeta=archivados" class="block px-2 py-1.5 rounded hover:bg-slate-100"> Archivados</a></li>
+        </ul>
+    </aside>
+    <div class="col-span-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-y-auto">
+        <a th:each="e : ${emails}" th:href="@{|/inbox?emailId=${e.get('id')}|}" class="block p-3 border-b hover:bg-slate-50">
+            <div class="flex justify-between text-xs">
+                <span class="font-semibold" th:classappend="${#bools.isTrue(e.get('leido')) ? 'text-slate-500' : 'text-slate-900'}" th:text="${e.get('de_nombre') ?: e.get('de_email')}">—</span>
+                <span class="text-[10px] text-slate-400" th:text="${#strings.substring(e.get('fecha'), 5, 16)}">—</span>
+            </div>
+            <p class="text-sm mt-1" th:classappend="${#bools.isTrue(e.get('leido')) ? '' : 'font-semibold'}" th:text="${e.get('asunto')}">—</p>
+            <p class="text-xs text-slate-500 truncate mt-0.5" th:text="${e.get('cuerpo_texto')}">—</p>
+        </a>
+        <p th:if="${emails.isEmpty()}" class="p-6 text-center text-sm text-slate-400">Sin mensajes</p>
+    </div>
+    <div class="col-span-6 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 overflow-y-auto">
+        <div th:if="${emailActivo != null}">
+            <h3 class="font-bold text-lg" th:text="${emailActivo.get('asunto')}">—</h3>
+            <p class="text-xs text-slate-500 mt-1">De: <strong th:text="${emailActivo.get('de_email')}">—</strong></p>
+            <p class="text-xs text-slate-400 mb-4" th:text="${emailActivo.get('fecha')}">—</p>
+            <div class="text-sm" th:utext="${emailActivo.get('cuerpo_html') ?: emailActivo.get('cuerpo_texto')}"></div>
+        </div>
+        <p th:if="${emailActivo == null}" class="text-center text-sm text-slate-400 mt-20">Selecciona un email</p>
+    </div>
+</div>
+</div></body></html>

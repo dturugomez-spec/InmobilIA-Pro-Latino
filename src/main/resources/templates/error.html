@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|Error ${status} · InmobilIA Pro|">Error</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['Geist Mono', 'monospace'] },
+                colors: { brand: { 500: '#3b82f6', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554' } },
+                boxShadow: { 'card': '0 1px 3px 0 rgb(0 0 0 / 0.08)', 'card-lg': '0 10px 30px -8px rgb(0 0 0 / 0.15)' }
+            }}
+        }
+    </script>
+    <style>body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }</style>
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center px-6 py-12">
+
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200 shadow-card-lg overflow-hidden">
+
+            <!-- Header con código de error -->
+            <div class="bg-gradient-to-br from-brand-800 to-brand-950 px-6 py-8 text-center text-white relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+                <div class="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-amber-400/10 blur-3xl"></div>
+                <div class="relative">
+                    <div class="inline-flex h-14 w-14 rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20 items-center justify-center mb-4">
+                        <i data-lucide="alert-triangle" class="h-7 w-7 text-amber-300"></i>
+                    </div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-white/70 mb-1">Incidencia registrada</div>
+                    <div class="font-mono text-5xl font-bold tracking-tight" th:text="${status} ?: '500'">500</div>
+                    <h1 class="text-lg font-semibold mt-1" th:text="${title} ?: 'Algo ha salido mal'">Error</h1>
+                </div>
+            </div>
+
+            <!-- Detalles -->
+            <div class="p-6">
+                <p class="text-sm text-slate-600 mb-5 leading-relaxed" th:text="${message} ?: 'La operación no se ha podido completar. Nuestro equipo ha sido notificado.'">msg</p>
+
+                <div class="grid grid-cols-2 gap-2 mb-5">
+                    <div class="p-2.5 rounded-lg bg-slate-50">
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">Ref</div>
+                        <div class="font-mono text-[11px] font-bold truncate" th:text="${traceId} ?: '—'">—</div>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50">
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">Hora</div>
+                        <div class="font-mono text-[11px] font-bold" th:text="${timestamp} ?: '—'">—</div>
+                    </div>
+                </div>
+
+                <div class="text-xs bg-slate-50 rounded-lg p-3 mb-6 font-mono break-all border border-slate-200" th:if="${path != null}">
+                    <span class="text-slate-400">PATH:</span> <span class="text-slate-700" th:text="${path}">/—</span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <a href="/dashboard"
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+                        <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
+                        <span>Volver al dashboard</span>
+                    </a>
+                    <button onclick="history.back()"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-50 ring-1 ring-slate-200 text-slate-700 text-sm font-medium transition-colors">
+                        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                        <span>Atrás</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-6">
+            <span class="inline-flex items-center gap-1.5">
+                <span class="font-bold text-slate-600">InmobilIA<span class="text-brand-700"> Pro</span></span>
+                <span>·</span>
+                <span>Si el problema persiste contacta con soporte.</span>
+            </span>
+        </p>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

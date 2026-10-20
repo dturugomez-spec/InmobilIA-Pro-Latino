@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Listado</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- KPIs / stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" th:if="${stats != null and !stats.isEmpty()}">
+        <div th:each="s : ${stats}"
+             class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500" th:text="${s.get('label')}">Label</div>
+            <div class="text-xl font-bold font-mono mt-1.5"
+                 th:classappend="${s.containsKey('tone') and s.get('tone') == 'pos'} ? 'text-emerald-600 dark:text-emerald-400' :
+                                 (${s.containsKey('tone') and s.get('tone') == 'neg'} ? 'text-red-600 dark:text-red-400' :
+                                 (${s.containsKey('tone') and s.get('tone') == 'warn'} ? 'text-amber-600 dark:text-amber-400' : ''))"
+                 th:text="${s.get('value')}">0</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex flex-wrap items-center gap-2.5 mb-4">
+        <a th:href="@{|/crud/${table}/new|}"
+           data-action="new"
+           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i>
+            <span>Nuevo</span>
+        </a>
+
+        <div class="relative flex-1 max-w-md">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"></i>
+            <input type="search" id="crud-filter"
+                   placeholder="Buscar en esta tabla..."
+                   class="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 transition-all placeholder-slate-400">
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-wrap" th:if="${statusValues != null and !statusValues.isEmpty()}">
+            <button type="button"
+                    class="chip px-2.5 py-1 text-xs font-medium rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300 transition-colors"
+                    data-status="">Todos</button>
+            <button type="button"
+                    th:each="sv : ${statusValues}"
+                    th:attr="data-status=${sv}"
+                    th:text="${sv}"
+                    class="chip px-2.5 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors">Estado</button>
+        </div>
+
+        <div class="flex items-center gap-2 ml-auto">
+            <span class="text-xs text-slate-500 dark:text-neutral-400">
+                <span id="crud-visible" th:text="${rows.size()}">0</span>
+                de <span th:text="${rows.size()}">0</span>
+            </span>
+            <button type="button" onclick="exportCsv()"
+                    th:if="${!rows.isEmpty()}"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 hover:bg-slate-50 dark:hover:bg-neutral-800 ring-1 ring-slate-200 dark:ring-neutral-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors">
+                <i data-lucide="download" class="h-3.5 w-3.5"></i>
+                <span>CSV</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="overflow-x-auto scroll-thin">
+            <table class="w-full text-sm" id="crud-table">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                    <tr>
+                        <th th:each="f, it : ${fields}"
+                            th:attr="data-col=${it.index},data-type=${f.type().name()}"
+                            class="th-sort cursor-pointer text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors select-none">
+                            <span class="inline-flex items-center gap-1">
+                                <span th:text="${f.label()}">Campo</span>
+                                <i data-lucide="chevrons-up-down" class="h-3 w-3 opacity-50"></i>
+                            </span>
+                        </th>
+                        <th class="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 w-32">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="crud-tbody" class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="r : ${rows}" th:attr="data-status=${r.get('status')}"
+                        class="hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors">
+                        <td th:each="f : ${fields}"
+                            class="px-4 py-3 text-slate-700 dark:text-slate-300"
+                            th:utext="${cellTone.render(r, f)}">valor</td>
+                        <td class="px-4 py-2 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a th:if="${table == 'inquilinos'}"
+                                   th:href="@{|/entity/inquilino/${r.get('id')}|}"
+                                   class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-colors"
+                                   title="Ver ficha 360°">
+                                    <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                                </a>
+                                <a th:if="${table == 'propiedades'}"
+                                   th:href="@{|/entity/propiedad/${r.get('id')}|}"
+                                   class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-colors"
+                                   title="Ver ficha 360°">
+                                    <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                                </a>
+                                <a th:if="${table == 'leads'}"
+                                   th:href="@{|/entity/lead/${r.get('id')}|}"
+                                   class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-colors"
+                                   title="Ver ficha 360°">
+                                    <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                                </a>
+                                <a th:href="@{|/crud/${table}/${r.get('id')}/edit|}"
+                                   class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/40 dark:hover:text-brand-400 transition-colors"
+                                   title="Editar">
+                                    <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                                </a>
+                                <form th:action="@{|/crud/${table}/${r.get('id')}/delete|}" method="post" class="inline">
+                                    <button type="submit"
+                                            class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
+                                            onclick="return confirm('¿Eliminar este registro?')"
+                                            title="Borrar">
+                                        <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${rows.isEmpty()}">
+                        <td th:attr="colspan=${fields.length + 1}" class="empty-ind py-16 text-center">
+                            <div class="inline-flex h-14 w-14 rounded-2xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-4">
+                                <i data-lucide="inbox" class="h-6 w-6 text-slate-400"></i>
+                            </div>
+                            <h3 class="font-semibold text-base mb-1">Sin registros todavía</h3>
+                            <p class="text-sm text-slate-500 dark:text-neutral-400 mb-4">Crea tu primer registro para empezar a operar.</p>
+                            <a th:href="@{|/crud/${table}/new|}"
+                               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors">
+                                <i data-lucide="plus" class="h-4 w-4"></i>
+                                <span>Crear primero</span>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const tbody = document.getElementById('crud-tbody');
+const rows  = tbody ? tbody.querySelectorAll('tr') : [];
+const counter = document.getElementById('crud-visible');
+const tableName = /*[[${table}]]*/ 'tabla';
+
+let q = "", st = "";
+
+function applyFilter() {
+    let visible = 0;
+    rows.forEach(tr => {
+        if (tr.querySelector('.empty-ind')) return;
+        const txt = tr.textContent.toLowerCase();
+        const rs = (tr.dataset.status || "").toLowerCase();
+        const okQ = !q || txt.includes(q);
+        const okS = !st || rs === st.toLowerCase();
+        tr.style.display = (okQ && okS) ? '' : 'none';
+        if (okQ && okS) visible++;
+    });
+    if (counter) counter.textContent = visible;
+}
+const inp = document.getElementById('crud-filter');
+if (inp) inp.addEventListener('input', e => { q = e.target.value.toLowerCase(); applyFilter(); });
+
+document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(x => {
+            x.classList.remove('bg-brand-100', 'text-brand-800', 'dark:bg-brand-950/50', 'dark:text-brand-300');
+            x.classList.add('bg-slate-100', 'text-slate-600', 'dark:bg-neutral-800', 'dark:text-neutral-400');
+        });
+        c.classList.remove('bg-slate-100', 'text-slate-600', 'dark:bg-neutral-800', 'dark:text-neutral-400');
+        c.classList.add('bg-brand-100', 'text-brand-800', 'dark:bg-brand-950/50', 'dark:text-brand-300');
+        st = c.dataset.status || "";
+        applyFilter();
+    });
+});
+
+// Sort por columna
+let sortCol = -1, sortDir = 1;
+function sortBy(col, type, th) {
+    const body = document.getElementById('crud-tbody');
+    if (!body) return;
+    const trs = Array.from(body.querySelectorAll('tr')).filter(tr => !tr.querySelector('.empty-ind'));
+    if (sortCol === col) sortDir = -sortDir; else { sortCol = col; sortDir = 1; }
+    const num = (s) => {
+        const n = parseFloat((s || '').replace(/[^\d.,\-]/g, '').replace(/\./g,'').replace(',','.'));
+        return isNaN(n) ? -Infinity : n;
+    };
+    const isNum = type === 'NUM' || type === 'INT';
+    trs.sort((a, b) => {
+        const av = (a.children[col]?.innerText || '').trim();
+        const bv = (b.children[col]?.innerText || '').trim();
+        const cmp = isNum ? (num(av) - num(bv)) : av.localeCompare(bv, 'es', { numeric: true });
+        return cmp * sortDir;
+    });
+    trs.forEach(tr => body.appendChild(tr));
+}
+document.querySelectorAll('.th-sort').forEach(th => {
+    th.addEventListener('click', () => sortBy(parseInt(th.dataset.col, 10), th.dataset.type || 'TEXT', th));
+});
+
+function exportCsv() {
+    const table = document.getElementById('crud-table');
+    if (!table) return;
+    const lines = [];
+    table.querySelectorAll('tr').forEach(tr => {
+        if (tr.style.display === 'none') return;
+        if (tr.querySelector('.empty-ind')) return;
+        const cells = [];
+        tr.querySelectorAll('th, td').forEach((c, i, arr) => {
+            if (i === arr.length - 1) return;
+            let v = (c.innerText || '').replace(/\n/g,' ').trim();
+            if (v.includes(',') || v.includes('"')) v = '"' + v.replace(/"/g,'""') + '"';
+            cells.push(v);
+        });
+        lines.push(cells.join(','));
+    });
+    const csv = "﻿" + lines.join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = tableName + '-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+}
+window.exportCsv = exportCsv;
+/*]]>*/
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Mejorar plan</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Cliente que aún no se ha suscrito: debe activar su plan para entrar -->
+    <div th:if="${requierePago}" class="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/20 ring-1 ring-blue-200 dark:ring-blue-900/40 p-4 mb-6 flex items-center gap-3">
+        <i data-lucide="credit-card" class="h-5 w-5 text-blue-700 flex-shrink-0"></i>
+        <div class="text-sm">
+            <p class="font-semibold text-blue-950 dark:text-blue-200">Activa tu suscripción para empezar</p>
+            <p th:if="${trialDisponible}" class="text-blue-900 dark:text-blue-300">Tienes <strong>14 días gratis</strong>: pones la tarjeta ahora y no se te cobra nada hasta que terminen. Cancela cuando quieras.</p>
+            <p th:unless="${trialDisponible}" class="text-blue-900 dark:text-blue-300">Elige un plan para reactivar tu cuenta. Tus datos siguen guardados.</p>
+        </div>
+    </div>
+
+    <!-- Ya suscrito: cambios y cancelación por el portal de Stripe -->
+    <div th:if="${suscrito}" class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4 mb-6 flex items-center gap-3 flex-wrap">
+        <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-700 flex-shrink-0"></i>
+        <div class="text-sm flex-1">
+            <p class="font-semibold text-emerald-900 dark:text-emerald-200">Tu suscripción está activa</p>
+            <p class="text-emerald-800 dark:text-emerald-300">Para cambiar de plan, de tarjeta o cancelar, usa el portal de cliente.</p>
+        </div>
+        <form action="/billing/portal" method="post">
+            <button type="submit" class="px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold">Gestionar suscripción</button>
+        </form>
+    </div>
+
+    <!-- Prueba sin tarjeta (cuentas demo) -->
+    <div th:if="${planStatus.isTrialing and !requierePago and !suscrito}" class="rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-center gap-3">
+        <i data-lucide="zap" class="h-5 w-5 text-amber-600 flex-shrink-0"></i>
+        <div class="text-sm">
+            <p class="font-semibold text-amber-900 dark:text-amber-200">Estás en período de prueba</p>
+            <p class="text-amber-800 dark:text-amber-300">Te quedan <strong th:text="${planStatus.trialDaysLeft}">14</strong> días con acceso completo.</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Elige el plan que mejor se adapta a ti</h1>
+        <p class="text-slate-600 dark:text-slate-400">Sin permanencia. Cancela cuando quieras. IVA no incluido.</p>
+    </div>
+
+    <!-- Sin Stripe configurado -->
+    <div th:unless="${stripeConfigured}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-start gap-3">
+        <i data-lucide="alert-triangle" class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+        <div class="text-sm">
+            <p class="font-semibold text-amber-900 dark:text-amber-200">Pagos aún no activados</p>
+            <p class="text-amber-800 dark:text-amber-300">El sistema de pagos está pendiente de configuración. Contacta con soporte para suscribirte.</p>
+        </div>
+    </div>
+
+    <!-- Cards de planes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+
+        <!-- Pro -->
+        <div class="rounded-2xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-6 flex flex-col ring-2 ring-brand-500 relative shadow-card-xl">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Más popular</div>
+            <h3 class="font-bold text-lg">Pro</h3>
+            <p class="text-xs text-white/70 mt-1 mb-4">Para autónomos y micro-agencias</p>
+            <div class="mb-5">
+                <span class="text-4xl font-bold tracking-tight">78€</span>
+                <span class="text-white/70 text-sm">/mes</span>
+            </div>
+            <ul class="space-y-2.5 text-sm text-white/90 mb-6 flex-1">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 15 propiedades</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 2 usuarios del equipo</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Pipeline Kanban</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Facturación + AEAT</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Reportes PDF</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 200 créditos IA/mes</li>
+            </ul>
+            <button th:if="${suscrito and planActual == 'pro'}" disabled
+                    class="w-full text-center px-4 py-2.5 rounded-lg bg-white/20 text-white text-sm font-bold cursor-default">Tu plan actual</button>
+            <form th:if="${suscrito and planActual != 'pro'}" action="/billing/portal" method="post">
+                <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-brand-800 text-sm font-bold transition-colors">Cambiar en el portal</button>
+            </form>
+            <form th:unless="${suscrito}" action="/billing/checkout/pro" method="post">
+                <button type="submit" th:disabled="${!stripeConfigured}"
+                        class="w-full text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-brand-800 text-sm font-bold transition-colors"
+                        th:text="${trialDisponible ? 'Empezar 14 días gratis' : 'Suscribirme'}">
+                    Empezar 14 días gratis
+                </button>
+            </form>
+            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-white/70">94,38 €/mes con IVA</p>
+        </div>
+
+        <!-- Agency -->
+        <div class="rounded-2xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 flex flex-col">
+            <h3 class="font-bold text-lg">Agency</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Para agencias y asset managers</p>
+            <div class="mb-5">
+                <span class="text-4xl font-bold tracking-tight">198€</span>
+                <span class="text-slate-500 text-sm">/mes</span>
+            </div>
+            <ul class="space-y-2.5 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Propiedades ilimitadas</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Equipo ilimitado · 7 roles</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Integraciones banco + portales</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Auditor IA + 60+ herramientas</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 1.000 créditos IA/mes</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Soporte prioritario</li>
+            </ul>
+            <button th:if="${suscrito and planActual == 'agency'}" disabled
+                    class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-neutral-800 text-slate-500 text-sm font-bold cursor-default">Tu plan actual</button>
+            <form th:if="${suscrito and planActual != 'agency'}" action="/billing/portal" method="post">
+                <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-colors">Cambiar en el portal</button>
+            </form>
+            <form th:unless="${suscrito}" action="/billing/checkout/agency" method="post">
+                <button type="submit" th:disabled="${!stripeConfigured}"
+                        class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-colors"
+                        th:text="${trialDisponible ? 'Empezar 14 días gratis' : 'Suscribirme'}">
+                    Empezar 14 días gratis
+                </button>
+            </form>
+            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-slate-500">239,58 €/mes con IVA</p>
+        </div>
+    </div>
+
+    <!-- Footer comparativa -->
+    <div class="mt-12 text-center text-xs text-slate-500 dark:text-neutral-400">
+        <p>Pago seguro vía <strong>Stripe</strong>. SEPA, tarjeta de crédito/débito. Cancelación con un click.</p>
+        <p class="mt-1">¿Necesitas más? <a href="mailto:inmobilia.support@gmail.com" class="text-brand-700 dark:text-brand-400 hover:underline">Plan Enterprise a medida</a>.</p>
+    </div>
+
+</div>
+</body>
+</html>

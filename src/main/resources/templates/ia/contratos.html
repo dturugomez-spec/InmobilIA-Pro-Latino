@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Lector IA contratos</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/contratos" enctype="multipart/form-data" class="form-card">
+        <h3>Lector IA de contratos</h3>
+        <label class="full">Adjuntar PDF
+            <input type="file" name="archivo" accept="application/pdf">
+        </label>
+        <label class="full">... o pegar el texto
+            <textarea name="texto" rows="8" placeholder="Pega aqui el clausulado del contrato."></textarea>
+        </label>
+        <div class="alert-banner" th:if="${error}" th:text="${error}"></div>
+        <div class="form-actions"><button class="btn btn-primary">Analizar contrato</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+
+    <div th:replace="~{fragments/official-links :: panel('contrato,legal,lau,alquiler,propiedad')}"></div>
+</div>
+</body>
+</html>

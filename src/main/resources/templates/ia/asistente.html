@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Asistente IA</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/asistente" class="form-card">
+        <label class="full">Pregunta al asistente
+            <textarea name="pregunta" rows="4" required th:text="${pregunta}"
+                      placeholder="Ej: Cuanto necesito aportar de entrada para comprar un piso de 250K con LTV 70%?"></textarea>
+        </label>
+        <div class="form-actions"><button class="btn btn-primary">Preguntar</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+</div>
+</body>
+</html>

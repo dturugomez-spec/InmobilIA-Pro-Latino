@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasación gratuita · InmobilIA Pro</title>
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Inter',sans-serif} [x-cloak]{display:none!important}</style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-slate-50 min-h-screen text-slate-900">
+
+<div class="max-w-3xl mx-auto px-6 py-12"
+     x-data="{ step:1, city:'', m2:'', bedrooms:'', bathrooms:'', year:'', type:'Residencial',
+               name:'', email:'', phone:'', loading:false, result:null,
+               agencyRef:new URLSearchParams(location.search).get('ref') || '',
+               async calc(){
+                   this.loading = true;
+                   const r = await fetch('/tasacion', {
+                       method:'POST', headers:{'Content-Type':'application/json'},
+                       body: JSON.stringify({
+                           city:this.city, m2:this.m2, bedrooms:this.bedrooms, bathrooms:this.bathrooms,
+                           year:this.year, type:this.type, name:this.name, email:this.email,
+                           phone:this.phone, agencyRef:this.agencyRef
+                       })
+                   });
+                   this.result = await r.json();
+                   this.loading = false;
+                   this.step = 4;
+               },
+               fmt(n){return n ? n.toLocaleString('es-ES') + ' €' : '—'}
+             }">
+
+    <a href="/" class="inline-flex items-center gap-2 mb-6">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 flex items-center justify-center">
+            <i data-lucide="building-2" class="h-4 w-4 text-white"></i>
+        </div>
+        <span class="font-bold text-base">InmobilIA<span class="text-blue-700"> Pro</span></span>
+    </a>
+
+    <div class="bg-white rounded-2xl ring-1 ring-slate-200 shadow-xl overflow-hidden">
+
+        <!-- PASO 1 -->
+        <div x-show="step === 1" class="p-8 sm:p-10">
+            <div class="text-center mb-6">
+                <div class="inline-flex h-16 w-16 rounded-2xl bg-blue-100 items-center justify-center mb-4">
+                    <span class="text-3xl"></span>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight mb-2">¿Cuánto vale tu inmueble?</h1>
+                <p class="text-slate-600">Tasación instantánea y gratuita en 30 segundos. Sin compromiso.</p>
+            </div>
+            <button @click="step = 2" class="w-full px-5 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold transition-colors">
+                Empezar tasación →
+            </button>
+        </div>
+
+        <!-- PASO 2: Datos inmueble -->
+        <div x-show="step === 2" x-cloak class="p-8 sm:p-10">
+            <h2 class="text-xl font-bold mb-1">Datos de tu inmueble</h2>
+            <p class="text-sm text-slate-500 mb-6">Cuanto más preciso seas, mejor estimación.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Ciudad *</label>
+                    <input type="text" x-model="city" required placeholder="Madrid"
+                           class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Superficie (m²) *</label>
+                        <input type="number" x-model="m2" required placeholder="85"
+                               class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Año construcción</label>
+                        <input type="number" x-model="year" placeholder="2005"
+                               class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Habitaciones</label>
+                        <input type="number" x-model="bedrooms" placeholder="3"
+                               class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Baños</label>
+                        <input type="number" x-model="bathrooms" placeholder="2"
+                               class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button @click="step = 1" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium">← Atrás</button>
+                <button @click="step = 3" :disabled="!city || !m2"
+                        :class="!city || !m2 ? 'opacity-50 cursor-not-allowed' : ''"
+                        class="px-5 py-2 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold">Siguiente →</button>
+            </div>
+        </div>
+
+        <!-- PASO 3: Datos contacto -->
+        <div x-show="step === 3" x-cloak class="p-8 sm:p-10">
+            <h2 class="text-xl font-bold mb-1">Para enviarte la tasación</h2>
+            <p class="text-sm text-slate-500 mb-6">Te llegará al email + un asesor te contactará si lo deseas.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Tu nombre *</label>
+                    <input type="text" x-model="name" required placeholder="Ana García"
+                           class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Email *</label>
+                    <input type="email" x-model="email" required placeholder="ana@email.com"
+                           class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5">Teléfono</label>
+                    <input type="tel" x-model="phone" placeholder="+34 612 345 678"
+                           class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button @click="step = 2" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium">← Atrás</button>
+                <button @click="calc()" :disabled="!name || !email || loading"
+                        :class="!name || !email || loading ? 'opacity-50 cursor-not-allowed' : ''"
+                        class="px-5 py-2 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold">
+                    <span x-show="!loading">Calcular tasación →</span>
+                    <span x-show="loading">Calculando...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PASO 4: Resultado -->
+        <div x-show="step === 4 && result" x-cloak class="p-8 sm:p-10">
+            <div class="text-center mb-6">
+                <div class="inline-flex h-14 w-14 rounded-2xl bg-emerald-100 items-center justify-center mb-3">
+                    <i data-lucide="check-circle-2" class="h-7 w-7 text-emerald-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold">Tu inmueble vale aproximadamente</h2>
+            </div>
+
+            <!-- Precio venta -->
+            <div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 text-white p-6 mb-3">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-blue-200 mb-1">Venta estimada</div>
+                <div class="text-3xl font-bold tracking-tight" x-text="fmt(result?.ventaCentral)">— €</div>
+                <div class="text-sm text-blue-200 mt-1">
+                    Rango: <span x-text="fmt(result?.ventaMin)"></span> - <span x-text="fmt(result?.ventaMax)"></span>
+                </div>
+            </div>
+
+            <!-- Precio alquiler -->
+            <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-5 mb-6">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">Alquiler estimado / mes</div>
+                <div class="text-2xl font-bold text-emerald-700" x-text="fmt(result?.rentaMensual)">— €</div>
+                <div class="text-xs text-emerald-700/80 mt-1">
+                    Yield bruto anual: <strong x-text="result?.yieldBruto + '%'"></strong>
+                </div>
+            </div>
+
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 mb-6">
+                <strong> Estimación orientativa.</strong> Para una valoración profesional precisa, consulta con un asesor inmobiliario.
+            </div>
+
+            <a href="/" class="block text-center w-full px-5 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold">
+                Conocer InmobilIA Pro
+            </a>
+            <p class="text-xs text-slate-500 text-center mt-3">Te hemos enviado los detalles a tu email.</p>
+        </div>
+    </div>
+
+    <p class="text-xs text-slate-400 text-center mt-6">© 2026 InmobilIA Pro · Datos basados en INE · <span th:replace="~{fragments/grupo :: sello(false)}"></span></p>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

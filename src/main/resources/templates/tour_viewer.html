@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Tour 360</title>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-black m-0 h-screen flex flex-col">
+<div th:if="${error}" class="text-white text-center p-20" th:text="${error}">—</div>
+<div th:unless="${error}" class="flex flex-col h-full">
+    <div class="bg-slate-900 text-white p-3 text-center">
+        <h1 class="font-bold" th:text="${tour.get('titulo')}">—</h1>
+    </div>
+    <iframe th:src="${tour.get('embed_url')}" class="flex-1 w-full border-0" allowfullscreen></iframe>
+</div>
+</body></html>

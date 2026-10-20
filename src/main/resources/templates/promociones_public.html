@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<title th:text="${promo?.get('nombre') ?: 'Promoción'}">Promoción</title>
+<meta name="description" th:content="${promo?.get('seo_descripcion')}">
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-slate-50">
+<div th:if="${error}" class="min-h-screen flex items-center justify-center"><p>Promoción no disponible</p></div>
+<div th:if="${promo != null}">
+    <header class="h-screen flex items-center justify-center text-white relative"
+            th:style="${promo.get('render_principal_url') != null ? 'background: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url(' + promo.get('render_principal_url') + ') center/cover' : 'background: linear-gradient(135deg, #f59e0b, #b45309)'}">
+        <div class="text-center max-w-3xl px-4">
+            <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs uppercase tracking-wider mb-4" th:text="${promo.get('fase')}">—</span>
+            <h1 class="text-5xl md:text-7xl font-black mb-4" th:text="${promo.get('nombre')}">—</h1>
+            <p class="text-xl opacity-90" th:text="${promo.get('municipio') + ' · ' + promo.get('num_unidades') + ' viviendas'}">—</p>
+            <p class="mt-6 text-3xl font-bold">Desde <span th:text="${#numbers.formatDecimal(promo.get('precio_desde') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</span></p>
+        </div>
+    </header>
+    <section class="py-20 px-4 max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-center mb-12"> Memoria de calidades</h2>
+        <p class="text-slate-700 leading-relaxed max-w-3xl mx-auto" th:text="${promo.get('memoria_calidades')}">—</p>
+    </section>
+    <section class="py-20 px-4 max-w-6xl mx-auto bg-white rounded-2xl">
+        <h2 class="text-3xl font-bold text-center mb-12"> Unidades disponibles</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="border-b"><th class="text-left py-3">Bloque</th><th class="text-left">Tipo</th><th>Hab</th><th>m²</th><th class="text-right">Precio</th></tr></thead>
+                <tbody>
+                <tr th:each="u : ${unidades}" class="border-b hover:bg-slate-50">
+                    <td class="py-3 font-mono" th:text="${u.get('bloque') + '-' + u.get('planta') + u.get('letra')}">—</td>
+                    <td class="capitalize" th:text="${u.get('tipologia')}">—</td>
+                    <td class="text-center" th:text="${u.get('num_habitaciones')}">—</td>
+                    <td class="text-center" th:text="${u.get('superficie_util') + ' m²'}">—</td>
+                    <td class="text-right font-bold" th:text="${#numbers.formatDecimal(u.get('precio') ?: 0, 1, 'POINT', 0, 'COMMA') + ' €'}">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body></html>

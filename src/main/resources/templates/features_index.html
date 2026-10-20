@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionalidades · InmobilIA Pro</title>
+    <meta name="description" content="Todas las funcionalidades de InmobilIA Pro: inteligencia artificial, cumplimiento legal, automatización, gestión, comunicación y más.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; }
+        h1, h2, h3, h4, .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .grain { background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,0.04) 1px, transparent 0); background-size: 20px 20px; }
+        .glass { backdrop-filter: blur(12px) saturate(180%); background: rgba(255,255,255,0.85); }
+    </style>
+</head>
+<body class="bg-white">
+
+<header class="sticky top-0 z-50 glass border-b border-slate-200/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="/" class="flex items-center gap-2.5 font-bold display text-lg">
+                <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-lg">
+                InmobilIA Pro
+            </a>
+            <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
+                <a href="/#producto" class="hover:text-slate-900">Producto</a>
+                <a href="/#diferenciadores" class="hover:text-slate-900">Agente IA</a>
+                <a href="/#planes" class="hover:text-slate-900">Planes</a>
+                <a href="/#contacto" class="hover:text-slate-900">Contacto</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="/login" class="text-sm font-semibold sm:font-medium text-slate-900 sm:text-slate-700 hover:text-slate-900 px-3 py-2 sm:p-0 rounded-lg border border-slate-300 sm:border-0">
+                    <span class="sm:hidden">Entrar</span><span class="hidden sm:inline">Iniciar sesión</span>
+                </a>
+                <a href="/#contacto" class="hidden sm:inline-block text-sm font-semibold px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white">Solicitar acceso</a>
+                <button type="button" id="menu-movil-btn" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-slate-700 hover:bg-slate-100"
+                        aria-controls="menu-movil" aria-expanded="false" aria-label="Abrir menú">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <nav id="menu-movil" class="md:hidden hidden border-t border-slate-200/60 bg-white">
+        <div class="px-4 py-3 flex flex-col text-base">
+            <a href="/#producto" class="py-3 border-b border-slate-100 text-slate-700">Producto</a>
+            <a href="/#diferenciadores" class="py-3 border-b border-slate-100 text-slate-700">Agente IA</a>
+            <a href="/#planes" class="py-3 border-b border-slate-100 text-slate-700">Planes</a>
+            <a href="/#contacto" class="py-3 text-slate-700">Contacto</a>
+            <div class="grid grid-cols-2 gap-2 pt-3">
+                <a href="/login" class="text-center py-3 rounded-lg border border-slate-300 font-semibold text-slate-900">Iniciar sesión</a>
+                <a href="/#contacto" class="text-center py-3 rounded-lg bg-slate-900 text-white font-semibold">Solicitar acceso</a>
+            </div>
+        </div>
+    </nav>
+    <script>
+        (function () {
+            var btn = document.getElementById('menu-movil-btn');
+            var menu = document.getElementById('menu-movil');
+            if (!btn || !menu) return;
+            function set(open) {
+                menu.classList.toggle('hidden', !open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+            }
+            btn.addEventListener('click', function () { set(menu.classList.contains('hidden')); });
+            menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+        })();
+    </script>
+</header>
+
+<section class="relative overflow-hidden grain border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-28">
+        <div class="max-w-3xl">
+            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Funcionalidades</p>
+            <h1 class="display text-4xl md:text-6xl font-extrabold mb-6 leading-[1.05]">Todo lo que necesita<br>una inmobiliaria moderna.</h1>
+            <p class="text-lg text-slate-600 max-w-2xl leading-relaxed">
+                Más de 110 funcionalidades organizadas en 9 grandes áreas. Un único panel para gestión operativa,
+                comercial, marketing y legal — sin saltar entre 8 herramientas distintas.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a th:each="e : ${features}" th:href="@{|/feature/${e.key}|}"
+               class="group block rounded-2xl border border-slate-200 bg-white p-8 hover:shadow-xl hover:shadow-slate-900/5 hover:-translate-y-0.5 transition-all">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-5"
+                     th:classappend="|bg-${e.value.color}-100 text-${e.value.color}-700|">
+                    <span th:text="${e.value.icon}"></span>
+                </div>
+                <p class="text-[11px] font-bold uppercase tracking-wider mb-2"
+                   th:classappend="|text-${e.value.color}-700|" th:text="${e.value.titulo}">Área</p>
+                <h3 class="display font-bold text-xl mb-2" th:text="${e.value.h1}">Título</h3>
+                <p class="text-sm text-slate-600 leading-relaxed" th:text="${e.value.subtitulo}">Descripción</p>
+                <span class="inline-flex items-center gap-1 mt-5 text-sm font-semibold text-slate-900 group-hover:gap-2 transition-all">
+                    Ver detalle →
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="border-t border-slate-200 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-16 text-center">
+        <h2 class="display text-3xl md:text-4xl font-extrabold mb-4">¿Quieres verlo en tu inmobiliaria?</h2>
+        <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto">Acceso por invitación. Te lo configuramos en 24h y con soporte en español.</p>
+        <a href="/#contacto" class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg shadow-slate-900/10 transition">Solicitar acceso →</a>
+    </div>
+</section>
+
+<footer class="border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+        <a href="/" class="flex items-center gap-2 font-bold display text-slate-900">
+            <img src="/brand/logo-mark.svg" alt="" width="28" height="28" class="w-7 h-7 rounded-lg">
+            InmobilIA Pro
+        </a>
+        <p>© 2026 InmobilIA Pro · Software inmobiliario hecho en España</p>
+        <span th:replace="~{fragments/grupo :: sello(false)}"></span>
+    </div>
+</footer>
+
+</body>
+</html>

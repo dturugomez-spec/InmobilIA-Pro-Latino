@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Integraciones</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-2xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 p-6 mb-6 ring-1 ring-slate-700 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="relative flex items-center gap-4 text-white">
+            <div class="h-12 w-12 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                <i data-lucide="plug" class="h-6 w-6"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Integraciones</h2>
+                <p class="text-sm text-white/70">Conecta tu app con bancos, portales inmobiliarios, hacienda y WhatsApp Business.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <a href="/integrations/bank" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+                    <i data-lucide="banknote" class="h-5 w-5 text-emerald-700 dark:text-emerald-400"></i>
+                </div>
+                <span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">CSV</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Importar movimientos bancarios</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Sube el extracto CSV de tu banco (BBVA, Santander, BankIN, N26...). Auto-conciliación con alquileres.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">BBVA · Santander · ING · N26 · Sabadell · CaixaBank</div>
+        </a>
+
+        <a href="/integrations/portals" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center">
+                    <i data-lucide="globe" class="h-5 w-5 text-orange-700 dark:text-orange-400"></i>
+                </div>
+                <span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400">XML</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Portales inmobiliarios</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Genera un feed XML con tus propiedades publicadas para sindicar en portales.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">Idealista · Fotocasa · Habitaclia · Pisos.com</div>
+        </a>
+
+        <a href="/integrations/aeat" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
+                    <i data-lucide="landmark" class="h-5 w-5 text-amber-700 dark:text-amber-400"></i>
+                </div>
+                <span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">CSV</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Exportar a AEAT</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">CSV listos para tu asesor o para importar en software AEAT.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">Modelo 303 (IVA) · Modelo 100 (IRPF rentas)</div>
+        </a>
+
+        <a href="/integrations/whatsapp" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-green-50 dark:bg-green-950/40 flex items-center justify-center">
+                    <i data-lucide="message-circle" class="h-5 w-5 text-green-700 dark:text-green-400"></i>
+                </div>
+                <span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400">WA.ME</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">WhatsApp Business</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Plantillas pre-rellenadas para recordatorios de pago, fin contrato, visitas y facturas.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">Recordatorios · Avisos · Confirmaciones</div>
+        </a>
+
+        <div class="p-5 rounded-xl bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-dashed ring-slate-300 dark:ring-neutral-700">
+            <div class="h-10 w-10 rounded-lg bg-slate-200 dark:bg-neutral-700 flex items-center justify-center mb-3">
+                <i data-lucide="hourglass" class="h-5 w-5 text-slate-500"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1 text-slate-600 dark:text-slate-400">Open Banking PSD2</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Conexión directa con bancos vía API (próximamente).</p>
+        </div>
+
+        <div class="p-5 rounded-xl bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-dashed ring-slate-300 dark:ring-neutral-700">
+            <div class="h-10 w-10 rounded-lg bg-slate-200 dark:bg-neutral-700 flex items-center justify-center mb-3">
+                <i data-lucide="hourglass" class="h-5 w-5 text-slate-500"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1 text-slate-600 dark:text-slate-400">Firma electrónica</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Firma de contratos via DocuSign / FirmaProf (próximamente).</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

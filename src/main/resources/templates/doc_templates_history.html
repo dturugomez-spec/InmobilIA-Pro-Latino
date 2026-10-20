@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Documentos generados</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/plantillas-doc" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-3">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Plantillas
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="history" class="h-5 w-5"></i> Documentos generados
+        </h2>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50">
+                <tr class="text-[10px] uppercase text-slate-500">
+                    <th class="text-left px-4 py-3">Título</th>
+                    <th class="text-left px-4 py-3">Fecha</th>
+                    <th class="text-left px-4 py-3">Firma</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="d : ${documentos}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3 font-medium" th:text="${d.get('titulo')}">—</td>
+                    <td class="px-4 py-3 text-xs font-mono" th:text="${#strings.substring(d.get('created_at'), 0, 16)}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:if="${d.get('enviado_firma')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> En firma</span>
+                        <span th:unless="${d.get('enviado_firma')}" class="text-[10px] text-slate-400">—</span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="" class="text-xs text-blue-700 hover:underline">Ver</button>
+                    </td>
+                </tr>
+                <tr th:if="${documentos.isEmpty()}">
+                    <td colspan="4" class="py-12 text-center text-slate-500 text-sm">Sin documentos generados aún.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

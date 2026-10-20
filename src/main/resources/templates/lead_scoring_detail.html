@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Lead detail · Scoring</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/leads-scoring" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-4">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver al ranking
+    </a>
+
+    <!-- Cabecera con score -->
+    <div class="rounded-xl bg-gradient-to-br from-red-600 to-orange-700 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <svg class="w-28 h-28 -rotate-90" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="white" stroke-width="3"
+                                th:attr="stroke-dasharray=${lead.get('score') + ', 100'}"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-3xl font-bold" th:text="${lead.get('score') ?: 0}">0</span>
+                        <span class="text-[10px] uppercase opacity-80">de 100</span>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold" th:text="${lead.get('nombre')}">—</h2>
+                    <p class="text-sm text-white/80" th:text="${lead.get('email')}">—</p>
+                    <p class="text-xs text-white/70 mt-2">
+                        Temperatura: <strong class="uppercase" th:text="${lead.get('temperatura')}">—</strong>
+                        · Probabilidad conversión: <strong th:text="${#numbers.formatDecimal(lead.get('probabilidad_conversion') ?: 0, 1, 1)} + '%'">0%</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="recalc()" class="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-xs"> Recalcular</button>
+                <button onclick="askAI()" class="px-3 py-1.5 rounded bg-white text-red-900 text-xs font-medium"> Analizar con IA</button>
+            </div>
+        </div>
+
+        <!-- Siguiente acción -->
+        <div class="mt-4 bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+            <p class="text-[10px] uppercase opacity-70 mb-1"> Siguiente acción sugerida</p>
+            <p class="text-sm font-semibold" th:text="${lead.get('siguiente_accion') ?: '—'}">—</p>
+        </div>
+    </div>
+
+    <!-- Análisis IA (oculto inicialmente) -->
+    <div id="aiAnalysis" class="hidden rounded-xl bg-purple-50 ring-1 ring-purple-200 p-5 mb-5">
+        <h3 class="font-semibold text-sm text-purple-900 mb-2 flex items-center gap-2">
+            <i data-lucide="sparkles" class="h-4 w-4"></i> Análisis IA
+        </h3>
+        <div id="aiContent" class="text-sm text-slate-700 whitespace-pre-wrap"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Desglose -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Desglose del score</h3>
+            <div class="space-y-3 text-sm">
+                <div th:if="${lead.get('score_desglose') != null}">
+                    <div th:each="item : ${lead.get('score_desglose')}" class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <span class="capitalize" th:text="${item.key}">—</span>
+                            <span class="font-mono font-semibold" th:text="${item.value} + ' pts'">—</span>
+                        </div>
+                        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-700" th:style="|width: ${item.value * 4}%|"></div>
+                        </div>
+                    </div>
+                </div>
+                <p th:if="${lead.get('score_desglose') == null}" class="text-xs text-slate-500">Recalcula para ver el desglose.</p>
+            </div>
+        </div>
+
+        <!-- Histórico evolución -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Evolución del score</h3>
+            <canvas id="histChart" height="160"></canvas>
+        </div>
+
+        <!-- Registrar interacción -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Registrar interacción</h3>
+            <form th:action="@{|/leads-scoring/${lead.get('id')}/interaccion|}" method="post" class="space-y-2">
+                <select name="tipo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    <option value="llamada"> Llamada</option>
+                    <option value="whatsapp"> WhatsApp</option>
+                    <option value="email_click"> Click en email</option>
+                    <option value="email_abierto"> Email abierto</option>
+                    <option value="web_visita"> Visita web</option>
+                    <option value="visita_realizada"> Visita realizada</option>
+                    <option value="formulario_extra"> Formulario extra</option>
+                </select>
+                <textarea name="detalle" rows="2" placeholder="Detalle (opcional)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+                <button class="w-full px-3 py-2 rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium">Registrar y recalcular</button>
+            </form>
+        </div>
+
+        <!-- Timeline interacciones -->
+        <div class="lg:col-span-3 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Historial de interacciones (<span th:text="${interacciones.size()}">0</span>)</h3>
+            <ul class="space-y-2">
+                <li th:each="i : ${interacciones}" class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/30">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 text-lg">
+                        <span th:switch="${i.get('tipo')}">
+                            <span th:case="'llamada'"></span>
+                            <span th:case="'whatsapp'"></span>
+                            <span th:case="'email_click'"></span>
+                            <span th:case="'email_abierto'"></span>
+                            <span th:case="'web_visita'"></span>
+                            <span th:case="'visita_realizada'"></span>
+                            <span th:case="'formulario_extra'"></span>
+                            <span th:case="*">•</span>
+                        </span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium capitalize" th:text="${#strings.replace(i.get('tipo'), '_', ' ')}">—</p>
+                        <p class="text-xs text-slate-500" th:text="${i.get('detalle') ?: '—'}">—</p>
+                        <p class="text-[10px] text-slate-400 mt-1" th:text="${#strings.substring(i.get('created_at'), 0, 16) + ' · +' + i.get('valor_score') + ' pts'}">—</p>
+                    </div>
+                </li>
+                <li th:if="${interacciones.isEmpty()}" class="text-center text-xs text-slate-400 py-6 italic">Sin interacciones registradas aún.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        const leadId = /*[[${lead.get('id')}]]*/ '';
+        const historico = /*[[${historico}]]*/ [];
+
+        async function recalc() {
+            const res = await fetch('/leads-scoring/' + leadId + '/recalcular', { method: 'POST' });
+            const data = await res.json();
+            if (data.ok) location.reload();
+        }
+
+        async function askAI() {
+            const box = document.getElementById('aiAnalysis');
+            const content = document.getElementById('aiContent');
+            box.classList.remove('hidden');
+            content.textContent = '⏳ Analizando...';
+            const res = await fetch('/leads-scoring/' + leadId + '/analisis-ia', { method: 'POST' });
+            const data = await res.json();
+            content.textContent = data.analisis || 'Sin resultado';
+        }
+
+        // Gráfico evolución
+        if (historico && historico.length > 0) {
+            const ctx = document.getElementById('histChart');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: historico.map(h => (h.created_at || '').substring(5, 10)),
+                    datasets: [{
+                        label: 'Score',
+                        data: historico.map(h => h.score),
+                        borderColor: '#ea580c',
+                        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { min: 0, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+
+</div>
+</body>
+</html>

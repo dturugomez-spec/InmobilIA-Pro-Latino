@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin conexion · InmobilIA Pro</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/favicon.png">
+    <meta name="theme-color" content="#4361ee">
+    <style>
+        body {
+            display: flex; min-height: 100vh; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #4361ee 0%, #7c3aed 50%, #ee5d50 100%);
+            color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 1rem;
+        }
+        .offline-card {
+            max-width: 480px; text-align: center; padding: 2.5rem 2rem;
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 24px;
+        }
+        .offline-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .offline-title { font-size: 1.6rem; font-weight: 700; margin: 0 0 .5rem; }
+        .offline-desc { opacity: .9; line-height: 1.55; }
+        .offline-btn {
+            display: inline-block; margin-top: 1.5rem; padding: .8rem 1.6rem;
+            background: #fff; color: #4361ee; font-weight: 700; border-radius: 999px;
+            text-decoration: none; transition: transform .15s;
+        }
+        .offline-btn:hover { transform: translateY(-2px); }
+        .offline-tips {
+            margin-top: 2rem; text-align: left; font-size: .9rem; opacity: .85;
+            background: rgba(0,0,0,0.18); padding: 1rem 1.2rem; border-radius: 12px;
+        }
+        .offline-tips ul { padding-left: 1.2rem; margin: .4rem 0 0; }
+    </style>
+</head>
+<body>
+<div class="offline-card">
+    <div class="offline-icon"></div>
+    <h1 class="offline-title">Sin conexion</h1>
+    <p class="offline-desc">
+        Tu InmobilIA Pro no puede conectarse al servidor en este momento.
+        Comprueba tu red WiFi o datos moviles e intentalo otra vez.
+    </p>
+    <a href="javascript:location.reload()" class="offline-btn"> Reintentar</a>
+
+    <div class="offline-tips">
+        <b> Buenas noticias:</b>
+        <ul>
+            <li>Las pantallas que ya visitaste se mantienen en cache.</li>
+            <li>Tus datos en Supabase estan a salvo en la nube.</li>
+            <li>Cuando recuperes red, sincroniza automaticamente.</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

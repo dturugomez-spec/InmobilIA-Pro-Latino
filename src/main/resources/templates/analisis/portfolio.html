@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Cartera</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Valor cartera</div><div class="kpi-value" th:text="${totValue}">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">NOI anual</div><div class="kpi-value pos" th:text="${noiAnual}">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Cap rate cartera</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(capCartera,1,2)} + '%'">—</div></div>
+    </div>
+    <div class="crud-table-wrap">
+        <table class="crud-table">
+            <thead><tr><th>Activo</th><th>Ciudad</th><th>Valor</th><th>Renta</th><th>Gastos</th><th>Estado</th></tr></thead>
+            <tbody>
+            <tr th:each="p : ${props}">
+                <td th:text="${p.name}">—</td>
+                <td th:text="${p.city}">—</td>
+                <td th:text="${p.current_value}">0</td>
+                <td th:text="${p.rental_income}">0</td>
+                <td th:text="${p.monthly_expenses}">0</td>
+                <td><span class="badge" th:text="${p.status}">—</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

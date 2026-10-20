@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Calendario visitas</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-5 mb-5 text-white flex items-center justify-between">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="calendar" class="h-5 w-5"></i> Calendario de visitas
+        </h2>
+        <div class="flex gap-2">
+            <a href="/visitas" class="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-sm"> Lista</a>
+            <a href="/visitas/nueva" class="px-3 py-1.5 rounded bg-white text-violet-900 text-sm font-medium">+ Nueva</a>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <div id="calendar"></div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6/index.global.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6/locales/es.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'timeGridWeek',
+                locale: 'es',
+                firstDay: 1,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '21:00:00',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                businessHours: {
+                    daysOfWeek: [1,2,3,4,5,6],
+                    startTime: '09:00',
+                    endTime: '20:00'
+                },
+                events: '/visitas/api/eventos',
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    if (info.event.url) window.location.href = info.event.url;
+                },
+                height: 'auto'
+            });
+            cal.render();
+        });
+    </script>
+
+</div>
+</body>
+</html>

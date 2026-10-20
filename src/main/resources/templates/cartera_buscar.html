@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Cartera 360</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="users" class="h-6 w-6"></i> Cartera 360° de clientes</h2>
+    <p class="text-sm text-white/70 mt-1">Toda la actividad de un cliente unificada en una timeline.</p>
+    <form method="get" action="/cartera" class="mt-4">
+        <input type="search" name="q" th:value="${q}" placeholder=" Buscar por nombre, email o teléfono..." class="w-full max-w-xl px-4 py-3 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/60">
+    </form>
+</div>
+<div th:if="${q != null}">
+    <h3 class="font-bold mb-3"> Leads (<span th:text="${leads?.size() ?: 0}">0</span>)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        <a th:each="l : ${leads}" th:href="@{|/cartera/cliente/lead/${l.get('id')}|}" class="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:shadow">
+            <p class="font-bold text-sm" th:text="${l.get('nombre')}">—</p>
+            <p class="text-xs text-slate-500" th:text="${l.get('email')}">—</p>
+        </a>
+    </div>
+    <h3 class="font-bold mb-3"> Inquilinos (<span th:text="${inquilinos?.size() ?: 0}">0</span>)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        <a th:each="i : ${inquilinos}" th:href="@{|/cartera/cliente/inquilino/${i.get('id')}|}" class="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:shadow">
+            <p class="font-bold text-sm" th:text="${i.get('nombre')}">—</p>
+            <p class="text-xs text-slate-500" th:text="${i.get('email')}">—</p>
+        </a>
+    </div>
+    <h3 class="font-bold mb-3"> Propietarios (<span th:text="${propietarios?.size() ?: 0}">0</span>)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <a th:each="p : ${propietarios}" th:href="@{|/cartera/cliente/propietario/${p.get('id')}|}" class="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:shadow">
+            <p class="font-bold text-sm" th:text="${p.get('nombre')}">—</p>
+            <p class="text-xs text-slate-500" th:text="${p.get('email')}">—</p>
+        </a>
+    </div>
+</div>
+</div></body></html>

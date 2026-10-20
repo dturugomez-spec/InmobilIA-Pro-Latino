@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comparador de Hipotecas</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-violet-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="git-compare" class="h-6 w-6"></i> Comparador de hipotecas
+        </h2>
+        <p class="text-sm text-white/80 mt-1">
+            Fija vs Variable vs Mixta — con 3 escenarios de Euribor (optimista, medio, pesimista).
+        </p>
+    </div>
+
+    <div x-data="mortgageCompare()" class="grid grid-cols-1 xl:grid-cols-4 gap-5">
+
+        <!-- Formulario -->
+        <div class="xl:col-span-1 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="font-semibold text-sm mb-2">Datos del préstamo</h3>
+
+            <div>
+                <label class="block text-xs font-medium mb-1">Capital (€)</label>
+                <input type="number" x-model.number="capital" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">Plazo (años)</label>
+                <input type="number" x-model.number="plazoAnos" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-neutral-800">
+                <p class="text-xs font-bold text-blue-700 mb-2"> Fija</p>
+                <label class="block text-[10px] font-medium mb-1">Tipo (%)</label>
+                <input type="number" step="0.05" x-model.number="tipoFijo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-neutral-800">
+                <p class="text-xs font-bold text-amber-700 mb-2"> Variable</p>
+                <label class="block text-[10px] font-medium mb-1">Diferencial (%)</label>
+                <input type="number" step="0.05" x-model.number="diferencialVar" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <label class="block text-[10px] font-medium mb-1">Euribor actual (%)</label>
+                <input type="number" step="0.05" x-model.number="euriborActual" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-neutral-800">
+                <p class="text-xs font-bold text-purple-700 mb-2"> Mixta</p>
+                <label class="block text-[10px] font-medium mb-1">Tipo fijo inicial (%)</label>
+                <input type="number" step="0.05" x-model.number="tipoMixtoFijo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <label class="block text-[10px] font-medium mb-1">Años en fijo</label>
+                <input type="number" x-model.number="anosFijoMixto" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <label class="block text-[10px] font-medium mb-1">Diferencial tras fijo (%)</label>
+                <input type="number" step="0.05" x-model.number="diferencialMixto" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-neutral-800">
+                <p class="text-xs font-bold mb-2"> Escenarios Euribor futuro</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-emerald-700 mb-1">Optimista</label>
+                        <input type="number" step="0.05" x-model.number="euriborOptimista" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-amber-700 mb-1">Medio</label>
+                        <input type="number" step="0.05" x-model.number="euriborMedio" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-red-700 mb-1">Pesimista</label>
+                        <input type="number" step="0.05" x-model.number="euriborPesimista" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    </div>
+                </div>
+            </div>
+
+            <button @click="compare()" :disabled="loading"
+                    class="w-full mt-3 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-medium disabled:opacity-60">
+                <i data-lucide="git-compare-arrows" class="h-4 w-4"></i>
+                <span x-text="loading ? 'Comparando...' : 'Comparar'"></span>
+            </button>
+        </div>
+
+        <!-- Resultados -->
+        <div class="xl:col-span-3 space-y-5" x-show="result.ok" x-transition>
+
+            <!-- Banner mejor opción -->
+            <div class="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-4 flex items-center gap-3">
+                <div class="rounded-full bg-emerald-100 p-2"><i data-lucide="award" class="h-5 w-5 text-emerald-700"></i></div>
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-emerald-700">Mejor opción (escenario medio)</p>
+                    <p class="text-lg font-bold text-emerald-900 capitalize" x-text="'Hipoteca ' + (result.mejorEscenarioMedio || '')"></p>
+                </div>
+            </div>
+
+            <!-- 3 columnas: FIJA / VARIABLE / MIXTA -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <!-- FIJA -->
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-2 ring-blue-200 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-blue-700 flex items-center gap-1.5">
+                            <i data-lucide="lock" class="h-4 w-4"></i> Fija
+                        </h3>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Sin riesgo</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Cuota mensual</p>
+                    <p class="text-2xl font-bold mb-2" x-text="fmt(result.fija.cuotaMensual) + ' €'"></p>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between"><span class="text-slate-500">Tipo:</span><span class="font-mono" x-text="fmt(result.fija.tipoMedio) + ' %'"></span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Total intereses:</span><span class="font-mono text-amber-700" x-text="fmt(result.fija.totalIntereses) + ' €'"></span></div>
+                        <div class="flex justify-between border-t pt-1 mt-1"><span class="font-semibold">Total pagado:</span><span class="font-mono font-bold" x-text="fmt(result.fija.totalPagado) + ' €'"></span></div>
+                    </div>
+                </div>
+
+                <!-- VARIABLE -->
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-2 ring-amber-200 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-amber-700 flex items-center gap-1.5">
+                            <i data-lucide="trending-up" class="h-4 w-4"></i> Variable
+                        </h3>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Riesgo</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Cuota inicial (1er año)</p>
+                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.variable.medio.cuotaInicial) + ' €'"></p>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Total pagado según escenario</p>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between text-emerald-700"><span> Optimista (Eur. <span x-text="euriborOptimista"></span>%):</span><span class="font-mono" x-text="fmt(result.variable.optimista.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.variable.medio.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.variable.pesimista.totalPagado) + ' €'"></span></div>
+                    </div>
+                </div>
+
+                <!-- MIXTA -->
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-2 ring-purple-200 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-purple-700 flex items-center gap-1.5">
+                            <i data-lucide="shuffle" class="h-4 w-4"></i> Mixta
+                        </h3>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Equilibrio</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Cuota fija (primeros <span x-text="anosFijoMixto"></span> años)</p>
+                    <p class="text-2xl font-bold mb-3" x-text="fmt(result.mixta.medio.cuotaFija) + ' €'"></p>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Total pagado según escenario</p>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between text-emerald-700"><span> Optimista:</span><span class="font-mono" x-text="fmt(result.mixta.optimista.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-amber-700"><span>~ Medio:</span><span class="font-mono font-bold" x-text="fmt(result.mixta.medio.totalPagado) + ' €'"></span></div>
+                        <div class="flex justify-between text-red-700"><span> Pesimista:</span><span class="font-mono" x-text="fmt(result.mixta.pesimista.totalPagado) + ' €'"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico comparativo -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="h-4 w-4"></i> Coste total comparado
+                </h3>
+                <canvas id="compareChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div x-show="result.error" class="xl:col-span-3 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+            <span x-text="result.error"></span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function mortgageCompare() {
+            return {
+                capital: 200000,
+                plazoAnos: 30,
+                tipoFijo: 3.10,
+                diferencialVar: 0.80,
+                euriborActual: 2.50,
+                tipoMixtoFijo: 2.80,
+                anosFijoMixto: 10,
+                diferencialMixto: 0.75,
+                euriborOptimista: 1.50,
+                euriborMedio: 2.50,
+                euriborPesimista: 4.50,
+                loading: false,
+                result: {},
+                chart: null,
+                fmt(v) { return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0); },
+                async compare() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch('/comparador-hipotecas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                capital: this.capital, plazoAnos: this.plazoAnos,
+                                tipoFijo: this.tipoFijo,
+                                diferencialVar: this.diferencialVar, euriborActual: this.euriborActual,
+                                tipoMixtoFijo: this.tipoMixtoFijo, anosFijoMixto: this.anosFijoMixto, diferencialMixto: this.diferencialMixto,
+                                euriborOptimista: this.euriborOptimista, euriborMedio: this.euriborMedio, euriborPesimista: this.euriborPesimista
+                            })
+                        });
+                        this.result = await res.json();
+                        this.$nextTick(() => {
+                            this.renderChart();
+                            if (window.lucide) window.lucide.createIcons();
+                        });
+                    } catch(e) {
+                        this.result = { error: 'Error al comparar' };
+                    }
+                    this.loading = false;
+                },
+                renderChart() {
+                    if (!this.result.ok) return;
+                    const ctx = document.getElementById('compareChart');
+                    if (!ctx) return;
+                    if (this.chart) this.chart.destroy();
+                    this.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Optimista', 'Medio', 'Pesimista'],
+                            datasets: [
+                                { label: 'Fija', data: [this.result.fija.totalPagado, this.result.fija.totalPagado, this.result.fija.totalPagado], backgroundColor: '#3b82f6' },
+                                { label: 'Variable', data: [this.result.variable.optimista.totalPagado, this.result.variable.medio.totalPagado, this.result.variable.pesimista.totalPagado], backgroundColor: '#f59e0b' },
+                                { label: 'Mixta', data: [this.result.mixta.optimista.totalPagado, this.result.mixta.medio.totalPagado, this.result.mixta.pesimista.totalPagado], backgroundColor: '#a855f7' }
+                            ]
+                        },
+                        options: { responsive: true, scales: { y: { ticks: { callback: v => new Intl.NumberFormat('es-ES').format(v) + ' €' } } } }
+                    });
+                },
+                init() { this.compare(); }
+            };
+        }
+    </script>
+
+</div>
+</body>
+</html>

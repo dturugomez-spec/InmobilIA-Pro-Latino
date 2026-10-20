@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Histórico de precios</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-blue-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="trending-up" class="h-6 w-6"></i> Histórico de precios
+        </h2>
+        <p class="text-sm text-white/80 mt-1">Todos los cambios de precio de tu cartera, más recientes primero.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Cambios registrados</p>
+            <p class="text-2xl font-bold mt-1" th:text="${cambios != null ? cambios.size() : 0}">0</p>
+        </div>
+        <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
+            <p class="text-[10px] uppercase text-red-700">Bajadas de precio</p>
+            <p class="text-2xl font-bold mt-1 text-red-700" th:text="${bajadas}">0</p>
+        </div>
+        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] uppercase text-emerald-700">Subidas de precio</p>
+            <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${subidas}">0</p>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 dark:border-neutral-800">
+            <h3 class="font-semibold text-sm"> Cambios recientes</h3>
+        </div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50">
+            <tr class="text-[10px] uppercase text-slate-500">
+                <th class="text-left px-3 py-2">Fecha</th>
+                <th class="text-left px-3 py-2">Propiedad</th>
+                <th class="text-right px-3 py-2">Anterior</th>
+                <th class="text-right px-3 py-2">Nuevo</th>
+                <th class="text-right px-3 py-2">Δ%</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="c : ${cambios}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" th:text="${c.get('created_at') != null ? #strings.substring(c.get('created_at'),0,10) : '—'}">—</td>
+                <td class="px-3 py-2">
+                    <a th:if="${c.get('propiedad') != null}" th:href="@{|/precios-historico/${c.get('propiedad_id')}|}"
+                       class="font-medium text-brand-700 dark:text-brand-400 hover:underline"
+                       th:text="${c.get('propiedad').get('name')}">Propiedad</a>
+                    <span th:unless="${c.get('propiedad') != null}" class="text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2 text-right font-mono text-xs" th:text="${#numbers.formatDecimal(c.get('precio_anterior') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                <td class="px-3 py-2 text-right font-mono text-xs font-bold" th:text="${#numbers.formatDecimal(c.get('precio_nuevo') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                <td class="px-3 py-2 text-right font-mono text-xs"
+                    th:classappend="${c.get('diferencia_pct') != null and c.get('diferencia_pct').doubleValue() >= 0 ? 'text-emerald-700' : 'text-red-700'}"
+                    th:text="${c.get('diferencia_pct') != null ? (c.get('diferencia_pct').doubleValue() >= 0 ? '+' : '') + #numbers.formatDecimal(c.get('diferencia_pct'), 1, 1) + '%' : '—'}">—</td>
+            </tr>
+            <tr th:if="${cambios == null or cambios.isEmpty()}">
+                <td colspan="5" class="py-12 text-center text-slate-500 text-xs">
+                    Aún no hay cambios de precio registrados. Cuando edites el precio de una propiedad, aparecerá aquí.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

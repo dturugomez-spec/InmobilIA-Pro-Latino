@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Divisas</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="banknote" class="h-6 w-6"></i> Conversor multi-divisa</h2>
+    <p class="text-sm text-white/80 mt-1">Tipos del BCE actualizados diariamente.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-semibold text-sm mb-3"> Convertir</h3>
+        <input type="number" id="importe" placeholder="Importe" class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <div class="grid grid-cols-3 gap-2 items-center">
+            <select id="origen" class="px-2 py-2 text-sm border rounded">
+                <option th:each="d : ${divisas}" th:value="${d}" th:text="${d}">EUR</option>
+            </select>
+            <span class="text-center">→</span>
+            <select id="destino" class="px-2 py-2 text-sm border rounded">
+                <option th:each="d : ${divisas}" th:value="${d}" th:text="${d}">USD</option>
+            </select>
+        </div>
+        <button onclick="conv()" class="mt-3 w-full px-4 py-2 rounded bg-emerald-700 text-white text-sm">Convertir</button>
+        <p id="resultado" class="mt-3 text-xl font-bold text-emerald-700"></p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-semibold text-sm mb-3"> Tipos actuales (1 EUR)</h3>
+        <ul class="text-sm space-y-2">
+            <li th:each="t : ${tipos}" class="flex justify-between p-2 rounded bg-slate-50">
+                <span class="font-bold" th:text="${t.key}">—</span>
+                <span class="font-mono" th:text="${#numbers.formatDecimal(t.value, 1, 4)}">—</span>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+async function conv() {
+    const fd = new FormData();
+    fd.append('importe', document.getElementById('importe').value);
+    fd.append('origen', document.getElementById('origen').value);
+    fd.append('destino', document.getElementById('destino').value);
+    const res = await fetch('/divisas/convertir', {method:'POST', body:fd});
+    const d = await res.json();
+    document.getElementById('resultado').textContent = d.resultado.toFixed(2) + ' ' + document.getElementById('destino').value;
+}
+</script>
+</div></body></html>

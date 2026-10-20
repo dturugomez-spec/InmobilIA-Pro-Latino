@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title th:text="${articulo.get('titulo')}">Artículo</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/wiki" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-3">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver a la wiki
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <article class="lg:col-span-3 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6">
+            <div class="flex items-start justify-between mb-3">
+                <h1 class="text-2xl font-bold" th:text="${articulo.get('titulo')}">—</h1>
+                <a th:href="@{|/wiki/articulo/${articulo.get('slug')}/editar|}" class="text-xs text-blue-600 hover:underline"> Editar</a>
+            </div>
+
+            <p class="text-sm text-slate-500 mb-5" th:if="${articulo.get('resumen')}" th:text="${articulo.get('resumen')}">—</p>
+
+            <div class="text-[10px] text-slate-400 mb-5 flex items-center gap-3">
+                <span> <span th:text="${articulo.get('veces_leido') ?: 0}">0</span> lecturas</span>
+                <span> <span th:text="${#strings.substring(articulo.get('updated_at'), 0, 10)}">—</span></span>
+            </div>
+
+            <div class="prose prose-sm dark:prose-invert max-w-none" th:utext="${articulo.get('contenido_html_render')}"></div>
+
+            <!-- Voto útil -->
+            <div class="mt-8 pt-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                <p class="text-sm text-slate-600">¿Te ha sido útil este artículo?</p>
+                <div class="flex gap-2">
+                    <button th:data-id="${articulo.get('id')}" onclick="votar(this.dataset.id, true)" class="px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs">
+                         Sí (<span th:text="${articulo.get('util_count') ?: 0}">0</span>)
+                    </button>
+                    <button th:data-id="${articulo.get('id')}" onclick="votar(this.dataset.id, false)" class="px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 text-red-700 text-xs">
+                         No (<span th:text="${articulo.get('no_util_count') ?: 0}">0</span>)
+                    </button>
+                </div>
+            </div>
+        </article>
+
+        <aside class="space-y-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+                <h3 class="font-semibold text-sm mb-3"> Relacionados</h3>
+                <ul class="space-y-2">
+                    <li th:each="r : ${relacionados}">
+                        <a th:href="@{|/wiki/articulo/${r.get('slug')}|}" class="block text-xs hover:text-purple-700">
+                            <span th:text="${r.get('titulo')}">—</span>
+                        </a>
+                    </li>
+                    <li th:if="${relacionados.isEmpty()}" class="text-xs text-slate-400 italic">Sin relacionados</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        async function votar(id, util) {
+            const fd = new FormData();
+            fd.append('util', util);
+            await fetch('/wiki/articulo/' + id + '/util', { method: 'POST', body: fd });
+            location.reload();
+        }
+    </script>
+
+</div>
+</body>
+</html>

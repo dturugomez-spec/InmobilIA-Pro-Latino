@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Configuracion</title></head>
+<body>
+<div layout:fragment="content">
+
+    <section class="form-card">
+        <h3>⚡ Auto-respuesta a leads (speed-to-lead)</h3>
+        <p class="info-banner" th:if="${autoRespuesta}">
+            <strong>Activada.</strong> Cada lead nuevo del formulario público recibe al instante un email
+            personalizado con la propiedad consultada y alternativas. Nunca se envía a direcciones de prueba.
+        </p>
+        <p th:unless="${autoRespuesta}" style="color:#64748b;font-size:14px;margin-bottom:10px">
+            El primero en responder se lleva la operación. Con esto, cada contacto nuevo recibe respuesta
+            automática en segundos, 24/7 — sin que tengas que estar pendiente.
+        </p>
+        <form method="post" action="/config/auto-respuesta">
+            <label class="full" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="checkbox" name="activar" value="true" th:checked="${autoRespuesta}">
+                <span>Responder automáticamente a los leads nuevos del formulario público</span>
+            </label>
+            <button class="btn btn-primary">Guardar</button>
+        </form>
+    </section>
+
+    <section class="form-card">
+        <h3>Clave IA personal (solo si la plataforma NO la tiene)</h3>
+        <p th:if="${platformAiEnabled}" class="info-banner">
+            La plataforma ya provee la clave de IA. Tu consumo se descuenta de los creditos.
+        </p>
+        <form method="post" action="/config/api-key">
+            <label class="full">OpenAI API Key
+                <input type="password" name="apiKey" placeholder="sk-...">
+            </label>
+            <button class="btn btn-primary">Guardar</button>
+        </form>
+    </section>
+
+    <section class="form-card">
+        <h3>Configuracion SMTP</h3>
+        <form method="post" action="/config/smtp" class="form-grid cols-2">
+            <label>Servidor <input type="text" name="server" th:value="${smtp?.server()}" placeholder="smtp.gmail.com" required></label>
+            <label>Puerto <input type="number" name="port" th:value="${smtp?.port() ?: 587}" required></label>
+            <label>Usuario <input type="email" name="user" th:value="${smtp?.user()}" required></label>
+            <label>Contrasena <input type="password" name="password" required></label>
+            <label class="full">Nombre remitente <input type="text" name="fromName" th:value="${smtp?.fromName() ?: 'InmobilIA Pro'}"></label>
+            <div class="form-actions"><button class="btn btn-primary">Guardar SMTP</button></div>
+        </form>
+    </section>
+
+    <section class="form-card">
+        <h3>Probar envio SMTP</h3>
+        <form method="post" action="/config/smtp/test">
+            <label>Email destinatario <input type="email" name="destinatario" required></label>
+            <button class="btn btn-ghost">Enviar email de prueba</button>
+        </form>
+    </section>
+
+</div>
+</body>
+</html>

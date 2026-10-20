@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Scoring inquilinos</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/scoring" class="form-card">
+        <h3>Scoring de inquilinos</h3>
+        <div class="form-grid cols-3">
+            <label>Nombre <input type="text" name="nombre" required></label>
+            <label>Edad <input type="number" name="edad" required></label>
+            <label>Trabajo <input type="text" name="trabajo" required></label>
+            <label>Tipo contrato
+                <select name="contrato">
+                    <option>Indefinido</option><option>Temporal</option>
+                    <option>Autonomo</option><option>Funcionario</option>
+                    <option>Desempleado</option>
+                </select>
+            </label>
+            <label>Ingresos mensuales <input type="number" step="0.01" name="ingresos" required></label>
+            <label>Antiguedad (anos) <input type="number" name="antiguedad" value="1"></label>
+            <label>Renta mensual objetivo <input type="number" step="0.01" name="renta" required></label>
+            <label class="bool-field"><input type="checkbox" name="avalista" value="true"><span>Con avalista</span></label>
+            <label class="bool-field"><input type="checkbox" name="seguro" value="true"><span>Seguro impago</span></label>
+            <label>Desahucios previos <input type="number" name="desahucios" value="0"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Puntuar</button></div>
+    </form>
+
+    <div class="verdict-card" th:if="${result != null}"
+         th:style="|background: ${result.color()}22; border-color: ${result.color()}|">
+        <div class="verdict-title" th:text="${nombre}">—</div>
+        <div class="verdict-value" th:text="${result.score()} + '/100'">—</div>
+        <div th:text="${result.calificacion()}">—</div>
+    </div>
+
+    <div th:replace="~{fragments/official-links :: panel('inquilino,scoring,moroso,due-diligence,validador')}"></div>
+</div>
+</body>
+</html>

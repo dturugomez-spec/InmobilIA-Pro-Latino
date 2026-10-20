@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Tours 360</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-indigo-700 to-violet-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="orbit" class="h-6 w-6"></i> Tours virtuales 360°</h2>
+    <p class="text-sm text-white/80 mt-1">Embebe Matterport, iGuide o 3DVista en tus propiedades.</p>
+</div>
+<form method="post" action="/tours-360/crear" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5 space-y-3 max-w-2xl">
+    <select name="propiedad_id" required class="w-full px-3 py-2 text-sm border rounded">
+        <option value="">— Propiedad —</option>
+        <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}">—</option>
+    </select>
+    <input type="text" name="titulo" placeholder="Título del tour" class="w-full px-3 py-2 text-sm border rounded">
+    <select name="proveedor" class="w-full px-3 py-2 text-sm border rounded">
+        <option value="matterport">Matterport</option>
+        <option value="iguide">iGuide</option>
+        <option value="eyespy">EyeSpy</option>
+        <option value="custom">URL embed personalizado</option>
+    </select>
+    <input type="url" name="embed_url" required placeholder="URL embed del tour (iframe src)" class="w-full px-3 py-2 text-sm border rounded">
+    <button class="px-4 py-2 rounded bg-indigo-700 text-white text-sm">+ Añadir tour</button>
+</form>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div th:each="t : ${tours}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="h-32 bg-gradient-to-br from-indigo-400 to-violet-600 flex items-center justify-center text-white text-4xl"></div>
+        <div class="p-4">
+            <p class="font-bold text-sm" th:text="${t.get('titulo') ?: 'Tour 360'}">—</p>
+            <p class="text-xs text-slate-500 mt-1" th:text="${t.get('propiedad') != null ? t.get('propiedad').get('direccion') : ''}">—</p>
+            <p class="text-[10px] text-slate-400 mt-2" th:text="${(t.get('visitas_count') ?: 0) + ' visitas'}">0</p>
+            <a th:href="@{|/tours-360/publico/${t.get('public_token')}|}" target="_blank" class="block mt-2 text-center px-3 py-1.5 rounded bg-indigo-700 text-white text-xs">▶ Ver tour</a>
+        </div>
+    </div>
+    <div th:if="${tours.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Sin tours aún.</div>
+</div>
+</div></body></html>

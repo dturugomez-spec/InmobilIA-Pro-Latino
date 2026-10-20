@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Cliente 360</title></head>
+<body><div layout:fragment="content">
+<a href="/cartera" class="text-xs text-slate-500 mb-3 inline-block">← Volver</a>
+
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-6 mb-5 text-white">
+    <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+            <span class="text-xs uppercase opacity-70 capitalize" th:text="${tipoCliente}">—</span>
+            <h2 class="text-2xl font-bold mt-1" th:text="${cliente.get('nombre')}">—</h2>
+            <p class="text-sm text-white/70 mt-1">
+                <span th:text="${cliente.get('email')}">—</span> ·
+                <span th:text="${cliente.get('telefono')}">—</span>
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <a th:if="${cliente.get('telefono')}" th:href="${'tel:' + cliente.get('telefono')}" class="px-3 py-1.5 rounded bg-emerald-600 text-xs"> Llamar</a>
+            <a th:if="${cliente.get('telefono')}" th:href="${'https://wa.me/' + cliente.get('telefono')}" target="_blank" class="px-3 py-1.5 rounded bg-green-600 text-xs"> WhatsApp</a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+        <p class="text-[10px] uppercase text-slate-500">Eventos totales</p>
+        <p class="text-xl font-bold mt-1" th:text="${timeline.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-violet-50 p-4 ring-1 ring-violet-200">
+        <p class="text-[10px] uppercase text-violet-700"> Visitas</p>
+        <p class="text-xl font-bold mt-1 text-violet-700" th:text="${visitasCount}">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-200">
+        <p class="text-[10px] uppercase text-blue-700"> Emails</p>
+        <p class="text-xl font-bold mt-1 text-blue-700" th:text="${emailsCount}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
+        <p class="text-[10px] uppercase text-emerald-700"> WhatsApp</p>
+        <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${whatsappCount}">0</p>
+    </div>
+</div>
+
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <h3 class="font-bold text-sm mb-4 flex items-center gap-2"><i data-lucide="activity" class="h-4 w-4"></i> Timeline unificada</h3>
+    <ul class="space-y-3 max-h-[600px] overflow-y-auto">
+        <li th:each="t : ${timeline}" class="flex items-start gap-3 pb-3 border-b border-slate-100">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                 th:classappend="${t.get('tipo') == 'visita' ? 'bg-violet-100 text-violet-700' : (t.get('tipo') == 'email' ? 'bg-blue-100 text-blue-700' : (t.get('tipo') == 'whatsapp' ? 'bg-green-100 text-green-700' : (t.get('tipo') == 'factura' ? 'bg-amber-100 text-amber-700' : (t.get('tipo') == 'review' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-700'))))}">
+                <span th:switch="${t.get('tipo')}">
+                    <span th:case="'visita'"></span><span th:case="'email'"></span>
+                    <span th:case="'whatsapp'"></span><span th:case="'sms'"></span>
+                    <span th:case="'factura'"></span><span th:case="'review'"></span>
+                    <span th:case="'contrato'"></span><span th:case="'interaccion'"></span>
+                    <span th:case="*">•</span>
+                </span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm" th:text="${t.get('titulo')}">—</p>
+                <p class="text-xs text-slate-500" th:text="${t.get('detalle')}">—</p>
+                <p class="text-[10px] text-slate-400 mt-1 font-mono" th:text="${#strings.substring(t.get('fecha'), 0, 16)}">—</p>
+            </div>
+        </li>
+        <li th:if="${timeline.isEmpty()}" class="text-center text-slate-400 text-sm py-12 italic">Sin actividad registrada todavía</li>
+    </ul>
+</div>
+</div></body></html>

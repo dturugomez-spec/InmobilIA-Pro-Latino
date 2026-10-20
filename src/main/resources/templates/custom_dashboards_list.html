@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Mis dashboards</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-violet-700 to-purple-900 p-6 mb-5 text-white flex items-start justify-between flex-wrap gap-3">
+        <div>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="h-6 w-6"></i> Dashboards personalizados
+            </h2>
+            <p class="text-sm text-white/80 mt-1">Crea vistas a medida con widgets de KPIs, gráficos y listas.</p>
+        </div>
+        <button onclick="nuevoDashboard()" class="px-4 py-2 rounded-lg bg-white text-purple-900 text-sm font-medium">+ Nuevo dashboard</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a th:each="d : ${dashboards}" th:href="@{|/dashboards/${d.get('id')}|}"
+           class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 hover:shadow-lg transition group">
+            <div class="text-4xl mb-2" th:text="${d.get('icono') ?: ''}"></div>
+            <p class="font-bold text-sm group-hover:text-purple-700 transition" th:text="${d.get('nombre')}">—</p>
+            <p class="text-xs text-slate-500 mt-1" th:text="${d.get('descripcion')}">—</p>
+            <p class="text-[10px] text-slate-400 mt-2">
+                <span th:text="${#lists.size(d.get('widgets')) + ' widgets'}">—</span>
+                <span th:if="${d.get('es_default')}" class="ml-2 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700"> DEFAULT</span>
+            </p>
+        </a>
+    </div>
+
+    <script>
+        function nuevoDashboard() {
+            const nombre = prompt('Nombre del dashboard:');
+            if (!nombre) return;
+            fetch('/dashboards/guardar', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({nombre, widgets: []})
+            }).then(r => r.json()).then(d => {
+                if (d.ok) location.href = '/dashboards/' + d.id + '/editar';
+            });
+        }
+    </script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Entrenador de objeciones IA</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="drama" class="h-6 w-6"></i> Entrenador de objeciones IA
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Practica objeciones reales contra un cliente simulado que no se rompe el personaje. Al terminar, recibe una evaluación puntuada con tus fortalezas y qué mejorar. Tu gimnasio comercial.</p>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Sesiones practicadas</p>
+        <p class="text-2xl font-bold mt-1" th:text="${totalSesiones}">0</p>
+    </div>
+    <div class="rounded-xl bg-violet-50 ring-1 ring-violet-200 p-4">
+        <p class="text-[10px] uppercase text-violet-700"> Puntuación media</p>
+        <p class="text-2xl font-bold mt-1 text-violet-700" th:text="${mediaPuntuacion != null ? mediaPuntuacion + '/100' : '—'}">—</p>
+    </div>
+</div>
+
+<div x-data="coach()">
+
+    <!-- Selección de escenario -->
+    <div x-show="!escenario" class="space-y-4">
+        <div>
+            <label class="block text-sm font-semibold mb-2 text-slate-600">Dificultad del cliente</label>
+            <div class="flex gap-2">
+                <template x-for="d in [['facil',' Fácil'],['media',' Media'],['dificil',' Difícil']]" :key="d[0]">
+                    <button @click="dificultad=d[0]" :class="dificultad===d[0] ? 'bg-brand-800 text-white' : 'bg-white dark:bg-neutral-800 text-slate-600 ring-1 ring-slate-200'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold transition" x-text="d[1]"></button>
+                </template>
+            </div>
+        </div>
+        <p class="text-sm font-semibold text-slate-600">Elige un escenario para practicar:</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button th:each="e : ${escenarios}" type="button"
+                    th:attr="data-clave=${e.clave}, data-titulo=${e.titulo}, data-rol=${e.rol}"
+                    @click="iniciar($el.dataset.clave, $el.dataset.titulo, $el.dataset.rol)"
+                    class="text-left rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:ring-violet-300 hover:shadow-md transition">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-bold"
+                          th:classappend="${e.rol == 'propietario' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}"
+                          th:text="${e.rol == 'propietario' ? ' Propietario' : ' Comprador'}">—</span>
+                </div>
+                <p class="font-bold text-slate-900 dark:text-white text-sm" th:text="${e.titulo}">—</p>
+                <p class="text-xs text-slate-500 mt-1" th:text="${e.descripcion}">—</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Role-play en curso -->
+    <div x-show="escenario && !evaluacion" x-cloak class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-100 dark:border-neutral-800">
+            <div>
+                <p class="font-bold text-sm" x-text="escenarioTitulo"></p>
+                <p class="text-xs text-slate-400" x-text="(rolCliente==='propietario'?' Propietario':' Comprador') + ' · dificultad ' + dificultad"></p>
+            </div>
+            <button @click="reset()" class="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1">
+                <i data-lucide="x" class="h-4 w-4"></i> Salir
+            </button>
+        </div>
+
+        <!-- Chat -->
+        <div class="p-4 space-y-3 max-h-[50vh] overflow-y-auto" x-ref="chat">
+            <template x-for="(m, idx) in historial" :key="idx">
+                <div :class="m.rol==='agente' ? 'flex justify-end' : 'flex justify-start'">
+                    <div :class="m.rol==='agente' ? 'bg-brand-800 text-white' : 'bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-200'"
+                         class="max-w-[80%] rounded-2xl px-4 py-2 text-sm whitespace-pre-line" x-text="m.texto"></div>
+                </div>
+            </template>
+            <div x-show="cargando" class="flex justify-start">
+                <div class="bg-slate-100 dark:bg-neutral-800 rounded-2xl px-4 py-2 text-sm text-slate-400">escribiendo…</div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="p-3 border-t border-slate-100 dark:border-neutral-800 flex items-end gap-2">
+            <textarea x-model="input" rows="1" placeholder="Tu respuesta como agente..."
+                      @keydown.enter.prevent="enviar()"
+                      class="flex-1 px-4 py-2.5 border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 rounded-xl focus:border-brand-600 outline-none text-sm resize-none"></textarea>
+            <button @click="dictar()" :class="recording && 'bg-red-100 text-red-600'"
+                    class="h-11 w-11 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-500 hover:bg-slate-200" title="Dictar">
+                <i data-lucide="mic" class="h-5 w-5"></i>
+            </button>
+            <button @click="enviar()" :disabled="cargando || !input.trim()"
+                    class="h-11 w-11 flex items-center justify-center rounded-xl bg-brand-800 hover:bg-brand-900 text-white disabled:opacity-50">
+                <i data-lucide="send" class="h-5 w-5"></i>
+            </button>
+        </div>
+        <div class="px-3 pb-3">
+            <button @click="evaluar()" :disabled="evaluando || historial.filter(m=>m.rol==='agente').length===0"
+                    class="w-full px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                <i data-lucide="award" class="h-4 w-4"></i>
+                <span x-show="!evaluando">Terminar y evaluar mi desempeño</span>
+                <span x-show="evaluando" x-cloak>⏳ Evaluando...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Evaluación -->
+    <div x-show="evaluacion" x-cloak class="space-y-4">
+        <div class="rounded-2xl bg-gradient-to-br from-violet-700 to-indigo-900 p-7 text-white text-center">
+            <p class="text-sm text-white/70 uppercase tracking-wider">Tu puntuación</p>
+            <p class="text-5xl font-extrabold mt-2"><span x-text="evaluacion?.puntuacion ?? 0"></span><span class="text-2xl text-white/60">/100</span></p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-5">
+                <p class="text-sm font-bold text-emerald-700 mb-2"> Lo que hiciste bien</p>
+                <ul class="space-y-1 text-sm text-slate-700">
+                    <template x-for="f in (evaluacion?.fortalezas || [])" :key="f"><li x-text="'• ' + f"></li></template>
+                </ul>
+            </div>
+            <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-5">
+                <p class="text-sm font-bold text-amber-700 mb-2"> A mejorar</p>
+                <ul class="space-y-1 text-sm text-slate-700">
+                    <template x-for="m in (evaluacion?.mejoras || [])" :key="m"><li x-text="'• ' + m"></li></template>
+                </ul>
+            </div>
+        </div>
+        <div x-show="evaluacion?.respuesta_modelo" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <p class="text-sm font-bold text-blue-600 mb-2"> Respuesta modelo</p>
+            <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line" x-text="evaluacion?.respuesta_modelo"></p>
+        </div>
+        <div class="flex gap-2">
+            <button @click="reset()" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">Practicar otro escenario</button>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de sesiones -->
+<div th:if="${!#lists.isEmpty(sesiones)}" class="mt-6">
+    <p class="text-sm font-bold text-slate-600 mb-3">Tu historial de práctica</p>
+    <div class="space-y-2">
+        <div th:each="s : ${sesiones}" class="rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-3 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-sm font-semibold truncate" th:text="${s.get('escenario_titulo')}">—</p>
+                <p class="text-xs text-slate-400" th:text="${(s.get('dificultad') ?: '') + ' · ' + #strings.substring(s.get('created_at'), 0, 10)}">—</p>
+            </div>
+            <span class="text-lg font-extrabold flex-shrink-0"
+                  th:classappend="${s.get('puntuacion') != null and s.get('puntuacion') >= 70 ? 'text-emerald-600' : (s.get('puntuacion') != null and s.get('puntuacion') >= 40 ? 'text-amber-600' : 'text-red-500')}"
+                  th:text="${(s.get('puntuacion') ?: 0) + '/100'}">—</span>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+function coach() {
+    return {
+        escenario: null, escenarioTitulo: '', rolCliente: '', dificultad: 'media',
+        historial: [], input: '', cargando: false, evaluacion: null, evaluando: false, recording: false, rec: null,
+        async iniciar(clave, titulo, rol) {
+            this.escenario = clave; this.escenarioTitulo = titulo; this.rolCliente = rol;
+            this.historial = []; this.evaluacion = null;
+            await this.clienteResponde();
+        },
+        scrollDown() { this.$nextTick(() => { const c = this.$refs.chat; if (c) c.scrollTop = c.scrollHeight; }); },
+        async clienteResponde() {
+            this.cargando = true;
+            try {
+                const res = await fetch('/coach/mensaje', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({escenario:this.escenario, dificultad:this.dificultad, historial:this.historial})});
+                const d = await res.json();
+                if (d.ok) this.historial.push({rol:'cliente', texto:d.reply});
+            } catch(e){ this.historial.push({rol:'cliente', texto:'(error de conexión)'}); }
+            this.cargando = false; this.scrollDown();
+        },
+        async enviar() {
+            if (!this.input.trim() || this.cargando) return;
+            this.historial.push({rol:'agente', texto:this.input.trim()});
+            this.input = ''; this.scrollDown();
+            await this.clienteResponde();
+        },
+        async evaluar() {
+            this.evaluando = true;
+            try {
+                const res = await fetch('/coach/evaluar', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({escenario:this.escenario, dificultad:this.dificultad, historial:this.historial})});
+                this.evaluacion = await res.json();
+            } catch(e){ alert('Error al evaluar.'); }
+            this.evaluando = false;
+        },
+        reset() { this.escenario = null; this.historial = []; this.evaluacion = null; this.input = ''; },
+        dictar() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert('Tu navegador no soporta dictado por voz.'); return; }
+            if (this.recording && this.rec) { this.rec.stop(); return; }
+            this.rec = new SR(); this.rec.lang = 'es-ES'; this.rec.interimResults = false;
+            this.recording = true;
+            this.rec.onresult = (ev) => { this.input = (this.input + ' ' + ev.results[0][0].transcript).trim(); };
+            this.rec.onend = () => { this.recording = false; };
+            this.rec.onerror = () => { this.recording = false; };
+            this.rec.start();
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+
+</div></body></html>

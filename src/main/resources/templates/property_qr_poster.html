@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartel QR · InmobilIA Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+        @media print { .no-print { display: none !important; } body { background: white; } .poster { box-shadow: none !important; margin: 0 !important; page-break-inside: avoid; } @page { size: A4; margin: 1cm; } }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="no-print max-w-md mx-auto mb-6 flex gap-2">
+    <a th:href="@{|/entity/propiedad/${prop.get('id')}|}" class="px-4 py-2 rounded-lg bg-white ring-1 ring-slate-200 hover:bg-slate-50 text-sm font-medium">← Volver</a>
+    <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-800 hover:bg-blue-900 text-white text-sm font-semibold shadow-card">
+         Imprimir A4
+    </button>
+</div>
+
+<!-- Poster A4 -->
+<div class="poster max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden" style="aspect-ratio: 1/1.414;">
+    <div class="h-full flex flex-col p-12 text-center" style="background: linear-gradient(135deg, #1e40af 0%, #312e81 100%);">
+
+        <!-- Logo / cabecera -->
+        <div class="text-white">
+            <div th:if="${profile.get('logo_url')}" class="mb-4">
+                <img th:src="${profile.get('logo_url')}" class="h-16 mx-auto object-contain">
+            </div>
+            <div th:unless="${profile.get('logo_url')}" class="text-2xl font-black tracking-tight mb-2">
+                <span th:text="${profile.get('legal_name') ?: 'InmobilIA Pro'}">Inmobiliaria</span>
+            </div>
+            <div class="text-blue-200 text-sm uppercase tracking-widest font-semibold">SE VENDE / SE ALQUILA</div>
+        </div>
+
+        <!-- Spacer -->
+        <div class="flex-1"></div>
+
+        <!-- QR central -->
+        <div class="bg-white rounded-2xl p-8 mx-8 shadow-2xl">
+            <img th:src="${qrImageUrl}" alt="QR" class="w-full max-w-xs mx-auto">
+        </div>
+
+        <!-- Spacer -->
+        <div class="flex-1"></div>
+
+        <!-- Info -->
+        <div class="text-white text-center">
+            <div class="text-lg font-bold mb-2">Escanea para ver detalles</div>
+            <div class="text-sm text-blue-200 mb-4">Fotos · Precio · Características · Solicitar visita</div>
+
+            <div class="bg-white/10 backdrop-blur rounded-xl p-4 ring-1 ring-white/20">
+                <div class="text-3xl font-black tracking-tight" th:text="${prop.get('current_value') != null ? prop.get('current_value') + ' €' : 'Consultar'}">— €</div>
+                <div class="text-sm text-blue-200 mt-1" th:if="${prop.get('rental_income')}" th:text="'o ' + ${prop.get('rental_income')} + ' €/mes alquiler'">—</div>
+                <div class="text-xs text-blue-300 mt-3 flex items-center justify-center gap-3">
+                    <span th:if="${prop.get('area_m2')}"><strong th:text="${prop.get('area_m2')}">—</strong> m²</span>
+                    <span th:if="${prop.get('bedrooms')}"><strong th:text="${prop.get('bedrooms')}">—</strong> hab</span>
+                    <span th:if="${prop.get('bathrooms')}"><strong th:text="${prop.get('bathrooms')}">—</strong> baños</span>
+                </div>
+            </div>
+
+            <div class="mt-4 text-xs text-blue-200 space-y-0.5">
+                <div th:if="${profile.get('contact_phone')}"> <span th:text="${profile.get('contact_phone')}">tel</span></div>
+                <div th:if="${profile.get('contact_email')}"> <span th:text="${profile.get('contact_email')}">email</span></div>
+                <div class="font-mono text-[10px] mt-2 opacity-60" th:text="${prop.get('reference')}">REF</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

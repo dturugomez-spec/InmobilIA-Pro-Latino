@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comparador CCAA</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ═══ Hero ═══ -->
+    <div class="audit-hero" style="background:linear-gradient(135deg,#1a3a52 0%,#0e6e6e 50%,#3a8e2e 100%)">
+        <div class="audit-hero-left">
+            <div class="audit-hero-tag"> FISCAL + MERCADO · 19 CCAA</div>
+            <h2 class="audit-hero-title">Comparador por Comunidad Autonoma</h2>
+            <p class="audit-hero-desc">
+                Vista unica que cruza <b>fiscalidad real</b> (ITP, AJD, IRPF autonomico) con
+                <b>datos de mercado</b> (yield neto, €/m², zona tensionada).
+                Nadie en el mercado integra ambos lados.
+            </p>
+            <div class="audit-hero-meta">
+                <span> Fuente fiscal: Ministerio de Hacienda</span>
+                <span th:if="${ipvYoY != null}"> IPV YoY: <b th:text="${#numbers.formatDecimal(ipvYoY,1,2) + '%'}">—</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ KPIs resumen ═══ -->
+    <div class="kpi-grid" th:if="${resumen != null}">
+        <div class="kpi-card">
+            <div class="kpi-label">CCAA + provincias</div>
+            <div class="kpi-value" th:text="${resumen.total}">—</div>
+            <div class="kpi-hint">17 CCAA + Ceuta + Melilla</div>
+        </div>
+        <div class="kpi-card tone-err">
+            <div class="kpi-label">Con zona tensionada</div>
+            <div class="kpi-value" th:text="${resumen.conZonaTensionada}">—</div>
+            <div class="kpi-hint">Aplica Ley 12/2023</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">ITP medio</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(resumen.itpMedio,1,1) + '%'}">—</div>
+            <div class="kpi-hint">
+                Min: <b th:text="${#numbers.formatDecimal(resumen.itpMin,1,1) + '%'}">—</b>
+                · Max: <b th:text="${#numbers.formatDecimal(resumen.itpMax,1,1) + '%'}">—</b>
+            </div>
+        </div>
+        <div class="kpi-card tone-ok">
+            <div class="kpi-label">Yield neto medio</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(resumen.yieldMedio,1,2) + '%'}">—</div>
+            <div class="kpi-hint">
+                Top: <b th:text="${#numbers.formatDecimal(resumen.yieldMax,1,2) + '%'}">—</b>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Selector orden ═══ -->
+    <section class="form-card">
+        <div class="news-head">
+            <h3 style="margin:0"> Ranking comparativo</h3>
+            <span class="news-sub">Reordena segun tu objetivo de inversion</span>
+        </div>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem">
+            <a href="?orderBy=yieldNeto" class="btn btn-ghost"
+               th:classappend="${orderBy == 'yieldNeto'} ? 'btn-primary'"> Yield neto</a>
+            <a href="?orderBy=yieldBruto" class="btn btn-ghost"
+               th:classappend="${orderBy == 'yieldBruto'} ? 'btn-primary'"> Yield bruto</a>
+            <a href="?orderBy=itp" class="btn btn-ghost"
+               th:classappend="${orderBy == 'itp'} ? 'btn-primary'"> ITP (menor)</a>
+            <a href="?orderBy=rentaM2" class="btn btn-ghost"
+               th:classappend="${orderBy == 'rentaM2'} ? 'btn-primary'"> Renta €/m²</a>
+            <a href="?orderBy=precioM2" class="btn btn-ghost"
+               th:classappend="${orderBy == 'precioM2'} ? 'btn-primary'"> Precio compra €/m²</a>
+        </div>
+
+        <div style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Comunidad</th>
+                        <th class="num">ITP</th>
+                        <th class="num">AJD</th>
+                        <th class="num">€/m² compra</th>
+                        <th class="num">€/m² alquiler</th>
+                        <th class="num">Yield bruto</th>
+                        <th class="num">Yield neto</th>
+                        <th>Zona tensionada</th>
+                        <th>Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r, it : ${rows}">
+                        <td th:text="${it.index + 1}">1</td>
+                        <td><span th:text="${r.icon()}"></span> <b th:text="${r.ccaa()}">—</b></td>
+                        <td class="num" th:text="${#numbers.formatDecimal(r.itpPct(),1,1) + '%'}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(r.ajdPct(),1,2) + '%'}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(r.precioM2Compra(),1,'POINT',0,'COMMA')}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(r.rentaM2Mes(),1,2)}">—</td>
+                        <td class="num" th:text="${#numbers.formatDecimal(r.yieldBruto(),1,2) + '%'}">—</td>
+                        <td class="num"><b th:text="${#numbers.formatDecimal(r.yieldNeto(),1,2) + '%'}">—</b></td>
+                        <td>
+                            <span class="pill"
+                                  th:style="${r.zonaTensionada()} ? 'background:#EE5D50' : 'background:#05CD99'"
+                                  th:text="${r.zonaTensionada() ? 'SI' : 'NO'}">—</span>
+                        </td>
+                        <td><small th:text="${r.veredicto()}">—</small></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ═══ Detalle por CCAA ═══ -->
+    <section class="form-card">
+        <h3 style="margin-top:0"> Fichas fiscales detalladas</h3>
+        <div class="news-grid">
+            <div th:each="r : ${rows}" class="news-card" style="cursor:default">
+                <div class="news-card-head">
+                    <span class="news-source">
+                        <span th:text="${r.icon()}"></span>
+                        <b th:text="${r.ccaa()}">—</b>
+                    </span>
+                    <span class="news-cat" th:text="${r.zonaTensionada() ? ' Tensionada' : ' Libre'}"
+                          th:style="${r.zonaTensionada()} ? 'background:#EE5D50;color:#fff' : 'background:#05CD99;color:#fff'">—</span>
+                </div>
+                <div class="news-title" th:text="${r.veredicto()}">—</div>
+                <div class="news-summary" th:text="${r.fiscalidadNota()}">—</div>
+                <div class="news-foot">
+                    <span class="mono">ITP <b th:text="${#numbers.formatDecimal(r.itpPct(),1,1)} + '%'">—</b></span>
+                    <span class="mono">Yield neto <b th:text="${#numbers.formatDecimal(r.yieldNeto(),1,2)} + '%'">—</b></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Enlaces oficiales ═══ -->
+    <div th:replace="~{fragments/official-links :: panel('fiscal,zona,mercado,vivienda,ipv')}"></div>
+
+</div>
+</body>
+</html>

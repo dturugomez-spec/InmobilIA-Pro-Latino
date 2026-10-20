@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Lead 360º</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div x-data="{ tab: 'datos' }">
+
+        <!-- ═══════════ HEADER ═══════════ -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-5">
+            <div class="bg-gradient-to-br from-cyan-600 via-brand-700 to-brand-950 p-6 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+                <div class="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-cyan-400/20 blur-3xl"></div>
+                <div class="relative flex items-start gap-5">
+                    <div class="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0"
+                         th:text="${lead.get('nombre') != null ? #strings.toUpperCase(#strings.substring(lead.get('nombre'), 0, 1)) : 'L'}">L</div>
+                    <div class="flex-1 min-w-0 text-white">
+                        <div class="flex items-center gap-2 text-white/70 text-xs uppercase tracking-wider font-semibold mb-1">
+                            <i data-lucide="briefcase" class="h-3.5 w-3.5"></i>
+                            <span>Lead comercial</span>
+                            <span th:if="${lead.get('etapa')}" th:text="${lead.get('etapa')}"
+                                  class="ml-2 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur text-[10px] font-bold">Etapa</span>
+                            <span th:if="${lead.get('origen')}" th:text="${lead.get('origen')}"
+                                  class="px-2 py-0.5 rounded-full bg-white/10 backdrop-blur text-[10px] font-medium">Origen</span>
+                        </div>
+                        <h2 class="text-2xl font-bold tracking-tight" th:text="${lead.get('nombre')}">Nombre</h2>
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3 text-sm text-white/80">
+                            <span class="flex items-center gap-1.5" th:if="${lead.get('email')}">
+                                <i data-lucide="mail" class="h-3.5 w-3.5"></i>
+                                <span th:text="${lead.get('email')}">email</span>
+                            </span>
+                            <span class="flex items-center gap-1.5" th:if="${lead.get('telefono')}">
+                                <i data-lucide="phone" class="h-3.5 w-3.5"></i>
+                                <span th:text="${lead.get('telefono')}">tel</span>
+                            </span>
+                            <span class="flex items-center gap-1.5" th:if="${lead.get('zona')}">
+                                <i data-lucide="map-pin" class="h-3.5 w-3.5"></i>
+                                <span th:text="${lead.get('zona')}">zona</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 flex-shrink-0">
+                        <a th:href="@{|/crud/leads/${lead.get('id')}/edit|}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur ring-1 ring-white/20 text-white text-sm font-medium transition-colors">
+                            <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                            <span>Editar</span>
+                        </a>
+                        <a href="/crud/leads"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i>
+                            <span>Volver</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200 dark:divide-neutral-800 border-t border-slate-200 dark:border-neutral-800">
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Presupuesto</div>
+                    <div class="text-base font-bold font-mono mt-0.5" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' €' : '—'}">— €</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Score</div>
+                    <div class="text-base font-bold font-mono mt-0.5"
+                         th:classappend="${lead.get('score') != null and lead.get('score') >= 70} ? 'text-emerald-600' : (${lead.get('score') != null and lead.get('score') >= 40} ? 'text-amber-600' : '')"
+                         th:text="${lead.get('score') != null ? lead.get('score') + '/100' : '—'}">—/100</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Visitas</div>
+                    <div class="text-base font-bold font-mono mt-0.5" th:text="${visitas.size()}">0</div>
+                </div>
+                <div class="p-4">
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Próx. seguim.</div>
+                    <div class="text-sm font-bold font-mono mt-0.5" th:text="${lead.get('next_followup') != null ? #strings.substring(lead.get('next_followup'),0,10) : '—'}">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="border-b border-slate-200 dark:border-neutral-800 mb-5">
+            <nav class="flex gap-1 overflow-x-auto scroll-thin -mb-px">
+                <button @click="tab = 'datos'" :class="tab === 'datos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'" class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="user" class="h-4 w-4"></i> Datos
+                </button>
+                <button @click="tab = 'visitas'" :class="tab === 'visitas' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'" class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i> Visitas
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${visitas.size()}">0</span>
+                </button>
+                <button @click="tab = 'oportunidades'" :class="tab === 'oportunidades' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'" class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="target" class="h-4 w-4"></i> Oportunidades
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${oportunidades.size()}">0</span>
+                </button>
+                <button @click="tab = 'eventos'" :class="tab === 'eventos' ? 'border-brand-700 text-brand-800 dark:text-brand-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'" class="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap">
+                    <i data-lucide="calendar" class="h-4 w-4"></i> Eventos
+                    <span class="text-[10px] font-mono px-1.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500" th:text="${eventos.size()}">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB: DATOS -->
+        <div x-show="tab === 'datos'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="user" class="h-4 w-4 text-brand-600"></i> Contacto</h3>
+                <dl class="space-y-2.5 text-sm">
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Nombre</dt><dd class="font-medium" th:text="${lead.get('nombre') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Email</dt><dd th:text="${lead.get('email') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Teléfono</dt><dd class="font-mono" th:text="${lead.get('telefono') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Origen</dt><dd th:text="${lead.get('origen') ?: '—'}">—</dd></div>
+                </dl>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="target" class="h-4 w-4 text-brand-600"></i> Interés comercial</h3>
+                <dl class="space-y-2.5 text-sm">
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Etapa</dt><dd class="font-medium" th:text="${lead.get('etapa') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Tipo activo</dt><dd th:text="${lead.get('tipo_activo') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Zona</dt><dd th:text="${lead.get('zona') ?: '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Presupuesto</dt><dd class="font-mono font-semibold" th:text="${lead.get('presupuesto') != null ? lead.get('presupuesto') + ' €' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Score</dt><dd class="font-mono" th:text="${lead.get('score') != null ? lead.get('score') + '/100' : '—'}">—</dd></div>
+                    <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-neutral-400">Próx. seguim.</dt><dd class="font-mono" th:text="${lead.get('next_followup') != null ? #strings.substring(lead.get('next_followup'),0,10) : '—'}">—</dd></div>
+                </dl>
+            </div>
+            <div class="md:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${lead.get('interes')}">
+                <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"><i data-lucide="search" class="h-4 w-4 text-brand-600"></i> Lo que busca</h3>
+                <p class="text-sm text-slate-700 dark:text-slate-300" th:text="${lead.get('interes')}">—</p>
+            </div>
+            <div class="md:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" th:if="${lead.get('notas')}">
+                <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"><i data-lucide="sticky-note" class="h-4 w-4 text-brand-600"></i> Notas</h3>
+                <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line" th:text="${lead.get('notas')}">—</p>
+            </div>
+        </div>
+
+        <!-- TAB: VISITAS -->
+        <div x-show="tab === 'visitas'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${visitas.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="map-pin" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin visitas concertadas</p>
+            </div>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800" th:if="${!visitas.isEmpty()}">
+                <li th:each="v : ${visitas}" class="px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/40 flex items-center gap-4">
+                    <div class="text-center flex-shrink-0">
+                        <div class="font-mono text-xs text-slate-500" th:text="${v.get('date') != null ? #strings.substring(v.get('date'),0,10) : '—'}">—</div>
+                        <div class="font-mono text-xs font-bold" th:text="${v.get('time') ?: ''}">—</div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium" th:text="${v.get('property_name')}">propiedad</div>
+                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${v.get('feedback') ?: '—'}">notas</div>
+                    </div>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300" th:text="${v.get('status') ?: 'Pendiente'}">estado</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- TAB: OPORTUNIDADES -->
+        <div x-show="tab === 'oportunidades'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${oportunidades.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="target" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin oportunidades vinculadas</p>
+            </div>
+            <table class="w-full text-sm" th:if="${!oportunidades.isEmpty()}">
+                <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                    <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                        <th class="text-left font-semibold px-4 py-3">Propiedad</th>
+                        <th class="text-left font-semibold px-4 py-3">Tipo</th>
+                        <th class="text-right font-semibold px-4 py-3">Precio</th>
+                        <th class="text-left font-semibold px-4 py-3">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="o : ${oportunidades}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                        <td class="px-4 py-3 font-medium" th:text="${o.get('property_name')}">—</td>
+                        <td class="px-4 py-3" th:text="${o.get('type') ?: '—'}">—</td>
+                        <td class="px-4 py-3 font-mono text-right font-semibold" th:text="${o.get('price') != null ? o.get('price') + ' €' : '—'}">—</td>
+                        <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800" th:text="${o.get('status') ?: '—'}">—</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TAB: EVENTOS -->
+        <div x-show="tab === 'eventos'" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden" x-cloak>
+            <div th:if="${eventos.isEmpty()}" class="p-12 text-center">
+                <div class="inline-flex h-12 w-12 rounded-xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3"><i data-lucide="calendar" class="h-5 w-5 text-slate-400"></i></div>
+                <p class="text-sm text-slate-500 dark:text-neutral-400">Sin eventos registrados</p>
+            </div>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800" th:if="${!eventos.isEmpty()}">
+                <li th:each="e : ${eventos}" class="px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/40 flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="calendar" class="h-4 w-4 text-brand-700 dark:text-brand-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm" th:text="${e.get('title')}">evento</div>
+                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${e.get('description') ?: '—'}">desc</div>
+                    </div>
+                    <div class="font-mono text-xs text-slate-500 text-right">
+                        <div th:text="${e.get('date') != null ? #strings.substring(e.get('date'),0,10) : '—'}">—</div>
+                        <div class="font-bold" th:text="${e.get('time') ?: ''}">—</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

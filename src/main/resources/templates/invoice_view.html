@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Factura</title>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .invoice-paper { box-shadow: none !important; ring-width: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Toolbar (no imprime) -->
+    <div class="no-print flex items-center gap-2 mb-4">
+        <a href="/invoices" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i> Volver al listado
+        </a>
+        <a th:href="@{|/invoices/${inv.get('id')}/edit|}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="pencil" class="h-4 w-4"></i> Editar
+        </a>
+        <button onclick="window.print()" class="ml-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="printer" class="h-4 w-4"></i> Imprimir / PDF
+        </button>
+    </div>
+
+    <!-- Factura -->
+    <div class="invoice-paper max-w-4xl mx-auto bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-xl overflow-hidden shadow-card-lg">
+
+        <!-- Cabecera factura -->
+        <div class="px-10 py-8 border-b border-slate-200 dark:border-neutral-800 bg-gradient-to-br from-slate-50 to-white dark:from-neutral-800/50 dark:to-neutral-900">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+                <div>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-700 to-brand-900 flex items-center justify-center">
+                            <i data-lucide="building-2" class="h-5 w-5 text-white"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">InmobilIA<span class="text-brand-700 dark:text-brand-500"> Pro</span></span>
+                    </div>
+                    <div class="text-xs text-slate-500 dark:text-neutral-400 space-y-0.5">
+                        <div class="font-semibold text-slate-700 dark:text-slate-300" th:text="${inv.get('emisor_nombre')}">Emisor</div>
+                        <div th:if="${inv.get('emisor_nif')}">NIF/CIF: <span class="font-mono" th:text="${inv.get('emisor_nif')}">B12345678</span></div>
+                        <div th:text="${inv.get('emisor_direccion')}">Dirección</div>
+                        <div th:text="${inv.get('emisor_email')}">email@email.com</div>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500">Factura</div>
+                    <div class="text-3xl font-bold font-mono mt-1" th:text="${inv.get('full_number') ?: (inv.get('serie') + '/' + inv.get('numero'))}">A/00001</div>
+                    <div class="mt-3 inline-flex items-center gap-1.5">
+                        <span th:text="${inv.get('status')}"
+                              th:classappend="${
+                                #strings.equalsIgnoreCase(inv.get('status'),'Pagada') ? 'bg-emerald-100 text-emerald-700' :
+                                (#strings.equalsIgnoreCase(inv.get('status'),'Vencida') ? 'bg-red-100 text-red-700' :
+                                (#strings.equalsIgnoreCase(inv.get('status'),'Anulada') ? 'bg-slate-200 text-slate-600' :
+                                'bg-blue-100 text-blue-700'))}"
+                              class="text-xs font-bold px-2.5 py-1 rounded-full">Estado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos factura/cliente -->
+        <div class="px-10 py-6 grid grid-cols-2 gap-8 border-b border-slate-200 dark:border-neutral-800">
+            <div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-2">Facturado a</div>
+                <div class="font-semibold text-base" th:text="${inv.get('cliente_nombre')}">Cliente</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
+                    <div th:if="${inv.get('cliente_nif')}">NIF: <span class="font-mono" th:text="${inv.get('cliente_nif')}">12345678Z</span></div>
+                    <div th:text="${inv.get('cliente_direccion')}">Dirección</div>
+                    <div th:text="${inv.get('cliente_email')}">email</div>
+                </div>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-2">Información</div>
+                <dl class="space-y-1 text-sm">
+                    <div class="flex justify-between"><dt class="text-slate-500 dark:text-neutral-400">Fecha emisión</dt><dd class="font-mono" th:text="${inv.get('fecha') != null ? #strings.substring(inv.get('fecha'),0,10) : '—'}">—</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500 dark:text-neutral-400">Vencimiento</dt><dd class="font-mono" th:text="${inv.get('vencimiento') != null ? #strings.substring(inv.get('vencimiento'),0,10) : '—'}">—</dd></div>
+                    <div class="flex justify-between" th:if="${inv.get('metodo_pago')}"><dt class="text-slate-500 dark:text-neutral-400">Forma de pago</dt><dd th:text="${inv.get('metodo_pago')}">Transferencia</dd></div>
+                    <div class="flex justify-between" th:if="${inv.get('property_name')}"><dt class="text-slate-500 dark:text-neutral-400">Inmueble</dt><dd class="truncate max-w-[200px]" th:text="${inv.get('property_name')}">—</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Concepto -->
+        <div class="px-10 py-6">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 border-b border-slate-200 dark:border-neutral-800">
+                        <th class="text-left font-bold py-2.5">Concepto</th>
+                        <th class="text-right font-bold py-2.5 w-32">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-slate-100 dark:border-neutral-800">
+                        <td class="py-3.5 text-slate-700 dark:text-slate-300" th:text="${inv.get('concepto') ?: 'Servicio facturado'}">Concepto</td>
+                        <td class="py-3.5 font-mono text-right font-medium" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Resumen -->
+            <div class="mt-6 ml-auto max-w-xs">
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-slate-600 dark:text-slate-400">Base imponible</span><span class="font-mono" th:text="${inv.get('base_imponible') != null ? #numbers.formatDecimal(inv.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</span></div>
+                    <div class="flex justify-between" th:if="${inv.get('iva_amount') != null and inv.get('iva_amount') > 0}">
+                        <span class="text-slate-600 dark:text-slate-400">IVA (<span th:text="${inv.get('iva_pct') + '%'}">21%</span>)</span>
+                        <span class="font-mono text-emerald-700 dark:text-emerald-400" th:text="${'+ ' + #numbers.formatDecimal(inv.get('iva_amount'),0,'POINT',2,'COMMA') + ' €'}">+ — €</span>
+                    </div>
+                    <div class="flex justify-between" th:if="${inv.get('irpf_amount') != null and inv.get('irpf_amount') > 0}">
+                        <span class="text-slate-600 dark:text-slate-400">Retención IRPF (<span th:text="${inv.get('irpf_pct') + '%'}">19%</span>)</span>
+                        <span class="font-mono text-red-600" th:text="${'- ' + #numbers.formatDecimal(inv.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €'}">- — €</span>
+                    </div>
+                    <div class="flex justify-between pt-3 border-t-2 border-slate-300 dark:border-neutral-700">
+                        <span class="text-base font-bold">TOTAL</span>
+                        <span class="text-xl font-mono font-bold" th:text="${inv.get('total') != null ? #numbers.formatDecimal(inv.get('total'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forma de pago / IBAN -->
+        <div class="px-10 py-5 bg-slate-50 dark:bg-neutral-800/40 border-t border-slate-200 dark:border-neutral-800" th:if="${inv.get('emisor_iban')}">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-1">Cuenta para abono</div>
+            <div class="font-mono text-base font-semibold tracking-wider" th:text="${inv.get('emisor_iban')}">ES00 0000 0000 0000 0000 0000</div>
+        </div>
+
+        <!-- Notas -->
+        <div class="px-10 py-5 bg-slate-50 dark:bg-neutral-800/40 border-t border-slate-200 dark:border-neutral-800" th:if="${inv.get('notas')}">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-500 mb-1">Notas</div>
+            <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line" th:text="${inv.get('notas')}">—</p>
+        </div>
+
+        <!-- Footer legal -->
+        <div class="px-10 py-4 text-center text-[10px] text-slate-400 dark:text-neutral-500 border-t border-slate-200 dark:border-neutral-800">
+            Factura emitida según normativa española. Conserve este documento durante el período legal de prescripción (4 años).
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

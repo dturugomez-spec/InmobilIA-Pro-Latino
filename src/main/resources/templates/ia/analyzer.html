@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Analyzer IA</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/analyzer" class="form-card">
+        <h3>Analizador IA de operaciones</h3>
+        <div class="form-grid cols-2">
+            <label class="full">Contexto / descripcion del activo
+                <textarea name="contexto" rows="3" required th:text="${contexto}"></textarea>
+            </label>
+            <label>Precio <input type="number" step="0.01" name="precio" required th:value="${precio}"></label>
+            <label>Renta mensual <input type="number" step="0.01" name="rentaMensual" required th:value="${rentaMensual}"></label>
+            <label class="full">Notas adicionales
+                <textarea name="notas" rows="2"></textarea>
+            </label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Analizar con IA</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}">
+        <pre th:text="${result}">respuesta</pre>
+    </div>
+</div>
+</body>
+</html>

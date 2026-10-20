@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Buscar</title></head>
+<body>
+<div layout:fragment="content">
+
+    <form action="/search" method="get" class="mb-6">
+        <div class="relative max-w-2xl mx-auto">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none"></i>
+            <input type="search" name="q" th:value="${q}" autofocus
+                   placeholder="Busca en propiedades, inquilinos, leads, facturas..."
+                   class="w-full pl-12 pr-4 py-3 text-base bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 shadow-card">
+        </div>
+    </form>
+
+    <div th:if="${results != null}" class="max-w-2xl mx-auto">
+        <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3" th:text="|${results.size()} resultados para «${q}»|">resultados</p>
+
+        <div class="space-y-2">
+            <a th:each="r : ${results}" th:href="${r.url}"
+               class="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:ring-brand-300 hover:shadow-card-lg transition-all">
+                <span class="text-2xl flex-shrink-0" th:text="${r.icon}"></span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400" th:text="${r.type}">tipo</span>
+                    </div>
+                    <div class="font-semibold truncate" th:text="${r.title}">título</div>
+                    <div class="text-xs text-slate-500 dark:text-neutral-400 truncate" th:text="${r.subtitle}">subtitulo</div>
+                </div>
+                <i data-lucide="arrow-right" class="h-4 w-4 text-slate-400 flex-shrink-0"></i>
+            </a>
+        </div>
+
+        <div th:if="${results.isEmpty()}" class="text-center py-16">
+            <div class="inline-flex h-14 w-14 rounded-2xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3">
+                <i data-lucide="search-x" class="h-6 w-6 text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Sin resultados</h3>
+            <p class="text-sm text-slate-500 dark:text-neutral-400">Prueba con otras palabras o revisa la ortografía.</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

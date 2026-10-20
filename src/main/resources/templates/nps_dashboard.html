@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>NPS</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="thumbs-up" class="h-6 w-6"></i> NPS - Net Promoter Score</h2>
+    <p class="text-sm text-white/80 mt-1">Mide satisfacción del cliente con la pregunta de oro.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-5">
+        <p class="text-xs uppercase opacity-80">NPS Score</p>
+        <p class="text-3xl font-bold mt-1" th:text="${#numbers.formatDecimal(nps, 1, 0)}">0</p>
+        <p class="text-[10px] opacity-70 mt-1">(de -100 a +100)</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Promotores</p>
+        <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${promotores}">0</p>
+    </div>
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700"> Pasivos</p>
+        <p class="text-xl font-bold mt-1 text-amber-700" th:text="${pasivos}">0</p>
+    </div>
+    <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
+        <p class="text-[10px] uppercase text-red-700"> Detractores</p>
+        <p class="text-xl font-bold mt-1 text-red-700" th:text="${detractores}">0</p>
+    </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <form method="post" action="/nps/solicitar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+        <h3 class="font-semibold text-sm"> Solicitar NPS</h3>
+        <input type="text" name="nombre" required placeholder="Cliente" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="email" name="email" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded">
+        <button class="w-full px-4 py-2 rounded bg-emerald-700 text-white text-sm"> Enviar</button>
+    </form>
+    <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-semibold text-sm mb-3"> Respuestas</h3>
+        <ul class="space-y-2 max-h-96 overflow-y-auto">
+            <li th:each="r : ${respuestas}" class="p-3 rounded bg-slate-50 dark:bg-neutral-800/50">
+                <div class="flex justify-between">
+                    <span class="font-semibold text-sm" th:text="${r.get('cliente_nombre')}">—</span>
+                    <span class="font-bold text-lg" th:classappend="${r.get('puntuacion') >= 9 ? 'text-emerald-700' : (r.get('puntuacion') >= 7 ? 'text-amber-700' : 'text-red-700')}" th:text="${r.get('puntuacion')} + '/10'">—</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-1" th:if="${r.get('comentario')}" th:text="${r.get('comentario')}">—</p>
+            </li>
+            <li th:if="${respuestas.isEmpty()}" class="text-xs text-slate-400 italic text-center py-6">Sin respuestas aún</li>
+        </ul>
+    </div>
+</div>
+</div></body></html>

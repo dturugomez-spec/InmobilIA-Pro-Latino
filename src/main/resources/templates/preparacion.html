@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Preparador de visitas IA</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="clipboard-check" class="h-6 w-6"></i> Preparador de visitas IA
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Antes de cada visita, tu agente te prepara la chuleta: quién es el cliente, por qué le encaja el piso, qué objeciones va a poner y cómo rebatirlas. Llega a la visita con los deberes hechos.</p>
+</div>
+
+<div th:if="${#lists.isEmpty(visitas)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-10 text-center">
+    <i data-lucide="calendar-check" class="h-10 w-10 mx-auto text-slate-300"></i>
+    <p class="mt-3 font-semibold text-slate-600">No hay visitas próximas</p>
+    <p class="text-sm text-slate-400 mt-1">Cuando programes visitas aparecerán aquí para prepararlas con IA.</p>
+</div>
+
+<div class="space-y-3">
+    <div th:each="v : ${visitas}" th:data-id="${v.get('id')}"
+         class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="prep-head flex items-start justify-between gap-3 flex-wrap">
+            <div class="min-w-0">
+                <p class="font-bold text-slate-900 dark:text-white" th:text="${v.get('visitante_nombre') ?: 'Cliente'}">—</p>
+                <p class="text-sm text-slate-500" th:text="${v.get('prop_nombre') + (v.get('prop_ciudad') != '' ? ' · ' + v.get('prop_ciudad') : '')}">—</p>
+                <p class="text-xs text-violet-600 font-mono mt-1" th:if="${v.get('fecha_inicio')}"
+                   th:text="' ' + ${#strings.replace(#strings.substring(v.get('fecha_inicio'), 0, 16), 'T', '  ')}">—</p>
+            </div>
+            <button type="button" onclick="prepararVisita(this)"
+                    class="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold flex items-center gap-1.5 flex-shrink-0">
+                <i data-lucide="sparkles" class="h-4 w-4"></i> Preparar con IA
+            </button>
+        </div>
+        <div class="prep-result mt-4 hidden">
+            <div class="bg-violet-50 dark:bg-violet-900/20 border-l-4 border-violet-500 rounded-lg p-4 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line prep-text"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function prepararVisita(btn) {
+    const card = btn.closest('[data-id]');
+    const id = card.dataset.id;
+    const box = card.querySelector('.prep-result');
+    const txt = card.querySelector('.prep-text');
+    btn.disabled = true; btn.innerHTML = '⌛ Preparando...';
+    box.classList.remove('hidden');
+    txt.textContent = 'Analizando el cliente y el inmueble...';
+    try {
+        const res = await fetch('/preparacion/' + id, {method:'POST'});
+        const d = await res.json();
+        txt.textContent = d.prep || 'No se pudo generar.';
+        btn.innerHTML = '↻ Regenerar'; btn.disabled = false;
+    } catch(e) {
+        txt.textContent = 'Error de conexión.';
+        btn.innerHTML = '↻ Reintentar'; btn.disabled = false;
+    }
+}
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+
+</div></body></html>

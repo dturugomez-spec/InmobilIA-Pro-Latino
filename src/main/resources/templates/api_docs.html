@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>API Docs - InmobilIA Pro</title>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-slate-50 p-8">
+<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow p-8">
+    <h1 class="text-3xl font-bold mb-2"> InmobilIA Pro REST API v2</h1>
+    <p class="text-slate-600 mb-6">Documentación de la API pública. Genera tu API key en <a href="/api-keys" class="text-blue-600 underline">/api-keys</a>.</p>
+
+    <div class="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
+        <p class="text-sm font-semibold mb-1"> Autenticación</p>
+        <pre class="text-xs font-mono bg-slate-900 text-emerald-400 p-2 rounded">Authorization: Bearer ipro_TU_TOKEN</pre>
+    </div>
+
+    <h2 class="text-xl font-bold mt-6 mb-3">Endpoints</h2>
+    <div class="space-y-4">
+        <div class="border-l-4 border-emerald-500 pl-4 py-2">
+            <p><span class="text-emerald-700 font-bold">GET</span> <code class="text-sm">/api/v2/properties</code></p>
+            <p class="text-xs text-slate-600">Lista propiedades. Query: <code>limit</code>, <code>tipo</code></p>
+        </div>
+        <div class="border-l-4 border-blue-500 pl-4 py-2">
+            <p><span class="text-blue-700 font-bold">POST</span> <code class="text-sm">/api/v2/leads</code></p>
+            <p class="text-xs text-slate-600">Crea un lead. Body: <code>{"nombre":"...","email":"...","telefono":"..."}</code></p>
+        </div>
+        <div class="border-l-4 border-emerald-500 pl-4 py-2">
+            <p><span class="text-emerald-700 font-bold">GET</span> <code class="text-sm">/api/v2/stats</code></p>
+            <p class="text-xs text-slate-600">Estadísticas de la cuenta.</p>
+        </div>
+        <div class="border-l-4 border-emerald-500 pl-4 py-2">
+            <p><span class="text-emerald-700 font-bold">GET</span> <code class="text-sm">/api/v2/openapi.json</code></p>
+            <p class="text-xs text-slate-600">Especificación OpenAPI 3.0 completa.</p>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-bold mt-6 mb-3"> Ejemplo</h2>
+    <pre class="bg-slate-900 text-emerald-400 p-4 rounded text-xs overflow-x-auto">
+curl -X POST https://inmobiliapro.es/api/v2/leads \
+  -H "Authorization: Bearer ipro_xxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Juan García","email":"juan@example.com","telefono":"600000000"}'
+    </pre>
+</div>
+</body></html>

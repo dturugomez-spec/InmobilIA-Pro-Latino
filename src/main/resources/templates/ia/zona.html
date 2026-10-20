@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Analisis de zona</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/ia/zona" class="form-card">
+        <h3>Analisis de zona y mercado</h3>
+        <div class="form-grid cols-2">
+            <label>Zona (barrio, distrito o ciudad) <input type="text" name="zona" required th:value="${zona}"></label>
+            <label>Tipo de activo
+                <select name="tipoActivo">
+                    <option>Residencial</option><option>Oficinas</option>
+                    <option>Retail</option><option>Logistico</option>
+                    <option>Turistico</option><option>Living for rent</option>
+                </select>
+            </label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Analizar zona</button></div>
+    </form>
+    <div class="ai-result" th:if="${result != null}"><pre th:text="${result}"></pre></div>
+
+    <div th:replace="~{fragments/official-links :: panel('mercado,zona,ipv,alquiler,europa,internacional')}"></div>
+</div>
+</body>
+</html>

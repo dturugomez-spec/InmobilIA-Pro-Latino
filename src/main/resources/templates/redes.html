@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Posts para redes</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-pink-600 to-violet-800 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="instagram" class="h-6 w-6"></i> Posts para redes sociales
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Convierte cada inmueble en un post listo para publicar: texto con gancho y hashtags escrito por IA, y una tarjeta de marca descargable como imagen. Deja de perder tiempo con el copy.</p>
+</div>
+
+<div th:if="${#lists.isEmpty(propiedades)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-10 text-center">
+    <i data-lucide="instagram" class="h-10 w-10 mx-auto text-slate-300"></i>
+    <p class="mt-3 font-semibold text-slate-600">No hay inmuebles en la cartera</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div th:each="p : ${propiedades}" th:data-id="${p.get('id')}"
+         th:with="precio=${p.get('current_value') ?: (p.get('purchase_price') ?: 0)}"
+         class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+
+        <!-- Tarjeta descargable -->
+        <div th:id="'postcard-' + ${p.get('id')}" class="relative rounded-xl overflow-hidden aspect-[4/5] bg-slate-900 text-white">
+            <img th:if="${p.get('featured_photo')}" th:src="${p.get('featured_photo')}" crossorigin="anonymous"
+                 class="absolute inset-0 w-full h-full object-cover" alt="">
+            <div th:unless="${p.get('featured_photo')}" class="absolute inset-0 bg-gradient-to-br from-violet-700 to-slate-900 flex items-center justify-center text-7xl"></div>
+            <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.1) 45%, rgba(0,0,0,.35) 100%)"></div>
+
+            <div class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white text-slate-900 font-extrabold text-lg"
+                 th:text="${#numbers.formatInteger(precio, 0, 'POINT')} + ' €'">—</div>
+
+            <div class="absolute bottom-0 inset-x-0 p-5">
+                <p class="text-2xl font-extrabold leading-tight" style="font-family:'Plus Jakarta Sans',sans-serif" th:text="${p.get('name') ?: p.get('address')}">—</p>
+                <p class="text-white/80 text-sm" th:text="${p.get('city')}">—</p>
+                <div class="flex gap-4 mt-2 text-sm">
+                    <span th:if="${p.get('bedrooms')}" th:text="' ' + ${#numbers.formatInteger(p.get('bedrooms'), 0)}">—</span>
+                    <span th:if="${p.get('bathrooms')}" th:text="' ' + ${#numbers.formatInteger(p.get('bathrooms'), 0)}">—</span>
+                    <span th:if="${p.get('area_m2')}" th:text="' ' + ${#numbers.formatInteger(p.get('area_m2'), 0)} + ' m²'">—</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-white/20 flex items-center gap-2">
+                    <img th:if="${branding.get('logo') != ''}" th:src="${branding.get('logo')}" crossorigin="anonymous" class="h-6 w-6 rounded object-cover" alt="">
+                    <span class="text-sm font-semibold" th:text="${branding.get('nombre')}">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+            <select class="js-red px-3 py-2 rounded-lg border-2 border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 text-sm">
+                <option value="instagram"> Instagram</option>
+                <option value="facebook"> Facebook</option>
+            </select>
+            <button type="button" onclick="generarTexto(this)" class="px-3 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="h-4 w-4"></i> Generar texto
+            </button>
+            <button type="button" onclick="descargar(this)" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-sm font-bold flex items-center gap-1.5">
+                <i data-lucide="download" class="h-4 w-4"></i> Descargar imagen
+            </button>
+        </div>
+
+        <!-- Caption generado -->
+        <div class="js-cap-box hidden mt-3" x-data="{copied:false}">
+            <div class="js-cap bg-slate-50 dark:bg-neutral-800 rounded-lg p-3 text-sm whitespace-pre-line text-slate-700 dark:text-slate-200"></div>
+            <button type="button" @click="navigator.clipboard.writeText($el.closest('.js-cap-box').querySelector('.js-cap').innerText); copied=true; setTimeout(()=>copied=false,1500)"
+                    class="mt-2 text-xs font-bold text-violet-600 hover:underline">
+                <span x-text="copied ? '¡Copiado!' : ' Copiar texto'"> Copiar texto</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+async function generarTexto(btn) {
+    const card = btn.closest('[data-id]');
+    const id = card.dataset.id;
+    const red = card.querySelector('.js-red').value;
+    const box = card.querySelector('.js-cap-box');
+    const cap = card.querySelector('.js-cap');
+    btn.disabled = true; btn.innerHTML = '⌛ Escribiendo...';
+    box.classList.remove('hidden'); cap.textContent = 'Redactando el post...';
+    try {
+        const res = await fetch('/redes/' + id + '/caption', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({red: red})
+        });
+        const d = await res.json();
+        cap.textContent = d.caption || 'No se pudo generar.';
+    } catch(e) { cap.textContent = 'Error de conexión.'; }
+    btn.disabled = false; btn.innerHTML = '↻ Regenerar';
+    if (window.lucide) lucide.createIcons();
+}
+async function descargar(btn) {
+    const card = btn.closest('[data-id]');
+    const node = document.getElementById('postcard-' + card.dataset.id);
+    btn.disabled = true;
+    try {
+        const canvas = await html2canvas(node, {useCORS:true, allowTaint:true, scale:2, backgroundColor:null});
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'inmobiliapro-post.png';
+        a.click();
+    } catch(e) { alert('No se pudo generar la imagen (puede que la foto no permita descarga). El texto sí puedes copiarlo.'); }
+    btn.disabled = false;
+}
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+
+</div></body></html>

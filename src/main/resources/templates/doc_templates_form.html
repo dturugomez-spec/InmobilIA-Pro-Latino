@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Editor de plantilla</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="file-edit" class="h-5 w-5"></i> Editor de plantilla
+        </h2>
+        <p class="text-xs text-white/70 mt-1">Usa variables como <code>{lead.nombre}</code> o <code>{%importe:propiedad.precio}</code> para autocompletar.</p>
+    </div>
+
+    <form method="post" action="/plantillas-doc/guardar" class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <div class="lg:col-span-3 space-y-4">
+            <input type="hidden" name="id" th:value="${plantilla.get('id') ?: ''}">
+
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Nombre *</label>
+                        <input type="text" name="nombre" required th:value="${plantilla.get('nombre')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Icono (emoji)</label>
+                        <input type="text" name="icono" maxlength="2" th:value="${plantilla.get('icono') ?: ''}" class="w-full px-3 py-2 text-2xl border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Descripción</label>
+                    <input type="text" name="descripcion" th:value="${plantilla.get('descripcion')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Categoría</label>
+                        <select name="categoria" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                            <option value="contrato_alquiler" th:selected="${plantilla.get('categoria') == 'contrato_alquiler'}"> Contrato alquiler</option>
+                            <option value="contrato_venta" th:selected="${plantilla.get('categoria') == 'contrato_venta'}"> Contrato venta</option>
+                            <option value="mandato" th:selected="${plantilla.get('categoria') == 'mandato'}"> Mandato</option>
+                            <option value="arras" th:selected="${plantilla.get('categoria') == 'arras'}"> Arras</option>
+                            <option value="reserva" th:selected="${plantilla.get('categoria') == 'reserva'}"> Reserva</option>
+                            <option value="anexo" th:selected="${plantilla.get('categoria') == 'anexo'}"> Anexo</option>
+                            <option value="comunicacion" th:selected="${plantilla.get('categoria') == 'comunicacion'}"> Comunicación</option>
+                            <option value="otros" th:selected="${plantilla.get('categoria') == 'otros'}">Otros</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" name="favorita" th:checked="${plantilla.get('favorita')}" class="rounded">
+                             Marcar como favorita
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor HTML -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold text-sm"> Contenido HTML</h3>
+                    <p class="text-[10px] text-slate-500">Variables disponibles → lateral derecho</p>
+                </div>
+                <textarea name="contenido_html" rows="22" required
+                    th:text="${plantilla.get('contenido_html')}"
+                    class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"
+                    placeholder="<h1>CONTRATO DE...</h1>&#10;<p>En {empresa.direccion}, a {hoy.completa}...</p>&#10;<p>D. {lead.nombre}, NIF {lead.dni}, ..."></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium mb-1">Notas de uso (opcional)</label>
+                <textarea name="notas_uso" rows="2" th:text="${plantilla.get('notas_uso')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <a href="/plantillas-doc" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-sm font-medium">
+                     Guardar plantilla
+                </button>
+            </div>
+        </div>
+
+        <!-- Lateral: Variables disponibles -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 text-xs">
+            <h3 class="font-semibold text-sm mb-2"> Variables disponibles</h3>
+            <p class="text-[10px] text-slate-500 mb-3">Click para copiar al portapapeles</p>
+
+            <div class="space-y-3">
+                <div>
+                    <p class="font-bold text-blue-700 mb-1"> Empresa</p>
+                    <div class="space-y-0.5">
+                        <button type="button" onclick="cp('{empresa.nombre}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{empresa.nombre}</button>
+                        <button type="button" onclick="cp('{empresa.telefono}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{empresa.telefono}</button>
+                        <button type="button" onclick="cp('{empresa.nif}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{empresa.nif}</button>
+                        <button type="button" onclick="cp('{empresa.direccion}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{empresa.direccion}</button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="font-bold text-purple-700 mb-1"> Lead/Cliente</p>
+                    <div class="space-y-0.5">
+                        <button type="button" onclick="cp('{lead.nombre}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{lead.nombre}</button>
+                        <button type="button" onclick="cp('{lead.dni}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{lead.dni}</button>
+                        <button type="button" onclick="cp('{lead.email}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{lead.email}</button>
+                        <button type="button" onclick="cp('{lead.telefono}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{lead.telefono}</button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="font-bold text-emerald-700 mb-1"> Propiedad</p>
+                    <div class="space-y-0.5">
+                        <button type="button" onclick="cp('{propiedad.direccion}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{propiedad.direccion}</button>
+                        <button type="button" onclick="cp('{%importe:propiedad.precio}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{%importe:propiedad.precio}</button>
+                        <button type="button" onclick="cp('{propiedad.metros_cuadrados}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{propiedad.metros_cuadrados}</button>
+                        <button type="button" onclick="cp('{propiedad.referencia_catastral}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{propiedad.referencia_catastral}</button>
+                        <button type="button" onclick="cp('{numero_en_letras:propiedad.precio}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{numero_en_letras:...}</button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="font-bold text-amber-700 mb-1"> Fechas</p>
+                    <div class="space-y-0.5">
+                        <button type="button" onclick="cp('{hoy}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{hoy}</button>
+                        <button type="button" onclick="cp('{hoy.completa}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{hoy.completa}</button>
+                        <button type="button" onclick="cp('{hoy.mes_letra}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{hoy.mes_letra}</button>
+                        <button type="button" onclick="cp('{hoy.anio}')" class="block w-full text-left font-mono text-[10px] hover:bg-slate-100 dark:hover:bg-neutral-800 px-1 rounded">{hoy.anio}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        function cp(text) {
+            navigator.clipboard.writeText(text);
+            if (window.toast) toast(text + ' copiado', 'ok');
+        }
+    </script>
+
+</div>
+</body>
+</html>

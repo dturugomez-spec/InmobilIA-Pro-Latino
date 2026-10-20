@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Newsletter</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-cyan-700 to-blue-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="mail" class="h-6 w-6"></i> Newsletter</h2>
+    <p class="text-sm text-white/80 mt-1"><span th:text="${confirmados}">0</span> suscriptores confirmados de <span th:text="${suscriptores.size()}">0</span> totales.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <form method="post" action="/newsletter/enviar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+        <h3 class="font-semibold text-sm"> Nueva newsletter</h3>
+        <input type="text" name="asunto" required placeholder="Asunto" class="w-full px-3 py-2 text-sm border rounded">
+        <textarea name="contenido" rows="12" required placeholder="<h1>Hola</h1>&#10;<p>Nuestras novedades este mes...</p>" class="w-full px-3 py-2 text-xs font-mono border rounded"></textarea>
+        <button class="w-full px-4 py-2 rounded bg-cyan-700 text-white text-sm font-medium"> Enviar a confirmados</button>
+    </form>
+
+    <div class="space-y-4">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Últimos envíos</h3>
+            <ul class="space-y-2 text-xs">
+                <li th:each="e : ${envios}" class="p-2 rounded bg-slate-50">
+                    <p class="font-semibold" th:text="${e.get('asunto')}">—</p>
+                    <p class="text-slate-500"><span th:text="${e.get('enviados')}">0</span> enviados · <span th:text="${#strings.substring(e.get('fecha_envio'), 0, 10)}">—</span></p>
+                </li>
+            </ul>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Suscriptores recientes</h3>
+            <ul class="space-y-1 text-xs max-h-64 overflow-y-auto">
+                <li th:each="s : ${suscriptores}" class="flex justify-between p-1.5">
+                    <span th:text="${s.get('email')}">—</span>
+                    <span th:if="${s.get('confirmado')}" class="text-emerald-600"></span>
+                    <span th:unless="${s.get('confirmado')}" class="text-amber-600">⏳</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div></body></html>

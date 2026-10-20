@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Health Score</title></head>
+<body>
+<div layout:fragment="content">
+    <section class="section">
+        <div class="health-wrap">
+            <div class="health-circle" th:style="|--score:${score}|">
+                <div class="health-num" th:text="${score} + '/100'">—</div>
+            </div>
+            <div class="health-dims">
+                <div class="health-dim" th:each="d : ${dims}">
+                    <div class="dim-label" th:text="${d.key}">dim</div>
+                    <div class="dim-bar"><div class="dim-fill" th:style="|width:${d.value * 5}%|"></div></div>
+                    <div class="dim-pts" th:text="${d.value} + '/20'">0/20</div>
+                </div>
+            </div>
+        </div>
+        <ul class="insights">
+            <li th:each="i : ${insights}" th:text="${i}">insight</li>
+        </ul>
+    </section>
+</div>
+</body>
+</html>

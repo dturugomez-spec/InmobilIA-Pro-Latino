@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Generar documento</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/plantillas-doc" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-3">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver a plantillas
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <span class="text-2xl" th:text="${plantilla.get('icono')}"></span>
+            <span th:text="${plantilla.get('nombre')}">—</span>
+        </h2>
+        <p class="text-xs text-white/70 mt-1" th:text="${plantilla.get('descripcion')}">—</p>
+    </div>
+
+    <form method="post" th:action="@{|/plantillas-doc/${plantilla.get('id')}/generar|}" x-data="{previewHtml: ''}" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <!-- Formulario de relleno -->
+        <div class="space-y-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <h3 class="font-semibold text-sm"> Selecciona las entidades</h3>
+                <p class="text-xs text-slate-500">Sus datos rellenarán automáticamente las variables.</p>
+
+                <div>
+                    <label class="block text-xs font-medium mb-1">Lead/Cliente</label>
+                    <select name="lead_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">— Ninguno —</option>
+                        <option th:each="l : ${leads}" th:value="${l.get('id')}" th:text="${l.get('nombre')}"
+                                th:selected="${l.get('id') == preseleccion.get('lead_id')}">—</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium mb-1">Propiedad</label>
+                    <select name="propiedad_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">— Ninguna —</option>
+                        <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}"
+                                th:selected="${p.get('id') == preseleccion.get('propiedad_id')}">—</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium mb-1">Contrato</label>
+                    <select name="contrato_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="">— Ninguno —</option>
+                        <option th:each="c : ${contratos}" th:value="${c.get('id')}" th:text="${c.get('numero') ?: c.get('id')}">—</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Inquilino</label>
+                        <select name="inquilino_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                            <option value="">— Ninguno —</option>
+                            <option th:each="i : ${inquilinos}" th:value="${i.get('id')}" th:text="${i.get('nombre')}">—</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Propietario</label>
+                        <select name="propietario_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                            <option value="">— Ninguno —</option>
+                            <option th:each="p : ${propietarios}" th:value="${p.get('id')}" th:text="${p.get('nombre')}">—</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" @click="generarPreview()" class="w-full mt-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium">
+                     Previsualizar
+                </button>
+            </div>
+
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <input type="text" name="titulo" placeholder="Título del documento" th:value="${plantilla.get('nombre')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="enviar_firma" class="rounded">
+                    Enviar a firma electrónica al guardar
+                </label>
+
+                <button type="submit" class="w-full px-4 py-2.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-sm font-medium">
+                     Generar documento
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 lg:sticky lg:top-5 h-fit">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-sm"> Vista previa</h3>
+                <span class="text-[10px] text-slate-500">Variables rellenadas en tiempo real</span>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-5 max-h-[600px] overflow-y-auto prose prose-sm dark:prose-invert max-w-none bg-white text-slate-900" x-html="previewHtml || '<p class=text-slate-400>Selecciona entidades y pulsa Previsualizar...</p>'"></div>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        const plantillaId = /*[[${plantilla.get('id')}]]*/ '';
+
+        async function generarPreview() {
+            const form = document.querySelector('form');
+            const data = {};
+            form.querySelectorAll('select[name$="_id"]').forEach(s => { if (s.value) data[s.name] = s.value; });
+
+            const res = await fetch('/plantillas-doc/' + plantillaId + '/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.ok) {
+                Alpine.$data(form).previewHtml = result.html;
+            }
+        }
+    </script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Configurar dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content" x-data="cfg()">
+
+    <div class="rounded-xl bg-gradient-to-br from-purple-700 via-brand-800 to-brand-950 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold"> Personaliza tu dashboard</h2>
+        <p class="text-sm text-white/70 mt-1">Arrastra para reordenar. Toggle para mostrar/ocultar. Se guarda automáticamente.</p>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+        <div id="widgetList" class="space-y-2">
+            <template x-for="w in widgets" :key="w.id">
+                <div class="bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 rounded-lg p-4 flex items-center gap-3 cursor-move hover:shadow-card"
+                     :data-id="w.id">
+                    <i data-lucide="grip-vertical" class="h-5 w-5 text-slate-400"></i>
+                    <div class="flex-1">
+                        <div class="font-medium" x-text="w.name">Widget</div>
+                        <div class="text-xs text-slate-500" x-text="w.id">id</div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="w.visible" @change="save()" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-checked:bg-brand-600 rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                    </label>
+                </div>
+            </template>
+        </div>
+
+        <div class="mt-6 flex items-center gap-2">
+            <a href="/dashboard" class="px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold shadow-card">
+                 Ver dashboard
+            </a>
+            <button @click="reset()" class="px-3 py-2 rounded-lg bg-white dark:bg-neutral-800 ring-1 ring-slate-200 hover:bg-slate-50 text-sm">
+                Restaurar predeterminados
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function cfg() {
+    return {
+        widgets: [],
+        sortable: null,
+        async init() {
+            const r = await fetch('/api/dashboard/config');
+            const d = await r.json();
+            this.widgets = d.widgets || [];
+            this.$nextTick(() => {
+                const el = document.getElementById('widgetList');
+                if (el && window.Sortable) {
+                    this.sortable = new Sortable(el, {
+                        animation: 200,
+                        handle: '.cursor-move',
+                        onEnd: () => this.reorderFromDom()
+                    });
+                }
+                if (window.lucide) lucide.createIcons();
+            });
+        },
+        reorderFromDom() {
+            const ids = Array.from(document.querySelectorAll('#widgetList > div')).map(el => el.dataset.id);
+            this.widgets.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+            this.save();
+        },
+        async save() {
+            await fetch('/api/dashboard/config', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ widgets: this.widgets })
+            });
+            if (window.toast) window.toast('Guardado', 'ok');
+        },
+        async reset() {
+            this.widgets = [];
+            await fetch('/api/dashboard/config', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ widgets: null })
+            });
+            this.init();
+        }
+    };
+}
+</script>
+</body>
+</html>

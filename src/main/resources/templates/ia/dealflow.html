@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Dealflow</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="crud-toolbar">
+        <a href="/crud/oportunidades/new" class="btn btn-primary">+ Anadir deal</a>
+        <span class="crud-count"><span th:text="${deals.size()}">0</span> oportunidades</span>
+    </div>
+    <div class="kanban">
+        <div class="kanban-col" th:each="etapa : ${ {'Contacto','Analisis','Oferta','Negociacion','Firmado','Descartado'} }">
+            <h4 th:text="${etapa}">Etapa</h4>
+            <div th:each="d : ${deals}" th:if="${d.get('status') == etapa}" class="kanban-card">
+                <div class="kanban-title" th:text="${d.get('property_name')}">Activo</div>
+                <div class="kanban-meta" th:text="${d.get('city')}">Ciudad</div>
+                <div class="kanban-price" th:text="${d.get('price')} + ' EUR'">Precio</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

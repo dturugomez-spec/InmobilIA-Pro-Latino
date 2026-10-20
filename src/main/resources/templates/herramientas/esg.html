@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>ESG</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/herramientas/esg" class="form-card">
+        <h3>Score ESG</h3>
+        <div class="form-grid cols-3">
+            <label>Certificacion energetica
+                <select name="certificacion">
+                    <option>A</option><option>B</option><option>C</option>
+                    <option>D</option><option>E</option><option>F</option><option>G</option>
+                </select>
+            </label>
+            <label class="bool-field"><input type="checkbox" name="aislamientoTermico" value="true"><span>Aislamiento mejorado</span></label>
+            <label class="bool-field"><input type="checkbox" name="placasSolares" value="true"><span>Placas solares</span></label>
+            <label class="bool-field"><input type="checkbox" name="accesibilidad" value="true"><span>Accesibilidad total</span></label>
+            <label class="bool-field"><input type="checkbox" name="tenantSatisfaction" value="true"><span>Encuesta satisfaccion</span></label>
+            <label class="bool-field"><input type="checkbox" name="gobiernoCorporativo" value="true"><span>Gobierno corporativo</span></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Calcular ESG</button></div>
+    </form>
+
+    <div class="kpi-grid" th:if="${total != null}">
+        <div class="kpi-card"><div class="kpi-label">E - Ambiental</div>
+            <div class="kpi-value" th:text="${env} + '/100'">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">S - Social</div>
+            <div class="kpi-value" th:text="${social} + '/100'">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">G - Gobernanza</div>
+            <div class="kpi-value" th:text="${gov} + '/100'">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Rating</div>
+            <div class="kpi-value pos" th:text="${rating}">—</div></div>
+    </div>
+</div>
+</body>
+</html>

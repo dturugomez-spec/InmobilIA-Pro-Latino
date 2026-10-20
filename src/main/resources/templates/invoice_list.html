@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Facturación</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="p-4 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Emitido</div>
+            <div class="text-xl font-bold font-mono mt-1" th:text="${#numbers.formatDecimal(totalEmitido,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Cobrado</div>
+            <div class="text-xl font-bold font-mono mt-1 text-emerald-700 dark:text-emerald-400" th:text="${#numbers.formatDecimal(totalCobrado,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Pendiente cobro</div>
+            <div class="text-xl font-bold font-mono mt-1 text-amber-700 dark:text-amber-400" th:text="${#numbers.formatDecimal(totalPendiente,0,'POINT',0,'COMMA')} + ' €'">0 €</div>
+        </div>
+        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900/40">
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">Vencidas</div>
+            <div class="text-xl font-bold font-mono mt-1 text-red-700 dark:text-red-400" th:text="${nVencidas}">0</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        <a href="/invoices/new" th:if="${canWrite}"
+           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nueva factura
+        </a>
+        <a href="/payments" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-medium transition-colors">
+            <i data-lucide="layout-grid" class="h-4 w-4"></i> Control de cobros
+        </a>
+    </div>
+
+    <!-- Tabla -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                    <th class="text-left font-semibold px-4 py-3">Nº</th>
+                    <th class="text-left font-semibold px-4 py-3">Fecha</th>
+                    <th class="text-left font-semibold px-4 py-3">Cliente</th>
+                    <th class="text-left font-semibold px-4 py-3">Concepto</th>
+                    <th class="text-right font-semibold px-4 py-3">Base</th>
+                    <th class="text-right font-semibold px-4 py-3">IVA</th>
+                    <th class="text-right font-semibold px-4 py-3">IRPF</th>
+                    <th class="text-right font-semibold px-4 py-3">Total</th>
+                    <th class="text-left font-semibold px-4 py-3">Estado</th>
+                    <th class="text-right font-semibold px-4 py-3">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="r : ${rows}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3">
+                        <a th:href="@{|/invoices/${r.get('id')}|}" class="font-mono font-bold text-brand-700 dark:text-brand-400 hover:underline" th:text="${r.get('full_number') ?: (r.get('serie') + '/' + r.get('numero'))}">A/00001</a>
+                    </td>
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${r.get('fecha') != null ? #strings.substring(r.get('fecha'),0,10) : '—'}">—</td>
+                    <td class="px-4 py-3">
+                        <div class="font-medium" th:text="${r.get('cliente_nombre')}">cliente</div>
+                        <div class="text-xs text-slate-500 dark:text-neutral-400" th:text="${r.get('cliente_nif') ?: ''}">NIF</div>
+                    </td>
+                    <td class="px-4 py-3 truncate max-w-[180px]" th:text="${r.get('concepto')}">concepto</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${r.get('base_imponible') != null ? #numbers.formatDecimal(r.get('base_imponible'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                    <td class="px-4 py-3 font-mono text-right text-xs text-slate-500" th:text="${r.get('iva_amount') != null ? #numbers.formatDecimal(r.get('iva_amount'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                    <td class="px-4 py-3 font-mono text-right text-xs text-red-500" th:text="${r.get('irpf_amount') != null and r.get('irpf_amount') > 0 ? '-' + #numbers.formatDecimal(r.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${r.get('total') != null ? #numbers.formatDecimal(r.get('total'),0,'POINT',2,'COMMA') + ' €' : '—'}">— €</td>
+                    <td class="px-4 py-3">
+                        <span th:text="${r.get('status')}"
+                              th:classappend="${
+                                #strings.equalsIgnoreCase(r.get('status'),'Pagada') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
+                                (#strings.equalsIgnoreCase(r.get('status'),'Vencida') ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400' :
+                                (#strings.equalsIgnoreCase(r.get('status'),'Anulada') ? 'bg-slate-200 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400' :
+                                'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400'))}"
+                              class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full">Estado</span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="inline-flex items-center gap-1">
+                            <a th:href="@{|/invoices/${r.get('id')}|}" title="Ver / imprimir"
+                               class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/40 dark:hover:text-brand-400 transition-colors">
+                                <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                            </a>
+                            <a th:href="@{|/invoices/${r.get('id')}/edit|}" th:if="${canWrite}" title="Editar"
+                               class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/40 dark:hover:text-brand-400 transition-colors">
+                                <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                            </a>
+                            <form th:if="${canWrite and !#strings.equalsIgnoreCase(r.get('status'),'Pagada')}" th:action="@{|/invoices/${r.get('id')}/status|}" method="post" class="inline">
+                                <input type="hidden" name="status" value="Pagada">
+                                <button type="submit" title="Marcar como pagada"
+                                        class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-colors">
+                                    <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
+                                </button>
+                            </form>
+                            <form th:if="${canWrite}" th:action="@{|/invoices/${r.get('id')}/delete|}" method="post" class="inline">
+                                <button type="submit" title="Eliminar"
+                                        class="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
+                                        onclick="return confirm('¿Eliminar esta factura?')">
+                                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${rows.isEmpty()}">
+                    <td colspan="10" class="py-16 text-center">
+                        <div class="inline-flex h-14 w-14 rounded-2xl bg-slate-100 dark:bg-neutral-800 items-center justify-center mb-3">
+                            <i data-lucide="file-text" class="h-6 w-6 text-slate-400"></i>
+                        </div>
+                        <h3 class="font-semibold text-base mb-1">Aún sin facturas</h3>
+                        <p class="text-sm text-slate-500 dark:text-neutral-400 mb-4">Crea tu primera factura con numeración automática y normativa española.</p>
+                        <a href="/invoices/new" th:if="${canWrite}"
+                           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors">
+                            <i data-lucide="plus" class="h-4 w-4"></i> Crear primera factura
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

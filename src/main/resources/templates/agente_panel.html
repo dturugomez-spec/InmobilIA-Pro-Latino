@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Agente IA</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-indigo-900 p-6 mb-5 text-white">
+    <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+            <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="bot" class="h-6 w-6"></i> Agente IA</h2>
+            <p class="text-sm text-white/80 mt-1">Tu asistente que trabaja solo: analiza la cartera, prioriza y crea tareas automáticamente.</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/autopiloto" class="px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm font-semibold flex items-center gap-1.5"> Autopiloto</a>
+            <a href="/impacto" class="px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm font-semibold flex items-center gap-1.5"> Impacto</a>
+            <form method="post" action="/agente/regenerar">
+                <button class="px-4 py-2 rounded-lg bg-white text-indigo-900 text-sm font-semibold"> Actualizar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Previsión de cierres del mes -->
+<div th:if="${b.forecastMes > 0}" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 p-5 mb-5 text-white flex items-center justify-between flex-wrap gap-3">
+    <div>
+        <p class="text-xs uppercase tracking-wider text-white/70"> Previsión de cierres este mes</p>
+        <p class="text-3xl font-bold mt-1" th:text="${#numbers.formatInteger(b.forecastMes, 0, 'POINT')} + ' €'">0 €</p>
+    </div>
+    <p class="text-sm text-white/80" th:text="${b.ofertasActivas} + ' ofertas activas · ponderadas por probabilidad'">—</p>
+</div>
+
+<!--  Plan del día -->
+<div th:if="${!b.planDelDia().isEmpty()}" th:with="plan=${b.planDelDia()}"
+     class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-violet-200 p-5 mb-5">
+    <h3 class="font-semibold text-sm mb-3 text-violet-700"> Tu plan del día <span class="text-slate-400 font-normal">· ordenado por impacto</span></h3>
+    <ol class="space-y-2">
+        <li th:each="p, st : ${plan}" class="flex items-start gap-3 text-sm">
+            <span class="flex-shrink-0 h-6 w-6 rounded-full bg-violet-50 text-violet-700 text-xs font-bold flex items-center justify-center" th:text="${st.count}">1</span>
+            <div class="min-w-0">
+                <p><span th:text="${p.get('icono')}">·</span> <span class="font-medium" th:text="${p.get('accion')}">—</span></p>
+                <p th:if="${p.get('motivo') != null and !p.get('motivo').isEmpty()}" class="text-xs text-slate-400" th:text="${p.get('motivo')}">—</p>
+            </div>
+        </li>
+    </ol>
+</div>
+
+<!-- KPIs del briefing -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+    <div class="rounded-xl bg-red-50 ring-1 ring-red-200 p-4">
+        <p class="text-[10px] uppercase text-red-700"> Leads calientes</p>
+        <p class="text-2xl font-bold mt-1 text-red-700" th:text="${b.leadsCalientes.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-violet-50 ring-1 ring-violet-200 p-4">
+        <p class="text-[10px] uppercase text-violet-700"> Visitas hoy/mañana</p>
+        <p class="text-2xl font-bold mt-1 text-violet-700" th:text="${b.visitasProximas.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700"> Contratos a vencer</p>
+        <p class="text-2xl font-bold mt-1 text-amber-700" th:text="${b.contratosPorVencer.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-orange-50 ring-1 ring-orange-200 p-4">
+        <p class="text-[10px] uppercase text-orange-700"> Facturas impagadas</p>
+        <p class="text-2xl font-bold mt-1 text-orange-700" th:text="${b.facturasImpagadas.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-slate-50 ring-1 ring-slate-200 p-4">
+        <p class="text-[10px] uppercase text-slate-700"> Props estancadas</p>
+        <p class="text-2xl font-bold mt-1 text-slate-700" th:text="${b.propiedadesEstancadas.size()}">0</p>
+    </div>
+    <div class="rounded-xl bg-rose-50 ring-1 ring-rose-200 p-4">
+        <p class="text-[10px] uppercase text-rose-700">⏰ Tareas vencidas</p>
+        <p class="text-2xl font-bold mt-1 text-rose-700" th:text="${b.tareasVencidas.size()}">0</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Listas accionables -->
+    <div class="lg:col-span-2 space-y-4">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Prioridad: leads calientes sin contactar</h3>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <li th:each="l : ${b.leadsCalientes}" class="py-2 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium" th:text="${l.get('nombre')}">—</p>
+                        <p class="text-[11px] text-slate-500">
+                            temp <span th:text="${l.get('temperatura')}">—</span> · score <span th:text="${l.get('score')}">—</span>
+                        </p>
+                    </div>
+                    <div class="flex gap-1">
+                        <a th:if="${l.get('telefono')}" th:href="${'tel:' + l.get('telefono')}" class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs"></a>
+                        <a th:if="${l.get('telefono')}" th:href="${'https://wa.me/' + l.get('telefono')}" target="_blank" class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs"></a>
+                        <button th:data-id="${l.get('id')}" title="Marcar como contactado"
+                                onclick="accionRapida('/agente/accion/contactado', {leadId: this.dataset.id}, this)"
+                                class="px-2 py-1 rounded bg-violet-50 text-violet-700 text-xs hover:bg-violet-100"></button>
+                    </div>
+                </li>
+                <li th:if="${b.leadsCalientes.isEmpty()}" class="py-6 text-center text-slate-400 text-sm">Nada urgente aquí </li>
+            </ul>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Contratos que vencen pronto</h3>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <li th:each="c : ${b.contratosPorVencer}" class="py-2 text-sm flex justify-between">
+                    <span th:text="${c.get('numero') ?: c.get('id')}">—</span>
+                    <span class="text-amber-700 font-mono text-xs" th:text="${c.get('fecha_fin')}">—</span>
+                </li>
+                <li th:if="${b.contratosPorVencer.isEmpty()}" class="py-6 text-center text-slate-400 text-sm">Sin vencimientos próximos</li>
+            </ul>
+        </div>
+
+        <!-- Match proactivo: propiedades nuevas con leads que encajan -->
+        <div th:if="${!b.matchesProactivos.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-emerald-200 p-5">
+            <h3 class="font-semibold text-sm mb-3 text-emerald-700"> Propiedades nuevas con leads que encajan</h3>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <li th:each="m : ${b.matchesProactivos}" class="py-2">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium" th:text="${m.get('propiedad')}">—</p>
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700" th:text="${m.get('num_leads')} + ' leads'">—</span>
+                            <button th:data-prop="${m.get('propiedad')}" title="Crear tarea: enviar a los leads"
+                                    onclick="accionRapida('/agente/accion/tarea', {titulo: 'Enviar ' + this.dataset.prop + ' a los leads que encajan'}, this)"
+                                    class="px-2 py-1 rounded bg-violet-50 text-violet-700 text-xs hover:bg-violet-100"></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        <span th:each="l : ${m.get('leads')}" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800" th:text="${l.get('nombre')}">—</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Leads en riesgo de fuga -->
+        <div th:if="${!b.leadsEnRiesgo.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-rose-200 p-5">
+            <h3 class="font-semibold text-sm mb-3 text-rose-700"> Leads en riesgo de fuga (>7 días sin actividad)</h3>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <li th:each="l : ${b.leadsEnRiesgo}" class="py-2 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium" th:text="${l.get('nombre')}">—</p>
+                        <p class="text-[11px] text-slate-500">score <span th:text="${l.get('score')}">—</span></p>
+                    </div>
+                    <div class="flex gap-1">
+                        <a th:if="${l.get('telefono')}" th:href="${'tel:' + l.get('telefono')}" class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs"></a>
+                        <a th:if="${l.get('telefono')}" th:href="${'https://wa.me/' + l.get('telefono')}" target="_blank" class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs"></a>
+                        <button th:data-id="${l.get('id')}" th:data-nombre="${l.get('nombre')}" title="Crear tarea de reactivación"
+                                onclick="accionRapida('/agente/accion/tarea', {titulo: 'Reactivar a ' + this.dataset.nombre, leadId: this.dataset.id}, this)"
+                                class="px-2 py-1 rounded bg-violet-50 text-violet-700 text-xs hover:bg-violet-100"></button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sugerencias de bajada de precio -->
+        <div th:if="${!b.sugerenciasPrecio.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3"> Sugerencias de bajada de precio</h3>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <li th:each="s : ${b.sugerenciasPrecio}" class="py-2 text-sm flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="font-medium truncate" th:text="${s.get('direccion')}">—</p>
+                        <p class="text-[11px] text-slate-500" th:text="${s.get('dias')} + ' días en mercado'">—</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="text-right">
+                            <p class="text-xs text-slate-400 line-through" th:text="${#numbers.formatInteger(s.get('precio_actual'), 0, 'POINT')} + '€'">—</p>
+                            <p class="text-sm font-bold text-emerald-700" th:text="'-' + ${s.get('pct')} + '% → ' + ${#numbers.formatInteger(s.get('precio_sugerido'), 0, 'POINT')} + '€'">—</p>
+                        </div>
+                        <button th:data-id="${s.get('id')}" th:data-precio="${s.get('precio_sugerido')}" title="Aplicar el precio sugerido"
+                                onclick="if(confirm('¿Aplicar el precio sugerido a este inmueble?')) accionRapida('/agente/accion/aplicar-precio', {propId: this.dataset.id, precio: this.dataset.precio}, this)"
+                                class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">Aplicar</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Chat con el agente -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 flex flex-col" style="max-height:600px">
+        <h3 class="font-semibold text-sm mb-3"> Pregúntale al agente</h3>
+        <div id="chat" class="flex-1 overflow-y-auto space-y-2 mb-3 text-sm">
+            <div class="bg-violet-50 rounded-lg p-2 text-violet-900">
+                Hola  No solo respondo: <strong>ejecuto</strong>. Pídeme cosas como:<br>
+                <em>"¿A quién llamo hoy?"</em><br>
+                <em>"Marca a Ana como contactada"</em><br>
+                <em>"Agenda visita con Luis mañana a las 17 en el piso de Calle Mayor"</em><br>
+                <em>"Envía un email a Ana confirmando la visita"</em><br>
+                <em>"Genera el informe de mercado del ático de Sol"</em>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-1.5 mb-2">
+            <button onclick="sugerir('¿A quién llamo hoy?')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> ¿A quién llamo?</button>
+            <button onclick="sugerir('Crea una tarea para ')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Crear tarea</button>
+            <button onclick="sugerir('Marca a  como contactado')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Cambiar etapa</button>
+            <button onclick="sugerir('Agenda visita con  mañana a las  en ')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Agendar visita</button>
+            <button onclick="sugerir('¿Qué leads encajan con ')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Buscar compradores</button>
+            <button onclick="sugerir('¿Qué pisos le enseño a ')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Qué ofrecer a un lead</button>
+            <button onclick="sugerir('Genera el informe de mercado de ')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Generar CMA</button>
+            <button onclick="sugerir('Dame mi enlace de valoración')" class="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100"> Enlace valoración</button>
+        </div>
+        <div class="flex gap-2">
+            <input id="q" type="text" placeholder="Escribe o habla..." class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800" onkeydown="if(event.key==='Enter')preguntar()">
+            <button id="micBtn" onclick="toggleVoz()" title="Hablar" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm"></button>
+            <button onclick="preguntar()" class="px-3 py-2 rounded-lg bg-violet-700 text-white text-sm">↑</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─── Entrada por voz (Web Speech API) ───
+let recog = null, grabando = false;
+function toggleVoz() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Tu navegador no soporta dictado por voz. Usa Chrome.'); return; }
+    const btn = document.getElementById('micBtn');
+    if (grabando) { recog.stop(); return; }
+    recog = new SR();
+    recog.lang = 'es-ES';
+    recog.interimResults = true;
+    recog.continuous = false;
+    grabando = true; btn.textContent = '⏹'; btn.classList.add('animate-pulse');
+    recog.onresult = e => {
+        let txt = '';
+        for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+        document.getElementById('q').value = txt;
+    };
+    recog.onend = () => { grabando = false; btn.textContent = ''; btn.classList.remove('animate-pulse'); };
+    recog.onerror = () => { grabando = false; btn.textContent = ''; btn.classList.remove('animate-pulse'); };
+    recog.start();
+}
+
+const historial = [];  // memoria de la conversación (viaja al servidor en cada turno)
+
+function sugerir(texto) {
+    const input = document.getElementById('q');
+    input.value = texto;
+    input.focus();
+    // Si la sugerencia está completa (no acaba en espacio ni pide rellenar), se envía directa
+    if (!texto.endsWith(' ') && !texto.includes('  ')) preguntar();
+}
+
+// Acción rápida del briefing: ejecuta y da feedback en el propio botón
+async function accionRapida(url, payload, btn) {
+    const original = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '⌛';
+    try {
+        const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        const d = await res.json();
+        if (d.ok) {
+            btn.innerHTML = '';
+            btn.classList.add('opacity-60');
+            if (d.msg) {
+                const chat = document.getElementById('chat');
+                if (chat) { chat.innerHTML += `<div class="bg-emerald-50 rounded-lg p-2 text-emerald-800 text-xs">${d.msg}</div>`; chat.scrollTop = chat.scrollHeight; }
+            }
+        } else { btn.innerHTML = ''; setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1500); }
+    } catch(e) {
+        btn.innerHTML = ''; setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1500);
+    }
+}
+
+// Convierte URLs del texto en enlaces clicables (escapando el resto)
+function linkify(txt) {
+    const esc = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return esc.replace(/(https?:\/\/[^\s<]+)/g,
+        '<a href="$1" target="_blank" class="underline text-violet-700 break-all">$1</a>');
+}
+
+async function preguntar() {
+    const input = document.getElementById('q');
+    const chat = document.getElementById('chat');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    chat.innerHTML += `<div class="bg-slate-100 rounded-lg p-2 text-right">${q}</div>`;
+    const loading = document.createElement('div');
+    loading.className = 'bg-violet-50 rounded-lg p-2 text-violet-900';
+    loading.textContent = '⌛ Pensando...';
+    chat.appendChild(loading);
+    chat.scrollTop = chat.scrollHeight;
+    try {
+        const res = await fetch('/agente/preguntar', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({pregunta: q, historial: historial.slice(-8)})
+        });
+        const d = await res.json();
+        const resp = d.respuesta || 'Sin respuesta';
+        loading.innerHTML = linkify(resp).replace(/\n/g,'<br>');
+        if (d.ejecutada) loading.innerHTML += '<div class="mt-1 text-[10px] text-emerald-600 font-bold"> Acción ejecutada</div>';
+        historial.push({rol:'agente', texto:q});
+        historial.push({rol:'ia', texto:resp});
+    } catch(e) {
+        loading.textContent = 'Error de conexión.';
+    }
+    chat.scrollTop = chat.scrollHeight;
+}
+</script>
+</div></body></html>

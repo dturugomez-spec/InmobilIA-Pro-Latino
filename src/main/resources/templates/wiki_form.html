@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Editor wiki</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-700 to-purple-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold"> Editor de artículo</h2>
+    </div>
+
+    <form method="post" action="/wiki/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4">
+
+        <input type="hidden" name="id" th:value="${articulo.get('id') ?: ''}">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input type="text" name="titulo" required placeholder="Título del artículo" th:value="${articulo.get('titulo')}" class="md:col-span-2 px-3 py-2 text-base font-semibold border border-slate-200 rounded-lg">
+            <select name="categoria_id" class="px-3 py-2 text-sm border border-slate-200 rounded-lg">
+                <option value="">— Sin categoría —</option>
+                <option th:each="c : ${categorias}" th:value="${c.get('id')}" th:text="${c.get('icono') + ' ' + c.get('nombre')}"
+                        th:selected="${c.get('id') == articulo.get('categoria_id')}">—</option>
+            </select>
+        </div>
+
+        <input type="text" name="resumen" placeholder="Resumen (1-2 líneas)" th:value="${articulo.get('resumen')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg">
+
+        <div>
+            <label class="block text-xs font-medium mb-1">Contenido (Markdown)</label>
+            <textarea name="contenido_markdown" rows="20" th:text="${articulo.get('contenido_markdown')}" class="w-full px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg"
+                placeholder="# Título principal&#10;&#10;## Subtítulo&#10;&#10;Texto **negrita** y *cursiva*.&#10;&#10;- Lista item 1&#10;- Lista item 2&#10;&#10;[Enlace](https://...)"></textarea>
+            <p class="text-[10px] text-slate-500 mt-1">Soporta Markdown: <code># H1</code>, <code>**negrita**</code>, <code>*cursiva*</code>, <code>[link](url)</code>, <code>- lista</code></p>
+        </div>
+
+        <div class="flex gap-4">
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="publicado" checked th:checked="${articulo.get('publicado') != false}" class="rounded">
+                Publicado
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="fijado" th:checked="${articulo.get('fijado')}" class="rounded">
+                 Fijar arriba
+            </label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <a href="/wiki" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-sm font-medium"> Guardar</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Gastos agente</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-amber-700 to-orange-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="car" class="h-6 w-6"></i> Gastos de agente</h2>
+    <p class="text-sm text-white/80 mt-1">Kilometraje, dietas, parking, peajes. Aprobación manager.</p>
+</div>
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700">Total mes</p>
+        <p class="text-xl font-bold mt-1 text-amber-700" th:text="${#numbers.formatDecimal(totalMes, 1, 'POINT', 2, 'COMMA')} + ' €'">0</p>
+    </div>
+    <div class="rounded-xl bg-slate-50 ring-1 ring-slate-200 p-4">
+        <p class="text-[10px] uppercase">Km mes</p>
+        <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(totalKm, 1, 0)} + ' km'">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+        <p class="text-[10px] uppercase text-blue-700">Pendientes</p>
+        <p class="text-xl font-bold mt-1 text-blue-700" th:text="${pendientes}">0</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <form method="post" action="/gastos-agente/crear" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+        <h3 class="font-semibold text-sm"> Nuevo gasto</h3>
+        <input type="date" name="fecha" class="w-full px-3 py-2 text-sm border rounded">
+        <select name="tipo" required class="w-full px-3 py-2 text-sm border rounded">
+            <option value="kilometraje"> Kilometraje</option>
+            <option value="dieta_comida"> Dieta</option>
+            <option value="parking"> Parking</option>
+            <option value="peaje"> Peaje</option>
+            <option value="combustible"> Combustible</option>
+            <option value="hotel"> Hotel</option>
+            <option value="otros">Otros</option>
+        </select>
+        <input type="text" name="concepto" placeholder="Concepto" class="w-full px-3 py-2 text-sm border rounded">
+        <div class="grid grid-cols-2 gap-2">
+            <input type="text" name="origen" placeholder="Origen" class="px-3 py-2 text-sm border rounded">
+            <input type="text" name="destino" placeholder="Destino" class="px-3 py-2 text-sm border rounded">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <input type="number" step="0.1" name="km" placeholder="Km" class="px-3 py-2 text-sm border rounded">
+            <input type="number" step="0.001" name="importe_por_km" value="0.26" placeholder="€/km" class="px-3 py-2 text-sm border rounded">
+        </div>
+        <input type="number" step="0.01" name="importe" placeholder="Importe € (si no km)" class="w-full px-3 py-2 text-sm border rounded">
+        <button class="w-full px-4 py-2 rounded bg-amber-700 text-white text-sm"> Registrar</button>
+    </form>
+
+    <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50">
+            <tr class="text-[10px] uppercase text-slate-500">
+                <th class="text-left px-3 py-2">Fecha</th><th class="text-left px-3 py-2">Tipo</th>
+                <th class="text-left px-3 py-2">Concepto</th><th class="text-right px-3 py-2">Importe</th>
+                <th class="text-left px-3 py-2">Estado</th><th></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="g : ${gastos}">
+                <td class="px-3 py-2 font-mono text-xs" th:text="${g.get('fecha')}">—</td>
+                <td class="px-3 py-2 text-xs capitalize" th:text="${#strings.replace(g.get('tipo'), '_', ' ')}">—</td>
+                <td class="px-3 py-2 text-xs">
+                    <span th:text="${g.get('concepto')}">—</span>
+                    <span th:if="${g.get('km')}" class="text-[10px] text-slate-400" th:text="' (' + ${g.get('km')} + ' km)'">—</span>
+                </td>
+                <td class="px-3 py-2 text-right font-mono font-bold" th:text="${#numbers.formatDecimal(g.get('importe') ?: 0, 1, 'POINT', 2, 'COMMA')} + ' €'">—</td>
+                <td class="px-3 py-2">
+                    <span th:if="${g.get('estado') == 'pendiente'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Pendiente</span>
+                    <span th:if="${g.get('estado') == 'aprobado'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"> Aprobado</span>
+                </td>
+                <td class="px-3 py-2 text-right">
+                    <form th:if="${g.get('estado') == 'pendiente'}" th:action="@{|/gastos-agente/${g.get('id')}/aprobar|}" method="post" class="inline">
+                        <button class="text-[10px] text-emerald-700 hover:underline"> Aprobar</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${gastos.isEmpty()}"><td colspan="6" class="py-6 text-center text-slate-500 text-xs">Sin gastos</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div></body></html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Conversación chatbot</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/chatbot" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-3">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver al chatbot
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-blue-700 to-indigo-900 p-5 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <h2 class="text-lg font-bold" th:text="${conv.get('visitor_nombre') ?: 'Anónimo'}">—</h2>
+                <p class="text-xs text-white/70 mt-1">
+                    <span th:if="${conv.get('visitor_email')}" th:text="${conv.get('visitor_email')}">—</span>
+                    <span th:if="${conv.get('visitor_telefono')}" th:text="' · ' + ${conv.get('visitor_telefono')}">—</span>
+                </p>
+                <p class="text-xs text-white/60 mt-2" th:text="${'Iniciada: ' + #strings.substring(conv.get('iniciada_at'), 0, 16) + ' · ' + conv.get('mensajes_total') + ' mensajes'}">—</p>
+            </div>
+            <div class="text-right">
+                <span th:switch="${conv.get('estado')}">
+                    <span th:case="'activa'" class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-xs font-bold"> Activa</span>
+                    <span th:case="'convertida_lead'" class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold"> Convertida en lead</span>
+                    <span th:case="'convertida_visita'" class="bg-fuchsia-100 text-fuchsia-900 px-3 py-1 rounded-full text-xs font-bold"> Visita agendada</span>
+                    <span th:case="'abandonada'" class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-bold">⏸ Abandonada</span>
+                </span>
+                <p class="text-xs text-white/60 mt-2" th:if="${conv.get('intencion_detectada')}" th:text="${'Intención: ' + conv.get('intencion_detectada')}">—</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-slate-50 dark:bg-neutral-800/50 p-5 max-h-[600px] overflow-y-auto">
+        <div class="space-y-3">
+            <div th:each="m : ${mensajes}" class="flex"
+                 th:classappend="${m.get('rol') == 'user' ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[70%] px-4 py-2 rounded-2xl"
+                     th:classappend="${m.get('rol') == 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-bl-sm'}">
+                    <p class="text-sm" th:text="${m.get('contenido')}">—</p>
+                    <p class="text-[9px] mt-1 opacity-60" th:text="${#strings.substring(m.get('created_at'), 11, 16)}">—</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

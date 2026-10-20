@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 84" width="64" height="84" role="img" aria-label="Grupo Kivasa">
+  <rect width="64" height="64" rx="13" fill="#0b1830"/>
+  <path d="M11.5 12 Q11.5 10 13.5 10 H20 V29.5 L46.5 10 H55.5 L20 41 V54 H11.5 Z" fill="#ffffff"/>
+  <path d="M32 29 L54 43.2 V54 H44.2 V46.6 L31.9 37.6 Z" fill="#ffffff"/>
+  <circle cx="30.4" cy="46.6" r="5.2" fill="#1d8bff"/>
+  <text x="32" y="81" text-anchor="middle" font-family="'Plus Jakarta Sans','Segoe UI',Arial,sans-serif" font-size="14" font-weight="800" letter-spacing="2" fill="#0b1830">KIVASA</text>
+</svg>

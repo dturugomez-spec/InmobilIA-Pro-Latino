@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Nueva campaña</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-pink-600 to-rose-900 p-5 mb-5 text-white">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="mail-plus" class="h-5 w-5"></i> Nueva campaña
+        </h2>
+    </div>
+
+    <form method="post" action="/campanas/guardar" x-data="{ abTest: false, programada: false }" class="space-y-5">
+
+        <!-- Datos básicos -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="font-semibold text-sm"> Datos generales</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">Nombre de la campaña *</label>
+                    <input type="text" name="nombre" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Canal</label>
+                    <select name="canal" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                        <option value="email"> Email</option>
+                        <option value="whatsapp"> WhatsApp</option>
+                        <option value="sms"> SMS</option>
+                    </select>
+                </div>
+            </div>
+            <textarea name="descripcion" rows="2" placeholder="Descripción interna..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+        </div>
+
+        <!-- Segmentación -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="font-semibold text-sm"> Destinatarios</h3>
+            <select name="segmento_tipo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                <option value="todos_leads"> Todos los leads</option>
+                <option value="todos_inquilinos"> Todos los inquilinos</option>
+                <option value="todos_propietarios"> Todos los propietarios</option>
+                <option value="segmentado"> Segmentado por filtros</option>
+                <option value="lista_custom"> Lista manual</option>
+            </select>
+            <p class="text-[10px] text-slate-500">Las personas dadas de baja serán excluidas automáticamente.</p>
+        </div>
+
+        <!-- Contenido -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-sm"> Contenido</h3>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="ab_test" x-model="abTest" class="rounded"> A/B test
+                </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1">De (nombre)</label>
+                    <input type="text" name="from_name" placeholder="InmobilIA Pro" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">De (email)</label>
+                    <input type="email" name="from_email" placeholder="hola@miempresa.es" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+            </div>
+
+            <!-- Variante A -->
+            <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 border border-blue-200">
+                <p class="text-xs font-semibold text-blue-700 mb-2" x-text="abTest ? 'Variante A' : ''"></p>
+                <label class="block text-xs font-medium mb-1">Asunto *</label>
+                <input type="text" name="asunto" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <label class="block text-xs font-medium mb-1">Preheader (preview)</label>
+                <input type="text" name="preheader" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <label class="block text-xs font-medium mb-1">HTML del email *</label>
+                <textarea name="contenido" rows="10" required class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"
+                placeholder="<h1>Hola {nombre}</h1>&#10;<p>Tenemos una propiedad que te interesará...</p>&#10;<a href='https://...'>Ver propiedad</a>"></textarea>
+                <p class="text-[10px] text-slate-500 mt-1">Variables: <code>{nombre}</code> <code>{email}</code> <code>{fecha}</code></p>
+            </div>
+
+            <!-- Variante B -->
+            <div x-show="abTest" x-transition class="rounded-lg bg-fuchsia-50 dark:bg-fuchsia-900/20 p-3 border border-fuchsia-200">
+                <p class="text-xs font-semibold text-fuchsia-700 mb-2">Variante B</p>
+                <input type="text" name="asunto_b" placeholder="Asunto B" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700 mb-2">
+                <textarea name="contenido_b" rows="6" class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+                <div class="mt-2 flex items-center gap-2 text-xs">
+                    <span>Split: A</span>
+                    <input type="number" name="ab_split_pct" value="50" min="10" max="90" class="w-16 px-2 py-1 text-xs border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                    <span>% / B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Programación -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="font-semibold text-sm"> Cuándo enviar</h3>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="radio" name="cuando" value="ahora" checked @change="programada = false">
+                Enviar ahora (al guardar)
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="radio" name="cuando" value="programada" @change="programada = true">
+                Programar para más tarde
+            </label>
+            <input type="datetime-local" name="enviar_at" x-show="programada" class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <input type="hidden" name="enviar_ahora" :value="!programada ? 'on' : ''">
+        </div>
+
+        <!-- Tracking -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-2">
+            <h3 class="font-semibold text-sm"> Tracking</h3>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="tracking_aperturas" checked class="rounded">
+                Tracking de aperturas (pixel 1x1)
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="tracking_clicks" checked class="rounded">
+                Tracking de clics (reescritura de URLs)
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="incluir_unsubscribe" checked class="rounded">
+                Incluir enlace de baja (obligatorio por RGPD)
+            </label>
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <a href="/campanas" class="px-4 py-2 rounded-lg border border-slate-200 text-sm">Cancelar</a>
+            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-sm font-medium">
+                <i data-lucide="send" class="h-4 w-4"></i> Crear y enviar
+            </button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

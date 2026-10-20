@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Ajustar permisos</title></head>
+<body><div layout:fragment="content">
+<a href="/permisos-granulares" class="text-xs text-slate-500 mb-3 inline-block">← Permisos por persona</a>
+<div class="rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-5 mb-5 text-white">
+    <h2 class="text-lg font-bold" th:text="${'Permisos de ' + usuario.get('name')}">—</h2>
+    <p class="text-sm text-white/70 mt-1">Rol: <b th:text="${rolNombre}">—</b>. Deja «Según su rol» o elige otra opción para darle más o menos acceso en esa sección.</p>
+</div>
+
+<form method="post" th:action="@{|/permisos-granulares/${usuario.get('id')}/guardar|}"
+      class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-neutral-800/60 text-slate-600 dark:text-slate-300">
+            <tr>
+                <th class="text-left px-4 py-2.5 font-semibold">Sección</th>
+                <th class="text-left px-3 py-2.5 font-semibold whitespace-nowrap">Su rol le da</th>
+                <th class="text-left px-4 py-2.5 font-semibold">Acceso de esta persona</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+        <tr th:each="f : ${filas}" th:classappend="${f.get('ajuste') != 'rol'} ? 'bg-amber-50/60 dark:bg-amber-900/10'">
+            <td class="px-4 py-2.5">
+                <div class="font-medium" th:text="${f.get('nombre')}">—</div>
+                <div class="text-xs text-slate-500" th:text="${f.get('descripcion')}">—</div>
+            </td>
+            <td class="px-3 py-2.5 text-xs whitespace-nowrap" th:switch="${f.get('delRol')}">
+                <span th:case="'WRITE'" class="text-emerald-700 dark:text-emerald-400 font-semibold">Ver y modificar</span>
+                <span th:case="'READ'" class="text-blue-700 dark:text-blue-400">Ver</span>
+                <span th:case="*" class="text-slate-400">Sin acceso</span>
+            </td>
+            <td class="px-4 py-2.5">
+                <select th:name="${'s_' + f.get('seccion')}"
+                        class="w-full max-w-[220px] px-2.5 py-1.5 text-sm border border-slate-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800">
+                    <option value="rol" th:selected="${f.get('ajuste') == 'rol'}">Según su rol</option>
+                    <option value="NONE" th:selected="${f.get('ajuste') == 'NONE'}">Sin acceso</option>
+                    <option value="READ" th:selected="${f.get('ajuste') == 'READ'}">Ver</option>
+                    <option value="WRITE" th:selected="${f.get('ajuste') == 'WRITE'}">Ver y modificar</option>
+                </select>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="px-4 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-xs text-slate-500">Los cambios quedan en el registro de actividad.</p>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium">Guardar permisos</button>
+    </div>
+</form>
+</div></body></html>

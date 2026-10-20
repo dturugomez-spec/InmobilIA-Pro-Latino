@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu selección de inmuebles</title>
+    <meta name="robots" content="noindex,nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        [x-cloak] { display: none !important; }
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center px-4">
+    <p class="text-slate-500 text-center" th:text="${error}">—</p>
+</div>
+
+<div th:unless="${error}" class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Cabecera -->
+    <div class="brand-grad rounded-2xl shadow-xl p-7 text-white mb-5">
+        <p class="text-xs uppercase tracking-wider text-white/60">Tu selección personalizada</p>
+        <h1 class="display text-2xl md:text-3xl font-extrabold mt-1" th:text="${sel.get('titulo')}">—</h1>
+        <p class="text-white/50 text-xs mt-3" th:if="${branding != null}"
+           th:text="'Preparada por ' + ${branding.get('nombre')}">—</p>
+    </div>
+
+    <div th:if="${sel.get('mensaje_agente')}" class="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-4 mb-5 text-sm text-slate-700" th:text="${sel.get('mensaje_agente')}">—</div>
+
+    <p class="text-sm text-slate-500 mb-4">Marca lo que te gusta y pide visita. Tu agente lo verá al instante. </p>
+
+    <!-- Inmuebles -->
+    <div class="space-y-4">
+        <div th:each="it : ${items}" th:with="p=${it.get('prop')}"
+             class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 overflow-hidden"
+             x-data="card()" th:data-id="${it.get('id')}" th:data-r="${it.get('reaccion')}"
+             x-init="id=$el.dataset.id; r=$el.dataset.r||''">
+            <div class="relative aspect-[16/9] bg-slate-100">
+                <img th:if="${p != null and #bools.isTrue(p.get('featured_photo'))}" th:src="${p.get('featured_photo')}"
+                     class="absolute inset-0 w-full h-full object-cover" alt="" loading="lazy">
+                <div th:unless="${p != null and #bools.isTrue(p.get('featured_photo'))}" class="absolute inset-0 flex items-center justify-center text-slate-300">
+                    <span class="text-5xl"></span>
+                </div>
+                <div class="absolute top-3 right-3 brand-grad text-white px-3 py-1 rounded-full text-sm font-bold"
+                     th:if="${p != null and (p.get('current_value') != null or p.get('purchase_price') != null)}"
+                     th:text="${#numbers.formatInteger(p.get('current_value') ?: p.get('purchase_price'), 0, 'POINT')} + ' €'">—</div>
+            </div>
+            <div class="p-5">
+                <h3 class="display text-lg font-bold" th:text="${p != null ? (p.get('name') ?: p.get('address')) : 'Inmueble'}">—</h3>
+                <p class="text-sm text-slate-500" th:if="${p != null}" th:text="${(p.get('city') ?: '') + (p.get('type') != null ? ' · ' + p.get('type') : '')}">—</p>
+                <div class="flex flex-wrap gap-4 mt-3 text-sm text-slate-600" th:if="${p != null}">
+                    <span th:if="${p.get('bedrooms')}" th:text="' ' + ${#numbers.formatInteger(p.get('bedrooms'), 0)} + ' hab'">—</span>
+                    <span th:if="${p.get('bathrooms')}" th:text="' ' + ${#numbers.formatInteger(p.get('bathrooms'), 0)} + ' baños'">—</span>
+                    <span th:if="${p.get('area_m2')}" th:text="' ' + ${#numbers.formatInteger(p.get('area_m2'), 0)} + ' m²'">—</span>
+                </div>
+
+                <!-- Reacciones -->
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button @click="set('favorito')" :class="r==='favorito' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'"
+                            class="px-4 py-2 rounded-xl text-sm font-bold transition"> Me gusta</button>
+                    <button @click="set('visita')" :class="r==='visita' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200'"
+                            class="px-4 py-2 rounded-xl text-sm font-bold transition"> Pedir visita</button>
+                    <button @click="set('descartado')" :class="r==='descartado' ? 'bg-slate-600 text-white' : 'bg-slate-100 text-slate-500'"
+                            class="px-4 py-2 rounded-xl text-sm font-bold transition"> No me encaja</button>
+                    <span x-show="saved" x-cloak class="self-center text-xs text-emerald-600"> Guardado</span>
+                </div>
+                <input x-model="comentario" @blur="if(r) set(r)" type="text" placeholder="Deja un comentario para tu agente (opcional)"
+                       class="w-full mt-3 px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm">
+            </div>
+        </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">Powered by <strong>InmobilIA Pro</strong></p>
+</div>
+
+<script th:inline="javascript">
+const TOKEN = /*[[${token}]]*/ '';
+function card() {
+    return {
+        id:'', r:'', comentario:'', saved:false,
+        async set(reaccion) {
+            this.r = reaccion;
+            try {
+                await fetch('/c/'+TOKEN+'/reaccion', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({item_id:this.id, reaccion:reaccion, comentario:this.comentario})});
+                this.saved = true; setTimeout(()=>this.saved=false, 1500);
+            } catch(e){}
+        }
+    }
+}
+</script>
+</body>
+</html>

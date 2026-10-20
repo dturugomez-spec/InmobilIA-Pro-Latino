@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Análisis de rentabilidad</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-emerald-700 to-green-900 p-6 mb-5 text-white flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="h-6 w-6"></i> Análisis de rentabilidad
+            </h2>
+            <p class="text-sm text-white/80 mt-1">Compara propiedades por TIR, cash-on-cash y rentabilidad neta.</p>
+        </div>
+        <a href="/rentabilidad/nuevo" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-emerald-900 hover:bg-white/90 text-sm font-medium">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nuevo análisis
+        </a>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+            <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                <th class="text-left px-4 py-3">Nombre</th>
+                <th class="text-right px-4 py-3">Precio</th>
+                <th class="text-right px-4 py-3">Renta/mes</th>
+                <th class="text-right px-4 py-3">Rent. bruta</th>
+                <th class="text-right px-4 py-3">Rent. neta</th>
+                <th class="text-right px-4 py-3">Cash-on-Cash</th>
+                <th class="text-right px-4 py-3">TIR</th>
+                <th class="text-left px-4 py-3">Creado</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="a : ${analisis}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                <td class="px-4 py-3 font-medium" th:text="${a.get('nombre')}">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${#numbers.formatDecimal(a.get('precio_compra') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${#numbers.formatDecimal(a.get('renta_mensual') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${a.get('rentabilidad_bruta') ?: '—'} + ' %'">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs font-bold text-emerald-700" th:text="${a.get('rentabilidad_neta') ?: '—'} + ' %'">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-blue-700" th:text="${a.get('cash_on_cash') ?: '—'} + ' %'">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-purple-700" th:text="${a.get('tir_estimada') ?: '—'} + ' %'">—</td>
+                <td class="px-4 py-3 text-xs text-slate-500" th:text="${a.get('created_at') != null ? #strings.substring(a.get('created_at'), 0, 10) : '—'}">—</td>
+            </tr>
+            <tr th:if="${analisis.isEmpty()}"><td colspan="8" class="py-12 text-center text-slate-500 text-sm">Sin análisis. Crea el primero.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

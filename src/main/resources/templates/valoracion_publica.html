@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Cuánto vale tu casa? · Valoración gratis en 30 segundos</title>
+    <meta name="description" content="Valora tu vivienda gratis al instante con inteligencia artificial. Sin compromiso.">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        [x-cloak] { display: none !important; }
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center">
+    <p class="text-slate-500" th:text="${error}">—</p>
+</div>
+
+<div th:unless="${error}" x-data="valoracion()" class="max-w-2xl mx-auto px-4 py-10">
+
+    <!-- Cabecera -->
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-4">
+             Valoración gratuita · sin compromiso
+        </div>
+        <h1 class="display text-3xl md:text-4xl font-extrabold">¿Cuánto vale tu casa?</h1>
+        <p class="text-slate-600 mt-2">Descúbrelo en 30 segundos con nuestra valoración inteligente.</p>
+        <p class="text-xs text-slate-400 mt-1" th:text="'Ofrecido por ' + ${empresa}">—</p>
+    </div>
+
+    <!-- PASO 1: datos del inmueble -->
+    <div x-show="paso === 1" x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Tipo de inmueble</label>
+                <select x-model="f.tipo" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                    <option value="piso">Piso</option><option value="atico">Ático</option>
+                    <option value="casa">Casa / Chalet</option><option value="duplex">Dúplex</option>
+                    <option value="estudio">Estudio</option><option value="local">Local</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Estado</label>
+                <select x-model="f.estado" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                    <option value="buen_estado">Buen estado</option>
+                    <option value="reformado">Reformado</option>
+                    <option value="nuevo">Nuevo / a estrenar</option>
+                    <option value="a_reformar">A reformar</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Municipio</label>
+                <input x-model="f.municipio" type="text" placeholder="Ej. Madrid" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Provincia</label>
+                <input x-model="f.provincia" type="text" placeholder="Ej. Madrid" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Metros cuadrados</label>
+                <input x-model="f.metros" type="number" placeholder="Ej. 90" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Habitaciones</label>
+                <input x-model="f.habitaciones" type="number" placeholder="Ej. 3" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-4 mt-4 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="f.ascensor" class="rounded"> Ascensor</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="f.garaje" class="rounded"> Garaje</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="f.terraza" class="rounded"> Terraza</label>
+        </div>
+        <button @click="calcular()" :disabled="loading || !f.metros || !f.municipio"
+                class="w-full mt-6 px-6 py-4 rounded-xl brand-grad text-white font-bold text-lg disabled:opacity-50 transition">
+            <span x-show="!loading">Valorar mi vivienda →</span>
+            <span x-show="loading">⏳ Calculando...</span>
+        </button>
+        <p class="text-center text-xs text-slate-400 mt-3">Valoración orientativa gratuita. No compartimos tus datos.</p>
+    </div>
+
+    <!-- PASO 2: resultado -->
+    <div x-show="paso === 2" x-cloak x-transition class="space-y-5">
+        <div class="brand-grad rounded-2xl shadow-xl p-8 text-white text-center">
+            <p class="text-sm text-white/70 uppercase tracking-wider">Valoración estimada</p>
+            <p class="display text-4xl md:text-5xl font-extrabold mt-2" x-text="fmt(r.precio_estimado) + ' €'"></p>
+            <p class="text-white/80 mt-2 text-sm">
+                Rango: <span x-text="fmt(r.precio_min)"></span> € – <span x-text="fmt(r.precio_max)"></span> €
+            </p>
+            <div class="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-white/15 text-xs">
+                <span x-text="'~' + fmt(r.eur_m2) + ' €/m²'"></span> ·
+                <span x-text="'confianza ' + r.confianza"></span>
+            </div>
+        </div>
+
+        <div x-show="r.comentario" class="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-4 text-sm text-slate-700" x-text="r.comentario"></div>
+
+        <!-- Captura de contacto -->
+        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 md:p-8">
+            <h2 class="display text-xl font-bold mb-1">¿Quieres una valoración profesional exacta?</h2>
+            <p class="text-sm text-slate-600 mb-5">Un agente experto la afina gratis con visita y datos de mercado reales.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input x-model="c.nombre" type="text" placeholder="Tu nombre *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <input x-model="c.telefono" type="tel" placeholder="Teléfono *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <input x-model="c.email" type="email" placeholder="Email *" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none md:col-span-2">
+                <select x-model="c.quiere_vender" class="px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none md:col-span-2">
+                    <option value="explorando">Solo estoy explorando</option>
+                    <option value="3-6m">Quiero vender en 3-6 meses</option>
+                    <option value="ahora">Quiero vender ya</option>
+                </select>
+            </div>
+            <button @click="enviarContacto()" :disabled="enviando || !c.nombre || !c.telefono || !c.email"
+                    class="w-full px-6 py-4 rounded-xl brand-grad text-white font-bold disabled:opacity-50 transition">
+                <span x-show="!enviando">Solicitar valoración profesional gratis</span>
+                <span x-show="enviando">⏳ Enviando...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PASO 3: gracias -->
+    <div x-show="paso === 3" x-cloak x-transition class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-10 text-center">
+        <div class="text-6xl mb-4"></div>
+        <h2 class="display text-2xl font-bold">¡Gracias!</h2>
+        <p class="text-slate-600 mt-2">Un agente te contactará muy pronto para afinar la valoración de tu vivienda.</p>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">Powered by <strong>InmobilIA Pro</strong></p>
+</div>
+
+<script th:inline="javascript">
+const TOKEN = /*[[${token}]]*/ '';
+function valoracion() {
+    return {
+        paso: 1, loading: false, enviando: false,
+        f: { tipo:'piso', estado:'buen_estado', municipio:'', provincia:'', metros:'', habitaciones:'', ascensor:false, garaje:false, terraza:false },
+        c: { nombre:'', telefono:'', email:'', quiere_vender:'explorando' },
+        r: {},
+        fmt(v){ return new Intl.NumberFormat('es-ES').format(v||0); },
+        async calcular() {
+            this.loading = true;
+            try {
+                const res = await fetch('/v/'+TOKEN+'/calcular', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(this.f)});
+                this.r = await res.json();
+                if (this.r.ok) this.paso = 2;
+            } catch(e){ alert('Error al calcular. Inténtalo de nuevo.'); }
+            this.loading = false;
+        },
+        async enviarContacto() {
+            this.enviando = true;
+            try {
+                const payload = Object.assign({}, this.f, this.c);
+                await fetch('/v/'+TOKEN+'/contacto', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+                this.paso = 3;
+            } catch(e){ alert('Error al enviar.'); }
+            this.enviando = false;
+        }
+    }
+}
+</script>
+</body>
+</html>

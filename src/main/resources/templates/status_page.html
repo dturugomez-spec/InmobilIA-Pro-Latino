@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Status · InmobilIA Pro</title>
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Inter',sans-serif}</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2"><div class="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-700 to-blue-950 flex items-center justify-center"><span class="text-xs"></span></div><span class="font-bold tracking-tight text-sm">InmobilIA<span class="text-blue-700"> Pro</span></span></a>
+    </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-6 py-12">
+    <div class="text-center mb-8">
+        <div class="inline-flex h-16 w-16 rounded-2xl bg-emerald-100 items-center justify-center mb-4">
+            <span class="text-3xl"></span>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tight">Todos los sistemas operativos</h1>
+        <p class="text-sm text-slate-500 mt-1">Última comprobación: <span class="font-mono" th:text="${health.get('timestamp') != null ? #strings.substring(health.get('timestamp'),0,19) : '—'}">—</span></p>
+    </div>
+
+    <div class="space-y-3">
+        <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4 flex items-center justify-between">
+            <div>
+                <div class="font-semibold text-sm"> Aplicación web</div>
+                <div class="text-xs text-slate-500">inmobiliapro.es</div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Operativo</span>
+        </div>
+
+        <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4 flex items-center justify-between">
+            <div>
+                <div class="font-semibold text-sm"> Base de datos (Supabase)</div>
+                <div class="text-xs text-slate-500">PostgreSQL + Storage</div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Operativo</span>
+        </div>
+
+        <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4 flex items-center justify-between">
+            <div>
+                <div class="font-semibold text-sm"> IA (OpenAI)</div>
+                <div class="text-xs text-slate-500">GPT-4o</div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Operativo</span>
+        </div>
+
+        <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4 flex items-center justify-between">
+            <div>
+                <div class="font-semibold text-sm"> Pagos (Stripe)</div>
+                <div class="text-xs text-slate-500">Suscripciones + Facturación</div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Operativo</span>
+        </div>
+    </div>
+
+    <div class="mt-12 rounded-xl bg-blue-50 ring-1 ring-blue-200 p-5 text-center">
+        <p class="text-sm text-blue-900"><strong>¿Tienes problemas?</strong> Escríbenos a <a href="mailto:inmobilia.support@gmail.com" class="underline font-semibold">inmobilia.support@gmail.com</a></p>
+    </div>
+
+    <div class="mt-8 text-center text-xs text-slate-400">
+        Esta página se actualiza automáticamente cada 5 minutos · <a href="/healthz/full" class="hover:underline">Ver JSON</a>
+    </div>
+</main>
+
+</body>
+</html>

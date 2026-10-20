@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>SMS</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-violet-700 to-purple-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="message-circle" class="h-6 w-6"></i> SMS Marketing</h2>
+    <p class="text-sm text-white/80 mt-1">Envíos vía Twilio, Esendex, Lleida.net</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <form method="post" action="/sms/config" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-2">
+        <h3 class="font-semibold text-sm"> Configuración Twilio</h3>
+        <input type="text" name="account_sid" placeholder="Account SID" th:value="${cfg.get('account_sid')}" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="auth_token" placeholder="Auth Token" th:value="${cfg.get('auth_token')}" class="w-full px-3 py-2 text-sm font-mono border rounded">
+        <input type="text" name="numero_emisor" placeholder="+34..." th:value="${cfg.get('numero_emisor')}" class="w-full px-3 py-2 text-sm border rounded">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" th:checked="${cfg.get('activo')}"> Activo</label>
+        <button class="px-4 py-2 rounded bg-violet-700 text-white text-sm"> Guardar</button>
+    </form>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-semibold text-sm mb-3"> Enviar SMS</h3>
+        <input type="tel" id="destino" placeholder="+34..." class="w-full px-3 py-2 text-sm border rounded mb-2">
+        <textarea id="msg" rows="3" maxlength="160" placeholder="Mensaje (máx 160)" class="w-full px-3 py-2 text-sm border rounded mb-2"></textarea>
+        <button onclick="enviarSms()" class="w-full px-4 py-2 rounded bg-violet-700 text-white text-sm"> Enviar</button>
+    </div>
+</div>
+
+<div class="mt-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+    <h3 class="p-4 font-semibold text-sm border-b"> Historial</h3>
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50"><tr class="text-[10px] uppercase">
+            <th class="text-left px-3 py-2">Fecha</th><th class="text-left px-3 py-2">Destino</th>
+            <th class="text-left px-3 py-2">Mensaje</th><th class="text-left px-3 py-2">Estado</th>
+        </tr></thead>
+        <tbody class="divide-y">
+        <tr th:each="m : ${mensajes}">
+            <td class="px-3 py-2 font-mono text-xs" th:text="${#strings.substring(m.get('enviado_at'),0,16)}">—</td>
+            <td class="px-3 py-2 font-mono text-xs" th:text="${m.get('destinatario')}">—</td>
+            <td class="px-3 py-2 text-xs truncate max-w-xs" th:text="${m.get('mensaje')}">—</td>
+            <td class="px-3 py-2">
+                <span th:if="${m.get('estado') == 'enviado'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Enviado</span>
+                <span th:if="${m.get('estado') == 'fallido'}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Fallido</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+async function enviarSms() {
+    const fd = new FormData();
+    fd.append('destino', document.getElementById('destino').value);
+    fd.append('mensaje', document.getElementById('msg').value);
+    const r = await fetch('/sms/enviar', {method:'POST', body:fd});
+    const d = await r.json();
+    alert(d.ok ? ' Enviado' : ' ' + d.error);
+    if (d.ok) location.reload();
+}
+</script>
+</div></body></html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Simulador de hipoteca</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="landmark" class="h-6 w-6"></i> Simulador de hipoteca
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Imán de captación de compradores. Comparte el enlace y cada comprador queda captado con su presupuesto y capacidad de compra, listo para el matching.</p>
+</div>
+
+<!-- Enlace compartible -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5" x-data="{copied:false}">
+    <p class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-2">
+        <i data-lucide="link" class="h-4 w-4"></i> Tu enlace público del simulador
+    </p>
+    <p class="text-xs text-slate-500 mb-3">Ponlo en tu web, en cada ficha de propiedad, en redes o en tu firma de email. No requiere registro del comprador.</p>
+    <div class="flex gap-2 flex-wrap">
+        <input id="urlSim" type="text" readonly th:value="${urlPublica}"
+               class="flex-1 min-w-0 px-4 py-3 rounded-lg bg-slate-50 dark:bg-neutral-800 ring-1 ring-slate-200 dark:ring-neutral-700 font-mono text-sm">
+        <button @click="navigator.clipboard.writeText(document.getElementById('urlSim').value); copied=true; setTimeout(()=>copied=false,2000)"
+                class="px-4 py-3 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold whitespace-nowrap flex items-center gap-2">
+            <i data-lucide="copy" class="h-4 w-4"></i><span x-text="copied ? '¡Copiado!' : 'Copiar'">Copiar</span>
+        </button>
+        <a th:href="${urlPublica}" target="_blank"
+           class="px-4 py-3 rounded-lg bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-sm font-bold whitespace-nowrap flex items-center gap-2">
+            <i data-lucide="external-link" class="h-4 w-4"></i> Abrir
+        </a>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2">
+        <a th:href="${'https://wa.me/?text=' + #uris.escapeQueryParam('Calcula gratis tu hipoteca y hasta cuánto puedes comprar: ' + urlPublica)}" target="_blank"
+           class="text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100 font-semibold"> Compartir por WhatsApp</a>
+        <a th:href="${'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + #uris.escapeQueryParam(urlPublica)}" target="_blank"
+           class="text-xs px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100 font-semibold"> Generar QR</a>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+        <p class="text-[10px] uppercase text-blue-700"> Simulaciones</p>
+        <p class="text-2xl font-bold mt-1 text-blue-700" th:text="${#lists.size(recibidas)}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Con contacto</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700" th:text="${conContacto}">0</p>
+    </div>
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700"> Viables</p>
+        <p class="text-2xl font-bold mt-1 text-amber-700" th:text="${viables}">0</p>
+    </div>
+</div>
+
+<!-- Lista -->
+<div th:if="${#lists.isEmpty(recibidas)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-10 text-center">
+    <i data-lucide="landmark" class="h-10 w-10 mx-auto text-slate-300"></i>
+    <p class="mt-3 font-semibold text-slate-600">Aún no hay simulaciones</p>
+    <p class="text-sm text-slate-400 mt-1">Comparte tu enlace y empezarán a entrar compradores con presupuesto definido.</p>
+</div>
+
+<div class="space-y-3">
+    <div th:each="v : ${recibidas}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <p class="font-bold text-lg" th:text="${v.get('comprador_nombre') ?: 'Anónimo'}">—</p>
+                    <span th:if="${v.get('viable')}" class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold"> Viable</span>
+                    <span th:unless="${v.get('viable')}" class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold"> Esfuerzo alto</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-700 dark:text-slate-200"
+                   th:text="${'Busca en: ' + (v.get('zona_interes') ?: '—')}">—</p>
+                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                    <span th:if="${v.get('comprador_email')}"> <a th:href="${'mailto:' + v.get('comprador_email')}" class="hover:underline" th:text="${v.get('comprador_email')}">—</a></span>
+                    <span th:if="${v.get('comprador_telefono')}"> <a th:href="${'tel:' + v.get('comprador_telefono')}" class="hover:underline" th:text="${v.get('comprador_telefono')}">—</a></span>
+                    <span class="font-mono" th:if="${v.get('created_at')}" th:text="${#strings.substring(v.get('created_at'), 0, 16)}">—</span>
+                </div>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <p class="text-xs text-slate-400">Capacidad de compra</p>
+                <p class="text-xl font-extrabold text-emerald-600" th:text="${#numbers.formatInteger(v.get('capacidad_max'), 0, 'POINT') + ' €'}">—</p>
+                <p class="text-[11px] text-slate-400" th:text="'cuota ~' + ${#numbers.formatInteger(v.get('cuota_estimada'), 0, 'POINT')} + ' €/mes'">—</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+
+</div></body></html>

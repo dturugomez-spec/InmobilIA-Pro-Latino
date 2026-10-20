@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Importar banco</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/integrations" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4">
+        <i data-lucide="arrow-left" class="h-3 w-3"></i> Integraciones
+    </a>
+
+    <div class="max-w-3xl mx-auto">
+        <form action="/integrations/bank/import" method="post" enctype="multipart/form-data" x-data="{ preset: 'custom' }"
+              class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-neutral-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center">
+                        <i data-lucide="banknote" class="h-5 w-5 text-emerald-700 dark:text-emerald-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">Importar movimientos bancarios</h2>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Sube el CSV exportado desde tu banca online. Se auto-conciliarán los cobros con tus alquileres.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- Presets de banco -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tu banco</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="bbva" @change="$refs.sep.value = ';'; $refs.cd.value = '0'; $refs.cdesc.value = '2'; $refs.camt.value = '4'; $refs.skip.value = '4'" class="sr-only">
+                            <div :class="preset === 'bbva' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">BBVA</div>
+                                <div class="text-[11px] text-slate-500">CSV ;</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="santander" @change="$refs.sep.value = ';'; $refs.cd.value = '0'; $refs.cdesc.value = '1'; $refs.camt.value = '3'; $refs.skip.value = '8'" class="sr-only">
+                            <div :class="preset === 'santander' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">Santander</div>
+                                <div class="text-[11px] text-slate-500">CSV ;</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="ing" @change="$refs.sep.value = ','; $refs.cd.value = '0'; $refs.cdesc.value = '1'; $refs.camt.value = '6'; $refs.skip.value = '6'" class="sr-only">
+                            <div :class="preset === 'ing' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">ING</div>
+                                <div class="text-[11px] text-slate-500">CSV ,</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="caixa" @change="$refs.sep.value = ';'; $refs.cd.value = '0'; $refs.cdesc.value = '1'; $refs.camt.value = '2'; $refs.skip.value = '1'" class="sr-only">
+                            <div :class="preset === 'caixa' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">CaixaBank</div>
+                                <div class="text-[11px] text-slate-500">CSV ;</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="sabadell" @change="$refs.sep.value = ';'; $refs.cd.value = '0'; $refs.cdesc.value = '1'; $refs.camt.value = '3'; $refs.skip.value = '1'" class="sr-only">
+                            <div :class="preset === 'sabadell' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">Sabadell</div>
+                                <div class="text-[11px] text-slate-500">CSV ;</div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" x-model="preset" value="custom" class="sr-only">
+                            <div :class="preset === 'custom' ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30' : 'border-slate-200 dark:border-neutral-700'" class="border rounded-lg p-3 transition-all">
+                                <div class="font-semibold text-sm">Otro / personalizado</div>
+                                <div class="text-[11px] text-slate-500">Configurar manualmente</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Archivo -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Archivo CSV</label>
+                    <input type="file" name="file" accept=".csv,.txt" required
+                           class="block w-full text-sm text-slate-600 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-brand-100 file:text-brand-800 dark:file:bg-brand-950/50 dark:file:text-brand-300 hover:file:bg-brand-200 dark:hover:file:bg-brand-950/70 cursor-pointer">
+                </div>
+
+                <!-- Configuración avanzada -->
+                <details class="rounded-lg bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-slate-200 dark:ring-neutral-700">
+                    <summary class="px-4 py-2.5 cursor-pointer text-sm font-medium flex items-center gap-2">
+                        <i data-lucide="settings" class="h-4 w-4 text-slate-500"></i>
+                        Configuración del CSV
+                        <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 ml-auto"></i>
+                    </summary>
+                    <div class="p-4 pt-0 grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Separador</label>
+                            <input x-ref="sep" type="text" name="separator" maxlength="1" value=";"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Col. fecha</label>
+                            <input x-ref="cd" type="number" min="0" name="colDate" value="0"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Col. desc.</label>
+                            <input x-ref="cdesc" type="number" min="0" name="colDesc" value="1"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Col. importe</label>
+                            <input x-ref="camt" type="number" min="0" name="colAmount" value="2"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg text-center font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Filas saltar</label>
+                            <input x-ref="skip" type="number" min="0" name="skipRows" value="1"
+                                   class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg text-center font-mono">
+                        </div>
+                    </div>
+                </details>
+
+                <div class="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 p-3 flex items-start gap-2.5">
+                    <i data-lucide="sparkles" class="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"></i>
+                    <div class="text-xs text-blue-800 dark:text-blue-300">
+                        <p class="font-semibold mb-0.5">Auto-conciliación inteligente</p>
+                        <p>Los ingresos cuyo importe coincida (±5%) con la renta de algún inquilino se marcarán automáticamente como "Cobro alquiler" y se vincularán a su propiedad.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2">
+                <a href="/integrations" class="px-3.5 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-100 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium">Cancelar</a>
+                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium shadow-card">
+                    <i data-lucide="upload" class="h-4 w-4"></i> Importar movimientos
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

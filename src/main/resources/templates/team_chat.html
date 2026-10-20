@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Chat equipo</title></head>
+<body>
+<div layout:fragment="content" x-data="chat()">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 h-[calc(100vh-180px)]">
+
+        <!-- Miembros -->
+        <aside class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden flex flex-col">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800 font-semibold text-sm"> Miembros del equipo</div>
+            <ul class="flex-1 overflow-y-auto p-2 space-y-0.5">
+                <li th:each="m : ${members}" class="px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 flex items-center gap-2.5">
+                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-xs font-bold flex-shrink-0"
+                         th:text="${m.get('name') != null and !#strings.isEmpty(m.get('name')) ? #strings.toUpperCase(#strings.substring(m.get('name'),0,1)) : 'U'}">U</div>
+                    <div class="min-w-0">
+                        <div class="text-sm font-medium truncate" th:text="${m.get('name') ?: m.get('email')}">—</div>
+                        <div class="text-[10px] text-slate-500 truncate" th:text="${m.get('role')}">rol</div>
+                    </div>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Canal -->
+        <main class="md:col-span-3 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden flex flex-col">
+            <div class="px-5 py-3 border-b border-slate-200 dark:border-neutral-800 flex items-center gap-2">
+                <span class="text-xl"># </span>
+                <h2 class="font-semibold">Canal general</h2>
+                <span class="ml-auto text-xs text-slate-500" x-text="msgs.length + ' mensajes'">0</span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-4" id="chatBody">
+                <template x-for="m in msgs" :key="m.id">
+                    <div class="flex gap-3">
+                        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-xs font-bold flex-shrink-0" x-text="(m.author||'U').charAt(0).toUpperCase()">U</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-baseline gap-2">
+                                <span class="font-semibold text-sm" x-text="m.author || 'Usuario'">Usuario</span>
+                                <span class="text-[10px] text-slate-400 font-mono" x-text="formatTime(m.created_at)"></span>
+                            </div>
+                            <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line" x-text="m.body">—</p>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="msgs.length === 0" class="text-center py-12 text-sm text-slate-500">Aún no hay mensajes. Empieza la conversación </div>
+            </div>
+
+            <form @submit.prevent="send()" class="border-t border-slate-200 dark:border-neutral-800 p-3 flex gap-2">
+                <input type="text" x-model="message" placeholder="Escribe un mensaje al equipo..." class="flex-1 px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                <button type="submit" :disabled="!message.trim()" class="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 disabled:opacity-50 text-white text-sm font-medium">
+                    <i data-lucide="send" class="h-4 w-4"></i>
+                </button>
+            </form>
+        </main>
+    </div>
+
+</div>
+
+<script>
+function chat() {
+    return {
+        msgs: [],
+        message: '',
+        async load() {
+            const r = await fetch('/api/team/chat/recent');
+            this.msgs = await r.json() || [];
+            // Mejorar con autor
+            this.msgs.forEach(m => { m.author = m.author || 'Usuario'; });
+            this.scrollDown();
+        },
+        async send() {
+            if (!this.message.trim()) return;
+            const body = this.message;
+            this.message = '';
+            await fetch('/api/team/chat', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ body })
+            });
+            this.load();
+        },
+        formatTime(iso) {
+            try { return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); }
+            catch(e) { return ''; }
+        },
+        scrollDown() { setTimeout(() => { const el = document.getElementById('chatBody'); if (el) el.scrollTop = el.scrollHeight; }, 50); },
+        init() {
+            this.load();
+            setInterval(() => this.load(), 15000);  // refresh cada 15s
+        }
+    };
+}
+</script>
+</body>
+</html>

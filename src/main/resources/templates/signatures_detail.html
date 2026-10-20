@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Documento</title></head>
+<body>
+<div layout:fragment="content">
+
+    <a href="/firmas" class="text-xs text-slate-500 hover:underline flex items-center gap-1 mb-4">
+        <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i> Volver
+    </a>
+
+    <div class="rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+                <p class="text-xs text-white/60 uppercase">Documento</p>
+                <h2 class="text-xl font-bold mt-1" th:text="${documento.get('titulo')}">—</h2>
+                <p class="text-xs text-white/70 mt-2 capitalize" th:text="${documento.get('tipo')}">—</p>
+                <p class="text-[10px] text-white/50 mt-2 font-mono" th:text="${'Hash: ' + documento.get('documento_hash')}">—</p>
+            </div>
+            <div class="text-right">
+                <span th:switch="${documento.get('estado')}" class="inline-flex text-xs font-bold px-3 py-1 rounded-full">
+                    <span th:case="'borrador'" class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full"> Borrador</span>
+                    <span th:case="'enviado'" class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full"> Enviado</span>
+                    <span th:case="'parcialmente_firmado'" class="bg-amber-100 text-amber-900 px-3 py-1 rounded-full">⏳ Parcial</span>
+                    <span th:case="'firmado'" class="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full"> Firmado</span>
+                    <span th:case="'rechazado'" class="bg-red-100 text-red-900 px-3 py-1 rounded-full"> Rechazado</span>
+                </span>
+                <p class="text-[10px] text-white/60 mt-2">
+                    <span th:if="${integridad}" class="text-emerald-300"> Integridad verificada</span>
+                    <span th:unless="${integridad}" class="text-red-300"> Integridad rota</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Documento + firmantes -->
+        <div class="lg:col-span-2 space-y-4">
+            <!-- Acciones -->
+            <div th:if="${documento.get('estado') == 'borrador'}" class="rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-center justify-between">
+                <p class="text-sm text-amber-900">Listo para enviar a los firmantes</p>
+                <form method="post" th:action="@{|/firmas/${documento.get('id')}/enviar|}">
+                    <button class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium">
+                         Enviar para firma
+                    </button>
+                </form>
+            </div>
+
+            <!-- Firmantes -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3"> Firmantes (<span th:text="${firmantes.size()}">0</span>)</h3>
+                <ul class="space-y-2">
+                    <li th:each="f : ${firmantes}" class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+                        <div>
+                            <p class="text-sm font-medium" th:text="${f.get('nombre')}">—</p>
+                            <p class="text-xs text-slate-500" th:text="${f.get('email') + ' · ' + (f.get('rol') ?: '')}">—</p>
+                            <p class="text-[10px] font-mono text-slate-400" th:if="${f.get('firma_hash')}" th:text="${'Hash firma: ' + #strings.substring(f.get('firma_hash'),0,16) + '...'}">—</p>
+                        </div>
+                        <div class="text-right">
+                            <span th:switch="${f.get('estado')}">
+                                <span th:case="'pendiente'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Pendiente</span>
+                                <span th:case="'visto'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Visto</span>
+                                <span th:case="'firmado'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Firmado</span>
+                                <span th:case="'rechazado'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Rechazado</span>
+                            </span>
+                            <p class="text-[10px] text-slate-500 mt-1" th:if="${f.get('firmado_at')}" th:text="${#strings.substring(f.get('firmado_at'),0,16)}">—</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vista previa del contrato -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="font-semibold text-sm mb-3"> Contenido del documento</h3>
+                <div class="prose prose-sm max-w-none dark:prose-invert border border-slate-200 rounded-lg p-4 max-h-96 overflow-y-auto" th:utext="${documento.get('contenido_html')}"></div>
+            </div>
+        </div>
+
+        <!-- Auditoría -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="h-4 w-4"></i> Auditoría
+            </h3>
+            <p class="text-[10px] text-slate-500 mb-3">Cadena hash blockchain-like. Cada evento enlazado al anterior. Cualquier alteración rompe la integridad.</p>
+            <ul class="space-y-3 text-xs">
+                <li th:each="a : ${auditoria}" class="border-l-2 border-slate-200 dark:border-neutral-700 pl-3">
+                    <p class="font-semibold capitalize" th:text="${#strings.replace(a.get('evento'), '_', ' ')}">—</p>
+                    <p class="text-slate-500" th:text="${a.get('detalle')}">—</p>
+                    <p class="text-[10px] font-mono text-slate-400 mt-1" th:text="${#strings.substring(a.get('created_at'),0,16) + ' · ' + (a.get('ip') ?: 'n/a')}">—</p>
+                    <p class="text-[9px] font-mono text-slate-300" th:text="${'#' + #strings.substring(a.get('hash_actual'),0,12)}">—</p>
+                </li>
+                <li th:if="${auditoria.isEmpty()}" class="text-slate-500 italic">Sin eventos.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

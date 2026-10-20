@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Promociones</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-orange-700 to-amber-900 p-6 mb-5 text-white flex items-center justify-between">
+    <div>
+        <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="building" class="h-6 w-6"></i> Promociones de obra nueva</h2>
+        <p class="text-sm text-white/80 mt-1">Gestiona promotoras con plantas, fases, unidades y comercialización.</p>
+    </div>
+    <a href="/promociones/nueva" class="px-4 py-2 rounded-lg bg-white text-amber-900 text-sm font-medium">+ Nueva</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <a th:each="p : ${promociones}" th:href="@{|/promociones/${p.get('id')}|}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden hover:shadow-lg transition">
+        <div class="h-40 bg-cover bg-center" th:style="${p.get('render_principal_url') != null ? 'background-image: url(' + p.get('render_principal_url') + ')' : 'background: linear-gradient(135deg, #f59e0b, #b45309)'}"></div>
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-1">
+                <p class="font-bold text-sm" th:text="${p.get('nombre')}">—</p>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      th:classappend="${p.get('fase') == 'preventa' ? 'bg-emerald-100 text-emerald-700' : (p.get('fase') == 'obras' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-700')}"
+                      th:text="${p.get('fase')}">—</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-2" th:text="${p.get('municipio')}">—</p>
+            <div class="flex items-center justify-between text-xs">
+                <span><span th:text="${p.get('vendidas')}">0</span>/<span th:text="${p.get('total_unidades')}">0</span> ud.</span>
+                <span class="font-mono font-bold" th:text="${#numbers.formatDecimal(p.get('porcentaje_vendido'), 1, 0)} + '%'">0%</span>
+            </div>
+            <div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-500" th:style="|width: ${p.get('porcentaje_vendido')}%|"></div>
+            </div>
+            <p class="text-xs font-mono text-amber-700 mt-2"
+               th:text="'Desde ' + ${#numbers.formatDecimal(p.get('precio_desde') ?: 0, 1, 'POINT', 0, 'COMMA')} + ' €'">—</p>
+        </div>
+    </a>
+    <div th:if="${promociones.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Sin promociones.</div>
+</div>
+</div></body></html>

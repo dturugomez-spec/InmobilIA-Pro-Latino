@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; max-width: 800px; margin: 0 auto; padding: 30px 50px; color: #0f172a; line-height: 1.6; font-size: 13px; background: white; }
+        h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 4px; }
+        h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.075em; color: #1e40af; margin: 28px 0 8px; padding-bottom: 6px; border-bottom: 2px solid #1e40af; }
+        h3 { font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+        p { margin: 6px 0; text-align: justify; }
+        .toolbar { position: sticky; top: 0; background: white; border-bottom: 1px solid #e2e8f0; padding: 10px 0; margin: -30px -50px 20px; padding-left: 50px; padding-right: 50px; display: flex; gap: 8px; }
+        .btn { padding: 6px 14px; border-radius: 6px; font-weight: 500; font-size: 12px; cursor: pointer; border: 1px solid #e2e8f0; background: white; text-decoration: none; color: #0f172a; }
+        .btn-primary { background: #1e40af; color: white; border-color: #1e40af; }
+        .hero { background: linear-gradient(135deg, #1e40af 0%, #312e81 100%); color: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .hero h1 { color: white; }
+        .hero p { color: rgba(255,255,255,0.85); }
+        .grid { display: grid; gap: 12px; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+        .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.075em; color: #64748b; font-weight: 600; margin-bottom: 6px; }
+        .card-value { font-size: 20px; font-weight: 700; font-family: 'Geist Mono', monospace; }
+        .verdict { padding: 16px; border-radius: 8px; text-align: center; font-weight: 700; }
+        .v-ok { background: #d1fae5; color: #065f46; }
+        .v-warn { background: #fef3c7; color: #92400e; }
+        .v-err { background: #fee2e2; color: #991b1b; }
+        ul { padding-left: 18px; margin: 6px 0; }
+        ul li { margin-bottom: 4px; }
+        @media print { .toolbar { display: none; } body { padding: 20px 30px; } .hero { background: #1e40af; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <a href="/herramientas/informe-captador" class="btn">← Volver</a>
+    <button onclick="window.print()" class="btn btn-primary"> Imprimir / PDF</button>
+</div>
+
+<div class="hero">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-bottom: 4px;">Informe profesional de captación</div>
+    <h1 th:text="${data.address ?: 'Inmueble'}">Inmueble</h1>
+    <p style="margin-top: 6px; font-size: 14px;" th:text="${data.city + ' · ' + data.m2 + ' m²' + (data.bedrooms != null and !#strings.isEmpty(data.bedrooms) ? ' · ' + data.bedrooms + ' hab.' : '')}">descripción</p>
+    <p style="margin-top: 12px; font-size: 11px; opacity: 0.7;" th:text="${'Propietario: ' + (data.propietario ?: '—') + ' · Fecha: ' + hoy}">fecha</p>
+</div>
+
+<h2>1. Resumen ejecutivo</h2>
+<p>Tras analizar el mercado de <strong th:text="${data.city}">ciudad</strong> y las características de su inmueble, le presentamos nuestra valoración objetiva basada en datos públicos de INE, Banco de España y operaciones recientes en la zona.</p>
+
+<div class="grid grid-3" style="margin: 16px 0;">
+    <div class="card">
+        <div class="card-title">Precio mercado m²</div>
+        <div class="card-value" th:text="${#numbers.formatDecimal(pricePerM2,0,'POINT',0,'COMMA') + ' €'}">— €</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Media zona INE 2026</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Estimación venta</div>
+        <div class="card-value" style="color: #1e40af" th:text="${#numbers.formatDecimal(estimacionVenta,0,'POINT',0,'COMMA') + ' €'}">— €</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;" th:text="'Rango: ' + ${#numbers.formatDecimal(estimacionMin,0,'POINT',0,'COMMA') + '€ - ' + #numbers.formatDecimal(estimacionMax,0,'POINT',0,'COMMA') + '€'}">rango</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Renta alquiler estimada</div>
+        <div class="card-value" style="color: #10b981" th:text="${#numbers.formatDecimal(rentaMensual,0,'POINT',0,'COMMA') + ' €/mes'}">— €</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;" th:text="'Yield bruto ' + ${yieldBruto + '%'}">—</div>
+    </div>
+</div>
+
+<h2>2. Análisis del precio pretendido</h2>
+<div th:if="${precioPretendido > 0}">
+    <p>Usted nos comenta una pretensión de <strong th:text="${#numbers.formatDecimal(precioPretendido,0,'POINT',0,'COMMA') + ' €'}">— €</strong>. Comparado con la estimación de mercado:</p>
+
+    <div th:classappend="${veredicto == 'AJUSTADO' ? 'verdict v-ok' : (veredicto == 'BAJO' ? 'verdict v-ok' : (veredicto == 'ALGO ALTO' ? 'verdict v-warn' : 'verdict v-err'))}" class="verdict" style="margin: 14px 0;">
+        Veredicto: <span th:text="${veredicto}">—</span>
+        <span th:if="${diff != 0}" th:text="${' (' + (diff > 0 ? '+' : '') + #numbers.formatDecimal(diff,1,1) + '% sobre la estimación de mercado)'}">—</span>
+    </div>
+
+    <div class="card">
+        <h3>⏱ Tiempo estimado en mercado</h3>
+        <p style="margin: 4px 0;"><strong th:text="${diasMercado + ' días'}">— días</strong> hasta encontrar comprador, según comportamiento histórico de inmuebles en su rango de precio.</p>
+    </div>
+</div>
+<div th:unless="${precioPretendido > 0}">
+    <p>Si nos indica el precio que tiene en mente para su inmueble, podremos comparar con la estimación de mercado y darle un veredicto objetivo de viabilidad.</p>
+</div>
+
+<h2>3. Plan de marketing propuesto</h2>
+<ul>
+    <li><strong>Reportaje fotográfico profesional</strong> · 25-30 fotos HDR con realce de luz natural</li>
+    <li><strong>Vídeo tour 360°</strong> recorrido virtual para que los compradores filtren antes de visitar</li>
+    <li><strong>Plano interactivo</strong> con medidas y orientación</li>
+    <li><strong>Publicación en 6+ portales</strong>: Idealista, Fotocasa, Habitaclia, Pisos.com, Yaencontre, redes propias</li>
+    <li><strong>Anuncio destacado</strong> en Idealista durante 30 días para visibilidad máxima</li>
+    <li><strong>Difusión en redes sociales</strong>: Instagram, Facebook, LinkedIn (sin ubicación exacta por seguridad)</li>
+    <li><strong>Newsletter a base de datos</strong>: 500+ contactos cualificados activos en su zona</li>
+    <li><strong>Cartel digital y físico</strong> en la propia finca o ventana</li>
+</ul>
+
+<h2>4. Servicio integral incluido</h2>
+<ul>
+    <li>Visitas siempre acompañadas y registradas (con feedback al propietario)</li>
+    <li>Filtrado financiero del comprador antes de la oferta</li>
+    <li>Negociación profesional del precio</li>
+    <li>Gestión de toda la documentación: nota simple, cédula habitabilidad, IBI, comunidad, certificado energético</li>
+    <li>Asesoramiento fiscal: ITP, AJD, plusvalía municipal, IRPF</li>
+    <li>Acompañamiento en notaría hasta firma de escrituras</li>
+    <li>Atención post-venta durante 6 meses</li>
+</ul>
+
+<h2>5. Honorarios y condiciones</h2>
+<p style="background: #f8fafc; padding: 14px; border-radius: 8px; border-left: 4px solid #1e40af;">
+    <strong>Honorarios:</strong> 3% + IVA sobre el precio final de venta.<br>
+    <strong>Cobro:</strong> Solo si vendemos. Sin coste si no se cierra operación.<br>
+    <strong>Exclusividad:</strong> 4 meses recomendados para optimizar resultados.<br>
+    <strong>Sin gastos previos:</strong> Fotos, vídeos, anuncios, certificados — todo a nuestra cuenta.
+</p>
+
+<h2>6. Próximos pasos</h2>
+<ol>
+    <li>Firma de la nota de encargo de venta</li>
+    <li>Visita técnica de fotógrafo (24-48h)</li>
+    <li>Publicación de anuncio (3-5 días)</li>
+    <li>Primera ronda de visitas (semana 1-2)</li>
+    <li>Reporte semanal con feedback de visitantes</li>
+</ol>
+
+<div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
+    <p>Este informe ha sido elaborado el <span th:text="${hoy}">—</span>.</p>
+    <p>Datos basados en INE 2026, Banco de España, registros públicos y operaciones comparables en la zona.</p>
+    <p style="margin-top: 12px; font-weight: 600; color: #1e40af;">InmobilIA Pro · Tu agencia de confianza</p>
+</div>
+
+</body>
+</html>

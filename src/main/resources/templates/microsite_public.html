@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${ms?.get('seo_title') ?: ms?.get('nombre_publico')}">Inmobiliaria</title>
+    <meta name="description" th:content="${ms?.get('seo_description')}">
+    <meta name="keywords" th:content="${ms?.get('seo_keywords')}">
+    <meta property="og:title" th:content="${ms?.get('seo_title')}">
+    <meta property="og:description" th:content="${ms?.get('seo_description')}">
+    <meta property="og:image" th:content="${ms?.get('seo_og_image') ?: ms?.get('hero_imagen')}">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style th:if="${ms != null}" th:inline="text">
+        :root { --color-primario: [[${ms.get('color_primario') ?: '#3b82f6'}]]; }
+        body { font-family: 'Inter', sans-serif; }
+        .bg-primario { background-color: var(--color-primario); }
+        .text-primario { color: var(--color-primario); }
+    </style>
+    <script th:if="${ms?.get('google_analytics_id') != null}" th:src="|https://www.googletagmanager.com/gtag/js?id=${ms.get('google_analytics_id')}|" async></script>
+</head>
+<body class="bg-white">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center">
+    <p class="text-slate-600" th:text="${error}">—</p>
+</div>
+
+<div th:if="${ms != null}">
+
+<!-- Hero -->
+<header class="relative min-h-[80vh] flex items-center justify-center text-white"
+        th:style="${ms.get('hero_imagen') != null ? 'background: linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url(' + ms.get('hero_imagen') + ') center/cover' : 'background: linear-gradient(135deg, ' + ms.get('color_primario') + ', #1e40af)'}">
+    <nav class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between">
+        <div class="text-xl font-bold" th:text="${ms.get('nombre_publico')}">—</div>
+        <div class="hidden md:flex gap-6 text-sm">
+            <a href="#propiedades" class="hover:underline">Propiedades</a>
+            <a href="#nosotros" class="hover:underline">Nosotros</a>
+            <a href="#contacto" class="hover:underline">Contacto</a>
+        </div>
+    </nav>
+    <div class="text-center px-4 max-w-3xl">
+        <h1 class="text-4xl md:text-6xl font-black mb-4" th:text="${ms.get('hero_titulo') ?: ms.get('nombre_publico')}">—</h1>
+        <p class="text-lg md:text-xl opacity-90 mb-8" th:text="${ms.get('hero_subtitulo') ?: ms.get('tagline')}">—</p>
+        <a href="#propiedades" class="inline-block px-8 py-4 rounded-full bg-white text-slate-900 font-bold hover:bg-slate-100" th:text="${ms.get('hero_cta_texto') ?: 'Ver propiedades'}">Ver propiedades</a>
+    </div>
+</header>
+
+<!-- Propiedades destacadas -->
+<section id="propiedades" class="py-20 px-4 max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-12"> Propiedades destacadas</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div th:each="p : ${propiedades}" class="rounded-2xl bg-white shadow hover:shadow-xl transition overflow-hidden">
+            <div class="h-48 bg-slate-200 flex items-center justify-center text-4xl"></div>
+            <div class="p-5">
+                <p class="text-xs uppercase text-slate-500" th:text="${p.get('tipo')}">—</p>
+                <p class="font-bold text-lg mt-1" th:text="${p.get('direccion')}">—</p>
+                <p class="text-2xl font-bold mt-3 text-primario" th:text="${#numbers.formatDecimal(p.get('precio'),1,'POINT',0,'COMMA')} + ' €'">—</p>
+                <div class="mt-3 flex gap-3 text-xs text-slate-500">
+                    <span> <span th:text="${p.get('habitaciones')}">—</span></span>
+                    <span> <span th:text="${p.get('banos')}">—</span></span>
+                    <span> <span th:text="${p.get('metros_cuadrados')} + ' m²'">—</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sobre nosotros -->
+<section th:if="${ms.get('sobre_nosotros_texto') != null}" id="nosotros" class="py-20 px-4 bg-slate-50">
+    <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-6" th:text="${ms.get('sobre_nosotros_titulo') ?: 'Sobre nosotros'}">—</h2>
+        <p class="text-lg text-slate-700 leading-relaxed" th:text="${ms.get('sobre_nosotros_texto')}">—</p>
+    </div>
+</section>
+
+<!-- Contacto -->
+<section id="contacto" class="py-20 px-4 max-w-3xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-12"> Contáctanos</h2>
+
+    <div th:if="${gracias}" class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-8 text-center">
+        <div class="text-5xl mb-3"></div>
+        <h3 class="text-xl font-bold text-emerald-700">¡Mensaje recibido!</h3>
+        <p class="text-slate-600 mt-2">Te contactaremos en breve.</p>
+    </div>
+
+    <form th:unless="${gracias}" th:action="@{|/m/${ms.get('slug')}/contacto|}" method="post" class="space-y-3">
+        <input type="text" name="nombre" required placeholder="Nombre *" class="w-full px-4 py-3 border-2 rounded-lg">
+        <div class="grid grid-cols-2 gap-3">
+            <input type="email" name="email" required placeholder="Email *" class="px-4 py-3 border-2 rounded-lg">
+            <input type="tel" name="telefono" placeholder="Teléfono" class="px-4 py-3 border-2 rounded-lg">
+        </div>
+        <textarea name="mensaje" rows="5" placeholder="Cuéntanos qué buscas..." class="w-full px-4 py-3 border-2 rounded-lg"></textarea>
+        <button type="submit" class="w-full px-4 py-3 rounded-lg bg-primario text-white font-bold">Enviar consulta</button>
+    </form>
+
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-sm">
+        <div th:if="${ms.get('direccion')}"><p class="text-2xl mb-1"></p><p th:text="${ms.get('direccion')}">—</p></div>
+        <div th:if="${ms.get('telefono')}"><p class="text-2xl mb-1"></p><p th:text="${ms.get('telefono')}">—</p></div>
+        <div th:if="${ms.get('horario')}"><p class="text-2xl mb-1"></p><p th:text="${ms.get('horario')}">—</p></div>
+    </div>
+</section>
+
+<footer class="bg-slate-900 text-white py-8 text-center text-sm">
+    <p>© 2026 <span th:text="${ms.get('nombre_publico')}">—</span></p>
+    <p class="text-xs opacity-50 mt-2">Powered by InmobilIA Pro</p>
+</footer>
+
+</div>
+</body>
+</html>

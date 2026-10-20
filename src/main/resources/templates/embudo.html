@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Embudo de captación 360°</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-blue-700 to-blue-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="filter" class="h-6 w-6"></i> Embudo de captación 360°
+    </h2>
+    <p class="text-sm text-white/80 mt-1">Todos tus imanes de captación en un vistazo: de dónde vienen tus leads, cómo avanzan por el pipeline y cuánto convierten.</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500"> Leads totales</p>
+        <p class="text-2xl font-bold mt-1" th:text="${totalLeads}">0</p>
+    </div>
+    <div class="rounded-xl bg-blue-50 ring-1 ring-blue-200 p-4">
+        <p class="text-[10px] uppercase text-blue-700"> Este mes</p>
+        <p class="text-2xl font-bold mt-1 text-blue-700" th:text="${leadsMes}">0</p>
+    </div>
+    <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4">
+        <p class="text-[10px] uppercase text-amber-700"> Vía imanes</p>
+        <p class="text-2xl font-bold mt-1 text-amber-700" th:text="${totalCaptacion}">0</p>
+    </div>
+    <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+        <p class="text-[10px] uppercase text-emerald-700"> Conversión</p>
+        <p class="text-2xl font-bold mt-1 text-emerald-700"><span th:text="${conversion}">0</span>%</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <!-- Fuentes de captación -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Leads por imán de captación</p>
+        <div class="space-y-3">
+            <div th:each="f : ${fuentes}">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span th:text="${f.get('label')}">—</span>
+                    <span class="font-bold" th:text="${f.get('n')}">0</span>
+                </div>
+                <div class="h-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                    <div class="h-full rounded-full"
+                         th:classappend="'bg-' + ${f.get('color')} + '-500'"
+                         th:style="'width:' + ${f.get('pct')} + '%'"></div>
+                </div>
+            </div>
+        </div>
+        <p th:if="${totalCaptacion == 0}" class="text-sm text-slate-400 text-center py-4">Aún no hay leads de los imanes. Comparte tus enlaces de valoración, simulador y activa el marketplace.</p>
+    </div>
+
+    <!-- Pipeline -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Pipeline por etapa</p>
+        <div class="space-y-3">
+            <div th:each="e : ${pipeline}">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span th:text="${e.get('etapa')}">—</span>
+                    <span class="text-slate-400"><span class="font-bold text-slate-700 dark:text-slate-200" th:text="${e.get('n')}">0</span> · <span th:text="${e.get('pct')}">0</span>%</span>
+                </div>
+                <div class="h-2.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-700" th:style="'width:' + ${e.get('pct')} + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actividad de los imanes -->
+<div class="grid grid-cols-3 gap-3 mt-5">
+    <a href="/valoracion" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:ring-blue-300 transition">
+        <p class="text-[10px] uppercase text-slate-500"> Valoraciones</p>
+        <p class="text-2xl font-bold mt-1" th:text="${valoraciones}">0</p>
+    </a>
+    <a href="/simulador" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:ring-blue-300 transition">
+        <p class="text-[10px] uppercase text-slate-500"> Simulaciones</p>
+        <p class="text-2xl font-bold mt-1" th:text="${simulaciones}">0</p>
+    </a>
+    <a href="/marketplace" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:ring-rose-300 transition">
+        <p class="text-[10px] uppercase text-slate-500"> Matches</p>
+        <p class="text-2xl font-bold mt-1" th:text="${matches}">0</p>
+    </a>
+</div>
+
+</div></body></html>

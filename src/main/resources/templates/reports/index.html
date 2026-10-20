@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Reportes</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Hero -->
+    <div class="rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 mb-6 relative overflow-hidden ring-1 ring-brand-800">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl"></div>
+        <div class="relative flex items-center gap-4 text-white">
+            <div class="h-12 w-12 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                <i data-lucide="bar-chart-3" class="h-6 w-6"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Reportes y analítica</h2>
+                <p class="text-sm text-white/70">Cuenta de resultados, rentabilidad por activo, ranking de inquilinos y resumen fiscal anual. Todos imprimibles a PDF.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de reportes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <a href="/reports/pnl" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="h-5 w-5 text-emerald-700 dark:text-emerald-400"></i>
+                </div>
+                <i data-lucide="arrow-up-right" class="h-4 w-4 text-slate-400 group-hover:text-brand-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Cuenta de resultados (P&L)</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Ingresos y gastos por mes y categoría. Beneficio bruto y margen del ejercicio.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">PDF · Anual</div>
+        </a>
+
+        <a href="/reports/portfolio" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center">
+                    <i data-lucide="building" class="h-5 w-5 text-brand-700 dark:text-brand-400"></i>
+                </div>
+                <i data-lucide="arrow-up-right" class="h-4 w-4 text-slate-400 group-hover:text-brand-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Rentabilidad por propiedad</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Ranking de activos por cap rate, yield y plusvalía. NOI individual.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">PDF · Cartera</div>
+        </a>
+
+        <a href="/reports/tenants" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center">
+                    <i data-lucide="users" class="h-5 w-5 text-purple-700 dark:text-purple-400"></i>
+                </div>
+                <i data-lucide="arrow-up-right" class="h-4 w-4 text-slate-400 group-hover:text-brand-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Top inquilinos</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Ranking por total cobrado, score crediticio y nº de pagos realizados.</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">PDF · Histórico</div>
+        </a>
+
+        <a href="/reports/fiscal" class="group p-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:shadow-card-xl hover:ring-brand-500/40 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
+                    <i data-lucide="landmark" class="h-5 w-5 text-amber-700 dark:text-amber-400"></i>
+                </div>
+                <i data-lucide="arrow-up-right" class="h-4 w-4 text-slate-400 group-hover:text-brand-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1">Resumen fiscal anual</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">IVA por trimestre (mod. 303) + rendimiento inmobiliario (mod. 100).</p>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-3">PDF · Anual</div>
+        </a>
+
+        <div class="p-5 rounded-xl bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-dashed ring-slate-300 dark:ring-neutral-700">
+            <div class="h-10 w-10 rounded-lg bg-slate-200 dark:bg-neutral-700 flex items-center justify-center mb-3">
+                <i data-lucide="lock" class="h-5 w-5 text-slate-500"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1 text-slate-600 dark:text-slate-400">Auditor IA de cartera</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 mb-3">15 chequeos automáticos con impacto económico en €.</p>
+            <a href="/herramientas/auditoria" class="inline-flex items-center gap-1.5 text-xs font-medium text-brand-700 dark:text-brand-400 hover:underline">
+                Ver herramienta dedicada
+                <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+
+        <div class="p-5 rounded-xl bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-dashed ring-slate-300 dark:ring-neutral-700">
+            <div class="h-10 w-10 rounded-lg bg-slate-200 dark:bg-neutral-700 flex items-center justify-center mb-3">
+                <i data-lucide="hourglass" class="h-5 w-5 text-slate-500"></i>
+            </div>
+            <h3 class="font-semibold text-base mb-1 text-slate-600 dark:text-slate-400">Próximamente</h3>
+            <p class="text-xs text-slate-500 dark:text-neutral-400">Comparativa interanual · Forecast 12 meses · Stress test cartera</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

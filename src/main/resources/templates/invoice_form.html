@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Factura</title></head>
+<body>
+<div layout:fragment="content">
+
+    <form action="/invoices" method="post" class="max-w-5xl mx-auto"
+          x-data="{ base: __BASE__, ivaPct: __IVA__, irpfPct: __IRPF__,
+                    get ivaAmt() { return this.round(this.base * this.ivaPct / 100); },
+                    get irpfAmt() { return this.round(this.base * this.irpfPct / 100); },
+                    get total() { return this.round(this.base + this.ivaAmt - this.irpfAmt); },
+                    round(v) { return Math.round(v * 100) / 100; },
+                    fmt(v) { return v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } }"
+          th:attr="data-base=${inv.get('base_imponible') ?: 0}"
+          th:with="baseVal=${inv.get('base_imponible') ?: 0},ivaVal=${inv.get('iva_pct') ?: 21},irpfVal=${inv.get('irpf_pct') ?: 0}">
+
+        <input type="hidden" name="id" th:value="${inv.get('id')}" th:if="${editing}">
+
+        <!-- Header -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden mb-4">
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center">
+                        <i data-lucide="file-text" class="h-5 w-5 text-brand-700 dark:text-brand-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold" th:text="${editing ? 'Editar factura ' + inv.get('full_number') : 'Nueva factura'}">Nueva factura</h2>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Numeración correlativa automática · normativa española</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select name="status"
+                            class="px-3 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                        <option value="Borrador" th:selected="${inv.get('status') == 'Borrador'}">Borrador</option>
+                        <option value="Emitida"  th:selected="${inv.get('status') == 'Emitida' or inv.get('status') == null}">Emitida</option>
+                        <option value="Pagada"   th:selected="${inv.get('status') == 'Pagada'}">Pagada</option>
+                        <option value="Vencida"  th:selected="${inv.get('status') == 'Vencida'}">Vencida</option>
+                        <option value="Anulada"  th:selected="${inv.get('status') == 'Anulada'}">Anulada</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Datos básicos -->
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Serie</label>
+                    <input type="text" name="serie" maxlength="3" th:value="${inv.get('serie') ?: 'A'}"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Fecha emisión</label>
+                    <input type="date" name="fecha" th:value="${inv.get('fecha') != null ? #strings.substring(inv.get('fecha'),0,10) : #temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Vencimiento</label>
+                    <input type="date" name="vencimiento" th:value="${inv.get('vencimiento') != null ? #strings.substring(inv.get('vencimiento'),0,10) : ''}"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                </div>
+            </div>
+        </div>
+
+        <!-- Emisor / Cliente -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="building" class="h-4 w-4 text-brand-600"></i> Emisor</h3>
+                <div class="space-y-3">
+                    <input type="text" name="emisor_nombre" th:value="${inv.get('emisor_nombre')}" placeholder="Nombre o razón social"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="text" name="emisor_nif" th:value="${inv.get('emisor_nif')}" placeholder="NIF / CIF"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
+                    <input type="text" name="emisor_direccion" th:value="${inv.get('emisor_direccion')}" placeholder="Dirección completa"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="email" name="emisor_email" th:value="${inv.get('emisor_email')}" placeholder="Email contacto"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="text" name="emisor_iban" th:value="${inv.get('emisor_iban')}" placeholder="IBAN para cobro"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="user" class="h-4 w-4 text-brand-600"></i> Cliente</h3>
+                <div class="space-y-3">
+                    <input type="text" name="cliente_nombre" required th:value="${inv.get('cliente_nombre')}" placeholder="Nombre o razón social"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="text" name="cliente_nif" th:value="${inv.get('cliente_nif')}" placeholder="NIF / CIF / NIE"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono">
+                    <input type="text" name="cliente_direccion" th:value="${inv.get('cliente_direccion')}" placeholder="Dirección"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                    <input type="email" name="cliente_email" th:value="${inv.get('cliente_email')}" placeholder="Email"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                </div>
+            </div>
+        </div>
+
+        <!-- Concepto + importes -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-4">
+            <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="receipt" class="h-4 w-4 text-brand-600"></i> Concepto e importes</h3>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Concepto</label>
+                    <input type="text" name="concepto" th:value="${inv.get('concepto')}" placeholder="Ej. Alquiler mes de mayo · Piso Gran Vía 42"
+                           class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Base imponible (€)</label>
+                        <input type="number" step="0.01" name="base_imponible" required
+                               x-model.number="base"
+                               th:value="${inv.get('base_imponible') ?: ''}"
+                               class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 font-mono text-right">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">IVA (%)</label>
+                        <select name="iva_pct" x-model.number="ivaPct"
+                                class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                            <option value="0"  th:selected="${inv.get('iva_pct') == 0}">0% · Exento</option>
+                            <option value="4"  th:selected="${inv.get('iva_pct') == 4}">4% · Superreducido</option>
+                            <option value="10" th:selected="${inv.get('iva_pct') == 10}">10% · Reducido</option>
+                            <option value="21" th:selected="${inv.get('iva_pct') == null or inv.get('iva_pct') == 21}">21% · General</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">IRPF (%)</label>
+                        <select name="irpf_pct" x-model.number="irpfPct"
+                                class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                            <option value="0"  th:selected="${inv.get('irpf_pct') == null or inv.get('irpf_pct') == 0}">0% · Sin retención</option>
+                            <option value="7"  th:selected="${inv.get('irpf_pct') == 7}">7% · Profesional reducido</option>
+                            <option value="15" th:selected="${inv.get('irpf_pct') == 15}">15% · Profesional general</option>
+                            <option value="19" th:selected="${inv.get('irpf_pct') == 19}">19% · Alquiler</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cálculo en vivo -->
+                <div class="rounded-lg bg-slate-50 dark:bg-neutral-800/60 p-4 mt-3">
+                    <div class="flex justify-between text-sm py-1">
+                        <span class="text-slate-600 dark:text-slate-400">Base imponible</span>
+                        <span class="font-mono font-medium" x-text="fmt(base) + ' €'">0,00 €</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-1">
+                        <span class="text-slate-600 dark:text-slate-400">+ IVA <span x-text="ivaPct + '%'"></span></span>
+                        <span class="font-mono font-medium text-emerald-700 dark:text-emerald-400" x-text="'+ ' + fmt(ivaAmt) + ' €'">+ 0,00 €</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-1" x-show="irpfPct > 0">
+                        <span class="text-slate-600 dark:text-slate-400">- Retención IRPF <span x-text="irpfPct + '%'"></span></span>
+                        <span class="font-mono font-medium text-red-600 dark:text-red-400" x-text="'- ' + fmt(irpfAmt) + ' €'">- 0,00 €</span>
+                    </div>
+                    <div class="flex justify-between pt-3 mt-2 border-t border-slate-200 dark:border-neutral-700">
+                        <span class="font-semibold">Total a pagar</span>
+                        <span class="font-mono font-bold text-lg" x-text="fmt(total) + ' €'">0,00 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vinculaciones + notas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="link" class="h-4 w-4 text-brand-600"></i> Vinculaciones</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Propiedad</label>
+                        <input type="text" name="property_name" list="prop-list" th:value="${inv.get('property_name')}" placeholder="Empieza a escribir..."
+                               class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                        <datalist id="prop-list">
+                            <option th:each="p : ${propiedades}" th:value="${p.get('name')}">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Inquilino</label>
+                        <input type="text" name="tenant_name" list="inq-list" th:value="${inv.get('tenant_name')}" placeholder="Empieza a escribir..."
+                               class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                        <datalist id="inq-list">
+                            <option th:each="i : ${inquilinos}" th:value="${i.get('name')}">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Método de pago</label>
+                        <select name="metodo_pago"
+                                class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+                            <option value=""        th:selected="${inv.get('metodo_pago') == null}">— Selecciona —</option>
+                            <option value="Transferencia" th:selected="${inv.get('metodo_pago') == 'Transferencia'}">Transferencia bancaria</option>
+                            <option value="Domiciliación" th:selected="${inv.get('metodo_pago') == 'Domiciliación'}">Domiciliación SEPA</option>
+                            <option value="Efectivo"      th:selected="${inv.get('metodo_pago') == 'Efectivo'}">Efectivo</option>
+                            <option value="Bizum"         th:selected="${inv.get('metodo_pago') == 'Bizum'}">Bizum</option>
+                            <option value="Tarjeta"       th:selected="${inv.get('metodo_pago') == 'Tarjeta'}">Tarjeta</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i data-lucide="sticky-note" class="h-4 w-4 text-brand-600"></i> Notas internas</h3>
+                <textarea name="notas" rows="6" th:text="${inv.get('notas')}" placeholder="Notas, condiciones de pago, observaciones..."
+                          class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"></textarea>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-2">
+            <a href="/invoices"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-100 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium transition-colors shadow-card">
+                <i data-lucide="save" class="h-4 w-4"></i>
+                <span th:text="${editing ? 'Guardar cambios' : 'Crear factura'}">Crear factura</span>
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<script th:inline="javascript">
+    // x-data necesita los valores numéricos inyectados en el atributo (Thymeleaf no procesa la doble-llave)
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form[x-data]');
+        if (!form) return;
+        const baseV = parseFloat(/*[[${inv.get('base_imponible') ?: 0}]]*/ 0) || 0;
+        const ivaV  = parseFloat(/*[[${inv.get('iva_pct') ?: 21}]]*/ 21) || 21;
+        const irpfV = parseFloat(/*[[${inv.get('irpf_pct') ?: 0}]]*/ 0) || 0;
+        const xData = form.getAttribute('x-data');
+        form.setAttribute('x-data', xData
+            .replace('__BASE__', baseV)
+            .replace('__IVA__',  ivaV)
+            .replace('__IRPF__', irpfV));
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Mantenimiento Predictivo</title></head>
+<body>
+<div layout:fragment="content">
+    <section class="section">
+        <h3>Activos en riesgo de mantenimiento (+30 anos)</h3>
+        <div class="crud-table-wrap">
+            <table class="crud-table">
+                <thead><tr><th>Nombre</th><th>Ano construccion</th><th>Ciudad</th><th>Estado</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${riesgo}">
+                    <td th:text="${p.name}">—</td>
+                    <td th:text="${p.year_built}">—</td>
+                    <td th:text="${p.city}">—</td>
+                    <td><span class="badge badge-warn">Revisar</span></td>
+                </tr>
+                <tr th:if="${riesgo.isEmpty()}"><td colspan="4" class="empty">Ningun activo en riesgo detectado.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+/* ═══════════════════════════════════════════════════════════════
+ * InmobilIA Pro · Mobile-first overrides
+ * Mejoras específicas para dispositivos móviles y tablets.
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Botón flotante "+" para crear desde móvil */
+.fab-create {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 30;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+    color: white;
+    box-shadow: 0 8px 24px -4px rgb(30 64 175 / 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+.fab-create:hover { transform: scale(1.05) translateY(-2px); }
+.fab-create:active { transform: scale(0.95); }
+
+@media (max-width: 768px) {
+    .fab-create { display: flex; }
+
+    /* Tablas con scroll horizontal */
+    table { font-size: 0.8125rem !important; }
+    table th, table td { padding: 0.5rem 0.625rem !important; white-space: nowrap; }
+
+    /* Cards más compactas */
+    .form-card, .panel { padding: 1rem !important; }
+    .form-card h3, .panel h3 { padding: 0.5rem 0.75rem !important; }
+
+    /* Sidebar mobile siempre overlay */
+    body { padding-bottom: 80px; /* espacio para el FAB */ }
+
+    /* KPIs en grid 2 cols */
+    .kpi-grid, .kpi-grid-ind {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Headers más compactos */
+    h1 { font-size: 1.25rem !important; }
+    h2 { font-size: 1rem !important; }
+
+    /* Botones más grandes táctilmente */
+    .btn { min-height: 40px !important; padding: 0.625rem 1rem !important; }
+
+    /* Dashboard cards */
+    .grid.grid-cols-2 { gap: 0.5rem !important; }
+}
+
+/* Touch targets ≥ 44px en mobile */
+@media (max-width: 640px) {
+    button, a.btn, .btn-mini { min-height: 40px !important; }
+    input[type="checkbox"], input[type="radio"] { width: 20px !important; height: 20px !important; }
+}
+
+/* Safe area iPhone */
+@supports (padding: max(0px)) {
+    .fab-create {
+        bottom: max(1.25rem, env(safe-area-inset-bottom));
+        right: max(1.25rem, env(safe-area-inset-right));
+    }
+}

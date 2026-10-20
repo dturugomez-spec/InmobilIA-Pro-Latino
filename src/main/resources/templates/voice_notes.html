@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Notas de voz</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-red-700 to-rose-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="mic" class="h-6 w-6"></i> Notas de voz</h2>
+    <p class="text-sm text-white/80 mt-1">Graba, transcribe automáticamente y resume con IA. Perfecto sobre el terreno.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-center">
+        <h3 class="font-semibold text-sm mb-4"> Grabar nueva nota</h3>
+
+        <button id="btnGrabar" onclick="toggleGrabar()" class="mx-auto w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white text-5xl flex items-center justify-center transition"></button>
+        <p id="estado" class="mt-4 text-sm text-slate-500">Pulsa para empezar a grabar</p>
+        <p id="timer" class="mt-2 font-mono text-2xl"></p>
+
+        <div id="result" class="hidden mt-6 text-left">
+            <h4 class="font-bold text-sm mb-2"> Transcripción:</h4>
+            <textarea id="transcript" rows="6" class="w-full px-3 py-2 text-sm border rounded mb-3"></textarea>
+            <button onclick="guardar()" class="px-4 py-2 rounded bg-red-700 text-white text-sm"> Guardar nota</button>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-semibold text-sm mb-3"> Mis notas recientes</h3>
+        <ul class="space-y-2 max-h-96 overflow-y-auto">
+            <li th:each="n : ${notas}" class="p-3 rounded bg-slate-50">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span th:text="${#strings.substring(n.get('fecha_grabacion'),0,16)}">—</span>
+                    <span th:if="${n.get('duracion_segundos')}" th:text="${n.get('duracion_segundos')} + 's'">—</span>
+                </div>
+                <p class="text-sm" th:text="${n.get('transcripcion')}">—</p>
+                <p th:if="${n.get('resumen_ia')}" class="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700"> <span th:text="${n.get('resumen_ia')}">—</span></p>
+            </li>
+            <li th:if="${notas.isEmpty()}" class="text-center text-slate-400 text-sm py-6">Sin notas aún</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let recognition = null;
+let isGrabando = false;
+let segundos = 0, timerInterval = null;
+let transcripcionFinal = '';
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
+
+    recognition.onresult = e => {
+        let intermedio = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            const t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) transcripcionFinal += t + ' ';
+            else intermedio += t;
+        }
+        document.getElementById('transcript').value = transcripcionFinal + intermedio;
+    };
+}
+
+function toggleGrabar() {
+    if (!recognition) { alert('Tu navegador no soporta reconocimiento de voz'); return; }
+    if (!isGrabando) {
+        isGrabando = true; segundos = 0; transcripcionFinal = '';
+        document.getElementById('btnGrabar').classList.add('animate-pulse');
+        document.getElementById('btnGrabar').textContent = '⏹';
+        document.getElementById('estado').textContent = ' Grabando...';
+        document.getElementById('result').classList.remove('hidden');
+        recognition.start();
+        timerInterval = setInterval(() => {
+            segundos++;
+            document.getElementById('timer').textContent = String(Math.floor(segundos/60)).padStart(2,'0') + ':' + String(segundos%60).padStart(2,'0');
+        }, 1000);
+    } else {
+        isGrabando = false;
+        document.getElementById('btnGrabar').classList.remove('animate-pulse');
+        document.getElementById('btnGrabar').textContent = '';
+        document.getElementById('estado').textContent = ' Grabación terminada';
+        clearInterval(timerInterval);
+        recognition.stop();
+    }
+}
+
+async function guardar() {
+    const txt = document.getElementById('transcript').value;
+    if (!txt) return;
+    await fetch('/notas-voz/guardar', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({transcripcion: txt, duracion: segundos})
+    });
+    location.reload();
+}
+</script>
+</div></body></html>

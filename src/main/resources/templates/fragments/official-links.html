@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+
+<!--
+  Panel reusable de Enlaces Oficiales.
+  Uso:  <div th:replace="~{fragments/official-links :: panel('fiscal,itp,plusvalia')}"></div>
+-->
+<div th:fragment="panel(tags)" class="official-links">
+    <div class="official-links-head">
+        <span class="official-links-badge"> ENLACES OFICIALES</span>
+        <span class="official-links-sub">Fuentes contrastadas · actualizadas en tiempo real</span>
+    </div>
+    <div class="official-links-grid">
+        <a th:each="l : ${officialLinks.byTags(#strings.arraySplit(tags, ','))}"
+           th:href="${l.url()}" target="_blank" rel="noopener"
+           class="official-link"
+           th:title="${l.desc()}">
+            <span class="official-link-icon" th:text="${l.icon()}"></span>
+            <div class="official-link-txt">
+                <div class="official-link-title" th:text="${l.title()}">Fuente</div>
+                <div class="official-link-desc" th:text="${l.desc()}">Descripcion</div>
+            </div>
+            <span class="official-link-go">↗</span>
+        </a>
+    </div>
+</div>
+
+<!-- Panel compacto: solo iconos + nombre -->
+<div th:fragment="chips(tags)" class="official-chips">
+    <a th:each="l : ${officialLinks.byTags(#strings.arraySplit(tags, ','))}"
+       th:href="${l.url()}" target="_blank" rel="noopener"
+       class="official-chip"
+       th:title="${l.desc()}">
+        <span th:text="${l.icon()}"></span>
+        <span th:text="${l.title()}">Fuente</span>
+    </a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+
+<!-- Cabecera común de las páginas legales -->
+<header th:fragment="cabecera" class="bg-white border-b border-slate-200 no-print">
+    <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5">
+            <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="h-8 w-8 rounded-lg">
+            <span class="font-bold tracking-tight">InmobilIA<span class="text-blue-700"> Pro</span></span>
+        </a>
+        <a href="/login" class="text-sm font-medium text-blue-700 hover:text-blue-900">Iniciar sesión →</a>
+    </div>
+</header>
+
+<!-- Proveedores que tratan datos por cuenta de InmobilIA Pro (subencargados).
+     La ubicación de Supabase/Railway solo se afirma si DATOS_REGION está configurada. -->
+<div th:fragment="subencargados" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-600">
+            <tr>
+                <th class="px-4 py-3 font-semibold">Proveedor</th>
+                <th class="px-4 py-3 font-semibold">Para qué lo usamos</th>
+                <th class="px-4 py-3 font-semibold">Datos</th>
+                <th class="px-4 py-3 font-semibold">Sede / ubicación</th>
+            </tr>
+        </thead>
+        <tbody class="text-slate-700">
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Supabase, Inc.</td>
+                <td class="px-4 py-3">Base de datos y almacenamiento</td>
+                <td class="px-4 py-3">Todos los datos de la cuenta</td>
+                <td class="px-4 py-3" th:text="${regionDatos != null ? 'EE. UU. · datos alojados en ' + regionDatos : 'EE. UU.'}">EE. UU.</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Railway Corporation</td>
+                <td class="px-4 py-3">Servidores donde funciona la aplicación</td>
+                <td class="px-4 py-3">Todos los datos mientras se usan</td>
+                <td class="px-4 py-3" th:text="${regionDatos != null ? 'EE. UU. · servidores en ' + regionDatos : 'EE. UU.'}">EE. UU.</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Stripe Payments Europe, Ltd.</td>
+                <td class="px-4 py-3">Cobro de la suscripción a InmobilIA Pro</td>
+                <td class="px-4 py-3">Datos de facturación de la inmobiliaria (no de sus clientes)</td>
+                <td class="px-4 py-3">Irlanda (UE)</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Resend</td>
+                <td class="px-4 py-3">Envío de emails (avisos, respuestas automáticas, recuperación de contraseña)</td>
+                <td class="px-4 py-3">Email del destinatario y contenido del mensaje</td>
+                <td class="px-4 py-3">EE. UU.</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">OpenAI</td>
+                <td class="px-4 py-3">Funciones de inteligencia artificial (agente, redacción, análisis)</td>
+                <td class="px-4 py-3">El texto que se envía a la IA, que puede incluir datos de clientes</td>
+                <td class="px-4 py-3">EE. UU.</td>
+            </tr>
+            <tr class="border-t border-slate-100 bg-slate-50/60">
+                <td class="px-4 py-3 text-slate-500" colspan="4">Solo si la inmobiliaria activa la integración correspondiente:</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Twilio</td>
+                <td class="px-4 py-3">Envío de SMS</td>
+                <td class="px-4 py-3">Teléfono y texto del mensaje</td>
+                <td class="px-4 py-3">EE. UU.</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Meta (WhatsApp Business)</td>
+                <td class="px-4 py-3">Mensajes de WhatsApp</td>
+                <td class="px-4 py-3">Teléfono y texto del mensaje</td>
+                <td class="px-4 py-3">Irlanda (UE)</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Google (Calendar)</td>
+                <td class="px-4 py-3">Sincronizar visitas con tu calendario</td>
+                <td class="px-4 py-3">Datos de la cita</td>
+                <td class="px-4 py-3">Irlanda (UE)</td>
+            </tr>
+            <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-medium text-slate-900">Holded</td>
+                <td class="px-4 py-3">Exportar facturas a tu contabilidad</td>
+                <td class="px-4 py-3">Datos de las facturas</td>
+                <td class="px-4 py-3">España (UE)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

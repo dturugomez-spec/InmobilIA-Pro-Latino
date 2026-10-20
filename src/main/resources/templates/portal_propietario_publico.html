@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de tu inmueble</title>
+    <meta name="robots" content="noindex,nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #0f172a; }
+        .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .brand-grad { background: linear-gradient(135deg, #1d4ed8 0%, #172554 100%); }
+        [x-cloak] { display: none !important; }
+    </style>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div th:if="${error}" class="min-h-screen flex items-center justify-center px-4">
+    <p class="text-slate-500 text-center" th:text="${error}">—</p>
+</div>
+
+<div th:unless="${error}" x-data="portal()" class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Cabecera -->
+    <div class="brand-grad rounded-2xl shadow-xl p-7 text-white mb-5">
+        <p class="text-xs uppercase tracking-wider text-white/60">Informe privado de tu inmueble</p>
+        <h1 class="display text-2xl md:text-3xl font-extrabold mt-1" th:text="${p.get('address') ?: p.get('name')}">—</h1>
+        <p class="text-white/80 mt-1 text-sm" th:text="${p.get('city') + (p.get('current_value') != null ? ' · ' + #numbers.formatInteger(p.get('current_value'), 0, 'POINT') + ' €' : '')}">—</p>
+        <p class="text-white/50 text-xs mt-3" th:if="${branding != null}"
+           th:text="'Gestionado por ' + ${branding.get('nombre')}">—</p>
+    </div>
+
+    <!-- Narrativa IA del agente -->
+    <div th:if="${narrativa != null}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
+        <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2"> Resumen de tu agente</p>
+        <p class="text-slate-700 leading-relaxed" th:text="${narrativa}">—</p>
+    </div>
+    <div th:if="${p.get('portal_mensaje_agente') != null and !p.get('portal_mensaje_agente').isEmpty()}"
+         class="bg-blue-50 border-l-4 border-blue-600 rounded-lg p-4 mb-5 text-sm text-slate-700" th:text="${p.get('portal_mensaje_agente')}">—</div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-3xl font-extrabold text-slate-900" th:text="${resumen.get('dias_mercado')}">0</p>
+            <p class="text-xs text-slate-500 mt-1">días en mercado</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-3xl font-extrabold text-blue-700" th:text="${resumen.get('visitas_realizadas')}">0</p>
+            <p class="text-xs text-slate-500 mt-1">visitas realizadas</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-3xl font-extrabold text-amber-600">
+                <span th:text="${resumen.get('interes_medio')}">0</span><span class="text-base text-slate-400">/5</span>
+            </p>
+            <p class="text-xs text-slate-500 mt-1">interés medio</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 p-4 text-center">
+            <p class="display text-3xl font-extrabold text-emerald-600" th:text="${resumen.get('ofertas_total')}">0</p>
+            <p class="text-xs text-slate-500 mt-1">ofertas recibidas</p>
+        </div>
+    </div>
+
+    <!-- Próximas visitas -->
+    <div th:if="${resumen.get('visitas_programadas') > 0}" class="bg-emerald-50 ring-1 ring-emerald-200 rounded-2xl p-5 mb-5 flex items-center gap-3">
+        <span class="text-2xl"></span>
+        <p class="text-sm text-emerald-800">
+            Hay <strong th:text="${resumen.get('visitas_programadas')}">0</strong> visita(s) ya programada(s) para tu inmueble.
+        </p>
+    </div>
+
+    <!-- Mejor oferta -->
+    <div th:if="${resumen.get('mejor_oferta') != null}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
+        <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1"> Mejor oferta recibida</p>
+        <p class="display text-3xl font-extrabold text-slate-900" th:text="${#numbers.formatInteger(resumen.get('mejor_oferta'), 0, 'POINT')} + ' €'">—</p>
+        <p th:if="${resumen.get('oferta_vs_precio_pct') != null}" class="text-sm text-slate-500 mt-1"
+           th:text="${resumen.get('oferta_vs_precio_pct')} + '% de tu precio de salida'">—</p>
+    </div>
+
+    <!-- Feedback de visitantes -->
+    <div th:if="${!resumen.get('feedbacks').isEmpty()}" class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5">
+        <h2 class="display text-lg font-bold mb-4">Lo que opinan los visitantes</h2>
+        <div class="space-y-3">
+            <div th:each="f : ${resumen.get('feedbacks')}" class="border-l-4 border-slate-200 pl-4 py-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <span th:if="${f.get('interes') != null}" class="text-amber-500 text-sm"
+                          th:text="${''.repeat(f.get('interes')) + ''.repeat(5 - f.get('interes'))}"></span>
+                </div>
+                <p th:if="${f.get('comentario') != null and !f.get('comentario').isEmpty()}" class="text-sm text-slate-700" th:text="${f.get('comentario')}">—</p>
+                <p th:if="${f.get('objeciones') != null and !f.get('objeciones').isEmpty()}" class="text-xs text-slate-400 mt-1" th:text="'A mejorar: ' + ${f.get('objeciones')}">—</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje al agente -->
+    <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 p-6 mb-5" x-show="!enviado" x-cloak>
+        <h2 class="display text-lg font-bold mb-1">¿Alguna pregunta para tu agente?</h2>
+        <p class="text-sm text-slate-500 mb-3">Escríbele directamente, te responderá cuanto antes.</p>
+        <textarea x-model="msg" rows="3" placeholder="Escribe tu mensaje..."
+                  class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-600 outline-none text-sm"></textarea>
+        <button @click="enviar()" :disabled="enviando || !msg.trim()"
+                class="mt-3 px-6 py-3 rounded-xl brand-grad text-white font-bold disabled:opacity-50 transition">
+            <span x-show="!enviando">Enviar mensaje</span><span x-show="enviando">⏳ Enviando...</span>
+        </button>
+    </div>
+    <div x-show="enviado" x-cloak class="bg-emerald-50 ring-1 ring-emerald-200 rounded-2xl p-6 mb-5 text-center">
+        <p class="text-2xl mb-1"></p>
+        <p class="text-emerald-800 font-semibold">Mensaje enviado. Tu agente te responderá pronto.</p>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">Informe en tiempo real · Powered by <strong>InmobilIA Pro</strong></p>
+</div>
+
+<script th:inline="javascript">
+const TOKEN = /*[[${token}]]*/ '';
+function portal() {
+    return {
+        msg: '', enviando: false, enviado: false,
+        async enviar() {
+            this.enviando = true;
+            try {
+                await fetch('/mi-inmueble/'+TOKEN+'/mensaje', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({mensaje:this.msg})});
+                this.enviado = true;
+            } catch(e){ alert('Error al enviar.'); }
+            this.enviando = false;
+        }
+    }
+}
+</script>
+</body>
+</html>

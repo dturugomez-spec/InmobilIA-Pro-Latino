@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Biblioteca de analisis</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="crud-table-wrap">
+        <table class="crud-table">
+            <thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th>Notas</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${rows}">
+                <td th:text="${r.nombre}">—</td>
+                <td th:text="${r.tipo}">—</td>
+                <td th:text="${r.created_at != null ? #strings.substring(r.created_at,0,10) : '—'}">—</td>
+                <td th:text="${r.notas}">—</td>
+            </tr>
+            <tr th:if="${rows.isEmpty()}"><td colspan="4" class="empty">Sin analisis guardados aun.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

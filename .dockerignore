@@ -1,0 +1,15 @@
+# Mantener la imagen Docker pequena
+target/
+.idea/
+.vscode/
+.git/
+.gitignore
+*.log
+*.iml
+HELP.md
+README.md
+*.sql
+.env
+.DS_Store
+node_modules/
+.mvn/wrapper/maven-wrapper.jar

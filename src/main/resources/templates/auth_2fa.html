@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación en dos pasos · InmobilIA Pro</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .grid-bg {
+            background-image:
+                radial-gradient(circle at 25% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
+                radial-gradient(circle at 75% 80%, rgba(99, 102, 241, 0.18), transparent 50%),
+                linear-gradient(135deg, #0c1f4d 0%, #1e3a8a 50%, #312e81 100%);
+        }
+        .codigo { letter-spacing: .35em; font-size: 1.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+        .codigo::placeholder { letter-spacing: .2em; }
+    </style>
+</head>
+<body class="min-h-screen bg-white text-slate-900 antialiased">
+
+<div class="min-h-screen grid lg:grid-cols-2">
+    <aside class="hidden lg:flex relative grid-bg overflow-hidden">
+        <div class="relative z-10 flex flex-col justify-between w-full p-12 text-white">
+            <div class="flex items-center gap-3">
+                <img src="/brand/logo-mark.svg" alt="" width="40" height="40" class="h-10 w-10 rounded-xl">
+                <span class="font-bold text-xl tracking-tight">InmobilIA<span class="text-blue-400"> Pro</span></span>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold leading-tight tracking-tight">Tu cuenta, doblemente protegida</h1>
+                <p class="text-white/70 text-lg mt-4">Aunque alguien supiera tu contraseña, sin tu móvil no podría entrar.</p>
+            </div>
+            <div class="text-xs text-white/40">© 2026 InmobilIA Pro · <span th:replace="~{fragments/grupo :: sello(true)}"></span></div>
+        </div>
+    </aside>
+
+    <main class="flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div class="w-full max-w-md">
+            <div class="flex items-center gap-3 lg:hidden mb-8">
+                <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="h-8 w-8 rounded-lg">
+                <span class="font-bold text-lg tracking-tight">InmobilIA Pro</span>
+            </div>
+
+            <h2 class="text-2xl font-bold tracking-tight">Introduce el código</h2>
+            <p class="text-sm text-slate-500 mt-1.5">Abre tu app de autenticación (Google Authenticator, Microsoft Authenticator…) y escribe el código de 6 cifras de <strong>InmobilIA Pro</strong>.</p>
+
+            <div th:if="${error}" class="mt-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+                <i data-lucide="alert-circle" class="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-red-800" th:text="${error}">Error</p>
+            </div>
+
+            <form method="post" action="/login/2fa" class="mt-6 space-y-4">
+                <div>
+                    <label for="codigo" class="block text-sm font-medium text-slate-700 mb-1.5">Código de verificación</label>
+                    <input id="codigo" type="text" name="codigo" required autofocus
+                           inputmode="numeric" autocomplete="one-time-code" maxlength="12"
+                           placeholder="000000"
+                           class="codigo w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium text-sm py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="shield-check" class="h-4 w-4"></i>
+                    <span>Verificar y entrar</span>
+                </button>
+            </form>
+
+            <details class="mt-6 text-sm text-slate-600">
+                <summary class="cursor-pointer text-blue-700 hover:text-blue-900 font-medium">¿No tienes el móvil a mano?</summary>
+                <p class="mt-2">Escribe en la misma casilla uno de tus <strong>códigos de recuperación</strong> (formato <span class="font-mono">abcd-2345</span>). Cada código sirve una sola vez.</p>
+                <p class="mt-2">Si tampoco los tienes, pide al administrador de tu inmobiliaria que te ayude, o escríbenos a soporte.</p>
+            </details>
+
+            <div class="mt-8 text-center">
+                <a href="/logout" class="text-sm text-slate-500 hover:text-slate-700">Cancelar y volver al inicio de sesión</a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    lucide.createIcons();
+    // Si es un código de recuperación, quitamos el teclado numérico del móvil
+    (function () {
+        var i = document.getElementById('codigo');
+        i.addEventListener('input', function () {
+            i.setAttribute('inputmode', /[a-zA-Z-]/.test(i.value) ? 'text' : 'numeric');
+        });
+    })();
+</script>
+</body>
+</html>

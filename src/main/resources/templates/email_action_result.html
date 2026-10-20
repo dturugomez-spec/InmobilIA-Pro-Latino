@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>InmobilIA Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl p-10 text-center">
+        <h1 class="text-3xl font-bold mb-4" th:text="${titulo}">Resultado</h1>
+        <p class="text-slate-600 leading-relaxed" th:utext="${mensaje}">—</p>
+
+        <div th:if="${solicitud != null}" class="mt-6 p-4 bg-slate-50 rounded-lg text-left text-sm">
+            <p><strong>Cliente:</strong> <span th:text="${solicitud.get('nombre')}">—</span></p>
+            <p><strong>Empresa:</strong> <span th:text="${solicitud.get('empresa')}">—</span></p>
+            <p><strong>Email:</strong> <span th:text="${solicitud.get('email')}">—</span></p>
+            <p th:if="${plan}"><strong>Plan:</strong> <span th:text="${plan}">—</span> (<span th:text="${dias}">14</span> días)</p>
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="/admin/solicitudes" class="px-5 py-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm"> Ver todas las solicitudes</a>
+            <a href="/dashboard" class="px-5 py-3 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-sm">Volver al panel</a>
+        </div>
+    </div>
+</body>
+</html>

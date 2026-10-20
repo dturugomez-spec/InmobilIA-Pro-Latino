@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Monte Carlo</title></head>
+<body>
+<div layout:fragment="content">
+
+    <form method="post" action="/finanzas/montecarlo" class="form-card">
+        <h3>Simulacion Monte Carlo</h3>
+        <div class="form-grid cols-3">
+            <label>Inversion (EUR) <input type="number" step="0.01" name="investment" required th:value="${in?.investment()}"></label>
+            <label>NOI base (EUR) <input type="number" step="0.01" name="noiBase" required th:value="${in?.noiBase()}"></label>
+            <label>Anos <input type="number" name="years" th:value="${in?.years() ?: 10}"></label>
+            <label>Volatilidad NOI (%) <input type="number" step="0.1" name="volNoiPct" th:value="${in?.volNoiPct() ?: 15}"></label>
+            <label>Volatilidad cap (%) <input type="number" step="0.1" name="volCapPct" th:value="${in?.volCapPct() ?: 20}"></label>
+            <label>Cap base (%) <input type="number" step="0.1" name="capBasePct" th:value="${in?.capBasePct() ?: 5.5}"></label>
+            <label>Growth base (%) <input type="number" step="0.1" name="growthBasePct" th:value="${in?.growthBasePct() ?: 2}"></label>
+            <label>Simulaciones <input type="number" name="simulations" th:value="${in?.simulations() ?: 5000}"></label>
+            <label>IRR objetivo (%) <input type="number" step="0.1" name="irrTargetPct" th:value="${in?.irrTargetPct() ?: 8}"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Simular</button></div>
+    </form>
+
+    <div th:if="${out != null and out.irrs().length > 0}">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">IRR medio</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.irrMean(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">IRR mediana</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.irrMedian(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Desv. tipica</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.irrStd(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">VaR 95%</div>
+                <div class="kpi-value neg" th:text="${#numbers.formatDecimal(out.var95(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">CVaR 95%</div>
+                <div class="kpi-value neg" th:text="${#numbers.formatDecimal(out.cvar95(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Prob. perdida</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.probLoss(),1,1)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Prob. alcanzar objetivo</div>
+                <div class="kpi-value pos" th:text="${#numbers.formatDecimal(out.probTarget(),1,1)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Terminal medio</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(out.terminalMean(),0,'POINT',0,'COMMA')} + ' EUR'">—</div></div>
+        </div>
+
+        <h3>Distribucion IRR</h3>
+        <div class="crud-table-wrap">
+            <table class="crud-table"><thead><tr>
+                <th>P10</th><th>P25</th><th>P50</th><th>P75</th><th>P90</th><th>P95</th><th>Skew</th><th>Kurt</th>
+            </tr></thead><tbody><tr>
+                <td th:text="${#numbers.formatDecimal(out.p10(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.p25(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.p50(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.p75(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.p90(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.p95(),1,2)} + '%'">0</td>
+                <td th:text="${#numbers.formatDecimal(out.skew(),1,3)}">0</td>
+                <td th:text="${#numbers.formatDecimal(out.kurt(),1,3)}">0</td>
+            </tr></tbody></table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head>
+<title>Mapa global</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-blue-700 to-indigo-900 p-5 mb-3 text-white">
+    <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="map" class="h-5 w-5"></i> Mapa global + análisis competencia</h2>
+    <p class="text-xs text-white/70 mt-1">Visualiza tu cartera + precios medios por zona</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-2">
+        <div id="map" style="height: 600px; border-radius: 8px;"></div>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 overflow-y-auto" style="max-height: 600px">
+        <h3 class="font-semibold text-sm mb-3"> Análisis por zona</h3>
+        <table class="w-full text-xs">
+            <thead class="bg-slate-50"><tr>
+                <th class="text-left py-2">Municipio</th>
+                <th class="text-right py-2">Props</th>
+                <th class="text-right py-2">€/m²</th>
+                <th class="text-right py-2">Precio medio</th>
+            </tr></thead>
+            <tbody>
+            <tr th:each="e : ${estadisticas}" class="border-b hover:bg-slate-50">
+                <td class="py-2 font-semibold" th:text="${e.get('municipio')}">—</td>
+                <td class="py-2 text-right font-mono" th:text="${e.get('count')}">0</td>
+                <td class="py-2 text-right font-mono text-blue-700" th:text="${#numbers.formatDecimal(e.get('eur_m2_medio'), 1, 0)} + '€'">—</td>
+                <td class="py-2 text-right font-mono" th:text="${#numbers.formatDecimal(e.get('precio_medio'), 1, 'POINT', 0, 'COMMA')} + '€'">—</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script th:inline="javascript">
+const props = /*[[${propiedades}]]*/ [];
+const map = L.map('map').setView([40.4168, -3.7038], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'}).addTo(map);
+const bounds = [];
+for (const p of props) {
+    if (!p.lat || !p.lng) continue;
+    const m = L.marker([p.lat, p.lng]).addTo(map);
+    m.bindPopup(`<strong>${p.direccion}</strong><br>${p.tipo} · ${new Intl.NumberFormat('es-ES').format(p.precio)}€<br><a href="/propiedades/${p.id}">Ver</a>`);
+    bounds.push([p.lat, p.lng]);
+}
+if (bounds.length > 0) map.fitBounds(bounds);
+</script>
+</div></body></html>

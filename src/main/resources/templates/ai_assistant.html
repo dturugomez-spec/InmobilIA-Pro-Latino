@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Asistente IA</title></head>
+<body>
+<div layout:fragment="content" x-data="aiChat()">
+
+    <div class="rounded-xl bg-gradient-to-br from-purple-700 via-brand-800 to-brand-950 p-6 mb-5 ring-1 ring-brand-800 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-purple-400/20 blur-3xl"></div>
+        <div class="relative flex items-center gap-4 text-white">
+            <div class="h-12 w-12 rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/20 flex items-center justify-center">
+                <i data-lucide="sparkles" class="h-6 w-6"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Asistente IA</h2>
+                <p class="text-sm text-white/70">Pregúntame sobre tus propiedades, inquilinos, finanzas o cartera. Te responderé al instante.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sugerencias -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-5">
+        <template x-for="s in suggestions" :key="s">
+            <button @click="ask(s)" class="text-left p-3 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 hover:ring-brand-300 hover:shadow-card transition-all">
+                <span class="text-xs text-slate-500 dark:text-neutral-400"> Sugerencia</span>
+                <div class="text-sm font-medium mt-0.5" x-text="s"></div>
+            </button>
+        </template>
+    </div>
+
+    <!-- Chat -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <div class="p-5 max-h-[500px] overflow-y-auto scroll-thin space-y-4" id="chatLog">
+            <template x-for="(m, i) in messages" :key="i">
+                <div :class="m.role === 'user' ? 'flex-row-reverse' : ''" class="flex gap-3">
+                    <div :class="m.role === 'user' ? 'bg-brand-800 text-white' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300'"
+                         class="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm">
+                        <span x-show="m.role === 'user'"></span>
+                        <span x-show="m.role === 'ai'"></span>
+                    </div>
+                    <div :class="m.role === 'user' ? 'bg-brand-50 dark:bg-brand-950/30 ring-brand-200 dark:ring-brand-900/40' : 'bg-slate-50 dark:bg-neutral-800/40 ring-slate-200 dark:ring-neutral-700'"
+                         class="rounded-xl ring-1 px-4 py-2.5 max-w-[80%]">
+                        <p class="text-sm whitespace-pre-line" x-text="m.text"></p>
+                    </div>
+                </div>
+            </template>
+            <div x-show="loading" class="flex gap-3">
+                <div class="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-sm flex-shrink-0"></div>
+                <div class="bg-slate-50 dark:bg-neutral-800/40 ring-1 ring-slate-200 dark:ring-neutral-700 rounded-xl px-4 py-2.5">
+                    <div class="flex gap-1">
+                        <span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce"></span>
+                        <span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 0.15s"></span>
+                        <span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 0.3s"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form @submit.prevent="ask(question)" class="border-t border-slate-200 dark:border-neutral-800 p-3 flex gap-2">
+            <input type="text" x-model="question" :disabled="loading"
+                   placeholder="Pregúntame algo sobre tu cartera..."
+                   class="flex-1 px-3 py-2.5 text-sm bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15">
+            <button type="submit" :disabled="!question.trim() || loading"
+                    :class="!question.trim() || loading ? 'opacity-50 cursor-not-allowed' : ''"
+                    class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium">
+                <i data-lucide="send" class="h-4 w-4"></i>
+                Preguntar
+            </button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+function aiChat() {
+    return {
+        question: '',
+        messages: [],
+        loading: false,
+        suggestions: [
+            "¿Cuántos morosos tengo?",
+            "Top 3 propiedades por rentabilidad",
+            "¿Cuánto he ingresado este mes?",
+            "Resume mi cartera en 3 frases",
+            "¿Qué contratos vencen pronto?",
+            "¿Cuál es mi cap rate medio?"
+        ],
+        async ask(q) {
+            if (!q || !q.trim()) return;
+            this.messages.push({ role: 'user', text: q });
+            this.question = '';
+            this.loading = true;
+            this.scrollDown();
+
+            try {
+                const r = await fetch('/api/ai/ask', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ question: q })
+                });
+                const d = await r.json();
+                this.messages.push({ role: 'ai', text: d.ok ? d.answer : (' ' + (d.error || 'Error')) });
+            } catch(e) {
+                this.messages.push({ role: 'ai', text: ' Error de conexión.' });
+            }
+            this.loading = false;
+            this.scrollDown();
+        },
+        scrollDown() {
+            setTimeout(() => {
+                const el = document.getElementById('chatLog');
+                if (el) el.scrollTop = el.scrollHeight;
+            }, 100);
+        }
+    };
+}
+</script>
+</body>
+</html>

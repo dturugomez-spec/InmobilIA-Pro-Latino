@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Galería</title></head>
+<body>
+<div layout:fragment="content" x-data="bulkPhotos()">
+
+    <div class="flex items-center gap-2 mb-5">
+        <a th:href="@{|/entity/propiedad/${prop.get('id')}|}" class="px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 text-sm">← Volver a ficha</a>
+    </div>
+
+    <div th:unless="${storageOk}" class="rounded-lg bg-amber-50 ring-1 ring-amber-200 p-3 text-sm text-amber-900 mb-4">
+         Supabase Storage no está configurado. Crea el bucket "uploads" en Supabase Dashboard → Storage para activar la subida real.
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6">
+        <h2 class="font-semibold text-base mb-4" th:text="' Galería · ' + ${prop.get('name')}">Galería</h2>
+
+        <!-- Drop zone -->
+        <label class="block">
+            <div @drop.prevent="handleDrop($event)" @dragover.prevent @dragenter.prevent
+                 class="border-2 border-dashed border-slate-300 dark:border-neutral-700 rounded-lg p-12 text-center hover:border-brand-500 cursor-pointer transition-colors"
+                 :class="uploading ? 'opacity-50' : ''">
+                <input type="file" accept="image/*" multiple @change="handleFiles($event.target.files)" class="sr-only" :disabled="uploading">
+                <i data-lucide="image-up" class="h-12 w-12 text-slate-400 mx-auto mb-3"></i>
+                <p class="font-semibold">Arrastra fotos aquí o click para seleccionar</p>
+                <p class="text-xs text-slate-500 mt-1">Puedes subir múltiples a la vez · max 10 MB por foto</p>
+            </div>
+        </label>
+
+        <!-- Progreso -->
+        <div x-show="uploading" x-cloak class="mt-4">
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-brand-600 transition-all" :style="`width: ${progress}%`"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2 text-center" x-text="'Subiendo ' + uploaded + ' de ' + total + '...'">—</p>
+        </div>
+
+        <!-- Toggle "marcar primera como destacada" -->
+        <label class="flex items-center gap-2 mt-4 text-sm">
+            <input type="checkbox" x-model="setAsFeatured" class="h-4 w-4 rounded">
+            <span>Marcar la primera foto subida como destacada (portada)</span>
+        </label>
+    </div>
+
+    <!-- Galería actual -->
+    <div class="mt-6">
+        <h3 class="font-semibold mb-3" th:text="${fotos.size() + ' foto(s) en esta propiedad'}">0 fotos</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div th:each="f : ${fotos}" class="group relative aspect-square rounded-lg overflow-hidden ring-1 ring-slate-200 dark:ring-neutral-800">
+                <img th:src="${f.get('url')}" class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <button onclick="event.preventDefault()" type="button"
+                            th:attr="data-id=${f.get('id')}"
+                            class="set-featured px-3 py-1.5 rounded-md bg-white text-slate-900 text-xs font-medium">
+                         Destacar
+                    </button>
+                    <a th:href="${f.get('url')}" target="_blank" class="px-3 py-1.5 rounded-md bg-white/20 backdrop-blur text-white text-xs font-medium"> Ver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+const propId = /*[[${prop.get('id')}]]*/ '';
+
+function bulkPhotos() {
+    return {
+        uploading: false, total: 0, uploaded: 0, progress: 0, setAsFeatured: false,
+        async handleFiles(files) {
+            if (!files || files.length === 0) return;
+            this.uploading = true;
+            this.total = files.length;
+            this.uploaded = 0;
+            this.progress = 0;
+
+            const formData = new FormData();
+            for (const f of files) formData.append('files', f);
+            formData.append('setAsFeatured', this.setAsFeatured);
+
+            try {
+                const r = await fetch(`/propiedades/${propId}/fotos`, { method: 'POST', body: formData });
+                const d = await r.json();
+                if (d.ok && window.toast) window.toast(` ${d.uploaded} fotos subidas (${d.failed} fallidas)`, 'ok');
+                setTimeout(() => location.reload(), 1000);
+            } catch (e) {
+                if (window.toast) window.toast('Error subiendo: ' + e.message, 'err');
+            } finally {
+                this.uploading = false;
+            }
+        },
+        handleDrop(ev) {
+            this.handleFiles(ev.dataTransfer.files);
+        }
+    };
+}
+
+document.querySelectorAll('.set-featured').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        await fetch(`/api/photos/${btn.dataset.id}/set-featured`, { method: 'POST' });
+        if (window.toast) window.toast('Foto destacada actualizada', 'ok');
+        setTimeout(() => location.reload(), 600);
+    });
+});
+</script>
+</body>
+</html>

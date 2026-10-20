@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Quick Check</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/finanzas/quickcheck" class="form-card">
+        <h3>Quick Check en 30 segundos</h3>
+        <div class="form-grid cols-3">
+            <label>Precio <input type="number" step="0.01" name="price" required></label>
+            <label>Renta mensual <input type="number" step="0.01" name="rentMonthly" required></label>
+            <label>Entrada (%) <input type="number" step="0.1" name="downPct" value="30"></label>
+            <label>Tipo (%) <input type="number" step="0.01" name="interestPct" value="4"></label>
+            <label>Plazo (anos) <input type="number" name="term" value="25"></label>
+            <label>OPEX (%) <input type="number" step="0.1" name="opexPct" value="25"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Evaluar</button></div>
+    </form>
+
+    <div th:if="${yieldResult != null}">
+        <div class="verdict-card" th:classappend="${veredicto == 'EXCELENTE'} ? 'ok' : (${veredicto == 'Rechazable'} ? 'err' : 'warn')">
+            <div class="verdict-title">Veredicto</div>
+            <div class="verdict-value" th:text="${veredicto}">—</div>
+        </div>
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Equity</div><div class="kpi-value" th:text="${equity}">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Deuda</div><div class="kpi-value" th:text="${debt}">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Cuota mensual</div><div class="kpi-value" th:text="${cuota}">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Yield bruto</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(yieldResult.grossYield(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Cap rate</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(yieldResult.capRate(),1,2)} + '%'">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Cash-on-Cash</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(yieldResult.cashOnCash(),1,2)} + '%'">—</div></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

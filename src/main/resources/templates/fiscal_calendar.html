@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Calendario fiscal AEAT</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-red-700 to-rose-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="calendar-clock" class="h-6 w-6"></i> Calendario fiscal AEAT</h2>
+    <p class="text-sm text-white/80 mt-1">No pierdas ningún plazo: modelos 303, 130, 180, 184, 347, 390, 200, 100...</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-bold text-sm mb-3 text-emerald-700"> Próximos plazos</h3>
+        <ul class="space-y-2">
+            <li th:each="p : ${proximos}" class="p-3 rounded-lg border-l-4 bg-slate-50 dark:bg-neutral-800/50"
+                th:classappend="${p.get('dias') <= 7 ? 'border-red-500' : (p.get('dias') <= 30 ? 'border-amber-500' : 'border-emerald-500')}">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="font-semibold text-sm" th:text="${p.get('descripcion')}">—</p>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                             <span th:text="${p.get('fecha')}">—</span> ·
+                            <span class="capitalize" th:text="${p.get('tipo')}">—</span>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg" th:classappend="${p.get('dias') <= 7 ? 'text-red-700' : (p.get('dias') <= 30 ? 'text-amber-700' : 'text-emerald-700')}" th:text="${p.get('dias')}">0</p>
+                        <p class="text-[10px] text-slate-400">días</p>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="font-bold text-sm mb-3 text-slate-500"> Plazos pasados</h3>
+        <ul class="space-y-2 max-h-96 overflow-y-auto">
+            <li th:each="p : ${pasados}" class="p-2 rounded bg-slate-50 dark:bg-neutral-800/30 text-sm opacity-60">
+                <p th:text="${p.get('descripcion')}">—</p>
+                <p class="text-xs text-slate-400" th:text="${p.get('fecha')}">—</p>
+            </li>
+        </ul>
+    </div>
+</div>
+</div></body></html>

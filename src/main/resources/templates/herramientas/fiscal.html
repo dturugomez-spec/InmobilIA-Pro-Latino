@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Planificacion fiscal</title></head>
+<body>
+<div layout:fragment="content">
+    <form method="post" action="/herramientas/fiscal" class="form-card">
+        <h3>Planificacion fiscal - ITP, AJD y Plusvalia</h3>
+        <div class="form-grid cols-3">
+            <label>CCAA
+                <select name="ccaa" required>
+                    <option th:each="c : ${ccaaList}" th:value="${c}" th:text="${c}" th:selected="${c == ccaa}"></option>
+                </select>
+            </label>
+            <label>Precio compra (EUR) <input type="number" step="0.01" name="precio" required></label>
+            <label>Importe hipoteca (EUR) <input type="number" step="0.01" name="importeHipoteca" value="0"></label>
+            <label class="bool-field"><input type="checkbox" name="viviendaHabitual" value="true"><span>Vivienda habitual</span></label>
+            <label class="bool-field"><input type="checkbox" name="joven" value="true"><span>Menor de 35</span></label>
+            <label>Valor catastral suelo <input type="number" step="0.01" name="valorCatastralSuelo" value="0"></label>
+            <label>Anos tenencia <input type="number" name="aniosTenencia" value="5"></label>
+            <label>Tipo municipal <input type="number" step="0.01" name="tipoMunicipal" value="0.30"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary">Calcular</button></div>
+    </form>
+
+    <div class="info-banner" th:if="${itp == null}">
+        <span class="info-banner-icon"></span>
+        <div class="info-banner-txt">
+            <b>Calculadora fiscal oficial 2026</b>
+            <span>ITP por CCAA · AJD sobre hipoteca · Plusvalia municipal (metodo objetivo)</span>
+        </div>
+    </div>
+
+    <div class="kpi-grid" th:if="${itp != null}">
+        <div class="kpi-card"><div class="kpi-label">ITP</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(itp.importe(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            <div class="kpi-hint" th:text="${#numbers.formatDecimal(itp.tipo() * 100,1,2)} + '%'">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">AJD</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(ajd.importe(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            <div class="kpi-hint" th:text="${#numbers.formatDecimal(ajd.tipo() * 100,1,3)} + '%'">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Plusvalia municipal</div>
+            <div class="kpi-value" th:text="${#numbers.formatDecimal(plusvalia.cuota(),0,'POINT',0,'COMMA')} + ' EUR'">—</div>
+            <div class="kpi-hint" th:text="'Coef ' + ${plusvalia.coeficiente()}">—</div></div>
+    </div>
+
+    <!-- ═══ Enlaces oficiales ═══ -->
+    <div th:replace="~{fragments/official-links :: panel('fiscal,itp,ajd,plusvalia,impuestos,legal')}"></div>
+</div>
+</body>
+</html>

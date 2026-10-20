@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InmobilIA Pro · CRM inmobiliario con IA · España</title>
+    <meta name="description" content="Plataforma integral para inmobiliarias modernas. Verifactu, firma electrónica eIDAS, inteligencia artificial y automatización. Desde 78€/mes.">
+    <meta property="og:title" content="InmobilIA Pro · Software para inmobiliarias">
+    <meta property="og:description" content="Gestiona propiedades, leads, contratos, visitas y facturación desde un único panel. Con IA y cumplimiento legal incluido.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.inmobiliapro.es/">
+    <meta property="og:image" content="https://www.inmobiliapro.es/brand/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="canonical" href="https://www.inmobiliapro.es/">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/tw.css?v=7a9273c5">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@1.52.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; }
+        h1, h2, h3, h4, .display { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        .grain { background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,0.04) 1px, transparent 0); background-size: 20px 20px; }
+        .glass { backdrop-filter: blur(12px) saturate(180%); background: rgba(255,255,255,0.85); }
+    </style>
+</head>
+<body class="bg-white">
+
+<header class="sticky top-0 z-50 glass border-b border-slate-200/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="/" class="flex items-center gap-2.5 font-bold display text-lg">
+                <img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-lg">
+                <span>Inmobil<span class="text-blue-600">IA</span> Pro</span>
+            </a>
+            <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
+                <a href="#producto" class="hover:text-slate-900">Producto</a>
+                <a href="#diferenciadores" class="hover:text-slate-900">Agente IA</a>
+                <a href="#planes" class="hover:text-slate-900">Planes</a>
+                <a href="#buscar" class="hover:text-slate-900">Buscar piso</a>
+                <a href="#contacto" class="hover:text-slate-900">Contacto</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="/descubre" class="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-rose-600 hover:text-rose-700"><i data-lucide="heart" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> Buscar piso</a>
+                <a href="/login" class="text-sm font-semibold sm:font-medium text-slate-900 sm:text-slate-700 hover:text-slate-900 px-3 py-2 sm:p-0 rounded-lg border border-slate-300 sm:border-0">
+                    <span class="sm:hidden">Entrar</span><span class="hidden sm:inline">Iniciar sesión</span>
+                </a>
+                <a href="#contacto" class="hidden sm:inline-block text-sm font-semibold px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white">Solicitar acceso</a>
+                <button type="button" id="menu-movil-btn" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-slate-700 hover:bg-slate-100"
+                        aria-controls="menu-movil" aria-expanded="false" aria-label="Abrir menú">
+                    <i data-lucide="menu" style="width:22px;height:22px"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <nav id="menu-movil" class="md:hidden hidden border-t border-slate-200/60 bg-white">
+        <div class="px-4 py-3 flex flex-col text-base">
+            <a href="#producto" class="py-3 border-b border-slate-100 text-slate-700">Producto</a>
+            <a href="#diferenciadores" class="py-3 border-b border-slate-100 text-slate-700">Agente IA</a>
+            <a href="#planes" class="py-3 border-b border-slate-100 text-slate-700">Planes</a>
+            <a href="/descubre" class="py-3 border-b border-slate-100 text-rose-600 font-medium">Buscar piso</a>
+            <a href="#contacto" class="py-3 text-slate-700">Contacto</a>
+            <div class="grid grid-cols-2 gap-2 pt-3">
+                <a href="/login" class="text-center py-3 rounded-lg border border-slate-300 font-semibold text-slate-900">Iniciar sesión</a>
+                <a href="#contacto" class="text-center py-3 rounded-lg bg-slate-900 text-white font-semibold">Solicitar acceso</a>
+            </div>
+        </div>
+    </nav>
+    <script>
+        (function () {
+            var btn = document.getElementById('menu-movil-btn');
+            var menu = document.getElementById('menu-movil');
+            if (!btn || !menu) return;
+            function set(open) {
+                menu.classList.toggle('hidden', !open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+            }
+            btn.addEventListener('click', function () { set(menu.classList.contains('hidden')); });
+            menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+        })();
+    </script>
+</header>
+
+<section class="relative overflow-hidden grain">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-20 md:py-28 lg:py-32 grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-16 items-center">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Software inmobiliario hecho en España
+            </div>
+            <h1 class="display text-5xl md:text-7xl lg:text-6xl xl:text-7xl font-extrabold mb-8 leading-[1.05]">
+                El agente IA<br>de tu inmobiliaria.
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl leading-relaxed">
+                Capta vendedores y compradores solo, hace el seguimiento por ti y te prepara el trabajo hecho cada mañana.
+                Gestión, IA y cumplimiento legal en un único panel — hecho para el mercado español.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="#contacto" class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg shadow-slate-900/10 transition">Solicitar acceso →</a>
+                <a href="#producto" class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-200 transition">Ver funcionalidades</a>
+            </div>
+            <p class="mt-8 text-sm text-slate-500">14 días gratis · Acceso por invitación · Soporte en español</p>
+        </div>
+
+        <!-- Vista del producto: la tarjeta "Tu día" del panel -->
+        <div class="relative" aria-label="Vista del panel de InmobilIA Pro">
+            <div class="absolute -inset-6 bg-gradient-to-tr from-blue-100 via-slate-50 to-rose-50 rounded-[2rem] blur-2xl opacity-80" aria-hidden="true"></div>
+            <div class="relative rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-900/10 overflow-hidden">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/80">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    <span class="ml-3 text-[11px] text-slate-400 font-medium truncate">inmobiliapro.es/dashboard</span>
+                </div>
+                <div class="p-5 sm:p-6">
+                    <p class="text-xs text-slate-400 mb-1">Martes, 8:02 · Buenos días, Laura</p>
+                    <div class="flex items-baseline justify-between mb-4">
+                        <p class="display font-bold text-lg">Tu día</p>
+                        <span class="text-xs text-slate-500">4 cosas por hacer</span>
+                    </div>
+                    <ul class="divide-y divide-slate-100 text-sm">
+                        <li class="flex items-start gap-3 py-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 grid place-items-center flex-shrink-0"><i data-lucide="calendar-check" style="width:16px;height:16px"></i></span>
+                            <span class="min-w-0"><span class="block font-semibold text-slate-900">Visita en Ático Velázquez · 11:00</span><span class="block text-xs text-slate-500">David Torres · confirmada</span></span>
+                        </li>
+                        <li class="flex items-start gap-3 py-3">
+                            <span class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 grid place-items-center flex-shrink-0"><i data-lucide="flame" style="width:16px;height:16px"></i></span>
+                            <span class="min-w-0"><span class="block font-semibold text-slate-900">Llama a Roberto Díaz</span><span class="block text-xs text-slate-500">Lead caliente · aún sin contactar</span></span>
+                        </li>
+                        <li class="flex items-start gap-3 py-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 grid place-items-center flex-shrink-0"><i data-lucide="target" style="width:16px;height:16px"></i></span>
+                            <span class="min-w-0"><span class="block font-semibold text-slate-900">3 compradores encajan con Piso Retiro</span><span class="block text-xs text-slate-500">Propiedad nueva: avísales antes que nadie</span></span>
+                        </li>
+                        <li class="flex items-start gap-3 py-3">
+                            <span class="w-8 h-8 rounded-lg bg-violet-50 text-violet-700 grid place-items-center flex-shrink-0"><i data-lucide="pen-line" style="width:16px;height:16px"></i></span>
+                            <span class="min-w-0"><span class="block font-semibold text-slate-900">Firma de arras · Chalet Las Rozas</span><span class="block text-xs text-slate-500">Hoy a las 17:30</span></span>
+                        </li>
+                    </ul>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="rounded-xl bg-slate-50 p-3"><p class="text-[11px] text-slate-500">Previsión de cierres</p><p class="display font-bold text-lg">26.400 €</p></div>
+                        <div class="rounded-xl bg-slate-50 p-3"><p class="text-[11px] text-slate-500">Leads esta semana</p><p class="display font-bold text-lg">18 <span class="text-xs font-semibold text-emerald-600">+32 %</span></p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="relative sm:absolute sm:-bottom-6 sm:-left-6 mt-4 sm:mt-0 flex items-center gap-3 rounded-xl bg-slate-900 text-white px-4 py-3 shadow-xl max-w-xs">
+                <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-300 grid place-items-center flex-shrink-0"><i data-lucide="send" style="width:14px;height:14px"></i></span>
+                <span class="text-xs leading-snug"><b class="font-semibold">Respuesta automática enviada</b><br><span class="text-slate-300">a Ana García · hace 2 min</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="border-y border-slate-200 bg-slate-50/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div><div class="display text-3xl md:text-4xl font-bold">110+</div><div class="text-xs text-slate-500 mt-1 uppercase tracking-wider">Funcionalidades</div></div>
+                <div><div class="display text-3xl md:text-4xl font-bold">14 días</div><div class="text-xs text-slate-500 mt-1 uppercase tracking-wider">Prueba gratis</div></div>
+                <div><div class="display text-3xl md:text-4xl font-bold">15+</div><div class="text-xs text-slate-500 mt-1 uppercase tracking-wider">Modelos AEAT</div></div>
+                <div><div class="display text-3xl md:text-4xl font-bold">24/7</div><div class="text-xs text-slate-500 mt-1 uppercase tracking-wider">Agente IA</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="producto" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="max-w-3xl mb-16">
+            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">El producto</p>
+            <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Todo lo que necesita una inmobiliaria moderna.</h2>
+            <p class="text-lg text-slate-600">Un único panel para gestión operativa, comercial, marketing y legal. Sin saltar entre 8 herramientas distintas.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="brain" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Inteligencia artificial</h3><p class="text-sm text-slate-600 leading-relaxed">Priorización de leads, generación de descripciones SEO, resúmenes de cliente y chatbot embebible 24/7 en tu web.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="scale" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Cumplimiento legal</h3><p class="text-sm text-slate-600 leading-relaxed">Verifactu (RD 1007/2023), firma electrónica eIDAS, RGPD, LAU. 15+ modelos AEAT generados automáticamente.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="zap" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Automatización</h3><p class="text-sm text-slate-600 leading-relaxed">Workflows visuales: "cuando entre un lead premium → asignar a director + email + tarea". Sin programar.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="bar-chart-3" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Gestión completa</h3><p class="text-sm text-slate-600 leading-relaxed">Propiedades, leads, inquilinos, propietarios, contratos, visitas, comisiones, seguros y promociones de obra nueva.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-green-100 text-green-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="message-circle" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Comunicación unificada</h3><p class="text-sm text-slate-600 leading-relaxed">WhatsApp Business, SMS, email marketing, newsletter y campañas con tracking de aperturas y clicks.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="globe" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Presencia online</h3><p class="text-sm text-slate-600 leading-relaxed">Microsite SEO de tu agencia, página pública por propiedad, sindicación a portales y tours 360º integrados.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="credit-card" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Cobros automáticos</h3><p class="text-sm text-slate-600 leading-relaxed">SEPA Direct Debit para alquileres, conciliación bancaria con auto-match, multi-divisa BCE actualizada diariamente.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="handshake" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Red colaborativa</h3><p class="text-sm text-slate-600 leading-relaxed">Comparte cartera con agencias asociadas y reparte comisiones automáticamente. MLS interno integrado.</p></div>
+            <div class="bg-white p-8 hover:bg-slate-50 transition"><div class="w-10 h-10 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center mb-4 text-lg"><i data-lucide="smartphone" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h3 class="display font-bold text-lg mb-2">Móvil y multidispositivo</h3><p class="text-sm text-slate-600 leading-relaxed">App móvil nativa (Android/iOS), PWA instalable, multi-idioma (ES/EN/CA) y whitelabel personalizable.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- Diferenciadores: lo que nos hace únicos -->
+<section id="diferenciadores" class="py-24 md:py-32 bg-gradient-to-b from-slate-50 to-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="max-w-3xl mb-16">
+            <p class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4">Lo que nos hace únicos</p>
+            <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">No es un CRM más. Es un agente que trabaja por ti.</h2>
+            <p class="text-lg text-slate-600">Mientras otros softwares te dan una base de datos bonita, InmobilIA capta, hace seguimiento y te prepara el trabajo hecho. Tú solo apruebas.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-800 p-8 text-white">
+                <div class="text-3xl mb-3"></div>
+                <h3 class="display font-bold text-xl mb-2">Agente IA autónomo</h3>
+                <p class="text-white/80 leading-relaxed">Cada mañana analiza tu cartera, te da el plan del día y prepara las acciones ya hechas (mensajes redactados, precios, tareas). Hace seguimiento solo a cada lead, te prepara para cada visita y aprende de tus decisiones. Un empleado que trabaja también de noche.</p>
+            </div>
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-8">
+                <div class="text-3xl mb-3"></div>
+                <h3 class="display font-bold text-xl mb-2">Imanes de captación 24/7</h3>
+                <p class="text-slate-600 leading-relaxed">Valoración instantánea para captar propietarios y simulador de hipoteca para captar compradores, directos desde tu web. Cada visitante que calcula queda como lead en tu CRM, con su presupuesto. Farming por zonas con mensajes escritos por IA.</p>
+            </div>
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-8">
+                <div class="text-3xl mb-3"><i data-lucide="heart" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div>
+                <h3 class="display font-bold text-xl mb-2">Marketplace de compradores</h3>
+                <p class="text-slate-600 leading-relaxed">Un buscador tipo "swipe" donde los compradores descubren pisos deslizando y marcan sus favoritos. Cada "me gusta" te entra como lead. Publicas tu cartera en un escaparate que trabaja para ti.</p>
+            </div>
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-8">
+                <div class="text-3xl mb-3"><i data-lucide="bar-chart-3" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div>
+                <h3 class="display font-bold text-xl mb-2">Del lead a la firma, sin fisuras</h3>
+                <p class="text-slate-600 leading-relaxed">Informe de mercado (CMA) para ganar la exclusiva, portal de transparencia para retener al propietario, y nota de encargo y hoja de visita generadas al instante. Todo el embudo cubierto en un clic.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-24 md:py-32 bg-slate-900 text-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            <div>
+                <p class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Por qué somos diferentes</p>
+                <h2 class="display text-4xl md:text-5xl font-extrabold mb-6 leading-tight">Diseñado para inmobiliarias españolas, no adaptado.</h2>
+                <p class="text-lg text-slate-300 leading-relaxed">Mientras el software internacional intenta ser de todo para todos, nosotros nos especializamos en el sector inmobiliario español: con su fiscalidad, sus modelos, su legislación y sus portales.</p>
+            </div>
+            <div class="space-y-5">
+                <div class="flex gap-4"><div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg"></div><div><h3 class="display font-bold text-base mb-1">Cumplimiento desde el día 1</h3><p class="text-sm text-slate-400">Verifactu, eIDAS, RGPD, LOPDGDD, LAU, RD 1007/2023, RD 6/2020 — todo nativo, sin extras de pago.</p></div></div>
+                <div class="flex gap-4"><div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg"></div><div><h3 class="display font-bold text-base mb-1">IA aplicada al negocio inmobiliario</h3><p class="text-sm text-slate-400">Lead scoring, generación de descripciones, valoración asistida, OCR de DNI y notas de voz transcritas.</p></div></div>
+                <div class="flex gap-4"><div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg"></div><div><h3 class="display font-bold text-base mb-1">Integraciones de verdad</h3><p class="text-sm text-slate-400">Portales inmobiliarios, Google Calendar, WhatsApp Business Cloud, Stripe, Catastro, software contable.</p></div></div>
+                <div class="flex gap-4"><div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg"></div><div><h3 class="display font-bold text-base mb-1">Soporte humano en español</h3><p class="text-sm text-slate-400">No chatbots de centralita. Contacto directo con quien construye la plataforma.</p></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="legal" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center mb-16">
+            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Cumplimiento legal</p>
+            <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Tranquilidad jurídica, garantizada.</h2>
+            <p class="text-lg text-slate-600">Cada actualización legal del sector inmobiliario español se aplica automáticamente. Tú solo te preocupas de vender.</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="scale" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Verifactu</h4><p class="text-xs text-slate-500">RD 1007/2023</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"></div><h4 class="display font-bold text-sm mb-1">Firma eIDAS</h4><p class="text-xs text-slate-500">RD 6/2020</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="shield" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">RGPD</h4><p class="text-xs text-slate-500">UE 2016/679</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="landmark" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">LOPDGDD</h4><p class="text-xs text-slate-500">LO 3/2018</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="home" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">LAU</h4><p class="text-xs text-slate-500">Ley 29/1994</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"></div><h4 class="display font-bold text-sm mb-1">AEAT</h4><p class="text-xs text-slate-500">15+ modelos</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="credit-card" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">SEPA</h4><p class="text-xs text-slate-500">pain.008.001</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="zap" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">CEE</h4><p class="text-xs text-slate-500">RD 390/2021</p></div>
+        </div>
+    </div>
+</section>
+
+<section id="planes" class="py-24 md:py-32 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center mb-16">
+            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Planes y precios</p>
+            <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Precios transparentes. Sin sorpresas.</h2>
+            <p class="text-lg text-slate-600">14 días gratis en cualquier plan: pones la tarjeta al empezar y no se cobra nada hasta el día 15. Precios sin IVA.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
+            <!-- ─── PRO ─── -->
+            <div class="bg-slate-900 text-white rounded-2xl p-7 relative shadow-2xl shadow-slate-900/20 flex flex-col">
+                <div class="absolute -top-3 left-7 px-3 py-1 bg-amber-400 text-amber-950 rounded-full text-xs font-bold">MÁS ELEGIDO</div>
+                <div class="mb-5"><p class="display font-bold text-lg mb-1">Pro</p><p class="text-xs text-slate-400">Autónomos y agencias pequeñas</p></div>
+                <div><span class="display text-4xl font-extrabold">78 €</span><span class="text-slate-400 text-sm">/mes + IVA</span></div>
+                <p class="text-xs text-emerald-300 font-medium mt-1 mb-6">14 días gratis</p>
+                <a href="#contacto" data-plan="pro" class="block text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm mb-6 transition">Solicitar acceso →</a>
+                <ul class="space-y-2.5 text-sm">
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> 15 propiedades</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> 2 usuarios</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Pipeline kanban y calendario de visitas</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Facturación Verifactu y modelos AEAT</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Informes en PDF</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Agente IA · 200 créditos al mes</li>
+                </ul>
+            </div>
+
+            <!-- ─── AGENCY ─── -->
+            <div class="bg-white rounded-2xl p-7 border border-slate-200 flex flex-col">
+                <div class="mb-5"><p class="display font-bold text-lg mb-1">Agency</p><p class="text-xs text-slate-500">Agencias con equipo</p></div>
+                <div><span class="display text-4xl font-extrabold">198 €</span><span class="text-slate-500 text-sm">/mes + IVA</span></div>
+                <p class="text-xs text-emerald-700 font-medium mt-1 mb-6">14 días gratis</p>
+                <a href="#contacto" data-plan="agency" class="block text-center px-4 py-2.5 rounded-lg border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white font-semibold text-sm mb-6 transition">Solicitar acceso</a>
+                <ul class="space-y-2.5 text-sm text-slate-700">
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Propiedades y usuarios ilimitados</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Todo lo de Pro, más:</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Integraciones con banco y portales</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Agente IA · 1.000 créditos al mes</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Auditor IA y más de 60 herramientas</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Soporte prioritario</li>
+                </ul>
+            </div>
+
+            <!-- ─── A MEDIDA ─── -->
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-7 border border-amber-300 flex flex-col">
+                <div class="mb-5"><p class="display font-bold text-lg mb-1">A medida</p><p class="text-xs text-amber-800">Redes y franquicias</p></div>
+                <div><span class="display text-4xl font-extrabold">Hablemos</span></div>
+                <p class="text-xs text-amber-800 font-medium mt-1 mb-6">Precio según sedes y volumen</p>
+                <a href="#contacto" data-plan="enterprise" class="block text-center px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm mb-6 transition">Contactar →</a>
+                <ul class="space-y-2.5 text-sm text-amber-950">
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Todo lo de Agency</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Varias sedes</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Marca blanca y subdominio propio</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Red colaborativa entre agencias (MLS)</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> API REST y webhooks</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Implantación acompañada</li>
+                </ul>
+            </div>
+        </div>
+        <p class="text-center text-sm text-slate-500 mt-10">Sin permanencia: cancela cuando quieras desde tu panel. Si cancelas durante la prueba, no pagas nada.</p>
+        <p class="text-center text-sm text-slate-500 mt-12">¿Requisitos especiales o más de 10 sedes? <a href="mailto:inmobilia.support@gmail.com" class="text-slate-900 font-semibold hover:underline">Contacta para plan a medida →</a></p>
+        <p class="text-center text-sm text-slate-500 mt-3"><i data-lucide="sparkles" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> Add-on <strong>Marketplace de compradores</strong> (+25%): tus inmuebles en el buscador público tipo swipe, captando compradores en automático.</p>
+    </div>
+</section>
+
+<!-- Buscador para compradores (Tinder de pisos) -->
+<section id="buscar" class="py-24 md:py-32 bg-gradient-to-br from-rose-50 to-blue-50">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <p class="text-sm font-semibold text-rose-600 uppercase tracking-wider mb-4">Para compradores · 100% gratis</p>
+                <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">¿Buscas piso? Deslízalo. <i data-lucide="heart" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></h2>
+                <p class="text-lg text-slate-600 mb-6">Olvídate de filtrar mil anuncios. Desliza pisos como en una app de citas, marca los que te enamoran y deja que la agencia te contacte. Sin registro, sin coste.</p>
+                <ul class="space-y-2 text-slate-600 mb-8">
+                    <li class="flex items-center gap-2"><i data-lucide="heart" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> Marca tus favoritos en segundos</li>
+                    <li class="flex items-center gap-2"><i data-lucide="home" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> Solo pisos reales de agencias verificadas</li>
+                    <li class="flex items-center gap-2"><i data-lucide="message-circle" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> La agencia te contacta, tú no buscas</li>
+                </ul>
+                <a href="/descubre" class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-gradient-to-br from-rose-600 to-blue-700 text-white font-semibold shadow-lg transition hover:opacity-90">Empezar a descubrir →</a>
+            </div>
+            <div class="flex justify-center">
+                <div class="relative w-64 h-80 rounded-3xl bg-slate-900 shadow-2xl overflow-hidden rotate-3">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-700 to-slate-900"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div class="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 text-slate-900 text-sm font-extrabold">285.000 €</div>
+                    <div class="absolute bottom-0 p-5 text-white">
+                        <p class="display text-xl font-extrabold">Piso luminoso</p>
+                        <p class="text-white/80 text-sm">Madrid · <i data-lucide="bed-double" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> 3 · <i data-lucide="ruler" style="width:1em;height:1em" class="inline-block align-[-2px]"></i> 90 m²</p>
+                        <div class="flex gap-3 mt-4">
+                            <span class="h-11 w-11 rounded-full bg-white/95 flex items-center justify-center text-xl"><i data-lucide="thumbs-down" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></span>
+                            <span class="h-11 w-11 rounded-full bg-gradient-to-br from-rose-600 to-blue-700 flex items-center justify-center text-xl"><i data-lucide="heart" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contacto" class="py-24 md:py-32">
+    <div class="max-w-3xl mx-auto px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Solicitar acceso</p>
+            <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Empieza en menos de 24 horas.</h2>
+            <p class="text-lg text-slate-600">Trabajamos por invitación. Solicita tu acceso y nos pondremos en contacto contigo para una demo personalizada.</p>
+        </div>
+        <form action="/solicitar-cuenta" method="post" class="bg-white rounded-2xl p-8 md:p-10 border border-slate-200 shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div><label class="block text-sm font-semibold mb-2">Nombre completo <span class="text-red-500">*</span></label><input type="text" name="nombre" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
+                <div><label class="block text-sm font-semibold mb-2">Empresa <span class="text-red-500">*</span></label><input type="text" name="empresa" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
+                <div><label class="block text-sm font-semibold mb-2">Email profesional <span class="text-red-500">*</span></label><input type="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
+                <div><label class="block text-sm font-semibold mb-2">Teléfono <span class="text-red-500">*</span></label><input type="tel" name="telefono" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
+                <div><label class="block text-sm font-semibold mb-2">Plan de interés</label><select name="plan" id="plan-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="pro" selected>Pro · 78 €/mes + IVA · 14 días gratis</option><option value="agency">Agency · 198 €/mes + IVA · 14 días gratis</option><option value="enterprise">A medida · redes y franquicias</option></select></div>
+                <div><label class="block text-sm font-semibold mb-2">Tamaño de cartera</label><select name="num_propiedades" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="1-20">1 a 20 propiedades</option><option value="21-50">21 a 50</option><option value="51-100">51 a 100</option><option value="101+">Más de 100</option></select></div>
+            </div>
+            <div class="mb-6"><label class="block text-sm font-semibold mb-2">¿Qué buscas mejorar en tu inmobiliaria?</label><textarea name="mensaje" rows="4" placeholder="Cuéntanos brevemente tu situación actual y qué herramienta estás evaluando." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition resize-none"></textarea></div>
+            <label class="flex items-start gap-3 mb-6 text-sm text-slate-600"><input type="checkbox" required class="mt-1 rounded"><span>He leído y acepto la <a href="/legal/privacy" class="text-slate-900 font-medium underline">política de privacidad</a> y el tratamiento de mis datos para esta solicitud.</span></label>
+            <button type="submit" class="w-full px-6 py-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold transition">Enviar solicitud</button>
+            <p class="text-center text-xs text-slate-500 mt-4">Respondemos en menos de 24 horas laborables</p>
+        </form>
+    </div>
+</section>
+
+<footer class="border-t border-slate-200 py-12">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
+            <div class="col-span-2">
+                <a href="/" class="flex items-center gap-2.5 font-bold display text-lg mb-3"><img src="/brand/logo-mark.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-lg">InmobilIA Pro</a>
+                <p class="text-sm text-slate-500 max-w-xs leading-relaxed">El sistema operativo para inmobiliarias modernas. Hecho en España, con cumplimiento legal incluido.</p>
+            </div>
+            <div><h4 class="display font-bold text-sm mb-4">Producto</h4><ul class="space-y-2 text-sm text-slate-600"><li><a href="#producto" class="hover:text-slate-900">Funcionalidades</a></li><li><a href="#planes" class="hover:text-slate-900">Planes</a></li><li><a href="#legal" class="hover:text-slate-900">Cumplimiento</a></li></ul></div>
+            <div><h4 class="display font-bold text-sm mb-4">Empresa</h4><ul class="space-y-2 text-sm text-slate-600"><li><a href="#contacto" class="hover:text-slate-900">Contacto</a></li><li><a href="/blog" class="hover:text-slate-900">Blog</a></li><li><a href="mailto:inmobilia.support@gmail.com" class="hover:text-slate-900">Soporte</a></li></ul></div>
+            <div><h4 class="display font-bold text-sm mb-4">Legal</h4><ul class="space-y-2 text-sm text-slate-600"><li><a href="/legal/privacy" class="hover:text-slate-900">Privacidad</a></li><li><a href="/legal/terms" class="hover:text-slate-900">Términos</a></li><li><a href="/legal/cookies" class="hover:text-slate-900">Cookies</a></li><li><a href="/seguridad-datos" class="hover:text-slate-900">Seguridad</a></li><li><a href="/dpa" class="hover:text-slate-900">Contrato de datos (DPA)</a></li></ul></div>
+        </div>
+        <div class="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+            <p>© 2026 InmobilIA Pro. Todos los derechos reservados. Hecho en España.</p>
+            <span th:replace="~{fragments/grupo :: sello(false)}"></span>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Pre-seleccionar el plan en el dropdown cuando se hace click en cada tarjeta
+document.querySelectorAll('a[data-plan]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const plan = this.getAttribute('data-plan');
+        const select = document.getElementById('plan-select');
+        if (select) select.value = plan;
+    });
+});
+</script>
+
+    <script>if(window.lucide)lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Nueva promoción</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-orange-700 to-amber-900 p-5 mb-5 text-white">
+    <h2 class="text-lg font-bold"> Nueva promoción</h2>
+</div>
+<form method="post" action="/promociones/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3 max-w-3xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input type="text" name="nombre" required placeholder="Nombre promoción" class="px-3 py-2 text-sm border rounded">
+        <input type="text" name="promotora" placeholder="Promotora" class="px-3 py-2 text-sm border rounded">
+        <input type="text" name="direccion" placeholder="Dirección" class="md:col-span-2 px-3 py-2 text-sm border rounded">
+        <input type="text" name="municipio" placeholder="Municipio" class="px-3 py-2 text-sm border rounded">
+        <input type="text" name="provincia" placeholder="Provincia" class="px-3 py-2 text-sm border rounded">
+        <select name="tipo" class="px-3 py-2 text-sm border rounded">
+            <option value="residencial">Residencial</option><option value="comercial">Comercial</option><option value="mixto">Mixto</option>
+        </select>
+        <select name="fase" class="px-3 py-2 text-sm border rounded">
+            <option value="preventa">Preventa</option><option value="obras">En obras</option>
+            <option value="terminado">Terminado</option><option value="entregado">Entregado</option>
+        </select>
+        <input type="number" name="num_unidades" placeholder="Unidades totales" class="px-3 py-2 text-sm border rounded">
+        <input type="date" name="fecha_entrega" placeholder="Entrega" class="px-3 py-2 text-sm border rounded">
+        <input type="number" step="0.01" name="precio_desde" placeholder="Precio desde €" class="px-3 py-2 text-sm border rounded">
+        <input type="number" step="0.01" name="precio_hasta" placeholder="Precio hasta €" class="px-3 py-2 text-sm border rounded">
+    </div>
+    <input type="url" name="render_principal_url" placeholder="URL render principal" class="w-full px-3 py-2 text-sm border rounded">
+    <input type="url" name="tour_360_url" placeholder="URL tour 360" class="w-full px-3 py-2 text-sm border rounded">
+    <textarea name="memoria_calidades" rows="4" placeholder="Memoria de calidades..." class="w-full px-3 py-2 text-sm border rounded"></textarea>
+    <input type="text" name="landing_slug" placeholder="URL pública (ej: residencial-mar)" class="w-full px-3 py-2 text-sm border rounded">
+    <textarea name="seo_descripcion" rows="2" placeholder="Descripción SEO" class="w-full px-3 py-2 text-sm border rounded"></textarea>
+    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="publicada"> Publicar landing</label>
+    <button class="px-4 py-2 rounded bg-amber-700 text-white text-sm font-medium"> Crear promoción</button>
+</form>
+</div></body></html>

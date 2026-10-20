@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Recibos</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        <a href="/receipts/new" th:if="${canWrite}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nuevo recibo
+        </a>
+        <form action="/receipts/generate-monthly" method="post" th:if="${canWrite}" class="inline">
+            <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium" onclick="return confirm('¿Generar recibos del mes para todos los inquilinos activos?')">
+                <i data-lucide="zap" class="h-4 w-4"></i> Generar recibos del mes
+            </button>
+        </form>
+        <a href="/invoices" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-700 hover:bg-slate-50 text-sm">
+            <i data-lucide="file-text" class="h-4 w-4"></i> Facturas
+        </a>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+                <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="text-left px-4 py-3">Nº</th>
+                    <th class="text-left px-4 py-3">Fecha</th>
+                    <th class="text-left px-4 py-3">Inquilino</th>
+                    <th class="text-left px-4 py-3">Inmueble</th>
+                    <th class="text-left px-4 py-3">Período</th>
+                    <th class="text-right px-4 py-3">Importe</th>
+                    <th class="text-right px-4 py-3">IRPF</th>
+                    <th class="text-right px-4 py-3">Cobrado</th>
+                    <th class="text-left px-4 py-3">Estado</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="r : ${rows}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                    <td class="px-4 py-3"><a th:href="@{|/receipts/${r.get('id')}|}" class="font-mono font-bold text-brand-700 hover:underline" th:text="${r.get('full_number')}">R/00001</a></td>
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500" th:text="${r.get('fecha_emision') != null ? #strings.substring(r.get('fecha_emision'),0,10) : '—'}">—</td>
+                    <td class="px-4 py-3 font-medium" th:text="${r.get('inquilino_nombre')}">—</td>
+                    <td class="px-4 py-3 truncate max-w-[180px]" th:text="${r.get('property_name')}">—</td>
+                    <td class="px-4 py-3 text-xs text-slate-500" th:text="${r.get('period_month') + '/' + r.get('period_year')}">—</td>
+                    <td class="px-4 py-3 font-mono text-right" th:text="${#numbers.formatDecimal(r.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right text-red-600" th:text="${r.get('irpf_amount') != null and r.get('irpf_amount') > 0 ? '-' + #numbers.formatDecimal(r.get('irpf_amount'),0,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
+                    <td class="px-4 py-3 font-mono text-right font-bold" th:text="${#numbers.formatDecimal(r.get('total_pagado') ?: r.get('importe') ?: 0,0,'POINT',2,'COMMA') + ' €'}">—</td>
+                    <td class="px-4 py-3">
+                        <span th:text="${r.get('status')}" th:classappend="${#strings.equalsIgnoreCase(r.get('status'),'Pagado') ? 'bg-emerald-100 text-emerald-700' : (#strings.equalsIgnoreCase(r.get('status'),'Anulado') ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-700')}" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full">—</span>
+                    </td>
+                </tr>
+                <tr th:if="${rows.isEmpty()}">
+                    <td colspan="9" class="py-12 text-center text-slate-500 text-sm">Sin recibos. Click en "Generar recibos del mes" para crear automáticamente uno por cada inquilino activo.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

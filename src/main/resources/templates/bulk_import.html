@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Importador masivo</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-cyan-700 to-blue-900 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="upload-cloud" class="h-6 w-6"></i> Importador masivo</h2>
+    <p class="text-sm text-white/80 mt-1">Sube tu cartera completa de propiedades, leads o inquilinos desde Excel/CSV.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <form method="post" enctype="multipart/form-data" action="/importar/propiedades" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="text-4xl mb-2"></div>
+        <h3 class="font-bold text-sm">Propiedades</h3>
+        <p class="text-[10px] text-slate-500 mt-1 mb-3">CSV con: direccion;precio;tipo;habitaciones;metros_cuadrados;municipio;provincia</p>
+        <input type="file" name="archivo" required accept=".csv" class="w-full text-xs mb-2">
+        <button class="w-full px-3 py-1.5 rounded bg-cyan-700 text-white text-xs"> Importar</button>
+    </form>
+    <form method="post" enctype="multipart/form-data" action="/importar/leads" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="text-4xl mb-2"></div>
+        <h3 class="font-bold text-sm">Leads</h3>
+        <p class="text-[10px] text-slate-500 mt-1 mb-3">CSV con: nombre;email;telefono;tipo;presupuesto_max;zona</p>
+        <input type="file" name="archivo" required accept=".csv" class="w-full text-xs mb-2">
+        <button class="w-full px-3 py-1.5 rounded bg-purple-700 text-white text-xs"> Importar</button>
+    </form>
+    <form method="post" enctype="multipart/form-data" action="/importar/inquilinos" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="text-4xl mb-2"></div>
+        <h3 class="font-bold text-sm">Inquilinos</h3>
+        <p class="text-[10px] text-slate-500 mt-1 mb-3">CSV con: nombre;dni;email;telefono;direccion</p>
+        <input type="file" name="archivo" required accept=".csv" class="w-full text-xs mb-2">
+        <button class="w-full px-3 py-1.5 rounded bg-emerald-700 text-white text-xs"> Importar</button>
+    </form>
+    <form method="post" enctype="multipart/form-data" action="/importar/propietarios" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div class="text-4xl mb-2"></div>
+        <h3 class="font-bold text-sm">Propietarios</h3>
+        <p class="text-[10px] text-slate-500 mt-1 mb-3">CSV con: nombre;dni;email;telefono;iban</p>
+        <input type="file" name="archivo" required accept=".csv" class="w-full text-xs mb-2">
+        <button class="w-full px-3 py-1.5 rounded bg-amber-700 text-white text-xs"> Importar</button>
+    </form>
+</div>
+
+<div class="mt-5 rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+     <strong>Tips:</strong>
+    <ul class="mt-2 ml-5 list-disc text-xs space-y-1">
+        <li>La primera fila debe ser la cabecera con los nombres de campo</li>
+        <li>Separadores soportados: punto y coma (;) o coma (,)</li>
+        <li>Valores con comillas: <code>"Avda. de la Constitución, 12"</code></li>
+        <li>Precios: usa punto o coma como decimal (1500.50 o 1500,50)</li>
+        <li>Codificación: UTF-8 recomendado</li>
+    </ul>
+</div>
+</div></body></html>

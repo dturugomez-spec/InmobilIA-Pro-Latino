@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Plantillas email</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-pink-600 to-rose-900 p-5 mb-5 text-white flex items-center justify-between">
+        <h2 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="file-text" class="h-5 w-5"></i> Plantillas de email
+        </h2>
+        <button onclick="document.getElementById('newTpl').classList.toggle('hidden')" class="px-4 py-2 rounded-lg bg-white text-rose-900 text-sm font-medium">+ Nueva plantilla</button>
+    </div>
+
+    <form id="newTpl" method="post" action="/plantillas/guardar" class="hidden rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5 space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" name="nombre" placeholder="Nombre de la plantilla" required class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <select name="categoria" class="px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                <option value="bienvenida"> Bienvenida</option>
+                <option value="propiedad_nueva"> Propiedad nueva</option>
+                <option value="recordatorio">⏰ Recordatorio</option>
+                <option value="felicitacion"> Felicitación</option>
+                <option value="encuesta"> Encuesta</option>
+                <option value="otros">Otros</option>
+            </select>
+        </div>
+        <input type="text" name="asunto" placeholder="Asunto" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+        <textarea name="contenido" rows="6" placeholder="<p>Hola {nombre}...</p>" required class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700"></textarea>
+        <button class="px-4 py-2 rounded-lg bg-rose-700 text-white text-sm">Guardar</button>
+    </form>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div th:each="p : ${plantillas}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:shadow transition">
+            <div class="flex items-start justify-between mb-2">
+                <p class="font-semibold text-sm" th:text="${p.get('nombre')}">—</p>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800" th:text="${p.get('categoria')}">—</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-2" th:text="${p.get('asunto')}">—</p>
+            <p class="text-[10px] text-slate-400" th:text="${'Usada ' + (p.get('veces_usada') ?: 0) + ' veces'}">—</p>
+        </div>
+        <div th:if="${plantillas.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Sin plantillas guardadas.</div>
+    </div>
+
+</div>
+</body>
+</html>

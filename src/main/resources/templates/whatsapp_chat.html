@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>WhatsApp Business</title></head>
+<body><div layout:fragment="content">
+<div class="rounded-xl bg-gradient-to-br from-green-600 to-emerald-900 p-5 mb-3 text-white">
+    <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="message-square" class="h-5 w-5"></i> WhatsApp Business</h2>
+</div>
+
+<div th:if="${cfg == null or #bools.isFalse(cfg.get('activo'))}" class="rounded-xl bg-amber-50 border border-amber-200 p-5 mb-3">
+    <form method="post" action="/whatsapp/config" class="space-y-2 max-w-2xl">
+        <h3 class="font-semibold text-sm"> Configurar WhatsApp Business Cloud API</h3>
+        <p class="text-xs text-slate-600">Obtén las credenciales en business.facebook.com → WhatsApp Business → API Setup</p>
+        <input type="text" name="phone_number_id" placeholder="Phone Number ID" th:value="${cfg?.get('phone_number_id')}" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="business_account_id" placeholder="Business Account ID" th:value="${cfg?.get('business_account_id')}" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="access_token" placeholder="Access Token (permanent)" th:value="${cfg?.get('access_token')}" class="w-full px-3 py-2 text-sm font-mono border rounded">
+        <input type="text" name="webhook_verify_token" placeholder="Webhook verify token (libre)" th:value="${cfg?.get('webhook_verify_token')}" class="w-full px-3 py-2 text-sm border rounded">
+        <input type="text" name="numero_emisor" placeholder="+34 600 000 000" th:value="${cfg?.get('numero_emisor')}" class="w-full px-3 py-2 text-sm border rounded">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" checked> Activar</label>
+        <button class="px-4 py-2 rounded bg-emerald-700 text-white text-sm"> Conectar</button>
+    </form>
+</div>
+
+<div th:if="${cfg != null and #bools.isTrue(cfg.get('activo'))}" class="grid grid-cols-12 gap-3 h-[calc(100vh-220px)]">
+    <aside class="col-span-3 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-y-auto">
+        <div class="p-3 border-b font-semibold text-sm">Chats</div>
+        <a th:each="c : ${chats}" th:href="@{|/whatsapp?chatId=${c.key}|}" class="block p-3 border-b hover:bg-slate-50" th:classappend="${c.key == chatActivo ? 'bg-emerald-50' : ''}">
+            <p class="font-mono text-xs" th:text="${c.key}">—</p>
+            <p class="text-[10px] text-slate-500 truncate" th:text="${c.value[0].get('mensaje')}">—</p>
+        </a>
+    </aside>
+    <div class="col-span-9 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 flex flex-col">
+        <div class="p-3 border-b">
+            <p class="text-sm font-semibold" th:text="${chatActivo ?: 'Selecciona un chat'}">—</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-2 bg-slate-50">
+            <div th:each="m : ${mensajesChat}"
+                 th:classappend="${m.get('direccion') == 'saliente' ? 'ml-auto bg-emerald-100' : 'mr-auto bg-white'}"
+                 class="max-w-md rounded-lg p-2 px-3 text-sm">
+                <p th:text="${m.get('mensaje')}">—</p>
+                <p class="text-[10px] text-slate-400 mt-1" th:text="${#strings.substring(m.get('fecha'), 5, 16)}">—</p>
+            </div>
+            <p th:if="${mensajesChat.isEmpty()}" class="text-center text-xs text-slate-400 mt-20">Sin mensajes</p>
+        </div>
+        <div th:if="${chatActivo}" class="p-3 border-t flex gap-2">
+            <input type="text" id="msgInput" placeholder="Escribe mensaje..." class="flex-1 px-3 py-2 text-sm border rounded">
+            <button onclick="enviar()" class="px-4 py-2 rounded bg-emerald-700 text-white text-sm">Enviar</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+const chatActivo = /*[[${chatActivo}]]*/ '';
+async function enviar() {
+    const m = document.getElementById('msgInput').value;
+    if (!m || !chatActivo) return;
+    const fd = new FormData(); fd.append('numero', chatActivo); fd.append('mensaje', m);
+    await fetch('/whatsapp/enviar', {method: 'POST', body: fd});
+    location.reload();
+}
+</script>
+</div></body></html>

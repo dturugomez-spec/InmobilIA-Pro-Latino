@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Seguros</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="rounded-xl bg-gradient-to-br from-cyan-700 to-blue-900 p-6 mb-5 text-white">
+        <div class="flex items-start justify-between">
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="shield-check" class="h-6 w-6"></i> Gestión de seguros
+                </h2>
+                <p class="text-sm text-white/80 mt-1">Hogar, vida, impago de alquiler, comunidad y RC.</p>
+            </div>
+            <a href="/seguros/nuevo" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-blue-900 hover:bg-white/90 text-sm font-medium">
+                <i data-lucide="plus" class="h-4 w-4"></i> Nueva póliza
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase tracking-wider text-slate-500">Pólizas activas</p>
+            <p class="text-xl font-bold mt-1" th:text="${activas}">0</p>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase tracking-wider text-slate-500">Prima anual total</p>
+            <p class="text-xl font-bold mt-1" th:text="${#numbers.formatDecimal(primaTotal, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</p>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase tracking-wider text-emerald-700">Comisiones</p>
+            <p class="text-xl font-bold mt-1 text-emerald-700" th:text="${#numbers.formatDecimal(comisionesTotal, 1, 'POINT', 2, 'COMMA')} + ' €'">0 €</p>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-amber-300 p-4" th:classappend="${porVencer > 0} ? 'ring-2'">
+            <p class="text-[10px] uppercase tracking-wider text-amber-700">Vencen en 30 días</p>
+            <p class="text-xl font-bold mt-1 text-amber-700" th:text="${porVencer}">0</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" action="/seguros" class="flex flex-wrap gap-2 mb-4">
+        <select name="tipo" onchange="this.form.submit()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <option value="">Todos los tipos</option>
+            <option value="hogar"> Hogar</option>
+            <option value="vida"> Vida</option>
+            <option value="impago_alquiler"> Impago alquiler</option>
+            <option value="comunidad"> Comunidad</option>
+            <option value="responsabilidad_civil"> RC</option>
+        </select>
+        <select name="estado" onchange="this.form.submit()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+            <option value="">Todos los estados</option>
+            <option value="activa">Activa</option>
+            <option value="suspendida">Suspendida</option>
+            <option value="cancelada">Cancelada</option>
+            <option value="expirada">Expirada</option>
+        </select>
+    </form>
+
+    <!-- Tabla -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-neutral-800/50 border-b border-slate-200 dark:border-neutral-800">
+            <tr class="text-[10px] uppercase tracking-wider text-slate-500">
+                <th class="text-left px-4 py-3">Tipo</th>
+                <th class="text-left px-4 py-3">Aseguradora / Póliza</th>
+                <th class="text-left px-4 py-3">Tomador</th>
+                <th class="text-right px-4 py-3">Prima</th>
+                <th class="text-right px-4 py-3">Capital</th>
+                <th class="text-left px-4 py-3">Vencimiento</th>
+                <th class="text-left px-4 py-3">Estado</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="p : ${polizas}" class="hover:bg-slate-50 dark:hover:bg-neutral-800/40">
+                <td class="px-4 py-3">
+                    <span class="text-xs font-semibold" th:switch="${p.get('tipo')}">
+                        <span th:case="'hogar'"> Hogar</span>
+                        <span th:case="'vida'"> Vida</span>
+                        <span th:case="'impago_alquiler'"> Impago</span>
+                        <span th:case="'comunidad'"> Comunidad</span>
+                        <span th:case="'responsabilidad_civil'"> RC</span>
+                        <span th:case="*" th:text="${p.get('tipo')}">—</span>
+                    </span>
+                </td>
+                <td class="px-4 py-3">
+                    <p class="font-medium" th:text="${p.get('aseguradora')}">—</p>
+                    <p class="text-xs font-mono text-slate-500" th:text="${p.get('numero_poliza')}">—</p>
+                </td>
+                <td class="px-4 py-3 text-xs" th:text="${p.get('tomador')}">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('prima_anual') != null ? #numbers.formatDecimal(p.get('prima_anual'),1,'POINT',2,'COMMA') + ' €' : '—'}">—</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" th:text="${p.get('capital_asegurado') != null ? #numbers.formatDecimal(p.get('capital_asegurado'),1,'POINT',0,'COMMA') + ' €' : '—'}">—</td>
+                <td class="px-4 py-3 text-xs font-mono" th:text="${p.get('fecha_vencimiento')}">—</td>
+                <td class="px-4 py-3">
+                    <span th:switch="${p.get('estado')}" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <span th:case="'activa'" class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Activa</span>
+                        <span th:case="'suspendida'" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Suspendida</span>
+                        <span th:case="'cancelada'" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">Cancelada</span>
+                        <span th:case="'expirada'" class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Expirada</span>
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                    <a th:href="@{|/seguros/${p.get('id')}|}" class="text-xs text-blue-700 hover:underline">Ver</a>
+                </td>
+            </tr>
+            <tr th:if="${polizas.isEmpty()}"><td colspan="8" class="py-12 text-center text-slate-500 text-sm">Sin pólizas registradas.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
