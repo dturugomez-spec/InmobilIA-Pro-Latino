@@ -151,12 +151,16 @@ public class DashboardController {
             else if (days <= 90) alertsInfo.add(alert("CONTRATO", prop + " · vence en " + days + "d", "/crud/contratos"));
         }
         for (var s : seguros) {
-            LocalDate d = parseDate(s.get("expiry_date"));
+            // Columnas reales de la tabla (las de /seguros); las inglesas antiguas solo de respaldo.
+            // Antes se leían solo expiry_date/type, que no existen: nunca avisaba de un seguro vencido.
+            if ("cancelada".equals(s.get("estado"))) continue;
+            LocalDate d = parseDate(s.get("fecha_vencimiento") != null ? s.get("fecha_vencimiento") : s.get("expiry_date"));
             if (d == null) continue;
             long days = ChronoUnit.DAYS.between(today, d);
-            String tipo = str(s.get("type"));
-            if (days <= 0) alertsCrit.add(alert("SEGURO VENCIDO", tipo, "/crud/seguros"));
-            else if (days <= 30) alertsWarn.add(alert("SEGURO", tipo + " · " + days + "d", "/crud/seguros"));
+            String tipo = str(s.get("tipo") != null ? s.get("tipo") : s.get("type"));
+            String enlace = s.get("id") != null ? "/seguros/" + s.get("id") : "/seguros";
+            if (days <= 0) alertsCrit.add(alert("SEGURO VENCIDO", tipo, enlace));
+            else if (days <= 30) alertsWarn.add(alert("SEGURO", tipo + " · " + days + "d", enlace));
         }
         // Mantenimiento alta prioridad sin cerrar
         maint.stream()

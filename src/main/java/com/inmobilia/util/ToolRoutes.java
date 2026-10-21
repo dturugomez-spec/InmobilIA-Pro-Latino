@@ -25,7 +25,7 @@ public final class ToolRoutes {
             Map.entry("Gestion de Contratos", "/crud/contratos"),
             Map.entry("Visitas & Reservas", "/crud/reservas"),
             Map.entry("Control de Morosidad", "/crud/inquilinos"),
-            Map.entry("Polizas & Seguros", "/crud/seguros"),
+            Map.entry("Polizas & Seguros", "/seguros"),
             Map.entry("Archivo Documental", "/crud/documentos"),
             Map.entry("Comparador de Activos", "/crud/propiedades"),
             Map.entry("Pipeline CRM Leads", "/crud/leads"),

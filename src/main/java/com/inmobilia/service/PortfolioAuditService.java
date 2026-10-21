@@ -131,25 +131,36 @@ public class PortfolioAuditService {
         }
 
         // ══════════════ SEGUROS ══════════════
+        // Columnas reales de la tabla (las que usa /seguros); las inglesas antiguas solo de respaldo.
+        // Antes se leían solo property_name/expiry_date/annual_cost, que no existen en la tabla real:
+        // nunca detectaba pólizas vencidas y daba por "sin póliza" todo inmueble alquilado.
+        Map<String, String> nombrePorId = new HashMap<>();
+        for (var p : props) nombrePorId.put(String.valueOf(p.get("id")), str(p.get("name")));
+        Set<String> idsAsegurados = new HashSet<>();
         Set<String> propsAseguradas = new HashSet<>();
         for (var s : seguros) {
-            String propName = str(s.get("property_name"));
+            if ("cancelada".equals(s.get("estado"))) continue;
+            String propId = s.get("propiedad_id") != null ? String.valueOf(s.get("propiedad_id")) : null;
+            if (propId != null) idsAsegurados.add(propId);
+            String propName = propId != null && nombrePorId.get(propId) != null ? nombrePorId.get(propId) : str(s.get("property_name"));
             if (propName != null && !propName.isBlank()) propsAseguradas.add(propName.toLowerCase());
-            LocalDate exp = parseDate(s.get("expiry_date"));
-            double cost = num(s.get("annual_cost"));
+            LocalDate exp = parseDate(s.get("fecha_vencimiento") != null ? s.get("fecha_vencimiento") : s.get("expiry_date"));
+            double cost = num(s.get("prima_anual") != null ? s.get("prima_anual") : s.get("annual_cost"));
+            String tipo = str(s.get("tipo") != null ? s.get("tipo") : s.get("type"));
+            String enlace = s.get("id") != null ? "/seguros/" + s.get("id") : "/seguros";
             if (exp != null) {
                 long days = ChronoUnit.DAYS.between(today, exp);
                 if (days < 0) {
                     findings.add(new Finding("SEGURO_VENCIDO", Area.SEGUROS, Severity.CRITICAL,
                         "Póliza vencida - sin cobertura",
-                        "Póliza " + str(s.get("type")) + " de " + propName + " venció hace " + (-days) + " días.",
-                        "Renovar póliza inmediatamente", "/crud/seguros",
+                        "Póliza " + tipo + " de " + propName + " venció hace " + (-days) + " días.",
+                        "Renovar póliza inmediatamente", enlace,
                         Math.max(cost, 50000) * 0.05, propName));
                 } else if (days <= 15) {
                     findings.add(new Finding("SEGURO_15D", Area.SEGUROS, Severity.WARNING,
                         "Póliza caduca en <15 días",
-                        "Póliza " + str(s.get("type")) + " caduca el " + exp + ".",
-                        "Negociar renovación", "/crud/seguros",
+                        "Póliza " + tipo + " caduca el " + exp + ".",
+                        "Negociar renovación", enlace,
                         cost, propName));
                 }
             }
@@ -157,13 +168,14 @@ public class PortfolioAuditService {
         for (var p : props) {
             String name = str(p.get("name"));
             String status = str(p.get("status"));
-            if ("Ocupado".equalsIgnoreCase(status) && name != null
-                    && !propsAseguradas.contains(name.toLowerCase())) {
+            boolean asegurado = idsAsegurados.contains(String.valueOf(p.get("id")))
+                    || (name != null && propsAseguradas.contains(name.toLowerCase()));
+            if ("Ocupado".equalsIgnoreCase(status) && name != null && !asegurado) {
                 double value = num(p.get("current_value"));
                 findings.add(new Finding("PROP_SIN_SEGURO", Area.SEGUROS, Severity.CRITICAL,
                     "Propiedad ocupada sin póliza",
                     "La propiedad '" + name + "' está ocupada pero no tiene seguro de hogar/impago asociado.",
-                    "Contratar póliza", "/crud/seguros/new",
+                    "Contratar póliza", "/seguros/nuevo",
                     value * 0.03, name));
             }
         }

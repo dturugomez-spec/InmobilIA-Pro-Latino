@@ -155,9 +155,17 @@ public class CrudController {
         Map.entry("email_templates",TableMeta.of("Plantillas de Email", fields("nombre","asunto","cuerpo","categoria")))
     );
 
+    /**
+     * Tablas con pantalla propia: el CRUD genérico usaba columnas que la tabla real no tiene
+     * (seguros: type/company/expiry_date… frente a tipo/aseguradora/fecha_vencimiento de /seguros),
+     * así que crear o editar desde aquí fallaba. Se manda a su pantalla.
+     */
+    static final Map<String, String> PANTALLA_PROPIA = Map.of("seguros", "/seguros");
+
     @GetMapping("/{table}")
     public String list(@PathVariable String table, HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (PANTALLA_PROPIA.containsKey(table)) return "redirect:" + PANTALLA_PROPIA.get(table);
         TableMeta meta = TABLES.get(table);
         if (meta == null) return "redirect:/dashboard";
         String uid = SessionUtils.uid(session);
@@ -275,6 +283,7 @@ public class CrudController {
     @GetMapping("/{table}/new")
     public String formNew(@PathVariable String table, HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (PANTALLA_PROPIA.containsKey(table)) return "redirect:" + PANTALLA_PROPIA.get(table) + "/nuevo";
         TableMeta meta = TABLES.get(table);
         if (meta == null) return "redirect:/dashboard";
 
@@ -300,6 +309,7 @@ public class CrudController {
     public String formEdit(@PathVariable String table, @PathVariable String id,
                            HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (PANTALLA_PROPIA.containsKey(table)) return "redirect:" + PANTALLA_PROPIA.get(table) + "/" + id;
         TableMeta meta = TABLES.get(table);
         if (meta == null) return "redirect:/dashboard";
         String uid = SessionUtils.uid(session);
@@ -373,6 +383,7 @@ public class CrudController {
                        HttpServletRequest request,
                        HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (PANTALLA_PROPIA.containsKey(table)) return "redirect:" + PANTALLA_PROPIA.get(table);
         TableMeta meta = TABLES.get(table);
         if (meta == null) return "redirect:/dashboard";
         String uid = SessionUtils.uid(session);
