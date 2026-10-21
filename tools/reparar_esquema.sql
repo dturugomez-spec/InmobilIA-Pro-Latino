@@ -746,7 +746,7 @@ DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS mostrar_avata
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS auto_abrir_segundos INT DEFAULT 0; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.auto_abrir_segundos: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS horario_atencion TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.horario_atencion: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS mensaje_fuera_horario TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.mensaje_fuera_horario: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS idiomas TEXT[] DEFAULT ARRAY['es'; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.idiomas: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS idiomas TEXT[] DEFAULT ARRAY['es', 'en']; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.idiomas: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS persona_prompt TEXT DEFAULT 'Eres un asistente inmobiliario amable y eficiente. Ayudas a buscar propiedades, agendar visitas y resolver dudas. Sé conciso, máximo 3 frases por respuesta.'; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.persona_prompt: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS permitir_buscar_propiedades BOOLEAN DEFAULT TRUE; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.permitir_buscar_propiedades: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE chatbot_config ADD COLUMN IF NOT EXISTS permitir_agendar_visita BOOLEAN DEFAULT TRUE; EXCEPTION WHEN others THEN RAISE NOTICE 'chatbot_config.permitir_agendar_visita: %', SQLERRM; END $rep$;
@@ -1037,7 +1037,6 @@ DO $rep$ BEGIN ALTER TABLE wiki_articulos ADD COLUMN IF NOT EXISTS fijado BOOLEA
 DO $rep$ BEGIN ALTER TABLE wiki_articulos ADD COLUMN IF NOT EXISTS destacado BOOLEAN DEFAULT FALSE; EXCEPTION WHEN others THEN RAISE NOTICE 'wiki_articulos.destacado: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE wiki_articulos ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'wiki_articulos.created_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE wiki_articulos ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'wiki_articulos.updated_at: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE wiki_articulos ADD COLUMN IF NOT EXISTS unique(user_id, UNIQUE(user_id, slug); EXCEPTION WHEN others THEN RAISE NOTICE 'wiki_articulos.unique(user_id,: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'audit_log.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS actor_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'audit_log.actor_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS actor_nombre TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'audit_log.actor_nombre: %', SQLERRM; END $rep$;
@@ -1161,7 +1160,6 @@ DO $rep$ BEGIN ALTER TABLE integraciones ADD COLUMN IF NOT EXISTS config_extra J
 DO $rep$ BEGIN ALTER TABLE integraciones ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE; EXCEPTION WHEN others THEN RAISE NOTICE 'integraciones.activo: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE integraciones ADD COLUMN IF NOT EXISTS ultimo_sync_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'integraciones.ultimo_sync_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE integraciones ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'integraciones.created_at: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE integraciones ADD COLUMN IF NOT EXISTS unique(user_id, UNIQUE(user_id, proveedor); EXCEPTION WHEN others THEN RAISE NOTICE 'integraciones.unique(user_id,: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS email TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.email: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS imap_host TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.imap_host: %', SQLERRM; END $rep$;
@@ -1429,7 +1427,6 @@ DO $rep$ BEGIN ALTER TABLE newsletter_suscriptores ADD COLUMN IF NOT EXISTS conf
 DO $rep$ BEGIN ALTER TABLE newsletter_suscriptores ADD COLUMN IF NOT EXISTS confirmado_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_suscriptores.confirmado_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE newsletter_suscriptores ADD COLUMN IF NOT EXISTS baja_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_suscriptores.baja_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE newsletter_suscriptores ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_suscriptores.created_at: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE newsletter_suscriptores ADD COLUMN IF NOT EXISTS unique(user_id, UNIQUE(user_id, email); EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_suscriptores.unique(user_id,: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE newsletter_envios ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_envios.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE newsletter_envios ADD COLUMN IF NOT EXISTS asunto TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_envios.asunto: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE newsletter_envios ADD COLUMN IF NOT EXISTS contenido_html TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'newsletter_envios.contenido_html: %', SQLERRM; END $rep$;

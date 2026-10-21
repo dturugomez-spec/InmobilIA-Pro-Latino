@@ -24,7 +24,7 @@ class ReparacionEsquemaTest {
     private static final Pattern ALTERAR = Pattern.compile("(?is)alter table (?:if exists )?(?:only )?(?:public\\.)?\"?(\\w+)\"?\\s+(.*?);");
     private static final Pattern ANADIR_TROZO = Pattern.compile("(?is)add column (?:if not exists )?\"?(\\w+)\"?\\s+(.+)");
 
-    /** Separa por comas que no estén dentro de paréntesis ni de comillas. */
+    /** Separa por comas que no estén dentro de paréntesis, corchetes (ARRAY['es', 'en']) ni comillas. */
     static List<String> trocear(String s) {
         List<String> out = new ArrayList<>();
         int nivel = 0;
@@ -32,8 +32,8 @@ class ReparacionEsquemaTest {
         StringBuilder b = new StringBuilder();
         for (char ch : s.toCharArray()) {
             if (ch == '\'') comilla = !comilla;
-            if (!comilla && ch == '(') nivel++;
-            if (!comilla && ch == ')') nivel--;
+            if (!comilla && (ch == '(' || ch == '[')) nivel++;
+            if (!comilla && (ch == ')' || ch == ']')) nivel--;
             if (!comilla && ch == ',' && nivel == 0) { out.add(b.toString()); b.setLength(0); } else b.append(ch);
         }
         out.add(b.toString());
@@ -73,8 +73,8 @@ class ReparacionEsquemaTest {
                 char c = resto.charAt(i);
                 if (c == '\'') comilla = !comilla;
                 if (!comilla) {
-                    if (c == '(') nivel++;
-                    if (c == ')') nivel--;
+                    if (c == '(' || c == '[') nivel++;
+                    if (c == ')' || c == ']') nivel--;
                     if (nivel == 0 && Character.isWhitespace(c)) {
                         String sig = resto.substring(i).trim().toLowerCase();
                         if (sig.matches("(?s)^(not\\s+null|null|primary|references|unique|check|generated|constraint|collate).*")) break;
@@ -101,7 +101,9 @@ class ReparacionEsquemaTest {
                 Map<String, String> cols = columnas.computeIfAbsent(tabla, k -> new LinkedHashMap<>());
                 for (String p : trocear(m.group(2))) {
                     String[] w = p.trim().split("\\s+");
-                    if (w.length < 2 || NO_COLUMNA.contains(w[0].toLowerCase())) continue;
+                    // Restricciones de tabla, también sin espacio: UNIQUE(user_id, slug)
+                    if (w.length < 2 || NO_COLUMNA.contains(w[0].toLowerCase().replaceAll("\\(.*", ""))
+                            || !w[0].matches("\"?[A-Za-z_][A-Za-z0-9_]*\"?")) continue;
                     if (p.toLowerCase().contains("primary key") || p.toLowerCase().contains("generated")) continue;
                     cols.putIfAbsent(w[0].toLowerCase().replace("\"", ""), tipoYDefecto(p));
                 }
@@ -148,7 +150,43 @@ class ReparacionEsquemaTest {
         assertTrue(nuevo.contains("ADD COLUMN IF NOT EXISTS hash_actual"));
         assertFalse(nuevo.toLowerCase().contains("drop "), "nunca borra nada");
         assertFalse(nuevo.contains("NOT NULL;"), "no añade columnas obligatorias");
+        // Cada sentencia completa y equilibrada: un solo fallo de sintaxis tumbaba el script entero
+        List<String> rotas = new ArrayList<>();
+        for (String linea : nuevo.split("\n")) {
+            if (!linea.startsWith("DO $rep$")) continue;
+            String cuerpo = linea.substring("DO $rep$".length(), Math.max("DO $rep$".length(), linea.length() - "END $rep$;".length()));
+            if (!linea.endsWith("END $rep$;") || !equilibrada(linea) || cuerpo.contains("$") || puntosYComa(cuerpo) != 2) rotas.add(linea);
+        }
+        assertTrue(rotas.isEmpty(), "Sentencias mal formadas:\n" + String.join("\n", rotas));
+        assertTrue(nuevo.contains("ARRAY['es', 'en']"), "los arrays con comas no se parten");
         assertEquals(nuevo, Files.readString(SALIDA));
+    }
+
+    /** Punto y coma fuera de comillas: la sentencia y el RAISE NOTICE, nada más. */
+    static int puntosYComa(String s) {
+        int n = 0;
+        boolean comilla = false;
+        for (char c : s.toCharArray()) {
+            if (c == '\'') comilla = !comilla;
+            else if (!comilla && c == ';') n++;
+        }
+        return n;
+    }
+
+    /** Paréntesis y corchetes cerrados y comillas pares (fuera de comillas). */
+    static boolean equilibrada(String s) {
+        int par = 0, cor = 0;
+        boolean comilla = false;
+        for (char c : s.toCharArray()) {
+            if (c == '\'') { comilla = !comilla; continue; }
+            if (comilla) continue;
+            if (c == '(') par++;
+            if (c == ')') par--;
+            if (c == '[') cor++;
+            if (c == ']') cor--;
+            if (par < 0 || cor < 0) return false;
+        }
+        return par == 0 && cor == 0 && !comilla;
     }
 
     @Test
