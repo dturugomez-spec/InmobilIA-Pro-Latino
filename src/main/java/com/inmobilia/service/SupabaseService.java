@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,18 +114,38 @@ public class SupabaseService {
                 filters.forEach((k, v) -> q.append("&").append(k).append("=eq.").append(v));
             }
             q.append("&order=created_at.desc");
-            String response = supabaseClient.get()
-                    .uri(q.toString())
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(15))
-                    .block();
-            if (response == null) return Collections.emptyList();
-            return mapper.readValue(response, new TypeReference<>() {});
+            return leerTodo(q.toString());
         } catch (Exception e) {
             log.error("Error consultando {}: {}", table, e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    /** Filas por página: el máximo que devuelve Supabase en una consulta (max-rows por defecto). */
+    static final int PAGINA = 1000;
+    /** Tope de seguridad de memoria por consulta. */
+    static final int MAX_FILAS = 50_000;
+
+    /**
+     * Todas las filas de una consulta, de 1.000 en 1.000. Supabase corta cada respuesta en 1.000
+     * filas sin avisar: antes, con más de 1.000 leads o movimientos, los listados salían
+     * incompletos y los totales del panel y las exportaciones, mal.
+     */
+    List<Map<String, Object>> leerTodo(String uri) throws Exception {
+        List<Map<String, Object>> todo = new ArrayList<>();
+        for (int offset = 0; offset < MAX_FILAS; offset += PAGINA) {
+            String response = supabaseClient.get()
+                    .uri(uri + "&limit=" + PAGINA + "&offset=" + offset)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(20))
+                    .block();
+            List<Map<String, Object>> pagina = response == null ? List.of() : mapper.readValue(response, new TypeReference<>() {});
+            todo.addAll(pagina);
+            if (pagina.size() < PAGINA) return todo;
+        }
+        log.warn("Consulta cortada en {} filas: {}", MAX_FILAS, uri.replaceAll("\\?.*", ""));
+        return todo;
     }
 
     public List<Map<String, Object>> query(String table, String userId) {
@@ -278,6 +299,8 @@ public class SupabaseService {
         if (!enabled) return Collections.emptyList();
         try {
             String uri = "/" + table + "?select=*" + (filter != null && !filter.isBlank() ? "&" + filter : "");
+            // Sin límite explícito: se leen todas las páginas (Supabase corta en 1.000 filas)
+            if (filter == null || !filter.matches("(?s).*(^|&)limit=.*")) return leerTodo(uri);
             String response = supabaseClient.get()
                     .uri(uri)
                     .retrieve()
