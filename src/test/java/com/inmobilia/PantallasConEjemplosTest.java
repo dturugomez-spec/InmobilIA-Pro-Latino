@@ -201,6 +201,22 @@ class PantallasConEjemplosTest {
                 rep.append(String.format("%-60s %3d FALLO %s%n", d, v.status(), v.error()));
             }
         }
+        // Botones que el usuario dijo que "no hacían nada": seguimiento automático
+        MockHttpSession s = sesion();
+        MvcResult ej = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/cadencias/ejecutar").session(s)).andReturn();
+        assertEquals("/cadencias", ej.getResponse().getRedirectedUrl());
+        assertNotNull(s.getAttribute(SessionUtils.KEY_FLASH), "tiene que explicar qué ha hecho");
+        String lead = BD.tabla("leads").stream()
+                .filter(l -> "Contactado".equals(l.get("etapa")) || "Nuevo".equals(l.get("etapa")))
+                .filter(l -> BD.tabla("cadencia_inscripciones").stream().noneMatch(i -> String.valueOf(l.get("id")).equals(String.valueOf(i.get("lead_id")))))
+                .map(l -> String.valueOf(l.get("id"))).findFirst().orElse(null);
+        if (lead != null) {
+            int antes = BD.tabla("cadencia_inscripciones").size();
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/cadencias/inscribir")
+                    .param("leadId", lead).session(sesion())).andReturn();
+            assertEquals(antes + 1, BD.tabla("cadencia_inscripciones").size(), "añadir un lead al seguimiento");
+        }
+
         Path informeTxt = Path.of("target", "pantallas-con-ejemplos.txt");
         Files.createDirectories(informeTxt.getParent());
         Files.writeString(informeTxt, rep.toString() + "\nSIN EJEMPLOS: " + sinEjemplos + "\nFALLOS: " + fallos + "\n");

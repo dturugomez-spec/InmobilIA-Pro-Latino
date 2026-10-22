@@ -39,6 +39,12 @@ public class SeguimientoController {
         model.addAttribute("envia", Boolean.TRUE.equals(user.get("auto_seguimiento_envia")));
         model.addAttribute("pasos", seguimiento.pasos());
         model.addAttribute("inscripciones", inscripciones);
+        // Leads que se pueden añadir a mano (los automáticos solo entran los de los últimos 3 días)
+        Set<String> inscritos = new HashSet<>();
+        inscripciones.forEach(i -> inscritos.add(String.valueOf(i.get("lead_id"))));
+        model.addAttribute("candidatos", supabase.selectFilter("leads",
+                        "select=id,nombre,etapa&user_id=eq." + uid + "&etapa=in.(Nuevo,Contactado)&order=created_at.desc&limit=300")
+                .stream().filter(l -> !inscritos.contains(String.valueOf(l.get("id")))).toList());
         model.addAttribute("activas", activas);
         model.addAttribute("completadas", completadas);
         return "cadencias";
@@ -67,8 +73,27 @@ public class SeguimientoController {
         boolean envia = !u.isEmpty() && Boolean.TRUE.equals(u.get(0).get("auto_seguimiento_envia"));
         int nuevos = seguimiento.inscribirNuevos(uid);
         int pasos = seguimiento.avanzar(uid, envia);
-        SessionUtils.flash(session, "🔁 " + nuevos + " leads inscritos · " + pasos + " pasos ejecutados"
-                + (envia ? "" : " (revisa el Autopiloto)"));
+        // Antes, sin leads recientes, el botón parecía no hacer nada
+        SessionUtils.flash(session, nuevos == 0 && pasos == 0
+                ? "No había nada pendiente: solo entran solos los leads en «Nuevo» de los últimos 3 días, y hoy no toca ningún paso. "
+                  + "Para seguir a un lead más antiguo, elígelo abajo en «Añadir un lead al seguimiento»."
+                : "🔁 " + nuevos + " leads inscritos · " + pasos + " pasos ejecutados"
+                  + (envia ? "" : " (los mensajes están en el Autopiloto para que los revises)"));
+        return "redirect:/cadencias";
+    }
+
+    /** Añade a la cadencia un lead concreto (también los que no son de los últimos 3 días). */
+    @PostMapping("/inscribir")
+    public String inscribir(@RequestParam String leadId, HttpSession session) {
+        String uid = SessionUtils.uid(session);
+        if (uid == null) return "redirect:/login";
+        int n = seguimiento.inscribirManual(uid, leadId);
+        if (n > 0) {
+            List<Map<String, Object>> u = supabase.selectFilter("users", "id=eq." + uid);
+            seguimiento.avanzar(uid, !u.isEmpty() && Boolean.TRUE.equals(u.get(0).get("auto_seguimiento_envia")));
+        }
+        SessionUtils.flash(session, n > 0 ? "🔁 Lead añadido al seguimiento: el primer paso ya está hecho."
+                : "Ese lead ya estaba en seguimiento o no es de tu cuenta.");
         return "redirect:/cadencias";
     }
 
