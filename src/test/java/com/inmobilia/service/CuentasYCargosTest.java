@@ -22,6 +22,19 @@ class CuentasYCargosTest {
     }
 
     @Test
+    void cuentas_clabeCbuIbanYLocales() {
+        assertTrue(AvisoCuentaBancariaService.cuentaValida("002010077777777771"), "CLABE mexicana válida");
+        assertFalse(AvisoCuentaBancariaService.cuentaValida("002010077777777772"), "CLABE con dígito de control mal");
+        assertTrue(AvisoCuentaBancariaService.cuentaValida("2850590940090418135201"), "CBU argentino válido");
+        assertFalse(AvisoCuentaBancariaService.cuentaValida("2850590940090418135202"));
+        assertTrue(AvisoCuentaBancariaService.cuentaValida("ES9121000418450200051332"), "IBAN válido");
+        assertFalse(AvisoCuentaBancariaService.cuentaValida("ES9121000418450200051333"));
+        assertTrue(AvisoCuentaBancariaService.cuentaValida(AvisoCuentaBancariaService.normalizar("0012-3456-78")),
+                "cuenta local (Colombia, Chile, Perú…)");
+        assertFalse(AvisoCuentaBancariaService.cuentaValida("12-3"));
+    }
+
+    @Test
     void emailDeAviso_noEnseñaElIbanCompletoYEscapaElNombre() {
         String html = AvisoCuentaBancariaService.html("<b>Eva</b>", "eva@x.es", "Mi negocio",
                 "ES9121000418450200051332", "ES7620770024003102575766");

@@ -32,6 +32,7 @@ public class AgentAutopilotService {
     private final BrandingService branding;
     private final NotificationService notif;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final com.inmobilia.service.PaisService paises;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -45,6 +46,7 @@ public class AgentAutopilotService {
                     "users", "autopiloto_auto=eq.true&limit=500");
             for (Map<String, Object> a : admins) {
                 String uid = String.valueOf(a.get("id"));
+                paises.usar(uid);
                 try {
                     int n = generarPropuestas(uid);
                     if (n > 0) {

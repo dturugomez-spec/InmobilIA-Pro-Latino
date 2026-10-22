@@ -20,6 +20,7 @@ public class AgentImpactService {
     private final SupabaseService supabase;
     private final EmailService emailService;
     private final NotificationService notif;
+    private final com.inmobilia.service.PaisService paises;
 
     // Minutos de trabajo manual que ahorra cada acción del agente
     private static final int MIN_MENSAJE = 8, MIN_ACCION = 5, MIN_CAPTACION = 6, MIN_SEGUIMIENTO = 10;
@@ -73,6 +74,7 @@ public class AgentImpactService {
             List<Map<String, Object>> admins = safe("users", "active=eq.true&role=eq.admin&limit=500");
             for (Map<String, Object> admin : admins) {
                 String uid = String.valueOf(admin.get("id"));
+                paises.usar(uid);
                 try {
                     Map<String, Object> r = resumen(uid, 7);
                     if ((long) r.get("totalAcciones") <= 0) continue;  // semana sin actividad → no molestar

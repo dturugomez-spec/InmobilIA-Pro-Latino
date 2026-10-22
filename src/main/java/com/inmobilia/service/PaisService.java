@@ -40,7 +40,10 @@ public class PaisService {
                 p = Pais.de(us.get(0).get("pais")).conMoneda(mon == null ? null : String.valueOf(mon));
             }
         } catch (Exception ex) {
+            // Fallo puntual de la BD: seguir con el país que ya sabíamos (no fijar el de por defecto 5 minutos)
             log.debug("No se pudo leer el país de {}: {}", orgUid, ex.getMessage());
+            if (e != null) return e.pais();
+            return p;
         }
         cache.put(orgUid, new Entrada(p, System.currentTimeMillis()));
         return p;

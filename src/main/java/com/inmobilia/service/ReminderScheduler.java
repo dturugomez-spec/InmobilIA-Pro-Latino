@@ -25,6 +25,7 @@ public class ReminderScheduler {
     private final SupabaseService supabase;
     private final NotificationService notifications;
     private final EmailService emailService;
+    private final com.inmobilia.service.PaisService paises;
 
     /** Cada día a las 8:00 AM (zona horaria de la app): revisar vencimientos. */
     @Scheduled(cron = "0 0 8 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
@@ -49,6 +50,7 @@ public class ReminderScheduler {
             for (var u : users) {
                 String orgId = String.valueOf(u.get("id"));
                 if (!orgId.equals(String.valueOf(u.get("organization_id")))) continue; // solo a admins
+                paises.usar(orgId);
 
                 int props = supabase.query("propiedades", orgId).size();
                 int inquilinos = supabase.query("inquilinos", orgId).size();

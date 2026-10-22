@@ -36,6 +36,7 @@ public class WorkflowEngine {
     private final EmailService emailService;
     private final NotificationService notif;
     private final CampaignService campaignService;
+    private final com.inmobilia.service.PaisService paises;
 
     /** Dispara un evento. Busca workflows que escuchen ese evento y los ejecuta. */
     @Async
@@ -305,6 +306,7 @@ public class WorkflowEngine {
                 "estado=eq.pendiente&ejecutar_at=lte." + OffsetDateTime.now());
 
         for (Map<String, Object> ej : pendientes) {
+            paises.usar(String.valueOf(ej.get("user_id")));
             try {
                 String wfId = String.valueOf(ej.get("workflow_id"));
                 List<Map<String, Object>> wfs = supabase.selectFilter("workflows", "id=eq." + wfId);

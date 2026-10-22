@@ -22,6 +22,7 @@ public class MatchingController {
 
     private final SupabaseService supabase;
     private final MatchingEngine engine;
+    private final com.inmobilia.service.PaisService paises;
 
     /** Listado de matches del usuario. */
     @GetMapping
@@ -169,6 +170,7 @@ public class MatchingController {
         List<Map<String, Object>> users = supabase.selectFilter("users", "active=eq.true");
         for (Map<String, Object> u : users) {
             try {
+                paises.usar(String.valueOf(u.get("id")));
                 engine.runMatchingForUser(String.valueOf(u.get("id")));
             } catch (Exception e) {
                 log.warn("Error matching user {}: {}", u.get("id"), e.getMessage());

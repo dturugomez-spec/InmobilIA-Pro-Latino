@@ -30,6 +30,7 @@ public class OwnerReportService {
     private final SupabaseService supabase;
     private final EmailService emailService;
     private final BrandingService branding;
+    private final com.inmobilia.service.PaisService paises;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -46,6 +47,7 @@ public class OwnerReportService {
         }
         int ok = 0;
         for (Map<String, Object> p : props) {
+            paises.usar(String.valueOf(p.get("user_id")));
             try { if (enviarInforme(p, false)) ok++; }
             catch (Exception e) { log.warn("Informe propietario {} falló: {}", p.get("id"), e.getMessage()); }
         }

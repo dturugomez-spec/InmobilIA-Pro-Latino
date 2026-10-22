@@ -24,6 +24,7 @@ public class InsuranceScheduler {
 
     private final SupabaseService supabase;
     private final NotificationService notif;
+    private final com.inmobilia.service.PaisService paises;
 
     /** Diaria 9:30 → buscar pólizas que vencen pronto */
     @Scheduled(cron = "0 30 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
@@ -42,6 +43,7 @@ public class InsuranceScheduler {
 
                 if (dias == 30 || dias == 14 || dias == 3 || dias == 0) {
                     String uid = String.valueOf(p.get("user_id"));
+                    paises.usar(uid);
                     String tipo = String.valueOf(p.get("tipo"));
                     String ase = String.valueOf(p.get("aseguradora"));
                     String titulo;
@@ -99,6 +101,7 @@ public class InsuranceScheduler {
         if (cargo == null) return;
         String formaPago = String.valueOf(p.get("forma_pago"));
         String uid = String.valueOf(p.get("user_id"));
+        paises.usar(uid);
 
         if (cargo.isBefore(hoy)) {
             // Ya pasó: el siguiente, contando desde el que tocaba

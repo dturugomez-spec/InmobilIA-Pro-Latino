@@ -25,6 +25,7 @@ public class ContractRemindersService {
     private final SupabaseService supabase;
     private final NotificationService notif;
     private final EmailService emailService;
+    private final com.inmobilia.service.PaisService paises;
 
     @Scheduled(cron = "0 0 9 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void cron() {
@@ -35,6 +36,7 @@ public class ContractRemindersService {
         for (Map<String, Object> c : contratos) {
             try {
                 String userId = String.valueOf(c.get("user_id"));
+                paises.usar(userId);
                 LocalDate fin = parseFecha(c.get("fecha_fin"));
                 LocalDate inicio = parseFecha(c.get("fecha_inicio"));
                 String numero = String.valueOf(c.getOrDefault("numero", "—"));

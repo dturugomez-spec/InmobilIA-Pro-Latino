@@ -26,6 +26,7 @@ public class AsyncConfig implements AsyncConfigurer {
         ex.setMaxPoolSize(16);
         ex.setQueueCapacity(200);
         ex.setThreadNamePrefix("ipro-async-");
+        ex.setTaskDecorator(com.inmobilia.util.PaisActual::propagar); // emails y avisos con la moneda de la inmobiliaria
         ex.setWaitForTasksToCompleteOnShutdown(true);
         ex.setAwaitTerminationSeconds(20);
         // Si la cola se llena, ejecuta en el hilo que llama (no pierde tareas)
@@ -48,6 +49,7 @@ public class AsyncConfig implements AsyncConfigurer {
         ex.setMaxPoolSize(24);
         ex.setQueueCapacity(100);
         ex.setThreadNamePrefix("ipro-dash-");
+        ex.setTaskDecorator(com.inmobilia.util.PaisActual::propagar);
         ex.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
         ex.initialize();
         return ex;

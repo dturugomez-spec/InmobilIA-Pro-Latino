@@ -63,7 +63,9 @@ public class I18nConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
         // País de la inmobiliaria (moneda, impuesto, documentos, zona horaria) para toda la petición
-        registry.addInterceptor(paisInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(paisInterceptor).addPathPatterns("/**").excludePathPatterns(
+                "/css/**", "/js/**", "/icons/**", "/brand/**", "/favicon.ico", "/favicon.svg",
+                "/manifest.json", "/sw.js", "/robots.txt");
         // Guardián de sesión (cuenta activa, inquilinos, 2FA obligatorio, permisos por rol).
         // Va antes que el candado de suscripción: primero quién eres, luego si has pagado.
         // Incluye /api/**: sin sesión no hace nada (la API pública va con clave), pero con sesión

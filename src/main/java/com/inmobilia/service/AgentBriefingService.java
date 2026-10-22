@@ -39,6 +39,7 @@ public class AgentBriefingService {
     private final EmailService emailService;
     private final NotificationService notif;
     private final AIService aiService;
+    private final com.inmobilia.service.PaisService paises;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -54,6 +55,7 @@ public class AgentBriefingService {
             for (Map<String, Object> admin : admins) {
                 try {
                     String uid = String.valueOf(admin.get("id"));
+                    paises.usar(uid);
                     Briefing b = analizar(uid);
                     if (b.tieneAlgo()) {
                         ejecutarAcciones(uid, b);
@@ -87,6 +89,7 @@ public class AgentBriefingService {
             for (Map<String, Object> admin : admins) {
                 try {
                     String uid = String.valueOf(admin.get("id"));
+                    paises.usar(uid);
                     String html = informeSemanal(uid);
                     if (html != null) {
                         String email = String.valueOf(admin.get("email"));

@@ -53,6 +53,29 @@ class PaisTest {
     }
 
     @Test
+    void tareaEnOtroHilo_llevaElPaisDeQuienLaLanzaYNoLoDeja() throws Exception {
+        PaisActual.set(Pais.de("CL"));
+        String[] visto = new String[2];
+        Runnable tarea = PaisActual.propagar(() -> visto[0] = PaisActual.moneda());
+        Thread t = new Thread(() -> { tarea.run(); visto[1] = PaisActual.get().codigo(); });
+        t.start();
+        t.join();
+        assertEquals("CLP", visto[0]);
+        assertEquals(Pais.POR_DEFECTO, visto[1], "al acabar, el hilo no se queda con el país de otra inmobiliaria");
+        PaisActual.set(Pais.de("PE"));
+        PaisActual.propagar(() -> assertEquals("PEN", PaisActual.moneda())).run();
+        assertEquals("PE", PaisActual.get().codigo(), "en el mismo hilo (CallerRunsPolicy) se restaura el país");
+    }
+
+    @Test
+    void divisas_sinRedUsaLosTiposDeRespaldo() {
+        com.inmobilia.service.CurrencyService c = new com.inmobilia.service.CurrencyService();
+        assertEquals(100.0, c.convertir(100, "MXN", "MXN"));
+        double mxn = c.convertir(1, "USD", "MXN");
+        assertTrue(mxn > 5 && mxn < 50, "conversión inmediata sin esperar a la red: " + mxn);
+    }
+
+    @Test
     void preciosDeReferencia_porCiudadYPais() {
         Pais mx = Pais.de("MX");
         assertTrue(PreciosReferencia.conocida(mx, "Ciudad de México"));

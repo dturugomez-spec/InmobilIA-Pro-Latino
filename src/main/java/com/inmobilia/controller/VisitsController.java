@@ -26,6 +26,7 @@ public class VisitsController {
     private final SupabaseService supabase;
     private final EmailService emailService;
     private final NotificationService notif;
+    private final com.inmobilia.service.PaisService paises;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -292,6 +293,7 @@ public class VisitsController {
                         "&estado=in.(programada,confirmada)");
 
         for (Map<String, Object> v : visitas) {
+            paises.usar(String.valueOf(v.get("user_id")));
             try {
                 sendReminderEmail(v, "24h");
                 supabase.update("visitas", String.valueOf(v.get("id")),
@@ -317,6 +319,7 @@ public class VisitsController {
                         "&estado=in.(programada,confirmada)");
 
         for (Map<String, Object> v : visitas) {
+            paises.usar(String.valueOf(v.get("user_id")));
             try {
                 sendReminderEmail(v, "1h");
                 // Notificación al agente
@@ -347,6 +350,7 @@ public class VisitsController {
                         "&estado=in.(programada,confirmada)");
 
         for (Map<String, Object> v : visitas) {
+            paises.usar(String.valueOf(v.get("user_id")));
             try {
                 // Auto-marcar como "no presentado" si era hace 2h y nadie cambió estado
                 String email = String.valueOf(v.get("visitante_email"));

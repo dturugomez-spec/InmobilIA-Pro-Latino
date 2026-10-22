@@ -30,6 +30,7 @@ public class SeguimientoService {
     private final BrandingService branding;
     private final NotificationService notif;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final com.inmobilia.service.PaisService paises;
 
     public record Paso(int dia, String canal, String proposito) {}
 
@@ -51,6 +52,7 @@ public class SeguimientoService {
                     "users", "auto_seguimiento=eq.true&limit=500");
             for (Map<String, Object> a : agencias) {
                 String uid = String.valueOf(a.get("id"));
+                paises.usar(uid);
                 boolean envia = Boolean.TRUE.equals(a.get("auto_seguimiento_envia"));
                 try {
                     inscribirNuevos(uid);
