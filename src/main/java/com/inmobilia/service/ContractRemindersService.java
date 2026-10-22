@@ -45,16 +45,16 @@ public class ContractRemindersService {
                     long dias = ChronoUnit.DAYS.between(hoy, fin);
                     if (dias == 60) {
                         notif.create(userId, "⏰ Contrato " + numero + " - 60 días",
-                                "Considera renovación o búsqueda de nuevo inquilino", "/contratos", "media");
+                                "Considera renovación o búsqueda de nuevo inquilino", "/crud/contratos", "media");
                     } else if (dias == 30) {
                         notif.create(userId, "📅 Contrato " + numero + " - 30 días",
-                                "Recuerda hablar con el inquilino sobre la renovación", "/contratos", "media");
+                                "Recuerda hablar con el inquilino sobre la renovación", "/crud/contratos", "media");
                     } else if (dias == 7) {
                         notif.create(userId, "🚨 Contrato " + numero + " caduca en 7 días",
-                                "Toma decisión urgente", "/contratos", "alta");
+                                "Toma decisión urgente", "/crud/contratos", "alta");
                     } else if (dias == 0) {
                         notif.create(userId, "🏁 Contrato " + numero + " finaliza HOY",
-                                "Gestionar entrega de llaves y devolución del depósito en garantía", "/contratos", "alta");
+                                "Gestionar entrega de llaves y devolución del depósito en garantía", "/crud/contratos", "alta");
                     }
                 }
 
@@ -63,7 +63,7 @@ public class ContractRemindersService {
                     long dias = ChronoUnit.DAYS.between(inicio.plusMonths(meses), hoy);
                     if (meses >= 12 && meses % 12 == 0 && dias == 0) {
                         notif.create(userId, "📊 Actualización IPC contrato " + numero,
-                                "Actualizar renta según IPC anual", "/contratos", "media");
+                                "Actualizar renta según IPC anual", "/crud/contratos", "media");
                     }
                 }
 
@@ -72,7 +72,7 @@ public class ContractRemindersService {
                     if (!Boolean.TRUE.equals(c.get("fianza_devuelta"))) {
                         notif.create(userId, "⚠️ Fianza no devuelta",
                                 "Contrato " + numero + ": depósito en garantía pendiente de devolución (>3 meses)",
-                                "/contratos", "alta");
+                                "/crud/contratos", "alta");
                     }
                 }
             } catch (Exception e) {

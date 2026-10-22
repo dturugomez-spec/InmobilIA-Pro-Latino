@@ -19,15 +19,12 @@ import java.util.*;
 public class PublicApiV2Controller {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.ApiKeyAuth apiKeyAuth;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
+    /** Misma clave que /api/v1 (antes buscaba una columna "token" en claro que nunca existe: siempre 401). */
     private String auth(HttpServletRequest req) {
-        String auth = req.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Bearer ")) return null;
-        String token = auth.substring(7);
-        List<Map<String, Object>> keys = supabase.selectFilter("api_keys", "token=eq." + token + "&revoked_at=is.null");
-        if (keys.isEmpty()) return null;
-        supabase.update("api_keys", String.valueOf(keys.get(0).get("id")), Map.of("last_used", OffsetDateTime.now().toString()));
-        return String.valueOf(keys.get(0).get("user_id"));
+        return apiKeyAuth.organizacion(req);
     }
 
     @GetMapping("/properties")
@@ -50,8 +47,12 @@ public class PublicApiV2Controller {
         if (uid == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         body.put("user_id", uid);
         body.put("origen", body.getOrDefault("origen", "api_v2"));
+        body.putIfAbsent("etapa", "Nuevo");
         body.put("created_at", OffsetDateTime.now().toString());
-        return ResponseEntity.ok(supabase.insert("leads", body));
+        Map<String, Object> saved = supabase.insert("leads", body);
+        if (saved == null) return ResponseEntity.status(500).body(Map.of("error", "Insert failed"));
+        workflows.triggerEvent(uid, "lead_creado", saved);
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/stats")

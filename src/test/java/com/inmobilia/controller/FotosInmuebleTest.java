@@ -32,7 +32,7 @@ class FotosInmuebleTest {
         when(branding.branding(anyString())).thenReturn(Map.of());
 
         new PublicPropertyPageController(supabase, mock(com.inmobilia.service.PaisService.class), branding,
-                mock(LeadAutoResponderService.class))
+                mock(LeadAutoResponderService.class), mock(com.inmobilia.service.WorkflowEngine.class))
                 .publica("p1", new ExtendedModelMap());
 
         verify(supabase).selectFilter(eq("attachments"), argThat(f ->

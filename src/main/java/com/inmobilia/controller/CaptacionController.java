@@ -23,6 +23,7 @@ public class CaptacionController {
 
     private final SupabaseService supabase;
     private final CaptacionService captacion;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     @GetMapping("/captacion")
     public String panel(HttpSession session, Model model) {
@@ -173,7 +174,10 @@ public class CaptacionController {
             lead.put("created_at", OffsetDateTime.now().toString());
             try {
                 Map<String, Object> savedLead = supabase.insert("leads", lead);
-                if (savedLead != null && savedLead.get("id") != null) upd.put("lead_id", savedLead.get("id"));
+                if (savedLead != null && savedLead.get("id") != null) {
+                    upd.put("lead_id", savedLead.get("id"));
+                    workflows.triggerEvent(uid, "lead_creado", savedLead);
+                }
             } catch (Exception ignored) {}
         }
         supabase.update("captacion_destinatarios", did, upd, uid);

@@ -154,6 +154,9 @@ public class PipelineController {
             payload.put("columna_anterior", columnaAnterior);
             payload.put("columna_nueva", columnaNueva);
             try { workflowEngine.triggerEvent(uid, "kanban_card_movida", payload); } catch (Exception ignored) {}
+            if ("calificado".equalsIgnoreCase(columnaNueva) && card.get("lead_id") != null) {
+                try { workflowEngine.triggerEvent(uid, "lead_calificado", payload); } catch (Exception ignored) {}
+            }
         }
 
         return Map.of("ok", true);

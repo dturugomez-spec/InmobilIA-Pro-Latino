@@ -34,6 +34,8 @@ public class CrudController {
     private final PlanService planService;
     private final AuditTrail audit;
     private final com.inmobilia.service.TrashService trash;
+    private final com.inmobilia.service.WorkflowEngine workflows;
+    private final com.inmobilia.service.MatchingEngine matching;
 
     /** Ejemplos reales por campo (declarado ANTES que TABLES para evitar NPE en clinit). */
     private static final Map<String, String> PLACEHOLDERS = Map.ofEntries(
@@ -411,6 +413,9 @@ public class CrudController {
 
         if (id == null || id.isBlank()) {
             data.put("created_at", OffsetDateTime.now().toString());
+            // La referencia se genera si se deja vacía (lo decía el formulario y no se hacía)
+            if ("propiedades".equals(table) && !(data.get("reference") instanceof String r && !r.isBlank()))
+                data.put("reference", nuevaReferencia());
             log.info("CRUD insert {} -> payload keys={}", table, data.keySet());
             Map<String, Object> saved = supabase.insert(table, data);
             if (saved == null || saved.isEmpty()) {
@@ -422,8 +427,12 @@ public class CrudController {
                 audit.registrar(request, session, "crear", table, String.valueOf(saved.get("id")),
                         meta.title() + ": registro creado", "info", AuditTrail.DATOS);
                 SessionUtils.flash(session, meta.title() + ": registro creado");
+                eventosAlCrear(table, uid, saved);
             }
         } else {
+            // Estado anterior, para lanzar "lead cualificado" o "inmueble vendido" solo al cambiar
+            List<Map<String, Object>> previo = ("leads".equals(table) || "propiedades".equals(table))
+                    ? supabase.selectOwned(table, id, uid) : List.of();
             boolean ok = supabase.update(table, id, data, uid);
             if (!ok) {
                 String err = supabase.lastError();
@@ -433,9 +442,63 @@ public class CrudController {
                 audit.registrar(request, session, "actualizar", table, id,
                         meta.title() + ": registro actualizado", "info", AuditTrail.DATOS);
                 SessionUtils.flash(session, meta.title() + ": registro actualizado");
+                if (!previo.isEmpty()) eventosAlActualizar(table, uid, previo.get(0), data);
             }
         }
         return "redirect:/crud/" + table;
+    }
+
+    /** Automatizaciones de "lead nuevo", "inmueble nuevo" y "contrato firmado" (antes no se lanzaban desde aquí). */
+    private void eventosAlCrear(String table, String uid, Map<String, Object> guardado) {
+        switch (table) {
+            case "leads" -> workflows.triggerEvent(uid, "lead_creado", guardado);
+            case "propiedades" -> {
+                Map<String, Object> evento = new LinkedHashMap<>(guardado);
+                evento.put("propiedad_id", guardado.get("id"));
+                workflows.triggerEvent(uid, "propiedad_creada", evento);
+                matching.runMatchingEnSegundoPlano(uid); // compradores que encajan con el nuevo inmueble
+            }
+            case "contratos" -> workflows.triggerEvent(uid, "contrato_firmado", guardado);
+            default -> { }
+        }
+    }
+
+    /** "Lead cualificado" y "inmueble vendido": solo cuando el estado CAMBIA a ese valor. */
+    static String eventoAlActualizar(String table, Map<String, Object> antes, Map<String, Object> cambios) {
+        if ("leads".equals(table) && cambios.get("etapa") instanceof String nueva
+                && esCualificado(nueva) && !esCualificado(String.valueOf(antes.get("etapa")))) return "lead_calificado";
+        if ("propiedades".equals(table) && cambios.get("status") instanceof String nuevo
+                && esVendido(nuevo) && !esVendido(String.valueOf(antes.get("status")))) return "propiedad_vendida";
+        return null;
+    }
+
+    private void eventosAlActualizar(String table, String uid, Map<String, Object> antes, Map<String, Object> cambios) {
+        String evento = eventoAlActualizar(table, antes, cambios);
+        if (evento == null) return;
+        Map<String, Object> datos = new LinkedHashMap<>(antes);
+        cambios.forEach((k, v) -> { if (v != SupabaseService.VACIAR) datos.put(k, v); });
+        if ("propiedades".equals(table)) datos.put("propiedad_id", antes.get("id"));
+        if ("leads".equals(table)) datos.put("lead_id", antes.get("id"));
+        workflows.triggerEvent(uid, evento, datos);
+    }
+
+    private static boolean esCualificado(String etapa) {
+        String e = etapa == null ? "" : etapa.trim().toLowerCase();
+        return e.startsWith("cualificad") || e.startsWith("calificad");
+    }
+
+    private static boolean esVendido(String status) {
+        String s = status == null ? "" : status.trim().toLowerCase();
+        return s.startsWith("vendid");
+    }
+
+    /** REF-2026-7KQ3X: año + 5 caracteres al azar (sin 0/O ni 1/I para dictarla sin errores). */
+    static String nuevaReferencia() {
+        String abc = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+        java.security.SecureRandom r = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder("REF-").append(java.time.Year.now().getValue()).append('-');
+        for (int i = 0; i < 5; i++) sb.append(abc.charAt(r.nextInt(abc.length())));
+        return sb.toString();
     }
 
     @PostMapping("/{table}/{id}/delete")

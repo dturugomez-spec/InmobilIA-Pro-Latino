@@ -17,6 +17,7 @@ public class MicrositeController {
 
     private final SupabaseService supabase;
     private final com.inmobilia.service.PaisService paises;
+    private final com.inmobilia.service.WorkflowEngine workflows;
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     @GetMapping("/microsite/admin")
@@ -105,7 +106,8 @@ public class MicrositeController {
         lead.put("origen", "microsite");
         lead.put("etapa", "Nuevo");
         lead.put("created_at", OffsetDateTime.now().toString());
-        supabase.insert("leads", lead);
+        Map<String, Object> guardado = supabase.insert("leads", lead);
+        if (guardado != null) workflows.triggerEvent(String.valueOf(ms.get("user_id")), "lead_creado", guardado);
 
         int l = ((Number) ms.getOrDefault("leads_capturados", 0)).intValue() + 1;
         supabase.update("microsites", String.valueOf(ms.get("id")), Map.of("leads_capturados", l));

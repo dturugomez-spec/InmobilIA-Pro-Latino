@@ -25,19 +25,24 @@ public class PublicPropertyController {
 
     private final SupabaseService supabase;
     private final com.inmobilia.service.PaisService paises;
+    private final com.inmobilia.service.WorkflowEngine workflows;
+
+    /**
+     * El inmueble público con esa referencia. La referencia la pone cada inmobiliaria y puede
+     * repetirse entre ellas ("INM-0001"): antes se cogía la primera de toda la base de datos y se
+     * podía ver el inmueble de otra agencia o mandarle el contacto. Si hay más de uno, no se adivina.
+     */
+    private Map<String, Object> inmueblePublico(String reference) {
+        List<Map<String, Object>> publicos = supabase.findBy("propiedades", Map.of("reference", reference)).stream()
+                .filter(p -> Boolean.TRUE.equals(p.get("publicada")) || "true".equalsIgnoreCase(String.valueOf(p.get("publicada"))))
+                .toList();
+        return publicos.size() == 1 ? publicos.get(0) : null;
+    }
 
     @GetMapping("/p/{reference}")
     public String publicView(@PathVariable String reference, Model model) {
-        // Buscar por referencia (en TODA la BBDD, no por org)
-        var rows = supabase.findBy("propiedades", Map.of("reference", reference));
-        if (rows.isEmpty()) return "redirect:/";
-
-        Map<String, Object> prop = rows.get(0);
-        // Solo mostrar si está marcada como pública
-        Object pub = prop.get("publicada");
-        if (pub == null || !(Boolean.TRUE.equals(pub) || "true".equalsIgnoreCase(String.valueOf(pub)))) {
-            return "redirect:/";
-        }
+        Map<String, Object> prop = inmueblePublico(reference);
+        if (prop == null) return "redirect:/";
 
         // Owner data (para el contacto)
         String orgId = String.valueOf(prop.get("user_id"));
@@ -58,9 +63,8 @@ public class PublicPropertyController {
     @ResponseBody
     public Map<String, Object> contact(@PathVariable String reference,
                                         @RequestBody Map<String, String> body) {
-        var rows = supabase.findBy("propiedades", Map.of("reference", reference));
-        if (rows.isEmpty()) return Map.of("ok", false);
-        Map<String, Object> prop = rows.get(0);
+        Map<String, Object> prop = inmueblePublico(reference);
+        if (prop == null) return Map.of("ok", false);
         String orgId = String.valueOf(prop.get("user_id"));
 
         Map<String, Object> lead = new LinkedHashMap<>();
@@ -75,6 +79,11 @@ public class PublicPropertyController {
         lead.put("created_at", OffsetDateTime.now().toString());
 
         Map<String, Object> saved = supabase.insert("leads", lead);
+        if (saved != null && !saved.isEmpty()) {
+            Map<String, Object> evento = new LinkedHashMap<>(saved);
+            evento.put("propiedad_id", prop.get("id"));
+            workflows.triggerEvent(orgId, "lead_creado", evento);
+        }
         return Map.of("ok", saved != null && !saved.isEmpty());
     }
 

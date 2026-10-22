@@ -18,6 +18,7 @@ public class OpenHouseController {
 
     private final SupabaseService supabase;
     private final com.inmobilia.service.PaisService paises;
+    private final com.inmobilia.service.WorkflowEngine workflows;
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     @GetMapping
@@ -112,7 +113,8 @@ public class OpenHouseController {
         lead.put("etapa", "Nuevo");
         lead.put("notas", "Registrado en Open House: " + oh.get("titulo"));
         lead.put("created_at", OffsetDateTime.now().toString());
-        supabase.insert("leads", lead);
+        Map<String, Object> guardado = supabase.insert("leads", lead);
+        if (guardado != null) workflows.triggerEvent(String.valueOf(oh.get("user_id")), "lead_creado", guardado);
 
         // Incrementar contador
         int count = parseInt(String.valueOf(oh.getOrDefault("asistentes_count", 0)));

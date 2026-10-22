@@ -23,6 +23,7 @@ public class MarketplaceService {
     private final SupabaseService supabase;
     private final NotificationService notif;
     private final EmailService email;
+    private final WorkflowEngine workflows;
 
     /** Inmuebles elegibles para swipe, con filtros opcionales del comprador. */
     /** Pool GLOBAL (red compartida): pisos publicados de TODAS las agencias con el add-on activo. */
@@ -131,12 +132,17 @@ public class MarketplaceService {
             lead.put("origen", "marketplace");
             lead.put("etapa", "Nuevo");
             lead.put("zona", buyer.getOrDefault("zona", str(prop.get("city"))));
-            lead.put("property_id", propiedadId);
+            // (antes se guardaba "property_id", columna que leads no tiene: Supabase rechazaba el lead)
             lead.put("score", "superlike".equals(accion) ? 80 : 60);
             lead.put("notas", ("superlike".equals(accion) ? "⭐ SUPER LIKE" : "❤️ Like") +
                     " en el marketplace sobre: " + str(prop.getOrDefault("name", prop.get("address"))));
             lead.put("created_at", OffsetDateTime.now().toString());
             Map<String, Object> saved = supabase.insert("leads", lead);
+            if (saved != null) {
+                Map<String, Object> evento = new LinkedHashMap<>(saved);
+                evento.put("propiedad_id", propiedadId);
+                workflows.triggerEvent(agencyId, "lead_creado", evento);
+            }
 
             notif.create(agencyId, ("superlike".equals(accion) ? "⭐" : "❤️") + " Nuevo comprador del marketplace",
                     buyer.getOrDefault("nombre", "Un comprador") + " mostró interés en " +

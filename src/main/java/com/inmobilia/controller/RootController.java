@@ -37,6 +37,21 @@ public class RootController {
         return "offline";
     }
 
+    /**
+     * Avisos de contratos (recordatorios de vencimiento, automatizaciones) enlazaban a /contratos,
+     * que no existe: llevaba a la página de error. La gestión de contratos está en /crud/contratos.
+     */
+    @GetMapping("/contratos")
+    public String contratos() {
+        return "redirect:/crud/contratos";
+    }
+
+    /** Igual con /leads (avisos de lead nuevo del chatbot, marketplace, portales…): el tablero está en /kanban/leads. */
+    @GetMapping("/leads")
+    public String leads() {
+        return "redirect:/kanban/leads";
+    }
+
     /** PWA: health check para Render free tier (keep-alive). */
     @GetMapping("/healthz")
     @org.springframework.web.bind.annotation.ResponseBody

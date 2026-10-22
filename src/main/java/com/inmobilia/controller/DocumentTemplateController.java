@@ -193,7 +193,7 @@ public class DocumentTemplateController {
         }
 
         SessionUtils.flash(session, "✅ Documento generado");
-        return "redirect:/documentos-generados";
+        return "redirect:/plantillas-doc/historial";
     }
 
     @GetMapping("/historial")

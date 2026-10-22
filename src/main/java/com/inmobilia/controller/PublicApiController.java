@@ -25,33 +25,11 @@ import java.util.Map;
 public class PublicApiController {
 
     private final SupabaseService supabase;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final com.inmobilia.service.ApiKeyAuth apiKeyAuth;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     private String authenticate(HttpServletRequest req) {
-        String auth = req.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Bearer ")) return null;
-        String token = auth.substring(7).trim();
-        if (token.length() < 32) return null;
-
-        // Buscar por prefix (primeros 8 chars) y verificar bcrypt
-        String prefix = token.substring(0, 8);
-        try {
-            var keys = supabase.findBy("api_keys", Map.of("prefix", prefix));
-            for (var k : keys) {
-                if (k.get("revoked_at") != null && !"null".equals(String.valueOf(k.get("revoked_at")))) continue;
-                String hash = String.valueOf(k.get("token_hash"));
-                if (encoder.matches(token, hash)) {
-                    // Update last_used (async-ish)
-                    String orgId = String.valueOf(k.get("org_id"));
-                    supabase.update("api_keys", String.valueOf(k.get("id")),
-                            Map.of("last_used", OffsetDateTime.now().toString()), orgId);
-                    return orgId;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("API auth error: {}", e.getMessage());
-        }
-        return null;
+        return apiKeyAuth.organizacion(req);
     }
 
     @GetMapping("/properties")
@@ -104,6 +82,7 @@ public class PublicApiController {
         body.putIfAbsent("etapa", "Nuevo");
         body.put("created_at", OffsetDateTime.now().toString());
         Map<String, Object> saved = supabase.insert("leads", body);
+        if (saved != null) workflows.triggerEvent(orgId, "lead_creado", saved);
         return saved != null ? ResponseEntity.ok(Map.of("data", saved)) : ResponseEntity.status(500).body(Map.of("error","Insert failed"));
     }
 }

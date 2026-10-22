@@ -19,6 +19,7 @@ import java.util.*;
 public class ReferralsController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.WorkflowEngine workflows;
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     @GetMapping
@@ -155,8 +156,14 @@ public class ReferralsController {
         lead.put("telefono", form.get("telefono"));
         lead.put("origen", "referido");
         lead.put("notas", "Referido por: " + ref.get("referente_nombre") + " (código " + codigo + ")");
+        lead.put("etapa", "Nuevo");
         lead.put("created_at", OffsetDateTime.now().toString());
-        supabase.insert("leads", lead);
+        Map<String, Object> guardado = supabase.insert("leads", lead);
+        if (guardado != null) {
+            // Enlazar el referido con su lead (para seguir la operación y el premio)
+            supabase.update("referidos", String.valueOf(ref.get("id")), Map.of("lead_id", guardado.get("id")), String.valueOf(ref.get("user_id")));
+            workflows.triggerEvent(String.valueOf(ref.get("user_id")), "lead_creado", guardado);
+        }
 
         model.addAttribute("registrado", true);
         model.addAttribute("ref", ref);

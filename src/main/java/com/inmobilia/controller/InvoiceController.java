@@ -32,6 +32,7 @@ public class InvoiceController {
 
     private final SupabaseService supabase;
     private final PermissionService permissions;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     // ─── LISTADO ───
     @GetMapping
@@ -185,6 +186,7 @@ public class InvoiceController {
                 return "redirect:/invoices/new";
             }
 
+            workflows.triggerEvent(uid, "factura_creada", saved);
             SessionUtils.flash(session, "Factura " + saved.get("full_number") + " creada");
             return "redirect:/invoices/" + saved.get("id");
         } else {
@@ -204,12 +206,20 @@ public class InvoiceController {
         if (!permissions.canWrite(role, "transacciones")) return "redirect:/invoices";
 
         String uid = SessionUtils.uid(session);
+        List<Map<String, Object>> previa = supabase.selectOwned("invoices", id, uid);
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("status", status);
         if ("Pagada".equalsIgnoreCase(status)) {
             data.put("fecha_pago", LocalDate.now().toString());
         }
         boolean ok = supabase.update("invoices", id, data, uid);
+        String antes = previa.isEmpty() ? "" : String.valueOf(previa.get(0).get("status"));
+        if (ok && !previa.isEmpty() && !status.equalsIgnoreCase(antes)) {
+            Map<String, Object> evento = new LinkedHashMap<>(previa.get(0));
+            evento.putAll(data);
+            if ("Pagada".equalsIgnoreCase(status)) workflows.triggerEvent(uid, "factura_pagada", evento);
+            if ("Vencida".equalsIgnoreCase(status)) workflows.triggerEvent(uid, "factura_impagada", evento);
+        }
         SessionUtils.flash(session, ok ? "Factura marcada como " + status : "ERROR cambiando estado");
         return "redirect:/invoices";
     }

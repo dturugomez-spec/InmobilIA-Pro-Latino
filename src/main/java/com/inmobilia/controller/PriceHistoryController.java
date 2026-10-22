@@ -24,7 +24,7 @@ public class PriceHistoryController {
 
         List<Map<String, Object>> propRows = supabase.selectFilter(
                 "propiedades", "id=eq." + propId + "&user_id=eq." + uid);
-        if (propRows.isEmpty()) return "redirect:/propiedades";
+        if (propRows.isEmpty()) return "redirect:/propiedades/grid";
         Map<String, Object> prop = propRows.get(0);
 
         List<Map<String, Object>> historico = supabase.selectFilter(

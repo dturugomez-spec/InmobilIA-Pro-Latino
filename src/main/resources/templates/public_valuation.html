@@ -159,22 +159,23 @@
                 <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">Alquiler estimado / mes</div>
                 <div class="text-2xl font-bold text-emerald-700" x-text="fmt(result?.rentaMensual)">— [[${mon}]]</div>
                 <div class="text-xs text-emerald-700/80 mt-1">
-                    Yield bruto anual: <strong x-text="result?.yieldBruto + '%'"></strong>
+                    Calculado con una rentabilidad bruta típica del <strong x-text="result?.yieldBruto + ' %'"></strong> anual.
                 </div>
             </div>
 
             <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 mb-6">
-                <strong> Estimación orientativa.</strong> Para una valoración profesional precisa, consulta con un asesor inmobiliario.
+                <strong>Estimación orientativa</strong> (fiabilidad <span x-text="result?.confianza === 'alta' ? 'alta: con ventas comparables de la zona' : (result?.confianza === 'media' ? 'media: precio de referencia de tu ciudad' : 'baja: no tenemos datos de tu zona')"></span>).
+                Para un precio fiable, pide una valoración profesional con visita.
             </div>
 
+            <p x-show="agencyRef" class="text-sm text-slate-600 text-center mb-4">La inmobiliaria ha recibido tus datos y te contactará para afinar la valoración.</p>
             <a href="/" class="block text-center w-full px-5 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 text-white font-semibold">
                 Conocer InmobilIA Pro
             </a>
-            <p class="text-xs text-slate-500 text-center mt-3">Te hemos enviado los detalles a tu email.</p>
         </div>
     </div>
 
-    <p class="text-xs text-slate-400 text-center mt-6">© 2026 InmobilIA Pro · Estimación orientativa · <span th:replace="~{fragments/grupo :: sello(false)}"></span></p>
+    <p class="text-xs text-slate-400 text-center mt-6">© 2026 InmobilIA Pro · Precios de referencia por ciudad y comparables de la agencia · <span th:replace="~{fragments/grupo :: sello(false)}"></span></p>
 </div>
 
 <script>lucide.createIcons();</script>

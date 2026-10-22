@@ -27,6 +27,7 @@ public class VisitsController {
     private final EmailService emailService;
     private final NotificationService notif;
     private final com.inmobilia.service.PaisService paises;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -166,6 +167,7 @@ public class VisitsController {
         if (notBlank(form.get("visitante_email")) && saved != null) {
             sendConfirmationEmail(saved);
         }
+        if (saved != null) workflows.triggerEvent(uid, "visita_programada", saved);
 
         SessionUtils.flash(session, "✅ Visita programada");
         return "redirect:/visitas";
@@ -193,6 +195,8 @@ public class VisitsController {
                              HttpSession session) {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
+        List<Map<String, Object>> previa = supabase.selectOwned("visitas", id, uid);
+        if (previa.isEmpty()) return "redirect:/visitas";
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("estado", estado);
         if ("cancelada".equals(estado)) {
@@ -200,7 +204,14 @@ public class VisitsController {
             data.put("motivo_cancelacion", motivo);
         }
         data.put("updated_at", OffsetDateTime.now().toString());
-        supabase.update("visitas", id, data, uid);
+        boolean ok = supabase.update("visitas", id, data, uid);
+        // Automatizaciones "visita realizada / cancelada" (antes no se lanzaban nunca)
+        String antes = String.valueOf(previa.get(0).get("estado"));
+        if (ok && !estado.equals(antes) && ("realizada".equals(estado) || "cancelada".equals(estado))) {
+            Map<String, Object> evento = new LinkedHashMap<>(previa.get(0));
+            evento.putAll(data);
+            workflows.triggerEvent(uid, "realizada".equals(estado) ? "visita_realizada" : "visita_cancelada", evento);
+        }
         return "redirect:/visitas/" + id;
     }
 
@@ -219,7 +230,13 @@ public class VisitsController {
         if ("oferta".equals(form.get("siguiente_paso"))) {
             data.put("convirtio_en_oferta", true);
         }
-        supabase.update("visitas", id, data, uid);
+        List<Map<String, Object>> previa = supabase.selectOwned("visitas", id, uid);
+        boolean ok = supabase.update("visitas", id, data, uid);
+        if (ok && !previa.isEmpty() && !"realizada".equals(previa.get(0).get("estado"))) {
+            Map<String, Object> evento = new LinkedHashMap<>(previa.get(0));
+            evento.putAll(data);
+            workflows.triggerEvent(uid, "visita_realizada", evento);
+        }
         SessionUtils.flash(session, "📝 Feedback guardado");
         return "redirect:/visitas/" + id;
     }

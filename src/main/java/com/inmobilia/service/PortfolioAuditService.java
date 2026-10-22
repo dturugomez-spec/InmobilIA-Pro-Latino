@@ -230,13 +230,13 @@ public class PortfolioAuditService {
                 findings.add(new Finding("DSCR_NEG", Area.FINANCIACION, Severity.CRITICAL,
                     "DSCR < 1.0 - cartera no cubre hipoteca",
                     "El NOI anual (" + fmtEur(noiAnual) + ") no cubre la hipoteca (" + fmtEur(mortgageAnual) + "). DSCR=" + fmtRatio(dscr),
-                    "Refinanciar o desapalancar", "/analisis/stress",
+                    "Refinanciar o desapalancar", "/herramientas/stress-cartera",
                     mortgageAnual - noiAnual, null));
             } else if (dscr < 1.25) {
                 findings.add(new Finding("DSCR_BAJO", Area.FINANCIACION, Severity.WARNING,
                     "DSCR ajustado",
                     "DSCR=" + fmtRatio(dscr) + ". Poca holgura ante subidas de tasas o vacancia.",
-                    "Simular stress test", "/analisis/stress",
+                    "Simular stress test", "/herramientas/stress-cartera",
                     0, null));
             }
         }

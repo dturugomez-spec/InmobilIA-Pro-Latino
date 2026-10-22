@@ -46,7 +46,7 @@ public class DefaultAutomationsSeeder {
                 List.of(
                     accion("send_notification", Map.of(
                         "titulo", "🏠 Propiedad captada",
-                        "mensaje", "Ejecutando matching con leads activos...",
+                        "mensaje", "Buscando compradores compatibles: los verás en Matches en unos minutos.",
                         "urgencia", "media", "link", "/matches"))
                 ), 0);
 
@@ -107,7 +107,7 @@ public class DefaultAutomationsSeeder {
                     accion("send_notification", Map.of(
                         "titulo", "🎉 Contrato firmado",
                         "mensaje", "Nueva operación cerrada. ¡Enhorabuena!",
-                        "urgencia", "alta", "link", "/contratos")),
+                        "urgencia", "alta", "link", "/crud/contratos")),
                     accion("create_task", Map.of(
                         "titulo", "Gestionar postventa del contrato firmado",
                         "prioridad", "media", "dias_limite", 3))
@@ -116,14 +116,13 @@ public class DefaultAutomationsSeeder {
             // ─── 6. FACTURA IMPAGADA: recordatorio + tarea cobro ───
             crear(userId,
                 "⚠️ Factura impagada → recordatorio + tarea",
-                "Cuando una factura pasa a impagada, envía recordatorio al cliente y crea tarea de cobro.",
+                "Cuando una factura vence sin pagarse (se revisa cada mañana), envía recordatorio al cliente y crea tarea de cobro.",
                 "factura_impagada", null,
                 List.of(
                     accion("send_email", Map.of(
                         "to", "{cliente_email}",
                         "subject", "Recordatorio de pago pendiente",
                         "body", "<p>Hola,</p><p>Te recordamos que tienes una factura pendiente de pago. Si ya la has abonado, ignora este mensaje.</p>")),
-                    accion("change_status", Map.of("tabla", "facturas", "estado", "morosa")),
                     accion("create_task", Map.of(
                         "titulo", "Gestionar cobro factura impagada",
                         "prioridad", "alta", "dias_limite", 2))

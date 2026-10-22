@@ -25,6 +25,7 @@ public class KanbanController {
 
     private final SupabaseService supabase;
     private final PermissionService permissions;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     private static final List<String> ETAPAS_LEADS = List.of("Nuevo", "Contactado", "Cualificado", "Visita", "Oferta", "Cerrado", "Perdido");
     private static final List<String> ETAPAS_OPORTUNIDADES = List.of("Nuevo", "Análisis", "Negociación", "Cerrado", "Descartado");
@@ -152,7 +153,19 @@ public class KanbanController {
         if (newStage == null || newStage.isBlank()) return Map.of("ok", false, "error", "Etapa requerida");
 
         String uid = SessionUtils.uid(session);
+        List<Map<String, Object>> previo = supabase.selectOwned(table, id, uid);
         boolean ok = supabase.update(table, id, Map.of(field, newStage), uid);
+        // Automatizaciones: tarjeta movida (y "lead cualificado" si entra en esa etapa)
+        if (ok && !previo.isEmpty() && !newStage.equals(String.valueOf(previo.get(0).get(field)))) {
+            Map<String, Object> evento = new LinkedHashMap<>(previo.get(0));
+            evento.put(field, newStage);
+            evento.put("columna_anterior", previo.get(0).get(field));
+            evento.put("columna_nueva", newStage);
+            if ("leads".equals(table)) evento.put("lead_id", id);
+            workflows.triggerEvent(uid, "kanban_card_movida", evento);
+            if ("leads".equals(table) && newStage.toLowerCase().matches("c?alificad.*|cualificad.*"))
+                workflows.triggerEvent(uid, "lead_calificado", evento);
+        }
         return Map.of("ok", ok, "id", id, "stage", newStage);
     }
 

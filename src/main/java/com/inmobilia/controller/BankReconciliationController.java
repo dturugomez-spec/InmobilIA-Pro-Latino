@@ -25,6 +25,7 @@ import java.util.*;
 public class BankReconciliationController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     @GetMapping
     public String dashboard(HttpSession session, Model model) {
@@ -144,11 +145,17 @@ public class BankReconciliationController {
     }
 
     private void marcarFacturaPagada(String facturaId, String fechaPago, String uid) {
+        List<Map<String, Object>> previa = supabase.selectOwned("invoices", facturaId, uid);
         Map<String, Object> upd = new LinkedHashMap<>();
         upd.put("status", "Pagada");
         upd.put("fecha_pago", fechaPago != null ? fechaPago : java.time.LocalDate.now().toString());
         upd.put("metodo_pago", "Transferencia");
-        supabase.update("invoices", facturaId, upd, uid);
+        if (supabase.update("invoices", facturaId, upd, uid) && !previa.isEmpty()
+                && !"Pagada".equalsIgnoreCase(String.valueOf(previa.get(0).get("status")))) {
+            Map<String, Object> evento = new LinkedHashMap<>(previa.get(0));
+            evento.putAll(upd);
+            workflows.triggerEvent(uid, "factura_pagada", evento);
+        }
     }
 
     @PostMapping("/conciliar/{id}")

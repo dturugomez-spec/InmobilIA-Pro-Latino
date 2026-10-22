@@ -34,6 +34,13 @@ public class MatchingEngine {
     private final SupabaseService supabase;
     private final EmailService emailService;
     private final NotificationService notif;
+    private final WorkflowEngine workflows;
+
+    /** Matching al dar de alta un inmueble, sin hacer esperar al usuario. */
+    @org.springframework.scheduling.annotation.Async
+    public void runMatchingEnSegundoPlano(String userId) {
+        try { runMatchingForUser(userId); } catch (Exception e) { log.warn("Matching en segundo plano: {}", e.getMessage()); }
+    }
 
     /** Recalcula matches para un usuario completo (admin/director). */
     public int runMatchingForUser(String userId) {
@@ -198,7 +205,12 @@ public class MatchingEngine {
         data.put("estado", "nuevo");
         data.put("created_at", OffsetDateTime.now().toString());
 
-        supabase.insert("matches", data);
+        Map<String, Object> guardado = supabase.insert("matches", data);
+        if (guardado != null) {
+            Map<String, Object> evento = new LinkedHashMap<>(guardado);
+            evento.put("propiedad", str(prop.getOrDefault("name", prop.get("address"))));
+            workflows.triggerEvent(userId, "match_encontrado", evento);
+        }
 
         // Notificar al agente
         try {

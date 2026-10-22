@@ -25,6 +25,7 @@ public class SignatureService {
 
     private final SupabaseService supabase;
     private final EmailService emailService;
+    private final WorkflowEngine workflows;
 
     /** SHA-256 hex */
     public static String sha256(String input) {
@@ -84,9 +85,11 @@ public class SignatureService {
         return true;
     }
 
-    /** Genera OTP de 6 dígitos. */
+    private static final java.security.SecureRandom ALEATORIO = new java.security.SecureRandom();
+
+    /** Genera OTP de 6 dígitos (SecureRandom: con Random el código de firma era predecible). */
     public String generarOTP() {
-        return String.format("%06d", new Random().nextInt(1000000));
+        return String.format("%06d", ALEATORIO.nextInt(1000000));
     }
 
     /** Envía OTP por email al firmante. */
@@ -117,6 +120,13 @@ public class SignatureService {
             ));
             audit(documentoId, null, "documento_completado",
                     "Todos los firmantes han firmado", null, null, null);
+            // Automatización "contrato firmado" (antes no se lanzaba nunca)
+            List<Map<String, Object>> doc = supabase.selectFilter("firmas_documento", "id=eq." + documentoId);
+            if (!doc.isEmpty()) {
+                Map<String, Object> evento = new LinkedHashMap<>(doc.get(0));
+                evento.put("firmantes", firmantes.stream().map(f -> String.valueOf(f.get("nombre"))).toList());
+                workflows.triggerEvent(String.valueOf(doc.get(0).get("user_id")), "contrato_firmado", evento);
+            }
         } else {
             // Estado intermedio
             long firmados = firmantes.stream().filter(f -> "firmado".equals(f.get("estado"))).count();

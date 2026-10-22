@@ -23,6 +23,7 @@ public class PublicPropertyPageController {
     private final com.inmobilia.service.PaisService paises;
     private final BrandingService branding;
     private final LeadAutoResponderService autoResponder;
+    private final com.inmobilia.service.WorkflowEngine workflows;
 
     @org.springframework.beans.factory.annotation.Value("${app.base-url:https://inmobiliapro.es}")
     private String baseUrl;
@@ -83,10 +84,15 @@ public class PublicPropertyPageController {
         lead.put("origen", "pagina_propiedad");
         lead.put("etapa", "Nuevo");
         lead.put("created_at", OffsetDateTime.now().toString());
-        supabase.insert("leads", lead);
+        Map<String, Object> guardado = supabase.insert("leads", lead);
 
         // ⚡ Speed-to-lead: respuesta instantánea (si la agencia lo tiene activado)
         try { autoResponder.responder(String.valueOf(p.get("user_id")), lead, p); } catch (Exception ignored) {}
+        if (guardado != null) {
+            Map<String, Object> evento = new LinkedHashMap<>(guardado);
+            evento.put("propiedad_id", id);
+            workflows.triggerEvent(String.valueOf(p.get("user_id")), "lead_creado", evento);
+        }
 
         model.addAttribute("p", p);
         model.addAttribute("gracias", true);
