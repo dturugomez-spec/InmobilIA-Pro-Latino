@@ -56,17 +56,28 @@ public class SupabaseService {
             // IMPORTANTE: partir del bean `webClient` (que fuerza el resolvedor DNS del JDK
             // vía .mutate()); si usáramos WebClient.builder() nuevo, Reactor Netty usaría su
             // resolvedor async por defecto que FALLA en Railway ("Failed to resolve host").
-            this.supabaseClient = webClient.mutate()
+            WebClient.Builder b = webClient.mutate()
                     .baseUrl(url + "/rest/v1")
                     .defaultHeader("apikey", key)
-                    .defaultHeader("Authorization", "Bearer " + key)
                     .defaultHeader("Content-Type", "application/json")
-                    .defaultHeader("Prefer", "return=representation")
-                    .build();
+                    .defaultHeader("Prefer", "return=representation");
+            if (!esClaveNueva(key)) b.defaultHeader("Authorization", "Bearer " + key);
+            this.supabaseClient = b.build();
+            log.info("Supabase: clave {}", esClaveNueva(key) ? "secreta nueva (sb_secret_)" : "service_role antigua (JWT)");
         } else {
             this.supabaseClient = null;
             log.warn("Supabase desactivado: SUPABASE_URL / SUPABASE_KEY no configurados.");
         }
+    }
+
+    /**
+     * Claves nuevas de Supabase (sb_secret_…, sb_publishable_…): no son JWT y van SOLO en la
+     * cabecera apikey; como "Authorization: Bearer" fallan. Las antiguas (service_role, eyJ…)
+     * van en las dos. Supabase retira las antiguas a finales de 2026 y se pueden desactivar
+     * desde Settings > API Keys (p. ej. si se filtran, como en el incidente de Railway de 10/2026).
+     */
+    public static boolean esClaveNueva(String key) {
+        return key != null && key.trim().startsWith("sb_");
     }
 
     /**

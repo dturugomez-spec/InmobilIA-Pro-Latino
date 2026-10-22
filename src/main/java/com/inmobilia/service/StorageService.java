@@ -65,7 +65,7 @@ public class StorageService {
             webClient.post()
                     .uri(url)
                     .header("apikey", supabaseKey)
-                    .header("Authorization", "Bearer " + supabaseKey)
+                    .headers(h -> { if (!SupabaseService.esClaveNueva(supabaseKey)) h.setBearerAuth(supabaseKey); })
                     .contentType(MediaType.parseMediaType(file.getContentType() != null ? file.getContentType() : "application/octet-stream"))
                     .bodyValue(bytes)
                     .retrieve()
