@@ -61,22 +61,22 @@
     <strong>Dirección:</strong> <span th:text="${prop.get('address')}">—</span><br>
     <strong>Localidad:</strong> <span th:text="${(prop.get('city') ?: '') + ' (' + (prop.get('postal_code') ?: '') + ')'}">—</span><br>
     <strong>Superficie:</strong> <span th:text="${prop.get('area_m2') != null ? prop.get('area_m2') + ' m²' : '—'}">—</span><br>
-    <strong>Clave catastral / folio registral:</strong> <span th:text="${prop.get('referencia_catastral') ?: '________________'}">—</span>
+    <strong>Clave catastral / folio registral:</strong> <span th:text="${prop.get('referencia_catastral') ?: '\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>
 </p>
 <p>El inmueble se destina exclusivamente a <strong>casa habitación</strong> del ARRENDATARIO y su familia.</p>
 
 <h2>SEGUNDA · DURACIÓN</h2>
-<p>El presente contrato inicia el <strong th:text="${contrato.get('start_date') != null ? #strings.substring(contrato.get('start_date'),0,10) : '________'}">—</strong> y finaliza el <strong th:text="${contrato.get('end_date') != null ? #strings.substring(contrato.get('end_date'),0,10) : '________'}">—</strong>.</p>
+<p>El presente contrato inicia el <strong th:text="${contrato.get('start_date') != null ? #strings.substring(contrato.get('start_date'),0,10) : '\_\_\_\_\_\_\_\_'}">—</strong> y finaliza el <strong th:text="${contrato.get('end_date') != null ? #strings.substring(contrato.get('end_date'),0,10) : '\_\_\_\_\_\_\_\_'}">—</strong>.</p>
 <p>Si ninguna de las partes comunica por escrito su voluntad de no renovarlo con al menos <strong>treinta (30) días</strong> de anticipación a su vencimiento, las partes podrán acordar su prórroga en los términos que permita la ley aplicable.</p>
 
 <h2>TERCERA · RENTA</h2>
-<p>La renta mensual pactada es de <strong th:text="${contrato.get('rent') != null ? contrato.get('rent') + ' ' + mon : '________ ' + mon}">—</strong> (<em>importe en letra</em>), pagadera por mensualidades anticipadas dentro de los cinco primeros días de cada mes mediante transferencia bancaria a la cuenta indicada por el ARRENDADOR.</p>
+<p>La renta mensual pactada es de <strong th:text="${contrato.get('rent') != null ? contrato.get('rent') + ' ' + mon : '\_\_\_\_\_\_\_\_ ' + mon}">—</strong> (<em>importe en letra</em>), pagadera por mensualidades anticipadas dentro de los cinco primeros días de cada mes mediante transferencia bancaria a la cuenta indicada por el ARRENDADOR.</p>
 
 <h2>CUARTA · AJUSTE DE LA RENTA</h2>
 <p>La renta se ajustará cada doce meses conforme al índice de inflación oficial del país (o la unidad de cuenta pactada, como UF, UVA o UVR), dentro de los límites que establezca la ley aplicable, mediante notificación escrita.</p>
 
 <h2>QUINTA · DEPÓSITO EN GARANTÍA</h2>
-<p>El ARRENDATARIO entrega en este acto, en concepto de <strong>depósito en garantía</strong>, la cantidad de <strong th:text="${contrato.get('deposit') != null ? contrato.get('deposit') + ' ' + mon : '________ ' + mon}">—</strong>.</p>
+<p>El ARRENDATARIO entrega en este acto, en concepto de <strong>depósito en garantía</strong>, la cantidad de <strong th:text="${contrato.get('deposit') != null ? contrato.get('deposit') + ' ' + mon : '\_\_\_\_\_\_\_\_ ' + mon}">—</strong>.</p>
 <p>El depósito será devuelto al ARRENDATARIO a la terminación del contrato, una vez comprobado el estado del inmueble y el pago de rentas, servicios y cuotas pendientes.</p>
 
 <h2>SEXTA · GASTOS Y SERVICIOS</h2>

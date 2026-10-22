@@ -9,7 +9,7 @@
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 max-w-2xl space-y-3">
     <select id="prop" class="w-full px-3 py-2 text-sm border rounded">
         <option value="">— Selecciona propiedad —</option>
-        <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}">—</option>
+        <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('name') ?: p.get('address')}">—</option>
     </select>
     <div class="grid grid-cols-3 gap-2">
         <select id="objetivo" class="px-3 py-2 text-sm border rounded">
@@ -34,16 +34,26 @@ async function generar() {
     fd.append('objetivo', document.getElementById('objetivo').value);
     fd.append('tono', document.getElementById('tono').value);
     fd.append('longitud', document.getElementById('longitud').value);
-    document.getElementById('resultado').value = '⏳ Generando...';
-    const res = await fetch('/descripcion-ia/generar/' + propId, {method:'POST', body: fd});
-    const d = await res.json();
-    document.getElementById('resultado').value = d.descripcion || d.error;
+    const out = document.getElementById('resultado');
+    out.value = '⏳ Generando...';
+    try {
+        const res = await fetch('/descripcion-ia/generar/' + propId, {method:'POST', body: fd});
+        const d = await res.json();
+        out.value = d.descripcion || d.error || 'No se pudo generar. Inténtalo de nuevo.';
+    } catch (e) {
+        out.value = 'No se pudo conectar. Recarga la página e inténtalo de nuevo.';
+    }
 }
 async function aplicar() {
-    const propId = document.getElementById('prop').value; if (!propId) return;
+    const propId = document.getElementById('prop').value; if (!propId) return alert('Selecciona propiedad');
     const desc = document.getElementById('resultado').value;
-    await fetch('/descripcion-ia/aplicar/' + propId, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({descripcion: desc})});
-    alert(' Descripción aplicada');
+    try {
+        const res = await fetch('/descripcion-ia/aplicar/' + propId, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({descripcion: desc})});
+        const d = await res.json();
+        alert(d.ok ? 'Descripción guardada en la ficha del inmueble' : (d.error || 'No se pudo guardar'));
+    } catch (e) {
+        alert('No se pudo guardar. Inténtalo de nuevo.');
+    }
 }
 </script>
 </div></body></html>

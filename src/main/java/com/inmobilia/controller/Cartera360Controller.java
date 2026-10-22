@@ -28,18 +28,27 @@ public class Cartera360Controller {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
 
-        if (q != null && !q.isBlank()) {
-            // Buscar en leads, inquilinos y propietarios
-            String filter = "user_id=eq." + uid + "&or=(nombre.ilike.*" + q + "*,email.ilike.*" + q + "*,telefono.ilike.*" + q + "*)";
-            List<Map<String, Object>> leads = supabase.selectFilter("leads", filter);
-            List<Map<String, Object>> inquilinos = supabase.selectFilter("inquilinos", filter);
-            List<Map<String, Object>> propietarios = supabase.selectFilter("propietarios", filter);
-            model.addAttribute("leads", leads);
-            model.addAttribute("inquilinos", inquilinos);
-            model.addAttribute("propietarios", propietarios);
-        }
+        // Sin búsqueda: los clientes más recientes (antes la pantalla salía vacía)
+        String texto = q == null ? "" : q.replaceAll("[,()*\\\\]", " ").trim();
+        model.addAttribute("leads", buscarEn("leads", uid, texto, "nombre", "telefono"));
+        // Los inquilinos guardan name/phone: con nombre/telefono la búsqueda fallaba siempre
+        model.addAttribute("inquilinos", buscarEn("inquilinos", uid, texto, "name", "phone"));
+        model.addAttribute("propietarios", buscarEn("propietarios", uid, texto, "nombre", "telefono"));
         model.addAttribute("q", q);
+        model.addAttribute("buscando", !texto.isEmpty());
         return "cartera_buscar";
+    }
+
+    private List<Map<String, Object>> buscarEn(String tabla, String uid, String texto, String colNombre, String colTelefono) {
+        String filtro = "user_id=eq." + uid + (texto.isEmpty() ? ""
+                : "&or=(" + colNombre + ".ilike.*" + texto + "*,email.ilike.*" + texto + "*," + colTelefono + ".ilike.*" + texto + "*)")
+                + "&order=created_at.desc&limit=" + (texto.isEmpty() ? 12 : 60);
+        List<Map<String, Object>> filas = supabase.selectFilter(tabla, filtro);
+        for (Map<String, Object> f : filas) {
+            f.putIfAbsent("nombre", f.get(colNombre));
+            f.putIfAbsent("telefono", f.get(colTelefono));
+        }
+        return filas;
     }
 
     @GetMapping("/cliente/{tipo}/{id}")
@@ -57,6 +66,9 @@ public class Cartera360Controller {
         List<Map<String, Object>> rows = supabase.selectFilter(tabla, "id=eq." + id + "&user_id=eq." + uid);
         if (rows.isEmpty()) return "redirect:/cartera";
         Map<String, Object> cliente = rows.get(0);
+        // Inquilinos: name/phone
+        cliente.putIfAbsent("nombre", cliente.get("name"));
+        if (cliente.get("telefono") == null) cliente.put("telefono", cliente.get("phone"));
         String email = String.valueOf(cliente.get("email"));
         String telefono = String.valueOf(cliente.get("telefono"));
 
@@ -86,10 +98,10 @@ public class Cartera360Controller {
         }
 
         // Facturas
-        for (Map<String, Object> f : supabase.selectFilter("facturas",
+        for (Map<String, Object> f : supabase.selectFilter("invoices",
                 "user_id=eq." + uid + "&cliente_email=eq." + email + "&order=fecha.desc&limit=20")) {
-            timeline.add(evento("factura", "Factura " + f.get("numero"),
-                    f.get("total") + (" " + PaisActual.moneda() + " - ") + f.get("estado"), String.valueOf(f.get("fecha"))));
+            timeline.add(evento("factura", "Factura " + (f.get("full_number") != null ? f.get("full_number") : f.get("numero")),
+                    f.get("total") + (" " + PaisActual.moneda() + " - ") + f.get("status"), String.valueOf(f.get("fecha"))));
         }
 
         // WhatsApp
@@ -146,7 +158,7 @@ public class Cartera360Controller {
         m.put("tipo", tipo);
         m.put("titulo", titulo);
         m.put("detalle", detalle);
-        m.put("fecha", fecha);
+        m.put("fecha", fecha == null || "null".equals(fecha) ? "" : fecha);
         return m;
     }
 }

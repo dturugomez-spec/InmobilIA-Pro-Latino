@@ -60,19 +60,18 @@ public class PropertyDescriptionAIController {
                 "Genera una descripción SEO en español para anuncio de " + objetivo + ", tono " + tono +
                 ", máx " + longitud + " palabras. Incluye llamada a la acción. Sin clichés.";
 
-        try {
-            String desc = ai.call(null, prompt, "Eres copywriter inmobiliario experto en SEO. Persuasivo y conciso.", longitud * 3, uid);
-            return Map.of("ok", true, "descripcion", desc);
-        } catch (Exception e) {
-            return Map.of("ok", false, "error", e.getMessage());
-        }
+        String desc = ai.call(null, prompt, "Eres copywriter inmobiliario experto en SEO. Persuasivo y conciso.", longitud * 3, uid);
+        return ai.respuesta("descripcion", desc, uid);
     }
 
     @PostMapping("/aplicar/{propId}")
     @ResponseBody
     public Map<String, Object> aplicar(@PathVariable String propId, @RequestBody Map<String, String> body, HttpSession session) {
-        if (SessionUtils.uid(session) == null) return Map.of("ok", false);
-        supabase.update("propiedades", propId, Map.of("notes", body.get("descripcion")));
-        return Map.of("ok", true);
+        String uid = SessionUtils.uid(session);
+        if (uid == null) return Map.of("ok", false);
+        String desc = body.get("descripcion");
+        if (desc == null || desc.isBlank()) return Map.of("ok", false, "error", "No hay descripción que aplicar");
+        // Con el uid: antes se podía escribir en la ficha de un inmueble de otra inmobiliaria
+        return Map.of("ok", supabase.update("propiedades", propId, Map.of("notes", desc), uid));
     }
 }

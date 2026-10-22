@@ -61,7 +61,7 @@
                         <span th:case="'expirado'" class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-300 text-slate-700">Expirado</span>
                     </span>
                 </td>
-                <td class="px-4 py-3 font-mono text-[10px] text-slate-500" th:text="${#strings.substring(d.get('documento_hash'), 0, 12)} + '...'">—</td>
+                <td class="px-4 py-3 font-mono text-[10px] text-slate-500" th:text="${#strings.abbreviate(d.get('documento_hash'), 15)}">—</td>
                 <td class="px-4 py-3 text-xs font-mono" th:text="${d.get('fecha_envio') != null ? #strings.substring(d.get('fecha_envio'), 0, 10) : '—'}">—</td>
                 <td class="px-4 py-3 text-right">
                     <a th:href="@{|/firmas/${d.get('id')}|}" class="text-xs text-blue-700 hover:underline">Ver</a>

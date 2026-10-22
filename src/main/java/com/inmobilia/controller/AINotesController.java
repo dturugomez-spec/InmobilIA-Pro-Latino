@@ -23,7 +23,11 @@ public class AINotesController {
 
     @GetMapping
     public String panel(HttpSession session, Model model) {
-        if (SessionUtils.uid(session) == null) return "redirect:/login";
+        String uid = SessionUtils.uid(session);
+        if (uid == null) return "redirect:/login";
+        // Antes había que escribir a mano el ID interno del lead: ahora se elige de la lista
+        model.addAttribute("leads", supabase.selectFilter("leads",
+                "select=id,nombre,etapa&user_id=eq." + uid + "&order=created_at.desc&limit=300"));
         return "ai_notes";
     }
 
@@ -31,10 +35,10 @@ public class AINotesController {
     @ResponseBody
     public Map<String, Object> resumirLead(@PathVariable String id, HttpSession session) {
         String uid = SessionUtils.uid(session);
-        if (uid == null) return Map.of("ok", false);
+        if (uid == null) return Map.of("ok", false, "error", "Tu sesión ha caducado. Vuelve a entrar.");
 
         List<Map<String, Object>> leads = supabase.selectFilter("leads", "id=eq." + id + "&user_id=eq." + uid);
-        if (leads.isEmpty()) return Map.of("ok", false);
+        if (leads.isEmpty()) return Map.of("ok", false, "error", "Elige un lead de la lista.");
         Map<String, Object> lead = leads.get(0);
 
         List<Map<String, Object>> ints = supabase.selectFilter("lead_interacciones", "lead_id=eq." + id + "&order=created_at.desc");
@@ -55,12 +59,8 @@ public class AINotesController {
         for (Map<String, Object> v : visitas) ctx.append("- ").append(v.get("fecha_inicio")).append(" (").append(v.get("estado")).append(")\n");
 
         String prompt = ctx + "\n\nResume en español (máx. 150 palabras): perfil, etapa del embudo, próxima acción recomendada.";
-        try {
-            String resumen = ai.call(null, prompt, "Eres analista CRM senior. Conciso y accionable.", 300, uid);
-            return Map.of("ok", true, "resumen", resumen);
-        } catch (Exception e) {
-            return Map.of("ok", false, "error", e.getMessage());
-        }
+        String resumen = ai.call(null, prompt, "Eres analista CRM senior. Conciso y accionable.", 300, uid);
+        return ai.respuesta("resumen", resumen, uid);
     }
 
     @PostMapping("/sugerir-respuesta")
@@ -74,11 +74,8 @@ public class AINotesController {
 
         String prompt = "Mensaje recibido del cliente:\n\"" + mensaje + "\"\n\n" +
                 "Redacta una respuesta breve (máx 80 palabras) en tono " + tono + " para un agente inmobiliario.";
-        try {
-            String resp = ai.call(null, prompt, "Eres redactor experto en comunicación inmobiliaria.", 200, uid);
-            return Map.of("ok", true, "respuesta", resp);
-        } catch (Exception e) {
-            return Map.of("ok", false, "error", e.getMessage());
-        }
+        if (mensaje == null || mensaje.isBlank()) return Map.of("ok", false, "error", "Pega el mensaje del cliente");
+        String resp = ai.call(null, prompt, "Eres redactor experto en comunicación inmobiliaria.", 200, uid);
+        return ai.respuesta("respuesta", resp, uid);
     }
 }

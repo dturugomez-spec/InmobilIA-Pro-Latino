@@ -122,7 +122,7 @@ public class CustomDashboardController {
         datos.put("kpi_visitas_mes", visitasMes);
 
         // Facturas pagadas mes
-        List<Map<String, Object>> facturas = supabase.selectFilter("facturas", "user_id=eq." + uid);
+        List<Map<String, Object>> facturas = supabase.selectFilter("invoices", "select=fecha,total,status&user_id=eq." + uid + "&status=neq.Anulada");
         double facturadoMes = facturas.stream()
                 .filter(f -> String.valueOf(f.get("fecha")).startsWith(mesActual))
                 .mapToDouble(f -> nd(f.get("total"))).sum();

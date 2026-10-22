@@ -50,7 +50,7 @@ public class TagController {
     @ResponseBody
     public Map<String, Object> delete(@PathVariable String id, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return Map.of("ok", false);
-        return Map.of("ok", supabase.delete("tags", id, SessionUtils.uid(session)));
+        return Map.of("ok", supabase.deleteDe("tags", id, "org_id", SessionUtils.uid(session)));
     }
 
     // ─── Asociación con entidades ───

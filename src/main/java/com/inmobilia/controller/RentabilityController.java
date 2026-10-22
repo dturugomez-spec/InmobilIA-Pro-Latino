@@ -221,7 +221,12 @@ public class RentabilityController {
         data.put("updated_at", OffsetDateTime.now().toString());
 
         Map<String, Object> saved = supabase.insert("analisis_rentabilidad", data);
-        return Map.of("ok", true, "id", saved.getOrDefault("id", ""));
+        if (saved == null || saved.get("id") == null) return Map.of("ok", false, "error", "No se pudo guardar");
+        return Map.of("ok", true, "id", saved.get("id"));
+    }
+
+    public static double acotar(Object v) {
+        return Math.max(-999.99, Math.min(999.99, round(pd(v))));
     }
 
     /** TIR simplificada por bisección sobre el flujo de caja anual + valor residual. */

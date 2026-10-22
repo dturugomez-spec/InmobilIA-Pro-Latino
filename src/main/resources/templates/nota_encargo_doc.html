@@ -24,21 +24,21 @@
     <h1 class="text-center text-2xl font-bold mb-1" style="letter-spacing:.02em">NOTA DE ENCARGO DE VENTA</h1>
     <p class="text-center text-sm text-slate-500 mb-8" th:text="${#bools.isTrue(n.get('exclusiva')) ? 'En régimen de EXCLUSIVA' : 'Sin exclusiva'}">—</p>
 
-    <p class="text-sm text-slate-600 mb-6">En <span th:text="${agencia.get('city') ?: '____________'}">—</span>, a fecha
-        <span th:text="${n.get('created_at') != null ? #strings.substring(n.get('created_at'), 0, 10) : '____________'}">—</span>.</p>
+    <p class="text-sm text-slate-600 mb-6">En <span th:text="${agencia.get('city') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>, a fecha
+        <span th:text="${n.get('created_at') != null ? #strings.substring(n.get('created_at'), 0, 10) : '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>.</p>
 
     <!-- Partes -->
     <h2 class="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">Reunidos</h2>
     <p class="text-sm mb-3"><strong>De una parte, LA AGENCIA:</strong>
-        <span th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '____________')}">—</span>,
-        con [[${pais.etiquetaIdFiscal()}]] <span th:text="${agencia.get('tax_id') ?: '____________'}">—</span>,
-        domicilio en <span th:text="${agencia.get('address') ?: '____________'}">—</span>
+        <span th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '\_\_\_\_\_\_\_\_\_\_\_\_')}">—</span>,
+        con [[${pais.etiquetaIdFiscal()}]] <span th:text="${agencia.get('tax_id') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>,
+        domicilio en <span th:text="${agencia.get('address') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>
         <span th:if="${agencia.get('city')}" th:text="'(' + ${agencia.get('city')} + ')'"></span>.
     </p>
     <p class="text-sm mb-6"><strong>De otra parte, EL PROPIETARIO:</strong>
-        <span th:text="${n.get('propietario_nombre') ?: '____________'}">—</span>,
-        con [[${pais.etiquetaIdPersonal()}]] <span th:text="${n.get('propietario_dni') ?: '____________'}">—</span>,
-        domicilio en <span th:text="${n.get('propietario_direccion') ?: '____________'}">—</span>.
+        <span th:text="${n.get('propietario_nombre') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>,
+        con [[${pais.etiquetaIdPersonal()}]] <span th:text="${n.get('propietario_dni') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>,
+        domicilio en <span th:text="${n.get('propietario_direccion') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</span>.
     </p>
 
     <!-- Objeto -->
@@ -46,7 +46,7 @@
     <p class="text-sm mb-3">El PROPIETARIO encarga a LA AGENCIA la gestión para la venta del siguiente inmueble:</p>
     <p class="text-sm mb-3 pl-4 border-l-2 border-slate-300" th:text="${n.get('inmueble_texto')}">—</p>
     <p class="text-sm mb-6">Precio de venta fijado:
-        <strong th:text="${n.get('precio') != null ? #numbers.formatInteger(n.get('precio'), 0, 'DEFAULT') + ' ' + mon : '____________'}">—</strong>.
+        <strong th:text="${n.get('precio') != null ? #numbers.formatInteger(n.get('precio'), 0, 'DEFAULT') + ' ' + mon : '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</strong>.
     </p>
 
     <!-- Condiciones -->

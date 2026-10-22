@@ -24,7 +24,7 @@ public class MicrositeController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
 
-        List<Map<String, Object>> rows = supabase.selectFilter("microsites", "user_id=eq." + uid);
+        List<Map<String, Object>> rows = supabase.selectFilter("microsites", "user_id=eq." + uid + "&order=created_at.desc");
         Map<String, Object> ms;
         if (rows.isEmpty()) {
             Map<String, Object> nueva = new LinkedHashMap<>();
@@ -59,7 +59,7 @@ public class MicrositeController {
         data.put("publicado", "on".equals(form.get("publicado")));
         data.put("updated_at", OffsetDateTime.now().toString());
 
-        List<Map<String, Object>> rows = supabase.selectFilter("microsites", "user_id=eq." + uid);
+        List<Map<String, Object>> rows = supabase.selectFilter("microsites", "user_id=eq." + uid + "&order=created_at.desc");
         if (!rows.isEmpty()) supabase.update("microsites", String.valueOf(rows.get(0).get("id")), data);
         SessionUtils.flash(session, "✅ Microsite guardado");
         return "redirect:/microsite/admin";
@@ -82,7 +82,7 @@ public class MicrositeController {
 
         // Propiedades destacadas del usuario
         List<Map<String, Object>> props = supabase.selectFilter("propiedades",
-                "user_id=eq." + ms.get("user_id") + "&publicar_portales=eq.true&limit=6");
+                "user_id=eq." + ms.get("user_id") + "&or=(publicada.is.true,publicar_portales.is.true)&order=created_at.desc&limit=6");
 
         model.addAttribute("ms", ms);
         model.addAttribute("propiedades", props);

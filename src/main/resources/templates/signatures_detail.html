@@ -89,7 +89,7 @@
                     <p class="font-semibold capitalize" th:text="${#strings.replace(a.get('evento'), '_', ' ')}">—</p>
                     <p class="text-slate-500" th:text="${a.get('detalle')}">—</p>
                     <p class="text-[10px] font-mono text-slate-400 mt-1" th:text="${#strings.substring(a.get('created_at'),0,16) + ' · ' + (a.get('ip') ?: 'n/a')}">—</p>
-                    <p class="text-[9px] font-mono text-slate-300" th:text="${'#' + #strings.substring(a.get('hash_actual'),0,12)}">—</p>
+                    <p class="text-[9px] font-mono text-slate-300" th:text="${'#' + #strings.abbreviate(a.get('hash_actual'), 15)}">—</p>
                 </li>
                 <li th:if="${auditoria.isEmpty()}" class="text-slate-500 italic">Sin eventos.</li>
             </ul>

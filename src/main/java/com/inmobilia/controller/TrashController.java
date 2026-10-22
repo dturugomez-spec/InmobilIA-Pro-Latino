@@ -41,7 +41,7 @@ public class TrashController {
 
         // Cada persona ve solo lo borrado de las secciones que puede ver
         String role = SessionUtils.role(session);
-        var rows = supabase.findBy("trash", Map.of("org_id", orgId)).stream()
+        var rows = supabase.selectFilter("trash", "org_id=eq." + orgId + "&order=deleted_at.desc&limit=2000").stream()
                 .filter(t -> {
                     String tabla = String.valueOf(t.get("table_name"));
                     return PermissionService.SECTIONS.contains(tabla)

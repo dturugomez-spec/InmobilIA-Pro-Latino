@@ -80,7 +80,7 @@ public class CrudController {
         Map.entry("vat_pct",         "Ej: 21  (% IVA)"),
         Map.entry("title",           "Ej: Revisar calentador depto. Reforma"),
         Map.entry("description",     "Ej: Inquilino reporta agua tibia en ducha. Llamar a Tecnicos XYZ, tel. 91 ..."),
-        Map.entry("priority",        "Ej: Baja, Media, Alta, Urgente"),
+        Map.entry("priority",        "1 = baja · 2 = media · 3 = alta · 4 = urgente"),
         Map.entry("assigned_to",     "Ej: Carlos (fontaneria)"),
         Map.entry("due_date",        "Ej: 2026-04-30"),
         Map.entry("cost",            "Ej: 180.00"),
@@ -213,7 +213,7 @@ public class CrudController {
             }
             case "tareas" -> {
                 long abiertas = rows.stream().filter(r -> !"Completada".equals(r.get("status"))).count();
-                long urg = rows.stream().filter(r -> "Urgente".equals(r.get("priority"))).count();
+                long urg = rows.stream().filter(r -> com.inmobilia.util.Prioridad.esUrgente(r.get("priority"))).count();
                 out.add(kpi("Abiertas", String.valueOf(abiertas), abiertas > 0 ? "warn" : null));
                 out.add(kpi("Urgentes", String.valueOf(urg), urg > 0 ? "neg" : null));
             }

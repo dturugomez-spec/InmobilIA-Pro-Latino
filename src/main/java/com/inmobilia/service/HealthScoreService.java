@@ -49,7 +49,7 @@ public class HealthScoreService {
         LocalDate today = LocalDate.now();
         for (Map<String, Object> c : contratos) {
             try {
-                String s = (String) c.get("end_date");
+                String s = c.get("end_date") == null ? null : String.valueOf(c.get("end_date"));
                 if (s == null || s.isBlank()) continue;
                 LocalDate ed = LocalDate.parse(s.substring(0, 10), ISO);
                 long days = java.time.temporal.ChronoUnit.DAYS.between(today, ed);
@@ -64,14 +64,11 @@ public class HealthScoreService {
         // 4. Mantenimiento
         List<Map<String, Object>> open = mantenimiento.stream()
                 .filter(m -> {
-                    String st = (String) m.get("status");
+                    Object st = m.get("status");
                     return !"Completado".equals(st) && !"Cerrado".equals(st);
                 }).toList();
         List<Map<String, Object>> highPr = open.stream()
-                .filter(m -> {
-                    String p = (String) m.get("priority");
-                    return "Alta".equals(p) || "Urgente".equals(p);
-                }).toList();
+                .filter(m -> com.inmobilia.util.Prioridad.esAlta(m.get("priority"))).toList();
         int maintScore = Math.max(0, Math.min(20, 20 - highPr.size() * 4 - open.size()));
         if (!highPr.isEmpty()) insights.add(highPr.size() + " ordenes de mantenimiento de alta prioridad pendientes.");
 
@@ -81,7 +78,7 @@ public class HealthScoreService {
         int overdue = 0;
         for (Map<String, Object> t : tasksOpen) {
             try {
-                String d = (String) t.get("due_date");
+                String d = t.get("due_date") == null ? null : String.valueOf(t.get("due_date"));
                 if (d == null || d.isBlank()) continue;
                 LocalDate dd = LocalDate.parse(d.substring(0, 10), ISO);
                 if (dd.isBefore(today)) overdue++;

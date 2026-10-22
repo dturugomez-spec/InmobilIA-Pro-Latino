@@ -124,8 +124,16 @@ public class SupabaseService {
             if (filters != null) {
                 filters.forEach((k, v) -> q.append("&").append(k).append("=eq.").append(v));
             }
+            String sinOrden = q.toString();
             q.append("&order=created_at.desc");
-            return leerTodo(q.toString());
+            try {
+                return leerTodo(q.toString());
+            } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+                // Tablas sin created_at (trash, sms_mensajes, nps_respuestas, referidos…): antes la
+                // consulta entera fallaba y la pantalla salía vacía. Se repite sin ordenar.
+                if (e.getStatusCode().value() == 400 && e.getResponseBodyAsString().contains("created_at")) return leerTodo(sinOrden);
+                throw e;
+            }
         } catch (Exception e) {
             log.error("Error consultando {}: {}", table, e.getMessage());
             return Collections.emptyList();
@@ -142,7 +150,40 @@ public class SupabaseService {
      * filas sin avisar: antes, con más de 1.000 leads o movimientos, los listados salían
      * incompletos y los totales del panel y las exportaciones, mal.
      */
+    /**
+     * Los inmuebles tienen columnas duplicadas de dos épocas: name/address/current_value/bedrooms…
+     * (las que rellenan la app y los formularios) y direccion/precio/habitaciones… (las de
+     * herramientas más nuevas). Muchas pantallas leían las que estaban vacías y pintaban filas y
+     * desplegables en blanco. Al leer, cada inmueble lleva rellenas las dos versiones.
+     */
+    static final String[][] ALIAS_PROPIEDADES = {
+            {"address", "direccion"}, {"current_value", "precio"}, {"bedrooms", "habitaciones"}, {"bathrooms", "banos"},
+            {"area_m2", "metros_cuadrados"}, {"type", "tipo"}, {"city", "municipio"}, {"postal_code", "codigo_postal"},
+            {"year_built", "ano_construccion"}};
+
+    /**
+     * Solo se rellenan columnas que vienen en la fila (existen en la base, aunque vacías): así una
+     * copia de la fila (papelera) nunca lleva columnas que la base no tenga.
+     */
+    static List<Map<String, Object>> conAlias(String uri, List<Map<String, Object>> filas) {
+        if (uri == null || !uri.startsWith("/propiedades?")) return filas;
+        for (Map<String, Object> f : filas) {
+            for (String[] a : ALIAS_PROPIEDADES) {
+                if (f.containsKey(a[0]) && f.get(a[0]) == null && f.get(a[1]) != null) f.put(a[0], f.get(a[1]));
+                if (f.containsKey(a[1]) && f.get(a[1]) == null && f.get(a[0]) != null) f.put(a[1], f.get(a[0]));
+            }
+            // Sin dirección: al menos el nombre del inmueble (y al revés)
+            if (f.containsKey("direccion") && f.get("direccion") == null && f.get("name") != null) f.put("direccion", f.get("name"));
+            if (f.containsKey("name") && f.get("name") == null && f.get("direccion") != null) f.put("name", f.get("direccion"));
+        }
+        return filas;
+    }
+
     List<Map<String, Object>> leerTodo(String uri) throws Exception {
+        return conAlias(uri, leerPaginas(uri));
+    }
+
+    private List<Map<String, Object>> leerPaginas(String uri) throws Exception {
         List<Map<String, Object>> todo = new ArrayList<>();
         for (int offset = 0; offset < MAX_FILAS; offset += PAGINA) {
             String response = supabaseClient.get()
@@ -239,6 +280,54 @@ public class SupabaseService {
         }
     }
 
+    /**
+     * Como update(table, id, data, uid) para tablas cuyo dueño no está en user_id sino en otra
+     * columna (org_id, agency_id…). Con update(…, uid) PostgREST rechazaba el filtro por una
+     * columna inexistente y el cambio no se guardaba nunca.
+     */
+    public boolean updateDe(String table, String id, Map<String, Object> data, String columnaDueno, String dueno) {
+        if (!enabled || dueno == null || dueno.isBlank()) return false;
+        try {
+            supabaseClient.patch()
+                    .uri("/" + table + "?id=eq." + id + "&" + columnaDueno + "=eq." + dueno)
+                    .bodyValue(clean(data, true))
+                    .retrieve()
+                    .onStatus(s -> s.isError(), resp -> resp.bodyToMono(String.class)
+                            .defaultIfEmpty("")
+                            .map(b -> new RuntimeException("HTTP " + resp.statusCode().value() + ": " + b)))
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(15))
+                    .block();
+            lastError = null;
+            return true;
+        } catch (Exception e) {
+            lastError = e.getMessage();
+            log.error("Error actualizando {}: {}", table, e.getMessage());
+            return false;
+        } finally {
+            evictTable(table);
+        }
+    }
+
+    /** Como delete(table, id, uid) para tablas cuyo dueño va en otra columna (org_id…). */
+    public boolean deleteDe(String table, String id, String columnaDueno, String dueno) {
+        if (!enabled || dueno == null || dueno.isBlank()) return false;
+        try {
+            supabaseClient.delete()
+                    .uri("/" + table + "?id=eq." + id + "&" + columnaDueno + "=eq." + dueno)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(15))
+                    .block();
+            return true;
+        } catch (Exception e) {
+            log.error("Error eliminando {}: {}", table, e.getMessage());
+            return false;
+        } finally {
+            evictAllQueries();
+        }
+    }
+
     /** Actualizacion con proteccion IDOR (exige user_id). */
     public boolean update(String table, String id, Map<String, Object> data, String uid) {
         if (!enabled) return false;
@@ -319,7 +408,7 @@ public class SupabaseService {
                     .timeout(Duration.ofSeconds(15))
                     .block();
             if (response == null) return Collections.emptyList();
-            return mapper.readValue(response, new TypeReference<>() {});
+            return conAlias(uri, mapper.readValue(response, new TypeReference<>() {}));
         } catch (Exception e) {
             log.warn("selectFilter {} err: {}", table, e.getMessage());
             return Collections.emptyList();

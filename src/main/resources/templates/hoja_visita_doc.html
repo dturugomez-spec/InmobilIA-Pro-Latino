@@ -25,23 +25,23 @@
 
     <table class="w-full text-sm mb-6">
         <tr><td class="py-1 w-40 text-slate-500">Agencia</td>
-            <td class="py-1 font-semibold" th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '____________')}">—</td></tr>
+            <td class="py-1 font-semibold" th:text="${agencia.get('legal_name') ?: (agencia.get('contact_name') ?: '\_\_\_\_\_\_\_\_\_\_\_\_')}">—</td></tr>
         <tr><td class="py-1 text-slate-500">[[${pais.etiquetaIdFiscal()}]]</td>
-            <td class="py-1" th:text="${agencia.get('tax_id') ?: '____________'}">—</td></tr>
+            <td class="py-1" th:text="${agencia.get('tax_id') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">Fecha de la visita</td>
-            <td class="py-1" th:text="${h.get('fecha_visita') ?: '____________'}">—</td></tr>
+            <td class="py-1" th:text="${h.get('fecha_visita') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
     </table>
 
     <h2 class="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">Datos del visitante</h2>
     <table class="w-full text-sm mb-6">
         <tr><td class="py-1 w-40 text-slate-500">Nombre y apellidos</td>
-            <td class="py-1 font-semibold" th:text="${h.get('visitante_nombre') ?: '____________'}">—</td></tr>
+            <td class="py-1 font-semibold" th:text="${h.get('visitante_nombre') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">[[${pais.etiquetaIdPersonal()}]]</td>
-            <td class="py-1" th:text="${h.get('visitante_dni') ?: '____________'}">—</td></tr>
+            <td class="py-1" th:text="${h.get('visitante_dni') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">Teléfono</td>
-            <td class="py-1" th:text="${h.get('visitante_telefono') ?: '____________'}">—</td></tr>
+            <td class="py-1" th:text="${h.get('visitante_telefono') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
         <tr><td class="py-1 text-slate-500">Email</td>
-            <td class="py-1" th:text="${h.get('visitante_email') ?: '____________'}">—</td></tr>
+            <td class="py-1" th:text="${h.get('visitante_email') ?: '\_\_\_\_\_\_\_\_\_\_\_\_'}">—</td></tr>
     </table>
 
     <h2 class="font-bold text-sm uppercase tracking-wide border-b border-slate-200 pb-1 mb-2">Inmueble visitado</h2>

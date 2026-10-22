@@ -160,6 +160,23 @@ public class AIService {
         } catch (Exception ignored) {}
     }
 
+    /**
+     * Por qué call() devolvió null, en palabras para el usuario. Antes varias herramientas
+     * hacían Map.of("texto", null), reventaban y la pantalla se quedaba en "Generando…".
+     */
+    public String motivoSinRespuesta(String uid) {
+        if (!hasPlatformKey()) return "La IA no está disponible ahora mismo. Si el problema sigue, avisa a soporte.";
+        if (uid != null && getCredits(uid) <= 0)
+            return "Te has quedado sin créditos de IA este mes. Puedes comprar un pack en «Créditos de IA».";
+        return "La IA no ha respondido. Inténtalo de nuevo en unos segundos.";
+    }
+
+    /** Respuesta JSON estándar de una herramienta de IA: {ok, clave: texto} o {ok:false, error}. */
+    public Map<String, Object> respuesta(String clave, String texto, String uid) {
+        if (texto == null || texto.isBlank()) return Map.of("ok", false, "error", motivoSinRespuesta(uid));
+        return Map.of("ok", true, clave, texto);
+    }
+
     public String call(String apiKey, String prompt) {
         return call(apiKey, prompt, "", defaultMaxTokens, null);
     }

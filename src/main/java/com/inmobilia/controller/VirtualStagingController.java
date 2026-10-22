@@ -26,7 +26,7 @@ public class VirtualStagingController {
         List<Map<String, Object>> proyectos = supabase.selectFilter(
                 "staging_proyectos", "user_id=eq." + uid + "&order=created_at.desc");
         model.addAttribute("proyectos", proyectos);
-        model.addAttribute("propiedades", supabase.selectFilter("propiedades", "user_id=eq." + uid));
+        model.addAttribute("propiedades", supabase.selectFilter("propiedades", "user_id=eq." + uid + "&order=created_at.desc"));
         return "virtual_staging";
     }
 

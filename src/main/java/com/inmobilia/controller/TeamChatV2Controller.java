@@ -95,7 +95,7 @@ public class TeamChatV2Controller {
         }
 
         List<Map<String, Object>> miembros = supabase.selectFilter(
-                "users", "org_id=eq." + uid + "&active=eq.true");
+                "users", "or=(organization_id.eq." + uid + ",id.eq." + uid + ")&active=not.is.false&role=neq.tenant_portal");
 
         model.addAttribute("canales", canales);
         model.addAttribute("canalActivo", canalActivo);
@@ -125,7 +125,7 @@ public class TeamChatV2Controller {
         while (mm.find()) {
             String nombre = mm.group(1);
             List<Map<String, Object>> u = supabase.selectFilter(
-                    "users", "org_id=eq." + uid + "&name=ilike.*" + nombre + "*&limit=1");
+                    "users", "organization_id=eq." + uid + "&name=ilike.*" + nombre + "*&limit=1");
             if (!u.isEmpty()) menciones.add(String.valueOf(u.get(0).get("id")));
         }
 

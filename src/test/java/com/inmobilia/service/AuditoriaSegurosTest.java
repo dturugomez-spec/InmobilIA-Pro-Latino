@@ -27,7 +27,7 @@ class AuditoriaSegurosTest {
                 Map.of("id", "s2", "propiedad_id", "p2", "tipo", "impago_alquiler", "estado", "activa",
                         "fecha_vencimiento", LocalDate.now().minusDays(3).toString(), "prima_anual", 540)));
 
-        var informe = new PortfolioAuditService(supabase, mock(OfficialDataService.class)).audit("org1");
+        var informe = new PortfolioAuditService(supabase).audit("org1");
         var sinSeguro = informe.findings().stream().filter(f -> f.code().equals("PROP_SIN_SEGURO")).map(f -> f.entity()).toList();
         assertEquals(List.of("Casa Alcalá"), sinSeguro, "Gran Vía y Atocha tienen póliza: solo Alcalá está sin asegurar");
         var vencida = informe.findings().stream().filter(f -> f.code().equals("SEGURO_VENCIDO")).findFirst().orElseThrow();

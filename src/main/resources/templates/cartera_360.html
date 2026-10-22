@@ -57,7 +57,7 @@
             <div class="flex-1 min-w-0">
                 <p class="font-semibold text-sm" th:text="${t.get('titulo')}">—</p>
                 <p class="text-xs text-slate-500" th:text="${t.get('detalle')}">—</p>
-                <p class="text-[10px] text-slate-400 mt-1 font-mono" th:text="${#strings.substring(t.get('fecha'), 0, 16)}">—</p>
+                <p class="text-[10px] text-slate-400 mt-1 font-mono" th:text="${#strings.length(t.get('fecha')) > 16 ? #strings.replace(#strings.substring(t.get('fecha'), 0, 16), 'T', ' ') : t.get('fecha')}">—</p>
             </div>
         </li>
         <li th:if="${timeline.isEmpty()}" class="text-center text-slate-400 text-sm py-12 italic">Sin actividad registrada todavía</li>

@@ -57,7 +57,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un director de inversiones inmobiliarias.", 1500, SessionUtils.uid(session));
         model.addAttribute("page", "Analizador de Operaciones IA");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         model.addAttribute("contexto", contexto);
         model.addAttribute("precio", precio);
         model.addAttribute("rentaMensual", rentaMensual);
@@ -100,7 +100,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un abogado inmobiliario experto.", 2000, SessionUtils.uid(session));
         model.addAttribute("page", "Lector IA de Contratos");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         return "ia/contratos";
     }
 
@@ -121,7 +121,7 @@ public class AIToolsController {
                 1200, SessionUtils.uid(session));
         model.addAttribute("page", "Asistente Inmobiliario IA");
         model.addAttribute("pregunta", pregunta);
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         return "ia/asistente";
     }
 
@@ -182,7 +182,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un portfolio manager de fondos inmobiliarios.", 2500, SessionUtils.uid(session));
         model.addAttribute("page", "Informe de Inversion");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         model.addAttribute("propiedad", propiedad);
         return "ia/memo";
     }
@@ -212,7 +212,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un creative director de real estate.", 1200, SessionUtils.uid(session));
         model.addAttribute("page", "Marketing & Captacion IA");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         return "ia/marketing";
     }
 
@@ -239,7 +239,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un analista del mercado inmobiliario de " + com.inmobilia.util.PaisActual.get().nombre() + ".", 1500, SessionUtils.uid(session));
         model.addAttribute("page", "Analisis de Zona y Mercado");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         model.addAttribute("zona", zona);
         return "ia/zona";
     }
@@ -278,7 +278,7 @@ public class AIToolsController {
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un Director de Due Diligence.", 2200, SessionUtils.uid(session));
         model.addAttribute("page", "Due Diligence Asistido");
-        model.addAttribute("result", res);
+        model.addAttribute("result", res != null ? res : "⚠️ " + ai.motivoSinRespuesta(SessionUtils.uid(session)));
         return "ia/due_diligence";
     }
 }

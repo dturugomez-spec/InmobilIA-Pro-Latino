@@ -26,8 +26,32 @@ public class KanbanController {
     private final SupabaseService supabase;
     private final PermissionService permissions;
 
-    private static final List<String> ETAPAS_LEADS = List.of("Nuevo", "Contactado", "Visita", "Oferta", "Cerrado", "Perdido");
+    private static final List<String> ETAPAS_LEADS = List.of("Nuevo", "Contactado", "Cualificado", "Visita", "Oferta", "Cerrado", "Perdido");
     private static final List<String> ETAPAS_OPORTUNIDADES = List.of("Nuevo", "Análisis", "Negociación", "Cerrado", "Descartado");
+
+    /**
+     * Columna del tablero para un estado. Antes, una tarjeta cuyo estado no coincidía letra a
+     * letra con una columna ("Analizando", "Negociando", "Cualificado"…, escritos en la ficha o
+     * por una automatización) no salía en ninguna columna: desaparecía del tablero.
+     */
+    static String columna(Object valor, List<String> etapas) {
+        String v = plano(valor);
+        if (v.isEmpty() || v.equals("null")) return etapas.get(0);
+        for (String e : etapas) if (plano(e).equals(v)) return e;
+        String raiz = v.substring(0, Math.min(5, v.length()));
+        for (String e : etapas) if (plano(e).startsWith(raiz)) return e;
+        String[][] sinonimos = {{"ganad", "Cerrado"}, {"vendid", "Cerrado"}, {"escritur", "Cerrado"}, {"firmad", "Cerrado"},
+                {"comprad", "Cerrado"}, {"alquilad", "Cerrado"}, {"perdid", "Perdido"}, {"caid", "Perdido"}, {"rechaz", "Perdido"},
+                {"descart", "Perdido"}, {"perdid", "Descartado"}, {"caid", "Descartado"}, {"rechaz", "Descartado"},
+                {"calif", "Cualificado"}, {"llamad", "Contactado"}, {"estudi", "Análisis"}, {"revis", "Análisis"}};
+        for (String[] s : sinonimos) if (v.startsWith(s[0]) && etapas.contains(s[1])) return s[1];
+        return etapas.get(0);
+    }
+
+    private static String plano(Object o) {
+        return java.text.Normalizer.normalize(String.valueOf(o == null ? "" : o), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "").toLowerCase().trim();
+    }
 
     // ─── KANBAN LEADS ───
     @GetMapping("/leads")
@@ -42,11 +66,7 @@ public class KanbanController {
         // Agrupar por etapa
         Map<String, List<Map<String, Object>>> byEtapa = new LinkedHashMap<>();
         for (String e : ETAPAS_LEADS) byEtapa.put(e, new ArrayList<>());
-        for (var r : rows) {
-            String etapa = String.valueOf(r.getOrDefault("etapa", "Nuevo"));
-            if (etapa.isBlank() || etapa.equals("null")) etapa = "Nuevo";
-            byEtapa.computeIfAbsent(etapa, k -> new ArrayList<>()).add(r);
-        }
+        for (var r : rows) byEtapa.get(columna(r.get("etapa"), ETAPAS_LEADS)).add(r);
 
         // Ordenar dentro de cada columna por score descendente
         byEtapa.values().forEach(list -> list.sort((a, b) -> {
@@ -85,11 +105,7 @@ public class KanbanController {
 
         Map<String, List<Map<String, Object>>> byEtapa = new LinkedHashMap<>();
         for (String e : ETAPAS_OPORTUNIDADES) byEtapa.put(e, new ArrayList<>());
-        for (var r : rows) {
-            String etapa = String.valueOf(r.getOrDefault("status", "Nuevo"));
-            if (etapa.isBlank() || etapa.equals("null")) etapa = "Nuevo";
-            byEtapa.computeIfAbsent(etapa, k -> new ArrayList<>()).add(r);
-        }
+        for (var r : rows) byEtapa.get(columna(r.get("status"), ETAPAS_OPORTUNIDADES)).add(r);
 
         byEtapa.values().forEach(list -> list.sort((a, b) ->
             Double.compare(parseDouble(b.get("price")), parseDouble(a.get("price")))));

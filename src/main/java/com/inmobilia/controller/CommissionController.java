@@ -100,8 +100,8 @@ public class CommissionController {
         if ("Pagada".equalsIgnoreCase(status)) {
             upd.put("paid_date", java.time.LocalDate.now().toString());
         }
-        supabase.update("commissions", id, upd, orgId);
-        SessionUtils.flash(session, "Comisión marcada como " + status);
+        boolean ok = supabase.updateDe("commissions", id, upd, "org_id", orgId);
+        SessionUtils.flash(session, ok ? "Comisión marcada como " + status : "No se pudo cambiar el estado de la comisión.");
         return "redirect:/commissions";
     }
 

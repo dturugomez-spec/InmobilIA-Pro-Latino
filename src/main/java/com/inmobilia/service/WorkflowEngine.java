@@ -282,7 +282,7 @@ public class WorkflowEngine {
 
     private String pickLeastBusyAgent(String userId) {
         List<Map<String, Object>> agentes = supabase.selectFilter(
-                "users", "org_id=eq." + userId + "&active=eq.true&role=in.(comercial,director)");
+                "users", "organization_id=eq." + userId + "&active=eq.true&role=in.(comercial,director)");
         if (agentes.isEmpty()) return null;
         // Contar tareas activas de cada uno
         String mejor = null;

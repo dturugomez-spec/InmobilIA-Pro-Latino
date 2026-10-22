@@ -18,7 +18,8 @@ class PortalCompradorAislamientoTest {
 
     private final SupabaseService supabase = mock(SupabaseService.class);
     private final PortalCompradorController ctrl =
-            new PortalCompradorController(supabase, mock(NotificationService.class), mock(BrandingService.class));
+            new PortalCompradorController(supabase, mock(com.inmobilia.service.PaisService.class),
+                    mock(NotificationService.class), mock(BrandingService.class));
     private final MockHttpSession sesion = new MockHttpSession();
 
     PortalCompradorAislamientoTest() {

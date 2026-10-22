@@ -120,7 +120,7 @@ public class VisitsController {
         if (uid == null) return "redirect:/login";
         model.addAttribute("propiedades", supabase.selectFilter("propiedades", "user_id=eq." + uid));
         model.addAttribute("leads", supabase.selectFilter("leads", "user_id=eq." + uid));
-        model.addAttribute("agentes", supabase.selectFilter("users", "org_id=eq." + uid + "&active=eq.true"));
+        model.addAttribute("agentes", supabase.selectFilter("users", "or=(organization_id.eq." + uid + ",id.eq." + uid + ")&active=not.is.false&role=neq.tenant_portal"));
         model.addAttribute("preseleccion", Map.of(
                 "propiedad_id", propiedadId != null ? propiedadId : "",
                 "lead_id", leadId != null ? leadId : ""

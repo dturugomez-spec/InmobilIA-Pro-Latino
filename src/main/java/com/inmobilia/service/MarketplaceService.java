@@ -183,8 +183,8 @@ public class MarketplaceService {
         }
 
         try {
-            supabase.update("tinder_swipes", swipeId,
-                    Map.of("matched", true, "matched_at", OffsetDateTime.now().toString()), agencyId);
+            supabase.updateDe("tinder_swipes", swipeId,
+                    Map.of("matched", true, "matched_at", OffsetDateTime.now().toString()), "agency_id", agencyId);
         } catch (Exception ignored) {}
 
         notif.create(agencyId, "💞 Match confirmado",

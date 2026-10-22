@@ -25,8 +25,9 @@ public class TeamPerformanceController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
 
-        // Miembros del equipo (la org = agentes con org_id=uid + el propio admin)
-        List<Map<String, Object>> miembros = safe("users", "or=(org_id.eq." + uid + ",id.eq." + uid + ")&limit=100");
+        // Miembros del equipo: el titular + empleados (organization_id). Antes filtraba por
+        // users.org_id, que no existe: la consulta fallaba y la pantalla salía vacía.
+        List<Map<String, Object>> miembros = safe("users", "or=(organization_id.eq." + uid + ",id.eq." + uid + ")&role=neq.tenant_portal&limit=100");
 
         List<Map<String, Object>> leads = safe("leads", "user_id=eq." + uid + "&limit=2000");
         List<Map<String, Object>> visitas = safe("visitas", "user_id=eq." + uid + "&limit=2000");
@@ -39,7 +40,8 @@ public class TeamPerformanceController {
             if (ag.isBlank() || "null".equals(ag)) { sinAsignar++; continue; }
             long[] s = porAgente.computeIfAbsent(ag, k -> new long[3]);
             s[0]++;
-            if ("Firmado".equalsIgnoreCase(str(l.get("etapa")))) s[1]++;
+            String etapa = str(l.get("etapa")).toLowerCase();
+            if (etapa.startsWith("cerrad") || etapa.startsWith("firmad") || etapa.startsWith("ganad")) s[1]++;
         }
         for (Map<String, Object> v : visitas) {
             String ag = str(v.get("agente_id"));

@@ -137,8 +137,8 @@ public class TenantPortalController {
         }
 
         // Marcar invite como aceptada
-        supabase.update("tenant_invites", String.valueOf(invite.get("id")),
-                Map.of("accepted_at", OffsetDateTime.now().toString()), orgId);
+        supabase.updateDe("tenant_invites", String.valueOf(invite.get("id")),
+                Map.of("accepted_at", OffsetDateTime.now().toString()), "org_id", orgId);
 
         // Auto-login (sesión nueva)
         req.changeSessionId();
@@ -260,9 +260,11 @@ public class TenantPortalController {
         upd.put("response", response);
         upd.put("status", status);
         upd.put("responded_at", OffsetDateTime.now().toString());
-        supabase.update("tenant_requests", id, upd, orgId);
+        // tenant_requests no tiene user_id (va por org_id): update(…, orgId) filtraba por una columna
+        // que no existe y la respuesta nunca se guardaba. Se comprueba la inmobiliaria antes.
+        boolean ok = supabase.updateDe("tenant_requests", id, upd, "org_id", orgId);
 
-        SessionUtils.flash(session, "Respondido al inquilino");
+        SessionUtils.flash(session, ok ? "Respondido al inquilino" : "No se pudo guardar la respuesta. Inténtalo de nuevo.");
         return "redirect:/admin/tenant-requests";
     }
 

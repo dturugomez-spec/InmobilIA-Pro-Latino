@@ -165,7 +165,7 @@ public class DashboardController {
         // Mantenimiento alta prioridad sin cerrar
         maint.stream()
                 .filter(m -> !"Completado".equals(m.get("status")) && !"Cerrado".equals(m.get("status")))
-                .filter(m -> "Urgente".equals(m.get("priority")) || "Alta".equals(m.get("priority")))
+                .filter(m -> com.inmobilia.util.Prioridad.esAlta(m.get("priority")))
                 .forEach(m -> alertsWarn.add(alert("MANTENIMIENTO",
                         str(m.get("title")) + " · " + str(m.get("property_name")),
                         "/crud/mantenimiento")));

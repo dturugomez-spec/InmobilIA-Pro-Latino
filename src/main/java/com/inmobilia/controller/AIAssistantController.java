@@ -53,15 +53,10 @@ public class AIAssistantController {
                 "PREGUNTA: " + question + "\n\n" +
                 "RESPUESTA (máximo 4 frases, con cifras concretas si las hay):";
 
-        try {
-            String answer = aiService.call(null, prompt,
-                    "Eres un asistente experto en gestión inmobiliaria. Responde SIEMPRE en español, conciso, con cifras.",
-                    600, uid);
-            return Map.of("ok", true, "answer", answer);
-        } catch (Exception e) {
-            log.error("AI error: {}", e.getMessage());
-            return Map.of("ok", false, "error", "Error consultando IA: " + e.getMessage());
-        }
+        String answer = aiService.call(null, prompt,
+                "Eres un asistente experto en gestión inmobiliaria. Responde SIEMPRE en español, conciso, con cifras.",
+                600, uid);
+        return aiService.respuesta("answer", answer, uid);
     }
 
     private String buildContext(String orgId) {
