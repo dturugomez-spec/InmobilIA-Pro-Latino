@@ -47,6 +47,12 @@ public class EmailService {
     }
 
     public SendResult send(SmtpConfig cfg, String to, String subject, String body) {
+        // Direcciones de ejemplo (datos de demostración, pruebas): no se envían. Cada rebote
+        // contra example.com resta reputación al dominio de envío.
+        if (esDireccionDeEjemplo(to)) {
+            log.info("Email a dirección de ejemplo omitido: {}", to);
+            return new SendResult(false, "Dirección de ejemplo: no se envía");
+        }
         // Si hay Resend y no se pasó una config SMTP propia del cliente → enviar por API HTTP
         if ((cfg == null || !cfg.valid()) && resendKey != null && !resendKey.isBlank()) {
             return sendViaResend(to, subject, body);
@@ -93,6 +99,15 @@ public class EmailService {
     }
 
     /** Envío vía API HTTP de Resend (https://resend.com) — puerto 443, sin SMTP. */
+    /** Dominios reservados para ejemplos y pruebas (RFC 2606): nadie real los recibe. */
+    public static boolean esDireccionDeEjemplo(String to) {
+        if (to == null) return false;
+        String d = to.trim().toLowerCase(java.util.Locale.ROOT).replaceAll(".*@", "").replaceAll("[>\\s]+$", "");
+        return d.equals("example.com") || d.equals("example.net") || d.equals("example.org")
+                || d.endsWith(".example.com") || d.endsWith(".example") || d.endsWith(".test")
+                || d.endsWith(".invalid") || d.endsWith(".localhost");
+    }
+
     private SendResult sendViaResend(String to, String subject, String body) {
         try {
             // Si el cuerpo no parece HTML, lo convertimos (saltos de línea → <br>) para que se lea bien

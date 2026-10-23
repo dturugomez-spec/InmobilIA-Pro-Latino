@@ -242,6 +242,32 @@ public class SupabaseService {
         } catch (Exception ignored) { }
     }
 
+    /** Inserta varias filas en una sola llamada. true si se guardaron. */
+    public boolean insertarVarios(String table, List<Map<String, Object>> filas) {
+        if (!enabled || filas == null || filas.isEmpty()) return filas != null && filas.isEmpty();
+        try {
+            List<Map<String, Object>> limpias = filas.stream().map(f -> clean(f, false)).toList();
+            supabaseClient.post()
+                    .uri("/" + table)
+                    .bodyValue(limpias)
+                    .retrieve()
+                    .onStatus(s -> s.isError(), resp -> resp.bodyToMono(String.class)
+                            .defaultIfEmpty("")
+                            .map(b -> new RuntimeException("HTTP " + resp.statusCode().value() + ": " + b)))
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(20))
+                    .block();
+            lastError = null;
+            return true;
+        } catch (Exception e) {
+            lastError = e.getMessage();
+            log.error("Error guardando varias filas en {}: {}", table, e.getMessage());
+            return false;
+        } finally {
+            evictTable(table);
+        }
+    }
+
     /** Insercion con limpieza de valores NaN / Infinity (equivalente a clean_value). */
     public Map<String, Object> insert(String table, Map<String, Object> data) {
         if (!enabled) {

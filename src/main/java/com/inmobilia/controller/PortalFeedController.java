@@ -61,13 +61,15 @@ public class PortalFeedController {
         List<Map<String, Object>> props = supabase.selectFilter("propiedades",
                 "user_id=eq." + uid + "&order=created_at.desc&limit=300");
         Map<String, List<String>> galerias = galerias(uid, props);
+        Set<String> ejemplo = deEjemplo(uid);
         boolean todas = Boolean.TRUE.equals(feed.get("publicar_todas"));
         List<Map<String, Object>> inmuebles = new ArrayList<>();
         int enPortales = 0;
         for (Map<String, Object> p : props) {
             Map<String, Object> n = PortalFeedXml.normalizar(p, galerias.get(String.valueOf(p.get("id"))));
             boolean marcado = Boolean.TRUE.equals(p.get("publicar_portales"));
-            boolean sale = (todas || marcado) && PortalFeedXml.publicable(p, n);
+            boolean esEjemplo = ejemplo.contains(String.valueOf(p.get("id")));
+            boolean sale = !esEjemplo && (todas || marcado) && PortalFeedXml.publicable(p, n);
             if (sale) enPortales++;
             Map<String, Object> fila = new LinkedHashMap<>();
             fila.put("id", p.get("id"));
@@ -78,7 +80,7 @@ public class PortalFeedController {
             fila.put("fotos", ((List<?>) n.get("fotos")).size());
             fila.put("marcado", marcado);
             fila.put("sale", sale);
-            fila.put("faltan", String.join(", ", PortalFeedXml.faltan(n)));
+            fila.put("faltan", esEjemplo ? "es de ejemplo (nunca se publica)" : String.join(", ", PortalFeedXml.faltan(n)));
             inmuebles.add(fila);
         }
         model.addAttribute("inmuebles", inmuebles);
@@ -184,8 +186,10 @@ public class PortalFeedController {
         f.append("&limit=500");
         List<Map<String, Object>> crudas = supabase.selectFilter("propiedades", f.toString());
         Map<String, List<String>> galerias = galerias(userId, crudas);
+        Set<String> ejemplo = deEjemplo(userId);
         List<Map<String, Object>> props = new ArrayList<>();
         for (Map<String, Object> p : crudas) {
+            if (ejemplo.contains(String.valueOf(p.get("id")))) continue; // los datos de demo nunca van a un portal
             Map<String, Object> n = PortalFeedXml.normalizar(p, galerias.get(String.valueOf(p.get("id"))));
             if (PortalFeedXml.publicable(p, n)) props.add(n);
         }
@@ -224,6 +228,14 @@ public class PortalFeedController {
         m.put("activo", !Boolean.FALSE.equals(feed.get(clave + "_enabled")));
         m.put("url", com.inmobilia.util.UrlBase.BASE + "/portal/" + feed.get("feed_token") + "/" + clave + ".xml");
         return m;
+    }
+
+    /** Inmuebles cargados como ejemplo para demos (ver EjemplosService). */
+    private Set<String> deEjemplo(String orgId) {
+        Set<String> ids = new HashSet<>();
+        for (Map<String, Object> r : supabase.selectFilter("ejemplos_demo", "user_id=eq." + orgId + "&tabla=eq.propiedades&limit=1000"))
+            ids.add(String.valueOf(r.get("registro_id")));
+        return ids;
     }
 
     /** Fotos de la galería de cada inmueble (las de la propia inmobiliaria), en pocas consultas. */

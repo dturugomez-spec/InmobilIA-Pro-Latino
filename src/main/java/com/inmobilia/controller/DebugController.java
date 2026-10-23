@@ -1,7 +1,6 @@
 package com.inmobilia.controller;
 
 import com.inmobilia.service.AuthService;
-import com.inmobilia.service.DemoDataService;
 import com.inmobilia.service.EmailService;
 import com.inmobilia.service.SupabaseService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class DebugController {
 
     private final SupabaseService supabase;
     private final EmailService emailService;
-    private final DemoDataService demoDataService;
+    private final com.inmobilia.service.EjemplosService ejemplos;
     private final com.inmobilia.service.PlanService planService;
 
     @Value("${supabase.url:}")
@@ -162,8 +161,9 @@ public class DebugController {
         String uid = String.valueOf(users.get(0).get("id"));
         r.put("email", email);
         r.put("uid", uid);
-        if (wipe) r.put("wiped", demoDataService.wipeDemo(uid));
-        r.put("seeded", demoDataService.seedRichDemo(uid));
+        // wipe=true quita solo los ejemplos cargados antes (antes borraba TODO lo de la cuenta)
+        if (wipe) r.put("wiped", ejemplos.quitar(uid));
+        r.put("seeded", ejemplos.cargarAhora(uid));
         return r;
     }
 

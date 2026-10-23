@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -71,7 +71,7 @@ public class DemoDataService {
             Map<String, Object> i2 = new LinkedHashMap<>();
             i2.put("user_id", userId);
             i2.put("name", "Cosméticos PIO S.A. de C.V.");
-            i2.put("email", "info@cosmeticospio.com");
+            i2.put("email", "info@cosmeticospio.example.com");
             i2.put("phone", "+52 55 1234 5678");
             i2.put("id_number", "CPI150601AB1");
             i2.put("property_name", "Local Insurgentes 88");
@@ -153,43 +153,87 @@ public class DemoDataService {
     // Llamado desde el endpoint protegido /debug/seed-demo.
     // ------------------------------------------------------------------
 
-    /** Inserta una fila y contabiliza en el informe; devuelve la fila guardada (con id) o null. */
-    /** Campos con importes: los valores demo están en euros y se pasan a la moneda de la inmobiliaria. */
+    /** Campos con importes (los valores de ejemplo están en euros y se pasan a la moneda de la inmobiliaria). */
     private static final Set<String> IMPORTES = Set.of(
             "rent_amount", "rent", "deposit", "amount", "importe", "importe_inicial", "presupuesto", "presupuesto_max",
-            "precio", "precio_min", "precio_max", "precio_estimado", "rental_income", "monthly_expenses",
-            "purchase_price", "current_value", "eur_m2", "deposito_arras", "coste", "total", "valor");
+            "presupuesto_min", "precio", "precio_min", "precio_max", "precio_estimado", "precio_objetivo", "precio_nuevo",
+            "precio_anterior", "precio_recomendado", "precio_desde", "precio_hasta", "precio_compra", "rental_income",
+            "monthly_expenses", "purchase_price", "current_value", "eur_m2", "eur_m2_zona", "deposito_arras", "coste",
+            "total", "valor", "valor_operacion", "renta_mensual", "fianza", "saldo_inicial", "saldo_final", "saldo_actual",
+            "prima_anual", "capital_asegurado", "capital_prestamo", "capacidad_max", "cuota_estimada", "cuota_mensual",
+            "commission_amount", "base_imponible", "iva_amount", "iva_importe", "irpf_amount", "ingresos_mensuales",
+            "importe_reclamado", "importe_liquidar", "importe_indemnizado", "seguro_hogar", "seguro_impago", "mantenimiento",
+            "gestion", "otros_gastos", "ibi", "comunidad", "gastos_compra", "reformas", "mobiliario", "ahorro", "diferencia",
+            "total_pagado", "capital_hipoteca");
 
-    /** Factor euro → moneda de la inmobiliaria (la siembra es @Async: no hay país de la petición). */
-    private double factor(String userId) {
-        String mon = paises.deOrganizacion(userId).moneda();
+    /** País de la inmobiliaria (la siembra es @Async: no hay país de la petición). */
+    public com.inmobilia.util.Pais pais(String userId) {
+        return paises.deOrganizacion(userId);
+    }
+
+    /** Euros de los datos de ejemplo → moneda de la inmobiliaria. */
+    public double factorEur(String userId) {
+        String mon = pais(userId).moneda();
         return "EUR".equals(mon) ? 1.0 : divisas.convertir(1.0, "EUR", mon);
     }
 
-    private Map<String, Object> enMoneda(Map<String, Object> row) {
-        Object uid = row.get("user_id");
-        if (uid == null) return row;
-        double f = factor(String.valueOf(uid));
-        if (f == 1.0) return row;
-        for (String k : IMPORTES) {
-            Object v = row.get(k);
-            if (v instanceof Number n) {
-                double x = n.doubleValue() * f;
-                row.put(k, x >= 10_000 ? Math.round(x / 100.0) * 100.0 : Math.round(x * 100.0) / 100.0);
-            }
+    private static boolean esImporte(String clave) {
+        String k = clave.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(); // rentaMensual → renta_mensual
+        return !k.endsWith("_pct") && (IMPORTES.contains(k) || k.startsWith("total_") || k.startsWith("importe_"));
+    }
+
+    private static double redondear(double x) {
+        return Math.abs(x) >= 10_000 ? Math.round(x / 100.0) * 100.0 : Math.round(x * 100.0) / 100.0;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object convertir(String clave, Object v, double f) {
+        if (v instanceof Number n && clave != null && esImporte(clave)) return redondear(n.doubleValue() * f);
+        if (v instanceof Map<?, ?> m) {
+            Map<String, Object> copia = new LinkedHashMap<>();
+            m.forEach((k, x) -> copia.put(String.valueOf(k), convertir(String.valueOf(k), x, f)));
+            return copia;
         }
-        return row;
+        if (v instanceof List<?> l) {
+            List<Object> copia = new ArrayList<>();
+            for (Object x : l) copia.add(convertir(clave, x, f));
+            return copia;
+        }
+        return v;
+    }
+
+    /** La fila con sus importes (también dentro de listas y mapas, p. ej. líneas de factura) en la moneda de la inmobiliaria. */
+    public Map<String, Object> enMoneda(Map<String, Object> row, String userId) {
+        if (userId == null) return row;
+        double f = factorEur(userId);
+        if (f == 1.0) return row;
+        Map<String, Object> out = new LinkedHashMap<>();
+        row.forEach((k, v) -> out.put(k, convertir(k, v, f)));
+        return out;
+    }
+
+    public Map<String, Object> enMoneda(Map<String, Object> row) {
+        Object uid = row.get("user_id") != null ? row.get("user_id") : row.get("org_id");
+        return uid == null ? row : enMoneda(row, String.valueOf(uid));
     }
 
     private Map<String, Object> insertar(String table, Map<String, Object> row) {
         return supabase.insert(table, enMoneda(row));
     }
 
-    private Map<String, Object> ins(Map<String, Object> report, String table, Map<String, Object> row) {
+    /** Avisa de cada fila de ejemplo guardada (para anotarla y poder quitarla después). */
+    @FunctionalInterface
+    public interface Registro {
+        void guardada(String tabla, Map<String, Object> fila);
+    }
+
+    /** Inserta una fila y contabiliza en el informe; devuelve la fila guardada (con id) o null. */
+    private Map<String, Object> ins(Map<String, Object> report, Registro registro, String table, Map<String, Object> row) {
         try {
             Map<String, Object> saved = supabase.insert(table, enMoneda(row));
             if (saved != null && !saved.isEmpty()) {
                 report.merge(table, 1, (a, b) -> (Integer) a + (Integer) b);
+                if (registro != null) registro.guardada(table, saved);
                 return saved;
             }
             report.putIfAbsent(table + "_error", supabase.lastError() != null ? supabase.lastError() : "insert vacío");
@@ -200,31 +244,17 @@ public class DemoDataService {
         }
     }
 
-    /** Borra todas las filas de la cuenta en las tablas sembradas (para re-sembrar limpio). */
-    public Map<String, Object> wipeDemo(String userId) {
-        // Hijos antes que padres (FKs hacia propiedades / campanas)
-        String[] tables = {"gastos_agente", "busquedas_guardadas", "newsletter_suscriptores", "reviews",
-                "notas_encargo", "certificados_energeticos", "ofertas", "campana_envios", "campanas",
-                "portal_mensajes", "valoraciones", "tareas", "reservas", "transacciones", "leads",
-                "inquilinos", "propiedades"};
-        Map<String, Object> rep = new LinkedHashMap<>();
-        for (String t : tables) {
-            int n = 0;
-            try {
-                List<Map<String, Object>> rows = supabase.selectFilter(t, "user_id=eq." + userId + "&select=id&limit=2000");
-                for (Map<String, Object> r : rows) {
-                    if (supabase.delete(t, String.valueOf(r.get("id")), userId)) n++;
-                }
-            } catch (Exception e) {
-                rep.put(t + "_error", e.getMessage());
-            }
-            rep.put(t, n);
-        }
-        return rep;
-    }
-
     /** Siembra un set de datos rico y variado para demostraciones a clientes. */
     public Map<String, Object> seedRichDemo(String userId) {
+        return seedRichDemo(userId, null);
+    }
+
+    /**
+     * Igual, avisando de cada fila guardada. (Antes había un "wipeDemo" que borraba TODAS las filas
+     * de la cuenta en estas tablas, también las reales: ahora se quitan solo las anotadas, ver
+     * EjemplosService.)
+     */
+    public Map<String, Object> seedRichDemo(String userId, Registro registro) {
         Map<String, Object> report = new LinkedHashMap<>();
         String now = OffsetDateTime.now().toString();
 
@@ -258,7 +288,7 @@ public class DemoDataService {
             p.put("portal_activo", true);
             p.put("portal_vistas", 5 + (int) (Math.random() * 40));
             p.put("portal_mensaje_agente", "Seguimos trabajando en la comercialización. Esta semana " + (2 + (int) (Math.random() * 5)) + " visitas programadas.");
-            Map<String, Object> saved = ins(report, "propiedades", p);
+            Map<String, Object> saved = ins(report, registro, "propiedades", p);
             if (saved != null) {
                 propIds.add(String.valueOf(saved.get("id")));
                 propNames.add((String) a[0]);
@@ -266,11 +296,11 @@ public class DemoDataService {
         }
 
         // ---------- INQUILINOS (3) ----------
-        ins(report, "inquilinos", inquilino(userId, "Juan Pérez García", "juan.perez@example.com", "+52 55 1234 5678",
+        ins(report, registro, "inquilinos", inquilino(userId, "Juan Pérez García", "juan.perez@example.com", "+52 55 1234 5678",
                 "PEGJ800115HDFRRN05", "Depto. Reforma 222, 3B", 1100.0, 2200.0, "2024-01-15", "2029-01-14", 85, "Inquilino ejemplar. Pagos puntuales."));
-        ins(report, "inquilinos", inquilino(userId, "Cosméticos PIO S.A. de C.V.", "info@cosmeticospio.com", "+52 55 1234 5678",
+        ins(report, registro, "inquilinos", inquilino(userId, "Cosméticos PIO S.A. de C.V.", "info@cosmeticospio.example.com", "+52 55 1234 5678",
                 "CPI150601AB1", "Local Insurgentes 88", 1850.0, 5550.0, "2023-06-01", "2028-05-31", 78, "Contrato comercial. Renta ajustada a INPC."));
-        ins(report, "inquilinos", inquilino(userId, "Sara López Vega", "sara.lopez@example.com", "+52 55 5511 2233",
+        ins(report, registro, "inquilinos", inquilino(userId, "Sara López Vega", "sara.lopez@example.com", "+52 55 5511 2233",
                 "LOVS020301MDFPGR08", "Estudio Coyoacán", 800.0, 1600.0, "2025-03-01", "2026-02-28", 72, "Estudiante. Aval de los padres."));
 
         // ---------- LEADS (8, todas las etapas del embudo) ----------
@@ -295,7 +325,7 @@ public class DemoDataService {
             l.put("next_followup", LocalDate.now().plusDays((Integer) a[10]).toString());
             l.put("notas", a[11]);
             l.put("created_at", now);
-            ins(report, "leads", l);
+            ins(report, registro, "leads", l);
         }
 
         // ---------- TRANSACCIONES (ingresos + gastos, últimos 6 meses → gráficos) ----------
@@ -308,7 +338,7 @@ public class DemoDataService {
                 t.put("amount", Double.parseDouble(r[1])); t.put("date", mes.toString());
                 t.put("property_name", r[0]); t.put("description", "Cobro alquiler mensual · " + r[0]);
                 t.put("created_at", now);
-                ins(report, "transacciones", t);
+                ins(report, registro, "transacciones", t);
             }
         }
         // Gastos variados
@@ -324,7 +354,7 @@ public class DemoDataService {
             t.put("user_id", userId); t.put("type", g[0]); t.put("category", g[1]);
             t.put("amount", g[2]); t.put("date", LocalDate.now().withDayOfMonth((Integer) g[3]).toString());
             t.put("property_name", g[4]); t.put("description", g[5]); t.put("created_at", now);
-            ins(report, "transacciones", t);
+            ins(report, registro, "transacciones", t);
         }
 
         // ---------- RESERVAS / VISITAS (agenda) ----------
@@ -342,7 +372,7 @@ public class DemoDataService {
             r.put("date", LocalDate.now().plusDays((Integer) v[4]).toString());
             r.put("time", v[5]); r.put("type", v[6]); r.put("status", v[7]);
             r.put("agent_name", "Comercial"); r.put("created_at", now);
-            ins(report, "reservas", r);
+            ins(report, registro, "reservas", r);
         }
 
         // ---------- TAREAS (esquema real V28: titulo/descripcion/prioridad/estado/fecha_limite/propiedad_id) ----------
@@ -366,7 +396,7 @@ public class DemoDataService {
             int pi = (Integer) t[5];
             if (pi >= 0 && pi < propIds.size()) task.put("propiedad_id", propIds.get(pi));
             task.put("created_at", now);
-            ins(report, "tareas", task);
+            ins(report, registro, "tareas", task);
         }
 
         // ---------- VALORACIONES (imán de captación) ----------
@@ -384,14 +414,14 @@ public class DemoDataService {
             val.put("eur_m2", v[11]); val.put("confianza", v[12]); val.put("metodo", "avm_ia");
             val.put("propietario_nombre", v[13]); val.put("propietario_email", v[14]); val.put("propietario_telefono", v[15]);
             val.put("quiere_vender", v[16]); val.put("origen", "valoracion_publica"); val.put("created_at", now);
-            ins(report, "valoraciones", val);
+            ins(report, registro, "valoraciones", val);
         }
 
         // ---------- PORTAL: mensajes propietario ↔ agente ----------
         if (propIds.size() >= 2) {
-            ins(report, "portal_mensajes", portalMsg(userId, propIds.get(0), "propietario", "¿Cómo van las visitas este mes? Me gustaría un resumen.", true));
-            ins(report, "portal_mensajes", portalMsg(userId, propIds.get(0), "agente", "¡Hola Carmen! Esta semana 3 visitas y una oferta en estudio. Te llamo el viernes.", false));
-            ins(report, "portal_mensajes", portalMsg(userId, propIds.get(1), "propietario", "¿Podríamos bajar el precio un poco para acelerar?", false));
+            ins(report, registro, "portal_mensajes", portalMsg(userId, propIds.get(0), "propietario", "¿Cómo van las visitas este mes? Me gustaría un resumen.", true));
+            ins(report, registro, "portal_mensajes", portalMsg(userId, propIds.get(0), "agente", "¡Hola Carmen! Esta semana 3 visitas y una oferta en estudio. Te llamo el viernes.", false));
+            ins(report, registro, "portal_mensajes", portalMsg(userId, propIds.get(1), "propietario", "¿Podríamos bajar el precio un poco para acelerar?", false));
         }
 
         // ---------- CAMPAÑAS de marketing ----------
@@ -405,20 +435,20 @@ public class DemoDataService {
         camp1.put("destinatarios_total", 340); camp1.put("enviados", 338); camp1.put("fallidos", 2);
         camp1.put("abiertos", 214); camp1.put("clicks", 63); camp1.put("bajas", 3); camp1.put("conversiones", 7);
         camp1.put("created_at", now);
-        ins(report, "campanas", camp1);
+        ins(report, registro, "campanas", camp1);
 
         Map<String, Object> camp2 = new LinkedHashMap<>();
         camp2.put("user_id", userId); camp2.put("nombre", "WhatsApp · Recordatorio open house");
         camp2.put("canal", "whatsapp"); camp2.put("contenido", "Hola {nombre}, te esperamos el sábado en el open house del penthouse Masaryk 100. ¿Confirmas?");
         camp2.put("segmento_tipo", "segmentado"); camp2.put("estado", "borrador");
         camp2.put("destinatarios_total", 0); camp2.put("created_at", now);
-        ins(report, "campanas", camp2);
+        ins(report, registro, "campanas", camp2);
 
         // ---------- OFERTAS formales ----------
         if (propIds.size() >= 4) {
-            ins(report, "ofertas", oferta(userId, propIds.get(3), "OF-2026-014", 690000.0, 720000.0, "hipoteca+ahorros",
+            ins(report, registro, "ofertas", oferta(userId, propIds.get(3), "OF-2026-014", 690000.0, 720000.0, "hipoteca+ahorros",
                     "David Torres Gómez", "david.torres@example.com", "+52 55 5566 6777", "en_negociacion", 15000.0));
-            ins(report, "ofertas", oferta(userId, propIds.get(2), "OF-2026-015", 365000.0, 380000.0, "contado",
+            ins(report, registro, "ofertas", oferta(userId, propIds.get(2), "OF-2026-015", 365000.0, 380000.0, "contado",
                     "Nostrum Retail S.A. de C.V.", "expansion@nostrum.example.com", "+52 55 1555 6677", "nueva", 20000.0));
         }
 
@@ -442,7 +472,7 @@ public class DemoDataService {
             cee.put("medidas_mejora", "Ventanas con rotura de puente térmico y caldera de condensación.");
             cee.put("ahorro_estimado_pct", 22.0);
             cee.put("created_at", now);
-            ins(report, "certificados_energeticos", cee);
+            ins(report, registro, "certificados_energeticos", cee);
         }
 
         // ---------- RESEÑAS / TESTIMONIOS ----------
@@ -459,7 +489,7 @@ public class DemoDataService {
             rev.put("titulo", r[3]); rev.put("comentario", r[4]);
             rev.put("aprobada", r[5]); rev.put("destacada", r[6]); rev.put("publica", true);
             rev.put("fuente", r[7]); rev.put("created_at", now);
-            ins(report, "reviews", rev);
+            ins(report, registro, "reviews", rev);
         }
 
         // ---------- NOTAS DE ENCARGO (captación / exclusiva) ----------
@@ -473,7 +503,7 @@ public class DemoDataService {
             ne.put("duracion_meses", 6); ne.put("estado", "firmado");
             ne.put("observaciones", "Exclusiva 6 meses. Incluye home staging y reportaje fotográfico profesional.");
             ne.put("created_at", now);
-            ins(report, "notas_encargo", ne);
+            ins(report, registro, "notas_encargo", ne);
         }
         if (propIds.size() >= 4) {
             Map<String, Object> ne2 = new LinkedHashMap<>();
@@ -482,7 +512,7 @@ public class DemoDataService {
             ne2.put("inmueble_texto", "Penthouse 110 m² Masaryk 100 · 3 rec · 2 baños · terraza 25 m².");
             ne2.put("precio", 720000.0); ne2.put("comision_pct", 3.5); ne2.put("exclusiva", true);
             ne2.put("duracion_meses", 4); ne2.put("estado", "borrador"); ne2.put("created_at", now);
-            ins(report, "notas_encargo", ne2);
+            ins(report, registro, "notas_encargo", ne2);
         }
 
         // ---------- GASTOS DE AGENTE ----------
@@ -504,7 +534,7 @@ public class DemoDataService {
             if (g[4] != null) ga.put("origen", g[4]);
             if (g[5] != null) ga.put("destino", g[5]);
             ga.put("estado", g[6]); ga.put("created_at", now);
-            ins(report, "gastos_agente", ga);
+            ins(report, registro, "gastos_agente", ga);
         }
 
         // ---------- BÚSQUEDAS GUARDADAS (búsqueda inversa / alertas) ----------
@@ -517,7 +547,7 @@ public class DemoDataService {
         bg.put("metros_min", 90.0); bg.put("habitaciones_min", 3); bg.put("requiere_terraza", true);
         bg.put("notificar_email", true); bg.put("frecuencia", "inmediata"); bg.put("activa", true);
         bg.put("matches_count", 2); bg.put("created_at", now);
-        ins(report, "busquedas_guardadas", bg);
+        ins(report, registro, "busquedas_guardadas", bg);
 
         Map<String, Object> bg2 = new LinkedHashMap<>();
         bg2.put("user_id", userId);
@@ -526,7 +556,7 @@ public class DemoDataService {
         bg2.put("tipo", "piso"); bg2.put("municipio", "Ciudad de México"); bg2.put("zonas", List.of("Del Valle", "Tetuán"));
         bg2.put("precio_max", 250000.0); bg2.put("habitaciones_min", 2); bg2.put("requiere_ascensor", true);
         bg2.put("frecuencia", "diaria"); bg2.put("activa", true); bg2.put("matches_count", 1); bg2.put("created_at", now);
-        ins(report, "busquedas_guardadas", bg2);
+        ins(report, registro, "busquedas_guardadas", bg2);
 
         // ---------- NEWSLETTER: suscriptores ----------
         Object[][] subs = {
@@ -542,7 +572,7 @@ public class DemoDataService {
             sub.put("intereses", List.of("venta", "obra_nueva")); sub.put("zona", s[2]);
             sub.put("fuente", "microsite"); sub.put("confirmado", true); sub.put("confirmado_at", now);
             sub.put("created_at", now);
-            ins(report, "newsletter_suscriptores", sub);
+            ins(report, registro, "newsletter_suscriptores", sub);
         }
 
         return report;

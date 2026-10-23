@@ -215,6 +215,7 @@ public class SessionGuardInterceptor implements HandlerInterceptor {
             java.util.Map.entry("business", "empresa"),
             java.util.Map.entry("billing", "suscripcion"), java.util.Map.entry("creditos", "suscripcion"),
             java.util.Map.entry("import", "datos"), java.util.Map.entry("importar", "datos"),
+            java.util.Map.entry("ejemplos", "datos"),
             java.util.Map.entry("workflows", "automatizaciones"),
             // Herramientas avanzadas
             java.util.Map.entry("herramientas", "herramientas"), java.util.Map.entry("finanzas", "herramientas"),

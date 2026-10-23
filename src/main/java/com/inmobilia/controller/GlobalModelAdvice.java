@@ -83,7 +83,8 @@ public class GlobalModelAdvice {
                 perms.put(s, permissions.access(userRole, s).name());
             }
             model.addAttribute("perms", perms);
-            model.addAttribute("nav", new NavPermisos(permissions, userRole));
+            model.addAttribute("nav", new NavPermisos(permissions, userRole,
+                    planService.esAdminPlataforma(SessionUtils.email(session))));
 
             // Estado del plan (para banners de trial, etc.)
             try {
@@ -109,13 +110,21 @@ public class GlobalModelAdvice {
     public static final class NavPermisos {
         private final PermissionService permissions;
         private final String role;
+        private final boolean propietarioPlataforma;
 
         NavPermisos(PermissionService permissions, String role) {
+            this(permissions, role, false);
+        }
+
+        NavPermisos(PermissionService permissions, String role, boolean propietarioPlataforma) {
             this.permissions = permissions;
             this.role = role;
+            this.propietarioPlataforma = propietarioPlataforma;
         }
 
         public boolean ve(String href) {
+            // Ejemplos para demos: solo en la cuenta de demostración del propietario de la plataforma
+            if (href != null && href.startsWith("/ejemplos")) return propietarioPlataforma && "admin".equals(role);
             String seccion = com.inmobilia.config.SessionGuardInterceptor.seccionDe(href);
             return seccion == null || permissions.canRead(role, seccion);
         }

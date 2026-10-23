@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Ejemplos para demos</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="rounded-xl bg-gradient-to-br from-indigo-600 to-violet-900 p-6 mb-5 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="sparkles" class="h-6 w-6"></i> Ejemplos para demos</h2>
+        <p class="text-sm text-white/80 mt-1">
+            Llena todas las herramientas con una inmobiliaria ficticia de Madrid (inmuebles, leads, visitas, ofertas, campañas,
+            facturas, contratos…) para enseñar a tus clientes para qué sirve cada una. Cuando acabes, los quitas con un clic:
+            se borran solo los datos de ejemplo, nunca los tuyos.
+        </p>
+    </div>
+
+    <!-- Estado -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <div th:if="${estado.enCurso()}" class="flex items-center gap-3">
+            <i data-lucide="loader-2" class="h-5 w-5 animate-spin text-indigo-600"></i>
+            <div>
+                <p class="font-semibold text-sm" th:text="${estado.mensaje()}">Cargando…</p>
+                <p class="text-xs text-slate-500">Tarda alrededor de un minuto. Esta página se actualiza sola.</p>
+            </div>
+        </div>
+
+        <div th:unless="${estado.enCurso()}">
+            <p th:if="${estado.mensaje() != null}" class="mb-4 rounded-lg bg-slate-50 dark:bg-neutral-800 px-3 py-2 text-sm" th:text="${estado.mensaje()}">—</p>
+
+            <div th:if="${filas > 0}" class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="font-semibold text-sm">Tienes <span th:text="${filas}">0</span> registros de ejemplo cargados.</p>
+                    <p class="text-xs text-slate-500">Recorre el menú: cada herramienta tiene datos para enseñar.</p>
+                </div>
+                <form method="post" action="/ejemplos/quitar" onsubmit="return confirm('Se borrarán todos los datos de ejemplo (solo esos). ¿Continuar?')">
+                    <button class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium flex items-center gap-1.5">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i> Quitar ejemplos</button>
+                </form>
+            </div>
+
+            <div th:unless="${filas > 0}" class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="font-semibold text-sm">No hay ejemplos cargados.</p>
+                    <p class="text-xs text-slate-500">Se añaden a lo que ya tengas; no se borra ni se cambia nada tuyo.</p>
+                </div>
+                <form method="post" action="/ejemplos/cargar">
+                    <button class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="h-4 w-4"></i> Cargar ejemplos</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnóstico: ejemplos por herramienta -->
+    <div th:if="${herramientas != null and filas > 0}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5">
+        <h3 class="font-semibold text-sm mb-1">Ejemplos por herramienta</h3>
+        <p class="text-xs text-slate-500 mb-3">En rojo, las herramientas que se quedaron sin ejemplos. Si hay alguna, quita los ejemplos y vuelve a cargarlos.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+            <a th:each="h : ${herramientas}" th:href="${h.ruta}"
+               class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 ring-1 hover:shadow-sm"
+               th:classappend="${h.n > 0} ? 'ring-emerald-200 bg-emerald-50/60 text-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-100 dark:ring-emerald-800' : 'ring-red-200 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 dark:ring-red-800'">
+                <span th:text="${h.nombre}">Herramienta</span>
+                <span class="font-mono font-semibold" th:text="${h.n}">0</span>
+            </a>
+        </div>
+        <div th:if="${errores != null and !errores.isEmpty()}" class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/20 ring-1 ring-red-200 dark:ring-red-800 p-3 text-xs text-red-800 dark:text-red-200">
+            <p class="font-semibold mb-1">No se pudo cargar:</p>
+            <ul class="space-y-1 font-mono break-all">
+                <li th:each="e : ${errores}" th:text="${e}">tabla: motivo</li>
+            </ul>
+            <p class="mt-2">Suele ser una tabla o columna que falta en Supabase: ejecuta <strong>tools/reparar_esquema.sql</strong> y vuelve a cargar los ejemplos.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Qué se carga -->
+        <div class="lg:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="font-semibold text-sm mb-3">Qué verás en cada herramienta</h3>
+            <div class="grid sm:grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Cartera</p>12 inmuebles con fotos y ubicación en el mapa, obra nueva con 6 unidades, tour 3D, home staging, histórico de precios, certificados energéticos y portales.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Comercial</p>8 leads en todas las etapas, embudo de ofertas, matches con puntuación, portal del comprador con reacciones, marketplace, cobroking y oportunidades de inversión.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Visitas y captación</p>Visitas con feedback, puertas abiertas con inscritos, hojas de visita, notas de encargo, reservas online, valoraciones y campaña de buzoneo.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Marketing</p>Campañas con aperturas y clics, conversación de WhatsApp, SMS, newsletter, micrositio, chatbot con conversaciones, referidos, reseñas y NPS.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Finanzas</p>Movimientos de 6 meses, facturas, recibos, comisiones, remesa SEPA, conciliación bancaria, caja, gastos de agente y extracto a propietario.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Gestión</p>Inquilinos, contratos, propietarios, mantenimiento, agenda, seguros con un siniestro, tareas, firmas electrónicas y plantillas.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">Equipo</p>Personal, chat del equipo, wiki interna, flujo automático y panel de dirección.</div>
+                <div><p class="font-semibold text-slate-900 dark:text-white mb-1">IA</p>Propuestas del agente IA, cadencias de seguimiento, puntuación de leads, notas de voz transcritas, informe de mercado, sesión del coach y simulaciones de hipoteca.</div>
+            </div>
+        </div>
+
+        <!-- A tener en cuenta -->
+        <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-800 p-5 text-xs text-amber-900 dark:text-amber-100 space-y-2">
+            <h3 class="font-semibold text-sm">A tener en cuenta</h3>
+            <p>Los emails de ejemplo son <strong>@example.com</strong>: la app nunca les manda nada.</p>
+            <p>Los teléfonos son inventados: no envíes WhatsApp ni SMS reales a contactos de ejemplo.</p>
+            <p>Los inmuebles de ejemplo <strong>no se publican en los portales</strong>, pero su ficha pública sí se puede abrir con el enlace (útil para enseñarla).</p>
+            <p>Lo que crees tú durante la demo colgando de un lead o inmueble de ejemplo (tareas, visitas…) también se quita al quitar los ejemplos.</p>
+        </div>
+    </div>
+
+    <!-- Detalle técnico si algo no se cargó -->
+    <details th:if="${!estado.informe().isEmpty()}" class="mt-5 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-xs">
+        <summary class="cursor-pointer font-semibold text-sm">Detalle de la última carga</summary>
+        <ul class="mt-3 space-y-1 font-mono">
+            <li th:each="e : ${estado.informe()}" th:classappend="${#strings.endsWith(e.key, '_error')} ? 'text-red-600' : 'text-slate-600'"
+                th:text="${e.key + ': ' + e.value}">tabla: 1</li>
+        </ul>
+    </details>
+
+    <script th:if="${estado.enCurso()}">setTimeout(() => location.reload(), 3000);</script>
+</div>
+</body>
+</html>

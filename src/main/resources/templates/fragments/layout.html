@@ -576,6 +576,10 @@
                     <i data-lucide="download" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Exportar</span>
                 </a>
+                <a th:if="${nav.ve('/ejemplos')}" href="/ejemplos" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Ejemplos para demos">
+                    <i data-lucide="sparkles" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Ejemplos para demos</span>
+                </a>
                 <a th:if="${nav.ve('/trash')}" href="/trash" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Papelera">
                     <i data-lucide="trash-2" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Papelera</span>
