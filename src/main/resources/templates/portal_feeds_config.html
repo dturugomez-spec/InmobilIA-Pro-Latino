@@ -48,9 +48,8 @@
                     <div th:each="pt : ${portales}" class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
                         <div class="flex items-center justify-between gap-2 mb-1">
                             <p class="font-semibold text-sm" th:text="${pt.get('nombre')}">Portal</p>
-                            <span th:if="${pt.get('listo') and pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">LISTO</span>
-                            <span th:if="${!pt.get('listo') and pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">PENDIENTE DEL PORTAL</span>
-                            <span th:unless="${pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">DESACTIVADO</span>
+                            <span th:if="${#bools.isTrue(pt.get('listo')) and #bools.isTrue(pt.get('activo'))}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">LISTO</span>
+                            <span th:unless="${#bools.isTrue(pt.get('activo'))}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">DESACTIVADO</span>
                         </div>
                         <p class="text-xs text-slate-500 mb-2" th:text="${pt.get('estado')}">—</p>
                         <div class="flex gap-1">

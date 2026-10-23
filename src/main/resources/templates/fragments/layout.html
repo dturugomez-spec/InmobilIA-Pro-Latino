@@ -556,10 +556,6 @@
                     <i data-lucide="building" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Mi negocio</span>
                 </a>
-                <a th:if="${nav.ve('/whitelabel')}" href="/whitelabel" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Marca blanca">
-                    <i data-lucide="palette" class="h-4 w-4 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" class="truncate">Marca blanca</span>
-                </a>
                 <a th:if="${nav.ve('/integrations')}" href="/integrations" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Integraciones">
                     <i data-lucide="plug" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Integraciones</span>

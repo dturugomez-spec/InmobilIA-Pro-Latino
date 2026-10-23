@@ -299,6 +299,7 @@ DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS ultimo_acceso T
 DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS ultimo_ip TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feeds.ultimo_ip: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feeds.created_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feeds.updated_at: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS kyero_enabled BOOLEAN DEFAULT TRUE; EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feeds.kyero_enabled: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS feed_enabled BOOLEAN DEFAULT true; EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feeds.feed_enabled: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE portal_feed_logs ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feed_logs.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE portal_feed_logs ADD COLUMN IF NOT EXISTS portal TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'portal_feed_logs.portal: %', SQLERRM; END $rep$;
@@ -318,6 +319,8 @@ DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS portal_ultima_vi
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS portal_mensaje_agente TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.portal_mensaje_agente: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS propietario_nombre TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.propietario_nombre: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS propietario_email TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.propietario_email: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS operacion TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.operacion: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS provincia TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.provincia: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS name TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.name: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS address TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.address: %', SQLERRM; END $rep$;
@@ -337,7 +340,6 @@ DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS mortgage_payment
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS notes TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.notes: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.created_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS estado TEXT DEFAULT 'activa'; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.estado: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS operacion TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.operacion: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS tipo TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.tipo: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS habitaciones INT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.habitaciones: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS banos INT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.banos: %', SQLERRM; END $rep$;
@@ -379,7 +381,6 @@ DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS hipoteca_anios_r
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS hipoteca_banco TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.hipoteca_banco: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS hipoteca_proxima_revision DATE; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.hipoteca_proxima_revision: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS ccaa TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.ccaa: %', SQLERRM; END $rep$;
-DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS provincia TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.provincia: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS municipio TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.municipio: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS zona_tensionada BOOLEAN DEFAULT FALSE; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.zona_tensionada: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS referencia_catastral TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'propiedades.referencia_catastral: %', SQLERRM; END $rep$;
@@ -1171,6 +1172,7 @@ DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS smtp_port INT D
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS activa BOOLEAN DEFAULT TRUE; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.activa: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS ultimo_sync_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.ultimo_sync_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(); EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.created_at: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE imap_cuentas ADD COLUMN IF NOT EXISTS ultimo_error TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'imap_cuentas.ultimo_error: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE emails_inbox ADD COLUMN IF NOT EXISTS cuenta_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'emails_inbox.cuenta_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE emails_inbox ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'emails_inbox.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE emails_inbox ADD COLUMN IF NOT EXISTS message_id TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'emails_inbox.message_id: %', SQLERRM; END $rep$;

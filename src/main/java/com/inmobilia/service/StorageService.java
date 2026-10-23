@@ -52,6 +52,16 @@ public class StorageService {
         if (file.isEmpty()) throw new IllegalArgumentException("Archivo vacío");
 
         String ext = inferExtension(file.getOriginalFilename(), file.getContentType());
+        try {
+            return upload(file.getBytes(), file.getContentType(), ext, folder);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("No se pudo leer el archivo");
+        }
+    }
+
+    /** Sube bytes ya en memoria (p. ej. una imagen generada) y devuelve la URL pública. */
+    public String upload(byte[] bytes, String contentType, String ext, String folder) {
+        if (!isConfigured()) throw new IllegalStateException("Supabase no configurado");
         String safeFolder = folder == null ? "misc" : folder.replaceAll("[^a-zA-Z0-9_-]", "");
         String path = safeFolder + "/" + UUID.randomUUID() + ext;
 
@@ -60,13 +70,12 @@ public class StorageService {
             // (https://xxx.supabase.co) antes de construir la ruta de Storage, o daría 404.
             String base = SupabaseService.normalizeSupabaseUrl(supabaseUrl);
             String url = base + "/storage/v1/object/" + BUCKET + "/" + path;
-            byte[] bytes = file.getBytes();
 
             webClient.post()
                     .uri(url)
                     .header("apikey", supabaseKey)
                     .headers(h -> { if (!SupabaseService.esClaveNueva(supabaseKey)) h.setBearerAuth(supabaseKey); })
-                    .contentType(MediaType.parseMediaType(file.getContentType() != null ? file.getContentType() : "application/octet-stream"))
+                    .contentType(MediaType.parseMediaType(contentType != null ? contentType : "application/octet-stream"))
                     .bodyValue(bytes)
                     .retrieve()
                     .toBodilessEntity()

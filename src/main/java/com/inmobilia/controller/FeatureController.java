@@ -209,19 +209,18 @@ public class FeatureController {
         FEATURES.put("movil", f(
             "movil", "📱", "Celular y multidispositivo", "slate",
             "Trabaja desde donde estés",
-            "App nativa para Android e iOS, PWA instalable en cualquier navegador, multi-idioma y whitelabel personalizable. Tu equipo trabaja desde la oficina, el coche o una cafetería.",
+            "Funciona en el móvil y se instala como una app desde el navegador, en Android e iOS. Tu equipo trabaja desde la oficina, el coche o una cafetería.",
             new String[][]{
-                {"App móvil nativa", "Disponible para Android e iOS. Notificaciones push, modo offline parcial y rendimiento de app nativa."},
-                {"PWA instalable", "Si no quieres apps, instala la versión web como app desde el navegador. Sin pasar por App Store."},
-                {"Sincronización en tiempo real", "Cambias algo en el celular y aparece al instante en la computadora de tu equipo."},
-                {"Multi-idioma", "Interfaz en español de Latinoamérica e inglés. Atiende clientes internacionales sin problemas."},
-                {"Whitelabel personalizable", "Tu logo, tus colores corporativos, tu subdominio (tuagencia.app). Tus clientes ven tu marca, no la nuestra."},
-                {"Notas de voz y fotos", "Captura una visita con notas habladas y fotos georreferenciadas desde el celular. Se asocian al expediente."}
+                {"Se instala como app", "Desde Chrome o Safari: \"Añadir a pantalla de inicio\". Se abre a pantalla completa, con su icono, sin pasar por App Store ni Google Play."},
+                {"Todo en la nube", "Lo que cambias en el celular lo ve tu equipo en la computadora al recargar. Sin instalar nada ni sincronizar a mano."},
+                {"Pensado para pantallas pequeñas", "Menús, fichas y formularios se adaptan al celular para trabajar con una mano en plena visita."},
+                {"Tu marca en lo que ve el cliente", "Logo, color y datos de contacto de tu agencia en PDFs, correos, fichas de inmuebles y portal del propietario."},
+                {"Notas de voz y fotos", "Dicta la nota tras la visita: se pasa a texto y la IA saca el resumen; sube fotos desde la cámara a la ficha del inmueble."}
             },
             new String[][]{
                 {"Tu equipo siempre conectado", "Ya no dependes de estar en la oficina para gestionar."},
-                {"Imagen profesional", "Whitelabel hace que parezca tu propio software, no el de un tercero."},
-                {"Reduce fricción comercial", "Mostrar la app de tu marca al cliente da más confianza."}
+                {"Imagen profesional", "El cliente recibe documentos y enlaces con la marca de tu agencia."},
+                {"Reduce fricción comercial", "Enseñas la ficha o la valoración en el móvil, en el momento."}
             }
         ));
     }

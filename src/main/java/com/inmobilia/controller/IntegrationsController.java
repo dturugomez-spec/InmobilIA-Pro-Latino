@@ -147,56 +147,11 @@ public class IntegrationsController {
     }
 
     // ─── PORTALES ───
-    @GetMapping("/portals")
-    public String portals(HttpSession session, Model model) {
-        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
-        String role = SessionUtils.role(session);
-        if (!permissions.canRead(role, "propiedades")) return "redirect:/integrations";
-
-        String uid = SessionUtils.uid(session);
-        var publicadas = supabase.query("propiedades", uid).stream()
-                .filter(p -> Boolean.TRUE.equals(p.get("publicada")) || "true".equalsIgnoreCase(String.valueOf(p.get("publicada"))))
-                .toList();
-
-        model.addAttribute("page", "Portales inmobiliarios");
-        model.addAttribute("publicadas", publicadas);
-        return "integrations/portals";
-    }
-
-    @GetMapping(value = "/portals/feed.xml", produces = MediaType.APPLICATION_XML_VALUE)
-    public void portalsFeed(HttpSession session, HttpServletResponse response) throws Exception {
-        if (!SessionUtils.isLoggedIn(session)) { response.sendError(401); return; }
-        String uid = SessionUtils.uid(session);
-        var publicadas = supabase.query("propiedades", uid).stream()
-                .filter(p -> Boolean.TRUE.equals(p.get("publicada")) || "true".equalsIgnoreCase(String.valueOf(p.get("publicada"))))
-                .toList();
-
-        response.setContentType("application/xml; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=feed-propiedades.xml");
-        try (PrintWriter w = response.getWriter()) {
-            w.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            w.println("<properties generated=\"" + LocalDate.now() + "\" total=\"" + publicadas.size() + "\">");
-            for (var p : publicadas) {
-                w.println("  <property>");
-                w.println("    <reference>" + esc(p.get("reference")) + "</reference>");
-                w.println("    <name>" + esc(p.get("name")) + "</name>");
-                w.println("    <type>" + esc(p.get("type")) + "</type>");
-                w.println("    <status>" + esc(p.get("status")) + "</status>");
-                w.println("    <address>" + esc(p.get("address")) + "</address>");
-                w.println("    <city>" + esc(p.get("city")) + "</city>");
-                w.println("    <postal_code>" + esc(p.get("postal_code")) + "</postal_code>");
-                w.println("    <area_m2>" + esc(p.get("area_m2")) + "</area_m2>");
-                w.println("    <bedrooms>" + esc(p.get("bedrooms")) + "</bedrooms>");
-                w.println("    <bathrooms>" + esc(p.get("bathrooms")) + "</bathrooms>");
-                w.println("    <year_built>" + esc(p.get("year_built")) + "</year_built>");
-                w.println("    <price>" + esc(p.get("current_value")) + "</price>");
-                w.println("    <rental_income>" + esc(p.get("rental_income")) + "</rental_income>");
-                w.println("    <photo>" + esc(p.get("featured_photo")) + "</photo>");
-                w.println("    <description><![CDATA[" + (p.get("notes") != null ? p.get("notes") : "") + "]]></description>");
-                w.println("  </property>");
-            }
-            w.println("</properties>");
-        }
+    // Aquí había un segundo feed XML con un formato propio que ningún portal lee. La
+    // publicación real (feed XML para los portales del país) está en /feeds.
+    @GetMapping({"/portals", "/portals/feed.xml"})
+    public String portals() {
+        return "redirect:/feeds";
     }
 
     // ─── WHATSAPP ───

@@ -4,55 +4,82 @@
 <body><div layout:fragment="content">
 <div class="rounded-xl bg-gradient-to-br from-fuchsia-700 to-pink-900 p-6 mb-5 text-white">
     <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="sofa" class="h-6 w-6"></i> Staging digital</h2>
-    <p class="text-sm text-white/80 mt-1">Mobiliario virtual en fotos de inmuebles vacíos. Vende antes y mejor.</p>
+    <p class="text-sm text-white/80 mt-1">Sube la foto de una estancia vacía y la IA la amuebla manteniendo paredes, ventanas y suelo.
+        Cada foto gasta <strong th:text="${creditos}">5</strong> créditos de IA (si falla, se devuelven).</p>
 </div>
 
-<form method="post" action="/staging-digital/crear" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5 max-w-2xl space-y-3">
-    <h3 class="font-semibold text-sm"> Nuevo proyecto</h3>
-    <input type="text" name="nombre" required placeholder="Nombre del proyecto" class="w-full px-3 py-2 text-sm border rounded">
-    <input type="url" name="imagen_original_url" required placeholder="URL imagen original (inmueble vacío)" class="w-full px-3 py-2 text-sm border rounded">
-    <select name="propiedad_id" class="w-full px-3 py-2 text-sm border rounded">
-        <option value="">— Propiedad (opcional) —</option>
+<form method="post" action="/staging-digital/crear" enctype="multipart/form-data" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 mb-5 max-w-2xl space-y-3">
+    <h3 class="font-semibold text-sm">Nueva foto</h3>
+    <input type="text" name="nombre" required maxlength="120" placeholder="Nombre (ej.: Sala Av. Reforma 222)" class="w-full px-3 py-2 text-sm border rounded dark:bg-neutral-800 dark:border-neutral-700">
+    <div>
+        <label class="block text-xs text-slate-500 mb-1">Foto de la estancia vacía (JPG, PNG o WEBP, máx. 15 MB)</label>
+        <input type="file" name="foto" required accept="image/jpeg,image/png,image/webp" class="w-full text-sm">
+    </div>
+    <select name="propiedad_id" class="w-full px-3 py-2 text-sm border rounded dark:bg-neutral-800 dark:border-neutral-700">
+        <option value="">— Inmueble (opcional) —</option>
         <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('direccion')}">—</option>
     </select>
     <div class="grid grid-cols-2 gap-2">
-        <select name="estilo" required class="px-3 py-2 text-sm border rounded">
-            <option value="moderno"> Moderno</option>
-            <option value="nordico"> Nórdico</option>
-            <option value="industrial"> Industrial</option>
-            <option value="clasico"> Clásico</option>
-            <option value="minimalista"> Minimalista</option>
-            <option value="boho"> Boho</option>
+        <select name="estilo" required class="px-3 py-2 text-sm border rounded dark:bg-neutral-800 dark:border-neutral-700">
+            <option value="moderno">Moderno</option>
+            <option value="nordico">Nórdico</option>
+            <option value="industrial">Industrial</option>
+            <option value="clasico">Clásico</option>
+            <option value="minimalista">Minimalista</option>
+            <option value="boho">Boho</option>
         </select>
-        <select name="tipo_habitacion" required class="px-3 py-2 text-sm border rounded">
+        <select name="tipo_habitacion" required class="px-3 py-2 text-sm border rounded dark:bg-neutral-800 dark:border-neutral-700">
             <option value="salon">Salón</option>
             <option value="dormitorio">Dormitorio</option>
             <option value="cocina">Cocina</option>
             <option value="bano">Baño</option>
             <option value="terraza">Terraza</option>
-            <option value="oficina">Oficina</option>
+            <option value="oficina">Despacho</option>
         </select>
     </div>
-    <button class="w-full px-4 py-2 rounded bg-fuchsia-700 text-white text-sm font-medium"> Crear staging IA</button>
+    <button class="w-full px-4 py-2 rounded bg-fuchsia-700 hover:bg-fuchsia-800 text-white text-sm font-medium">Amueblar con IA</button>
+    <p class="text-xs text-slate-500">Si publicas la foto amueblada, indica en el anuncio que es una <strong>recreación virtual</strong>: el comprador debe saber que los muebles no están incluidos.</p>
 </form>
+
+<p th:if="${enCurso}" class="mb-3 text-xs text-slate-500">Hay fotos en proceso. Esta página se actualiza sola cada 15 segundos.</p>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <div th:each="p : ${proyectos}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
         <div class="grid grid-cols-2 h-40">
-            <div class="bg-slate-200 flex items-center justify-center text-slate-400 text-xs">ANTES<br><img th:if="${p.get('imagen_original_url')}" th:src="${p.get('imagen_original_url')}" class="object-cover w-full h-full"></div>
-            <div class="bg-emerald-50 flex items-center justify-center text-emerald-400 text-xs">DESPUÉS<br><img th:if="${p.get('imagen_staged_url')}" th:src="${p.get('imagen_staged_url')}" class="object-cover w-full h-full"></div>
+            <div class="relative bg-slate-200 dark:bg-neutral-800">
+                <img th:if="${p.get('imagen_original_url')}" th:src="${p.get('imagen_original_url')}" alt="Antes" class="object-cover w-full h-full">
+                <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px]">Antes</span>
+            </div>
+            <div class="relative bg-emerald-50 dark:bg-neutral-800 flex items-center justify-center">
+                <a th:if="${p.get('imagen_staged_url')}" th:href="${p.get('imagen_staged_url')}" target="_blank" rel="noopener" class="block w-full h-full">
+                    <img th:src="${p.get('imagen_staged_url')}" alt="Después" class="object-cover w-full h-full">
+                </a>
+                <span th:unless="${p.get('imagen_staged_url')}" class="text-xs text-slate-400 px-2 text-center"
+                      th:text="${p.get('estado') == 'error'} ? 'Sin imagen' : 'Generando…'">Generando…</span>
+                <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px]">Recreación virtual</span>
+            </div>
         </div>
         <div class="p-3">
             <p class="font-semibold text-sm" th:text="${p.get('nombre')}">—</p>
             <p class="text-[10px] text-slate-500 mt-1 capitalize">
                 <span th:text="${p.get('estilo')}">—</span> · <span th:text="${p.get('tipo_habitacion')}">—</span>
             </p>
-            <p class="text-[10px] mt-1">
-                <span th:if="${p.get('estado') == 'pendiente'}" class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">⏳ Pendiente IA</span>
-                <span th:if="${p.get('estado') == 'completado'}" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"> Completo</span>
-            </p>
+            <div class="flex items-center justify-between mt-2 text-[11px]">
+                <span th:if="${p.get('estado') == 'pendiente' or p.get('estado') == 'procesando'}" class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Generando</span>
+                <span th:if="${p.get('estado') == 'completado'}" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Lista</span>
+                <span th:if="${p.get('estado') == 'error'}" class="px-1.5 py-0.5 rounded bg-red-100 text-red-700"
+                      th:title="${p.get('metadata') != null ? p.get('metadata').get('error') : ''}">Error · créditos devueltos</span>
+                <span class="flex items-center gap-3">
+                    <a th:if="${p.get('imagen_staged_url')}" th:href="${p.get('imagen_staged_url')}" download class="text-fuchsia-700 hover:underline">Descargar</a>
+                    <form method="post" th:action="|/staging-digital/${p.get('id')}/borrar|" onsubmit="return confirm('¿Quitar esta foto de la lista?')">
+                        <button class="text-slate-400 hover:text-red-600">Quitar</button>
+                    </form>
+                </span>
+            </div>
+            <p th:if="${p.get('estado') == 'error' and p.get('metadata') != null}" class="mt-1 text-[11px] text-red-600" th:text="${p.get('metadata').get('error')}"></p>
         </div>
     </div>
-    <div th:if="${proyectos.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Sin proyectos de staging aún.</div>
+    <div th:if="${proyectos.isEmpty()}" class="md:col-span-3 py-12 text-center text-slate-500 text-sm">Aún no has amueblado ninguna foto.</div>
 </div>
+<script th:if="${enCurso}">setTimeout(() => location.reload(), 15000);</script>
 </div></body></html>

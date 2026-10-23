@@ -118,8 +118,8 @@ public class PortfolioAuditService {
                 LocalDate start = parseDate(c.get("start_date"));
                 String ipc = str(c.get("ipc_revision"));
                 if (start != null && ChronoUnit.MONTHS.between(start, today) >= 12
-                        && (ipc == null || ipc.isBlank() || "No".equalsIgnoreCase(ipc))) {
-                    double lostMonth = rent * 0.03; // asumiendo 3% anual no aplicado
+                        && (ipc == null || ipc.isBlank() || "No".equalsIgnoreCase(ipc) || "false".equalsIgnoreCase(ipc))) {
+                    double lostMonth = rent * 0.02; // orden de magnitud de una actualización anual
                     findings.add(new Finding("CONTRATO_SIN_IPC", Area.CONTRATOS, Severity.WARNING,
                         "Actualización de renta pendiente",
                         "Contrato de " + propName + " lleva >12 meses sin revisión. Revisa la cláusula de ajuste "
@@ -210,7 +210,7 @@ public class PortfolioAuditService {
                     findings.add(new Finding("YIELD_BAJO_" + name, Area.RENTABILIDAD, Severity.WARNING,
                         "Yield bruto < 3.5%",
                         "'" + name + "' rinde " + fmtPct(gy) + " bruto, por debajo del benchmark.",
-                        "Revisar renta, aplicar IRAV o valorar venta", "/crud/propiedades",
+                        "Revisar renta en la próxima renovación o valorar venta", "/herramientas/comparador-renta",
                         (3.5 - gy) / 100 * value, name));
                 }
                 if (gy > 10) {
