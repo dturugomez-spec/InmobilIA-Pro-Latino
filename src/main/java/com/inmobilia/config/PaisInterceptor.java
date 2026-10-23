@@ -35,7 +35,9 @@ public class PaisInterceptor implements HandlerInterceptor {
     /** ${pais} y ${mon} ("MXN", "COP"…) para todas las vistas, con el país ya decidido por el controlador. */
     @Override
     public void postHandle(HttpServletRequest req, HttpServletResponse resp, Object handler, ModelAndView mav) {
-        if (mav == null) return;
+        // En una redirección, el modelo acabaría en la URL (?mon=MXN&ciudadEjemplo=…)
+        if (mav == null || mav.getView() instanceof org.springframework.web.servlet.view.RedirectView
+                || (mav.getViewName() != null && mav.getViewName().startsWith("redirect:"))) return;
         Pais pais = PaisActual.get();
         mav.addObject("pais", pais);
         mav.addObject("mon", pais.moneda());
