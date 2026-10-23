@@ -1565,6 +1565,7 @@ DO $rep$ BEGIN ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS approval_
 DO $rep$ BEGIN ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'solicitudes_cuenta.token_expires_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS token_used_at TIMESTAMPTZ; EXCEPTION WHEN others THEN RAISE NOTICE 'solicitudes_cuenta.token_used_at: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS pais TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'solicitudes_cuenta.pais: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS ciudad TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'solicitudes_cuenta.ciudad: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE valoraciones ADD COLUMN IF NOT EXISTS user_id UUID; EXCEPTION WHEN others THEN RAISE NOTICE 'valoraciones.user_id: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE valoraciones ADD COLUMN IF NOT EXISTS tipo TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'valoraciones.tipo: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE valoraciones ADD COLUMN IF NOT EXISTS municipio TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'valoraciones.municipio: %', SQLERRM; END $rep$;
@@ -1612,6 +1613,7 @@ DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_credits_renewed_at 
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_credits_comprados INTEGER DEFAULT 0; EXCEPTION WHEN others THEN RAISE NOTICE 'users.ai_credits_comprados: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS pais TEXT DEFAULT 'MX'; EXCEPTION WHEN others THEN RAISE NOTICE 'users.pais: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS moneda TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'users.moneda: %', SQLERRM; END $rep$;
+DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS ciudad TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'users.ciudad: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'users.email: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT; EXCEPTION WHEN others THEN RAISE NOTICE 'users.password: %', SQLERRM; END $rep$;
 DO $rep$ BEGIN ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_credits INTEGER DEFAULT 50; EXCEPTION WHEN others THEN RAISE NOTICE 'users.ai_credits: %', SQLERRM; END $rep$;

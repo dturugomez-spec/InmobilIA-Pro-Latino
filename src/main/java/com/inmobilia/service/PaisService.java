@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * País de cada inmobiliaria (users.pais de la cuenta administradora = organization_id).
+ * País y ciudad de cada inmobiliaria (users.pais / users.ciudad de la cuenta administradora =
+ * organization_id). La ciudad decide la zona horaria; el país, moneda, impuesto, documentos y leyes.
  * Caché de 5 minutos para no consultar la BD en cada petición.
  */
 @Service
@@ -34,10 +35,14 @@ public class PaisService {
         Pais p = Pais.de(null);
         try {
             List<Map<String, Object>> us = supabase.selectFilter("users",
-                    "id=eq." + orgUid + "&select=pais,moneda&limit=1");
+                    "id=eq." + orgUid + "&select=pais,moneda,ciudad&limit=1");
             if (!us.isEmpty()) {
-                Object mon = us.get(0).get("moneda");
-                p = Pais.de(us.get(0).get("pais")).conMoneda(mon == null ? null : String.valueOf(mon));
+                Map<String, Object> u = us.get(0);
+                Object mon = u.get("moneda");
+                p = Pais.de(u.get("pais")).conMoneda(mon == null ? null : String.valueOf(mon));
+                if (u.get("ciudad") != null) {
+                    p = p.enCiudad(com.inmobilia.util.Ciudad.leer(p.codigo() + ":" + u.get("ciudad")).orElse(null));
+                }
             }
         } catch (Exception ex) {
             // Fallo puntual de la BD: seguir con el país que ya sabíamos (no fijar el de por defecto 5 minutos)
@@ -56,12 +61,20 @@ public class PaisService {
         return p;
     }
 
-    /** Guarda país y moneda de trabajo (la local del país o USD). */
-    public boolean guardar(String orgUid, String codigo, String moneda) {
-        if (!Pais.existe(codigo)) return false;
-        Pais p = Pais.de(codigo).conMoneda(moneda);
-        boolean ok = supabase.update("users", orgUid, Map.of("pais", p.codigo(), "moneda", p.moneda()));
+    /**
+     * Guarda la ciudad ("MX:Guadalajara"), el país que sale de ella y la moneda de trabajo (la local
+     * del país o USD). Devuelve el país resultante, o null si la ciudad no es válida o no se guardó.
+     */
+    public Pais guardar(String orgUid, String ciudad, String moneda) {
+        var c = com.inmobilia.util.Ciudad.leer(ciudad);
+        if (c.isEmpty()) return null;
+        Pais p = Pais.de(c.get().pais()).conMoneda(moneda).enCiudad(c.get());
+        Map<String, Object> datos = new java.util.HashMap<>();
+        datos.put("pais", p.codigo());
+        datos.put("moneda", p.moneda());
+        datos.put("ciudad", p.ciudad()); // null = otra ciudad del país
+        boolean ok = supabase.update("users", orgUid, datos);
         cache.remove(orgUid);
-        return ok;
+        return ok ? p : null;
     }
 }

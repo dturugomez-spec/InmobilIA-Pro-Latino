@@ -41,22 +41,19 @@ public class ConfigController {
         return "config";
     }
 
-    /** 🌎 País de la inmobiliaria: moneda, impuesto, documentos fiscales, prefijo y zona horaria. */
+    /** 🌎 Ciudad de la inmobiliaria: de ella salen país (moneda, impuesto, documentos, leyes) y zona horaria. */
     @PostMapping("/pais")
-    public String savePais(@RequestParam String pais, @RequestParam(required = false) String moneda,
+    public String savePais(@RequestParam String ciudad, @RequestParam(required = false) String moneda,
                            HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         if (!"admin".equals(SessionUtils.role(session))) {
-            SessionUtils.flash(session, "Solo el administrador de la inmobiliaria puede cambiar el país.");
+            SessionUtils.flash(session, "Solo el administrador de la inmobiliaria puede cambiar la ciudad.");
             return "redirect:/config";
         }
-        if (paises.guardar(SessionUtils.uid(session), pais, moneda)) {
-            com.inmobilia.util.Pais p = com.inmobilia.util.Pais.de(pais).conMoneda(moneda);
-            SessionUtils.flash(session, p.bandera() + " País guardado: " + p.nombre() + ". Importes en "
-                    + p.moneda() + ", " + p.impuestoConTipo() + ", " + p.etiquetaIdFiscal() + ".");
-        } else {
-            SessionUtils.flash(session, "No se pudo guardar el país.");
-        }
+        com.inmobilia.util.Pais p = paises.guardar(SessionUtils.uid(session), ciudad, moneda);
+        SessionUtils.flash(session, p == null ? "No se pudo guardar la ciudad."
+                : p.bandera() + " Ubicación guardada: " + p.ubicacion() + ". Importes en " + p.moneda() + ", "
+                  + p.impuestoConTipo() + ", " + p.etiquetaIdFiscal() + " y leyes de " + p.nombre() + ".");
         return "redirect:/config";
     }
 

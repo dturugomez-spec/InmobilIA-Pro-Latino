@@ -4031,3 +4031,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS pais TEXT DEFAULT 'MX';
 ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS pais TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS moneda TEXT;
 ALTER TABLE portal_feeds ADD COLUMN IF NOT EXISTS feed_enabled BOOLEAN DEFAULT true;
+
+-- ===== Versión Latinoamérica (V101): ciudad de la inmobiliaria =====
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ciudad TEXT;
+ALTER TABLE solicitudes_cuenta ADD COLUMN IF NOT EXISTS ciudad TEXT;

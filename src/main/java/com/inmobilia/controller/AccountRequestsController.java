@@ -78,7 +78,11 @@ public class AccountRequestsController {
             data.put("empresa", form.get("empresa"));
             data.put("email", form.get("email") != null ? form.get("email").trim().toLowerCase() : "");
             data.put("telefono", form.get("telefono"));
-            data.put("pais", com.inmobilia.util.Pais.de(form.get("pais")).codigo());
+            // La ciudad decide el país (moneda, impuesto, leyes); "pais" queda por compatibilidad
+            var ciudad = com.inmobilia.util.Ciudad.leer(form.get("ciudad"))
+                    .or(() -> com.inmobilia.util.Ciudad.leer(form.get("pais")));
+            data.put("pais", ciudad.map(com.inmobilia.util.Ciudad::pais).orElse(com.inmobilia.util.Pais.POR_DEFECTO));
+            data.put("ciudad", ciudad.map(com.inmobilia.util.Ciudad::nombre).filter(n -> !n.isBlank()).orElse(null));
             data.put("plan", form.getOrDefault("plan", "pro"));
             data.put("num_propiedades", form.get("num_propiedades"));
             data.put("mensaje", form.get("mensaje"));
@@ -105,7 +109,7 @@ public class AccountRequestsController {
                     "  <div style='background:#f1f5f9;padding:20px;border-radius:10px;margin:20px 0'>" +
                     "    <p style='margin:4px 0'><strong>Nombre:</strong> %s</p>" +
                     "    <p style='margin:4px 0'><strong>Empresa:</strong> %s</p>" +
-                    "    <p style='margin:4px 0'><strong>País:</strong> %s</p>" +
+                    "    <p style='margin:4px 0'><strong>Ubicación:</strong> %s</p>" +
                     "    <p style='margin:4px 0'><strong>Email:</strong> <a href='mailto:%s'>%s</a></p>" +
                     "    <p style='margin:4px 0'><strong>Teléfono:</strong> <a href='tel:%s'>%s</a></p>" +
                     "    <p style='margin:4px 0'><strong>Plan solicitado:</strong> %s</p>" +
@@ -126,7 +130,8 @@ public class AccountRequestsController {
                     "  </p>" +
                     "</div>",
                     esc(form.get("nombre")), esc(form.get("empresa")),
-                    esc(com.inmobilia.util.Pais.de(form.get("pais")).nombre()),
+                    esc(com.inmobilia.util.Pais.de(data.get("pais")).enCiudad(com.inmobilia.util.Ciudad.leer(
+                            data.get("pais") + ":" + (data.get("ciudad") == null ? "" : data.get("ciudad"))).orElse(null)).ubicacion()),
                     esc(form.get("email")), esc(form.get("email")),
                     esc(form.get("telefono")), esc(form.get("telefono")),
                     esc(form.get("plan")), esc(form.get("num_propiedades")),
@@ -224,6 +229,7 @@ public class AccountRequestsController {
                 "empresa", empresa,
                 "pais", com.inmobilia.util.Pais.de(s.get("pais")).codigo()
         ), reg.get("id"));
+        if (s.get("ciudad") != null) supabase.update("users", reg.get("id"), Map.of("ciudad", s.get("ciudad")), reg.get("id"));
 
         // 3. Marcar solicitud como aprobada (ya NO se guarda ninguna contraseña)
         supabase.update("solicitudes_cuenta", id, Map.of(
@@ -385,6 +391,7 @@ public class AccountRequestsController {
                 "empresa", empresa,
                 "pais", com.inmobilia.util.Pais.de(s.get("pais")).codigo()
         ), reg.get("id"));
+        if (s.get("ciudad") != null) supabase.update("users", reg.get("id"), Map.of("ciudad", s.get("ciudad")), reg.get("id"));
 
         // 4. Marcar solicitud como aprobada + invalidar token (ya NO se guarda ninguna contraseña)
         supabase.update("solicitudes_cuenta", String.valueOf(s.get("id")), Map.of(

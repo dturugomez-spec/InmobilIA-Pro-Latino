@@ -68,7 +68,9 @@ public final class PreciosReferencia {
         return ciudad != null && USD_M2.getOrDefault(pais.codigo(), Map.of()).containsKey(normalizar(ciudad));
     }
 
+    /** La ciudad de la inmobiliaria si la eligió; si no, la principal del país. */
     public static String ciudadPrincipal(Pais pais) {
+        if (pais.ciudad() != null && !pais.ciudad().isBlank()) return pais.ciudad();
         return CAPITAL.getOrDefault(pais.codigo(), pais.nombre());
     }
 

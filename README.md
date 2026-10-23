@@ -5,7 +5,9 @@
 
 ## 🌎 Qué cambia respecto a la versión de España
 
-- **País por inmobiliaria** (`users.pais`, en Configuración y en la solicitud de cuenta): 17 países
+- **Ciudad por inmobiliaria** (`users.ciudad`, en Configuración y en la solicitud de cuenta): al elegir
+  la ciudad, la app deduce el país (`users.pais`: moneda, impuesto, documentos, leyes) y la zona horaria
+  exacta (Cancún, Tijuana, Punta Arenas…). Catálogo en `util/Ciudad.java`. 17 países
   (México, Colombia, Argentina, Chile, Perú, Ecuador, Uruguay, Paraguay, Bolivia, Venezuela, Costa Rica,
   Panamá, Guatemala, Honduras, El Salvador, Nicaragua y República Dominicana). Catálogo en `util/Pais.java`.
 - **Moneda**: todos los importes salen con la moneda del país (MXN, COP, ARS, CLP, PEN…) o en USD si la
@@ -23,8 +25,8 @@
   (CFDI, DIAN, ARCA, SII, SUNAT…) se timbra en el sistema autorizado de cada país.
 - **Planes en USD** (US$78 / US$198). Hay que crear los precios en dólares en Stripe.
 
-Migración de esquema: `src/main/resources/db/migration/V100__pais_latam.sql` (también al final de
-`FRESH_INSTALL_SUPABASE.sql`).
+Migraciones de esquema: `V100__pais_latam.sql` y `V101__ciudad.sql` en `src/main/resources/db/migration`
+(también al final de `FRESH_INSTALL_SUPABASE.sql`). `tools/reparar_esquema.sql` lo crea todo de una vez.
 
 ---
 

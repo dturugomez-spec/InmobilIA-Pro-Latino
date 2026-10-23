@@ -8,7 +8,8 @@ import java.util.Map;
 
 /**
  * País de la inmobiliaria: moneda, impuesto indirecto, documentos fiscales, prefijo y zona horaria.
- * Cada inmobiliaria elige el suyo en Configuración (columna users.pais) y la app se adapta.
+ * Cada inmobiliaria elige su ciudad (users.ciudad, ver {@link Ciudad}) y de ella salen el país
+ * (users.pais) y la zona horaria exacta; la app se adapta a esa jurisdicción.
  *
  * @param moneda      código ISO 4217 que se muestra junto a los importes ("1.500.000 MXN")
  * @param impuesto    nombre del impuesto al consumo (IVA, IGV, ITBIS, ITBMS, ISV)
@@ -17,10 +18,19 @@ import java.util.Map;
  * @param idPersonal  documento de identidad (INE, cédula, DNI, DPI, DUI…)
  * @param leyDatos    ley de protección de datos personales (null si no hay una ley general)
  * @param portales    portales inmobiliarios habituales del país, para textos y sugerencias
+ * @param ciudad      ciudad de la inmobiliaria (null si no la ha elegido)
  */
 public record Pais(String codigo, String nombre, String bandera, String moneda, Locale locale,
                    String impuesto, double tipoImpuesto, String idFiscal, String idPersonal,
-                   String prefijo, String zona, String leyDatos, String portales) {
+                   String prefijo, String zona, String leyDatos, String portales, String ciudad) {
+
+    /** País sin ciudad elegida (el del catálogo). */
+    public Pais(String codigo, String nombre, String bandera, String moneda, Locale locale,
+                String impuesto, double tipoImpuesto, String idFiscal, String idPersonal,
+                String prefijo, String zona, String leyDatos, String portales) {
+        this(codigo, nombre, bandera, moneda, locale, impuesto, tipoImpuesto, idFiscal, idPersonal,
+                prefijo, zona, leyDatos, portales, null);
+    }
 
     public static final String POR_DEFECTO = "MX";
 
@@ -91,6 +101,24 @@ public record Pais(String codigo, String nombre, String bandera, String moneda, 
 
     public ZoneId zonaId() { return ZoneId.of(zona); }
 
+    /** El mismo país con otra zona horaria (la de la ciudad: Cancún, Tijuana, Punta Arenas…). */
+    public Pais conZona(String otraZona) {
+        if (otraZona == null || otraZona.equals(zona)) return this;
+        return new Pais(codigo, nombre, bandera, moneda, locale, impuesto, tipoImpuesto, idFiscal, idPersonal,
+                prefijo, otraZona, leyDatos, portales, ciudad);
+    }
+
+    /** El país de la inmobiliaria situado en su ciudad: guarda el nombre y usa su zona horaria. */
+    public Pais enCiudad(Ciudad c) {
+        if (c == null || !c.pais().equals(codigo)) return this;
+        String nombreCiudad = c.nombre() == null || c.nombre().isBlank() ? null : c.nombre();
+        return new Pais(codigo, nombre, bandera, moneda, locale, impuesto, tipoImpuesto, idFiscal, idPersonal,
+                prefijo, c.zonaEfectiva(), leyDatos, portales, nombreCiudad);
+    }
+
+    /** "Guadalajara, México" o "México" si no hay ciudad. */
+    public String ubicacion() { return ciudad == null ? nombre : ciudad + ", " + nombre; }
+
     /** Moneda local del país (la de la tabla), aunque la inmobiliaria trabaje en USD. */
     public String monedaLocal() { return de(codigo).moneda(); }
 
@@ -100,7 +128,7 @@ public record Pais(String codigo, String nombre, String bandera, String moneda, 
         String m = otra.trim().toUpperCase(Locale.ROOT);
         if (!m.equals("USD") && !m.equals(monedaLocal())) return this;
         return new Pais(codigo, nombre, bandera, m, locale, impuesto, tipoImpuesto, idFiscal, idPersonal,
-                prefijo, zona, leyDatos, portales);
+                prefijo, zona, leyDatos, portales, ciudad);
     }
 
     /** Ley de datos para textos legales; genérico donde no hay una ley general. */
