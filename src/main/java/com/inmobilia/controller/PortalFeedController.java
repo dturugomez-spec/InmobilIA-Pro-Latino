@@ -1,7 +1,8 @@
 package com.inmobilia.controller;
 
-import com.inmobilia.service.PaisService;
+import com.inmobilia.service.PortalFeedXml;
 import com.inmobilia.service.SupabaseService;
+import com.inmobilia.util.ClientIp;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -13,26 +14,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.*;
 
 /**
- * Feed XML público para portales inmobiliarios.
+ * Exportación de la cartera a portales inmobiliarios con un enlace XML.
  *
- * Cada usuario tiene un feed_token único. Los portales del país (Inmuebles24, Finca Raíz,
- * Zonaprop, Portal Inmobiliario, Urbania…) o un integrador pueden leer esta URL vía cron.
- *
- * Formato: XML genérico de propiedades (referencia, operación, tipo, precio con moneda,
- * superficie, ubicación con país, características, fotos y contacto). Si un portal exige
- * su propio formato, se añade aquí un generador más.
+ * Cada inmobiliaria tiene un feed_token único. El feed genérico (ver {@link PortalFeedXml}) lleva la
+ * moneda y el país de la inmobiliaria; lo pueden importar los portales de su país o un integrador.
  */
 @Controller
 @RequiredArgsConstructor
 @Slf4j
 public class PortalFeedController {
 
+    static final Set<String> PORTALES = Set.of("feed");
+    private static final Set<String> OPERACIONES = Set.of("venta", "alquiler", "alquiler_temporal", "traspaso");
+
     private final SupabaseService supabase;
-    private final PaisService paises;
+    private final com.inmobilia.service.PaisService paises;
 
     // ===== Configuración (panel del usuario) =====
 
@@ -49,13 +50,46 @@ public class PortalFeedController {
             data.put("user_id", uid);
             data.put("created_at", OffsetDateTime.now().toString());
             feed = supabase.insert("portal_feeds", data);
+            if (feed == null) feed = new HashMap<>();
         } else {
             feed = rows.get(0);
         }
         model.addAttribute("feed", feed);
         model.addAttribute("baseUrl", com.inmobilia.util.UrlBase.BASE);
 
-        // Estadísticas últimos accesos
+        // Inmuebles: qué se publica y qué le falta a cada uno para anunciarse bien
+        List<Map<String, Object>> props = supabase.selectFilter("propiedades",
+                "user_id=eq." + uid + "&order=created_at.desc&limit=300");
+        Map<String, List<String>> galerias = galerias(uid, props);
+        boolean todas = Boolean.TRUE.equals(feed.get("publicar_todas"));
+        List<Map<String, Object>> inmuebles = new ArrayList<>();
+        int enPortales = 0;
+        for (Map<String, Object> p : props) {
+            Map<String, Object> n = PortalFeedXml.normalizar(p, galerias.get(String.valueOf(p.get("id"))));
+            boolean marcado = Boolean.TRUE.equals(p.get("publicar_portales"));
+            boolean sale = (todas || marcado) && PortalFeedXml.publicable(p, n);
+            if (sale) enPortales++;
+            Map<String, Object> fila = new LinkedHashMap<>();
+            fila.put("id", p.get("id"));
+            fila.put("titulo", n.get("titulo") != null ? n.get("titulo") : "Inmueble sin nombre");
+            fila.put("municipio", n.get("municipio"));
+            fila.put("precio", n.get("precio"));
+            fila.put("operacion", n.get("operacion"));
+            fila.put("fotos", ((List<?>) n.get("fotos")).size());
+            fila.put("marcado", marcado);
+            fila.put("sale", sale);
+            fila.put("faltan", String.join(", ", PortalFeedXml.faltan(n)));
+            inmuebles.add(fila);
+        }
+        model.addAttribute("inmuebles", inmuebles);
+        model.addAttribute("enPortales", enPortales);
+        com.inmobilia.util.Pais pais = com.inmobilia.util.PaisActual.get();
+        model.addAttribute("portales", List.of(
+                portal(feed, "feed", "Feed XML de propiedades", true,
+                        "Da este enlace al área técnica de tu portal o integrador. Portales habituales en "
+                                + pais.nombre() + ": " + pais.portales()
+                                + ". Si un portal pide su propio formato, avísanos y lo añadimos.")));
+
         List<Map<String, Object>> logs = supabase.selectFilter(
                 "portal_feed_logs", "user_id=eq." + uid + "&order=created_at.desc&limit=20");
         model.addAttribute("logs", logs);
@@ -78,10 +112,38 @@ public class PortalFeedController {
         data.put("updated_at", OffsetDateTime.now().toString());
 
         List<Map<String, Object>> rows = supabase.selectFilter("portal_feeds", "user_id=eq." + uid);
+        boolean ok = false;
         if (!rows.isEmpty()) {
-            supabase.update("portal_feeds", String.valueOf(rows.get(0).get("id")), data);
+            String id = String.valueOf(rows.get(0).get("id"));
+            ok = supabase.update("portal_feeds", id, data, uid);
         }
-        SessionUtils.flash(session, "✅ Configuración guardada");
+        SessionUtils.flash(session, ok ? "✅ Configuración guardada" : "⚠️ No se pudo guardar la configuración");
+        return "redirect:/feeds";
+    }
+
+    /** Marca qué inmuebles van a los portales y si son venta o alquiler. */
+    @PostMapping("/feeds/inmuebles")
+    public String guardarInmuebles(@RequestParam(name = "publicar", required = false) List<String> publicar,
+                                   @RequestParam Map<String, String> form, HttpSession session) {
+        String uid = SessionUtils.uid(session);
+        if (uid == null) return "redirect:/login";
+        Set<String> marcados = publicar == null ? Set.of() : new HashSet<>(publicar);
+        int cambios = 0, fallos = 0;
+        for (Map<String, Object> p : supabase.selectFilter("propiedades", "user_id=eq." + uid + "&limit=300")) {
+            String id = String.valueOf(p.get("id"));
+            if (!form.containsKey("op_" + id)) continue; // no estaba en la pantalla
+            Map<String, Object> upd = new LinkedHashMap<>();
+            boolean pub = marcados.contains(id);
+            if (pub != Boolean.TRUE.equals(p.get("publicar_portales"))) upd.put("publicar_portales", pub);
+            String op = form.get("op_" + id);
+            if (OPERACIONES.contains(op) && !op.equals(PortalFeedXml.normalizar(p, List.of()).get("operacion")))
+                upd.put("operacion", op);
+            if (upd.isEmpty()) continue;
+            if (supabase.update("propiedades", id, upd, uid)) cambios++; else fallos++;
+        }
+        SessionUtils.flash(session, fallos > 0
+                ? "⚠️ No se pudieron guardar " + fallos + " inmuebles (¿falta ejecutar la migración V86 en Supabase?)"
+                : cambios == 0 ? "Sin cambios" : "✅ " + cambios + " inmuebles actualizados");
         return "redirect:/feeds";
     }
 
@@ -93,7 +155,7 @@ public class PortalFeedController {
         if (!rows.isEmpty()) {
             String newToken = UUID.randomUUID().toString().replace("-", "");
             supabase.update("portal_feeds", String.valueOf(rows.get(0).get("id")),
-                    Map.of("feed_token", newToken, "updated_at", OffsetDateTime.now().toString()));
+                    Map.of("feed_token", newToken, "updated_at", OffsetDateTime.now().toString()), uid);
         }
         SessionUtils.flash(session, "🔄 Token regenerado");
         return "redirect:/feeds";
@@ -101,218 +163,81 @@ public class PortalFeedController {
 
     // ===== Endpoints públicos para portales =====
 
-    @GetMapping(value = "/portal/{token}/feed.xml", produces = MediaType.APPLICATION_XML_VALUE)
+    @GetMapping(value = "/portal/{token}/{portal}.xml", produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
-    public ResponseEntity<String> feed(@PathVariable String token, HttpServletRequest req) {
-        return generateFeed(token, "feed", req);
-    }
-
-    // ===== Lógica común =====
-
-    private ResponseEntity<String> generateFeed(String token, String portal, HttpServletRequest req) {
+    public ResponseEntity<String> feed(@PathVariable String token, @PathVariable String portal, HttpServletRequest req) {
+        if (!PORTALES.contains(portal) || !token.matches("[A-Za-z0-9]{8,64}")) return ResponseEntity.notFound().build();
         long t0 = System.currentTimeMillis();
 
         List<Map<String, Object>> feeds = supabase.selectFilter("portal_feeds", "feed_token=eq." + token);
-        if (feeds.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (feeds.isEmpty()) return ResponseEntity.notFound().build();
         Map<String, Object> cfg = feeds.get(0);
-
-        // Comprobar feed activo
-        if (Boolean.FALSE.equals(cfg.get("feed_enabled"))) {
-            return ResponseEntity.status(403).body("<error>Feed disabled</error>");
+        // Activo salvo que se haya desactivado
+        if (Boolean.FALSE.equals(cfg.get(portal + "_enabled"))) {
+            return ResponseEntity.status(403).body("<error>Portal disabled</error>");
         }
-
         String userId = String.valueOf(cfg.get("user_id"));
-        paises.usar(userId); // moneda y país de la inmobiliaria en el XML
+        com.inmobilia.util.Pais pais = paises.usar(userId); // moneda y país de la inmobiliaria en el XML
 
-        // Filtro propiedades
         StringBuilder f = new StringBuilder("user_id=eq.").append(userId);
-        if (!Boolean.TRUE.equals(cfg.get("publicar_todas"))) {
-            f.append("&publicar_portales=eq.true");
-        }
+        if (!Boolean.TRUE.equals(cfg.get("publicar_todas"))) f.append("&publicar_portales=eq.true");
         f.append("&limit=500");
+        List<Map<String, Object>> crudas = supabase.selectFilter("propiedades", f.toString());
+        Map<String, List<String>> galerias = galerias(userId, crudas);
+        List<Map<String, Object>> props = new ArrayList<>();
+        for (Map<String, Object> p : crudas) {
+            Map<String, Object> n = PortalFeedXml.normalizar(p, galerias.get(String.valueOf(p.get("id"))));
+            if (PortalFeedXml.publicable(p, n)) props.add(n);
+        }
 
-        List<Map<String, Object>> props = supabase.selectFilter("propiedades", f.toString());
-        props.removeIf(p -> "Reservado".equalsIgnoreCase(String.valueOf(p.get("status"))));
-        props = normalizarParaFeed(props);
+        String xml = PortalFeedXml.generico(cfg, props, com.inmobilia.util.UrlBase.BASE, pais);
 
-        String xml = buildFeedXml(cfg, props);
-
-        // Log
         try {
+            String ip = ClientIp.of(req);
             Map<String, Object> logData = new LinkedHashMap<>();
             logData.put("user_id", userId);
             logData.put("portal", portal);
-            logData.put("ip", req.getRemoteAddr());
+            logData.put("ip", ip);
             logData.put("user_agent", req.getHeader("User-Agent"));
             logData.put("propiedades_count", props.size());
-            logData.put("bytes_servidos", xml.getBytes().length);
-            logData.put("duracion_ms", (int)(System.currentTimeMillis() - t0));
+            logData.put("bytes_servidos", xml.getBytes(StandardCharsets.UTF_8).length);
+            logData.put("duracion_ms", (int) (System.currentTimeMillis() - t0));
             logData.put("created_at", OffsetDateTime.now().toString());
             supabase.insert("portal_feed_logs", logData);
 
-            // Incrementar contador
-            int total = ((Number) cfg.getOrDefault("accesos_total", 0)).intValue() + 1;
+            int total = cfg.get("accesos_total") instanceof Number n ? n.intValue() + 1 : 1;
             supabase.update("portal_feeds", String.valueOf(cfg.get("id")), Map.of(
                     "accesos_total", total,
                     "ultimo_acceso", OffsetDateTime.now().toString(),
-                    "ultimo_ip", req.getRemoteAddr()
-            ));
+                    "ultimo_ip", ip), userId);
         } catch (Exception e) { log.warn("Log feed err: {}", e.getMessage()); }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_XML)
-                .body(xml);
+        return ResponseEntity.ok().contentType(new MediaType("application", "xml", StandardCharsets.UTF_8)).body(xml);
     }
 
-    // ===== Normalización al vocabulario de los feeds =====
+    private static Map<String, Object> portal(Map<String, Object> feed, String clave, String nombre, boolean listo, String estado) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("clave", clave);
+        m.put("nombre", nombre);
+        m.put("listo", listo);
+        m.put("estado", estado);
+        m.put("activo", !Boolean.FALSE.equals(feed.get(clave + "_enabled")));
+        m.put("url", com.inmobilia.util.UrlBase.BASE + "/portal/" + feed.get("feed_token") + "/" + clave + ".xml");
+        return m;
+    }
 
-    /**
-     * Convierte cada propiedad del esquema real (name/city/current_value/area_m2/...)
-     * a las claves en español que usa el generador XML.
-     * Los extras (garaje, ascensor...) se detectan en la descripción.
-     */
-    private List<Map<String, Object>> normalizarParaFeed(List<Map<String, Object>> props) {
-        List<Map<String, Object>> out = new ArrayList<>();
-        for (Map<String, Object> p : props) {
-            Map<String, Object> n = new LinkedHashMap<>(p);
-            Object precio = p.get("current_value") != null ? p.get("current_value") : p.get("purchase_price");
-            n.put("precio", precio);
-            n.put("metros_cuadrados", p.get("area_m2"));
-            n.put("habitaciones", p.get("bedrooms"));
-            n.put("banos", p.get("bathrooms"));
-            n.put("direccion", p.getOrDefault("address", p.get("name")));
-            n.put("titulo", p.getOrDefault("name", p.get("address")));
-            n.put("municipio", p.get("city"));
-            n.put("provincia", p.get("city"));
-            n.put("codigo_postal", p.get("postal_code"));
-            n.put("descripcion", p.get("notes"));
-            n.put("referencia", p.get("reference"));
-            n.put("tipo", p.get("type"));
-            n.put("operacion", "venta");
-            if (p.get("featured_photo") != null && !String.valueOf(p.get("featured_photo")).isBlank()) {
-                n.put("fotos", List.of(p.get("featured_photo")));
+    /** Fotos de la galería de cada inmueble (las de la propia inmobiliaria), en pocas consultas. */
+    private Map<String, List<String>> galerias(String orgId, List<Map<String, Object>> props) {
+        List<String> ids = props.stream().map(p -> String.valueOf(p.get("id")))
+                .filter(s -> s.matches("[0-9a-fA-F-]{1,64}")).toList();
+        Map<String, List<String>> out = new HashMap<>();
+        for (int i = 0; i < ids.size(); i += 100) {
+            String lote = String.join(",", ids.subList(i, Math.min(i + 100, ids.size())));
+            for (Map<String, Object> a : supabase.selectFilter("attachments", "org_id=eq." + orgId
+                    + "&entity_type=eq.propiedad&file_type=eq.image&entity_id=in.(" + lote + ")&order=created_at.asc&limit=5000")) {
+                out.computeIfAbsent(String.valueOf(a.get("entity_id")), k -> new ArrayList<>()).add(String.valueOf(a.get("url")));
             }
-            String notas = String.valueOf(p.getOrDefault("notes", "")).toLowerCase();
-            n.put("garaje", notas.contains("garaje"));
-            n.put("ascensor", notas.contains("ascensor"));
-            n.put("terraza", notas.contains("terraza"));
-            n.put("piscina", notas.contains("piscina"));
-            n.put("amueblado", notas.contains("amueblad"));
-            n.put("aire_acondicionado", notas.contains("aire acondicionado") || notas.contains("a/a"));
-            out.add(n);
         }
         return out;
     }
-
-    // ===== Generadores XML =====
-
-    private String buildFeedXml(Map<String, Object> cfg, List<Map<String, Object>> props) {
-        com.inmobilia.util.Pais pais = com.inmobilia.util.PaisActual.get();
-        StringBuilder x = new StringBuilder();
-        x.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        x.append("<properties xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.0\">\n");
-        for (Map<String, Object> p : props) {
-            x.append("  <property>\n");
-            x.append("    <reference>").append(esc(p.get("referencia") != null ? p.get("referencia") : p.get("id"))).append("</reference>\n");
-            x.append("    <operation>").append(mapOperation(str(p.get("operacion")))).append("</operation>\n");
-            x.append("    <property_type>").append(mapType(str(p.get("tipo")))).append("</property_type>\n");
-            x.append("    <price>").append(num(p.get("precio"))).append("</price>\n");
-            x.append("    <currency>").append(pais.moneda()).append("</currency>\n");
-            x.append("    <surface>").append(num(p.get("metros_cuadrados"))).append("</surface>\n");
-            x.append("    <rooms>").append(num(p.get("habitaciones"))).append("</rooms>\n");
-            x.append("    <bathrooms>").append(num(p.get("banos"))).append("</bathrooms>\n");
-            x.append("    <address>").append(esc(p.get("direccion"))).append("</address>\n");
-            x.append("    <town>").append(esc(p.get("municipio"))).append("</town>\n");
-            x.append("    <province>").append(esc(p.get("provincia"))).append("</province>\n");
-            x.append("    <country>").append(pais.codigo()).append("</country>\n");
-            if (p.get("codigo_postal") != null) x.append("    <postal_code>").append(esc(p.get("codigo_postal"))).append("</postal_code>\n");
-            if (p.get("lat") != null && p.get("lng") != null) {
-                x.append("    <latitude>").append(num(p.get("lat"))).append("</latitude>\n");
-                x.append("    <longitude>").append(num(p.get("lng"))).append("</longitude>\n");
-            }
-            x.append("    <description><![CDATA[").append(s(p.get("descripcion"))).append("]]></description>\n");
-
-            // Características
-            x.append("    <features>\n");
-            if (Boolean.TRUE.equals(p.get("garaje"))) x.append("      <feature>garage</feature>\n");
-            if (Boolean.TRUE.equals(p.get("ascensor"))) x.append("      <feature>lift</feature>\n");
-            if (Boolean.TRUE.equals(p.get("terraza"))) x.append("      <feature>terrace</feature>\n");
-            if (Boolean.TRUE.equals(p.get("piscina"))) x.append("      <feature>swimming_pool</feature>\n");
-            if (Boolean.TRUE.equals(p.get("amueblado"))) x.append("      <feature>furnished</feature>\n");
-            if (Boolean.TRUE.equals(p.get("aire_acondicionado"))) x.append("      <feature>air_conditioning</feature>\n");
-            x.append("    </features>\n");
-
-            // Eficiencia energética
-            if (p.get("eficiencia_energetica") != null) {
-                x.append("    <energy_certificate>\n");
-                x.append("      <consumption>").append(esc(p.get("eficiencia_energetica"))).append("</consumption>\n");
-                x.append("    </energy_certificate>\n");
-            }
-
-            // Fotos
-            Object fotos = p.get("fotos");
-            if (fotos instanceof List) {
-                x.append("    <images>\n");
-                int order = 1;
-                for (Object f : (List<?>) fotos) {
-                    x.append("      <image order=\"").append(order++).append("\">").append(esc(str(f))).append("</image>\n");
-                }
-                x.append("    </images>\n");
-            }
-
-            // Contacto
-            x.append("    <contact>\n");
-            x.append("      <name>").append(esc(cfg.get("company_name"))).append("</name>\n");
-            x.append("      <phone>").append(esc(cfg.get("company_phone"))).append("</phone>\n");
-            x.append("      <email>").append(esc(cfg.get("company_email"))).append("</email>\n");
-            x.append("    </contact>\n");
-
-            x.append("  </property>\n");
-        }
-        x.append("</properties>\n");
-        return x.toString();
-    }
-
-    // Mapeos
-    private String mapOperation(String o) {
-        if (o == null) return "sale";
-        return switch (o.toLowerCase()) {
-            case "alquiler", "alquiler_temporal" -> "rent";
-            case "transfer", "traspaso" -> "transfer";
-            default -> "sale";
-        };
-    }
-
-    private String mapType(String t) {
-        if (t == null) return "flat";
-        return switch (t.toLowerCase()) {
-            case "piso", "apartamento", "departamento", "depto" -> "flat";
-            case "casa", "chalet", "casa en condominio" -> "house";
-            case "atico", "ático" -> "penthouse";
-            case "duplex", "dúplex" -> "duplex";
-            case "estudio" -> "studio";
-            case "local" -> "premises";
-            case "oficina" -> "office";
-            case "garaje" -> "garage";
-            case "trastero", "bodega" -> "storage_room";
-            case "terreno", "parcela", "lote" -> "land";
-            default -> "flat";
-        };
-    }
-
-    // Helpers
-    private static String esc(Object o) {
-        if (o == null) return "";
-        return String.valueOf(o)
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&apos;");
-    }
-    private static String s(Object o) { return o == null ? "" : String.valueOf(o); }
-    private static String str(Object o) { return o == null ? null : String.valueOf(o); }
-    private static String num(Object o) { if (o == null) return "0"; try { return String.valueOf(Double.parseDouble(String.valueOf(o))); } catch(Exception e) { return "0"; } }
 }

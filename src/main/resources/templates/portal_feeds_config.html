@@ -2,154 +2,210 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
-<head><title>Feeds para portales</title></head>
+<head><title>Portales inmobiliarios</title></head>
 <body>
 <div layout:fragment="content">
 
     <div class="rounded-xl bg-gradient-to-br from-orange-600 to-red-800 p-6 mb-5 text-white">
         <h2 class="text-xl font-bold flex items-center gap-2">
-            <i data-lucide="rss" class="h-6 w-6"></i> Feeds XML para portales inmobiliarios
+            <i data-lucide="rss" class="h-6 w-6"></i> Publicar en portales inmobiliarios
         </h2>
         <p class="text-sm text-white/80 mt-1">
-            Comparte esta URL con el área técnica de tu portal o integrador para que importe tus propiedades
-            automáticamente. Portales habituales en <span th:text="${pais.nombre()}">tu país</span>:
-            <span th:text="${pais.portales()}">—</span>.
+            Cada portal tiene un enlace con tu cartera que se actualiza solo: cuando cambias un precio o una foto aquí,
+            el portal lo recoge en su siguiente lectura (normalmente una vez al día).
         </p>
     </div>
 
     <!-- KPIs -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
-            <p class="text-[10px] uppercase text-slate-500">Accesos totales</p>
+            <p class="text-[10px] uppercase text-slate-500">Inmuebles en los portales</p>
+            <p class="text-xl font-bold mt-1" th:text="${enPortales}">0</p>
+        </div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Lecturas de los portales</p>
             <p class="text-xl font-bold mt-1" th:text="${feed.get('accesos_total') ?: 0}">0</p>
         </div>
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
-            <p class="text-[10px] uppercase text-slate-500">Último acceso</p>
+            <p class="text-[10px] uppercase text-slate-500">Última lectura</p>
             <p class="text-xs font-mono mt-1" th:text="${feed.get('ultimo_acceso') != null ? #strings.substring(feed.get('ultimo_acceso'), 0, 16) : 'Nunca'}">—</p>
         </div>
-        <div class="rounded-xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
-            <p class="text-[10px] uppercase text-emerald-700">Estado</p>
-            <p class="text-sm font-bold text-emerald-700 mt-1"> Activo</p>
-        </div>
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
-            <p class="text-[10px] uppercase text-slate-500">Última IP</p>
-            <p class="text-xs font-mono mt-1" th:text="${feed.get('ultimo_ip') ?: '—'}">—</p>
+            <p class="text-[10px] uppercase text-slate-500">Inmuebles en tu cartera</p>
+            <p class="text-xl font-bold mt-1" th:text="${inmuebles.size()}">0</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        <!-- URLs de los feeds -->
         <div class="lg:col-span-2 space-y-4">
+            <!-- Enlaces por portal -->
             <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
                 <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
-                    <i data-lucide="link" class="h-4 w-4"></i> URLs públicas de los feeds
+                    <i data-lucide="link" class="h-4 w-4"></i> Enlaces para los portales
                 </h3>
-
                 <div class="space-y-3">
-                    <div class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-sm flex items-center gap-1"> Feed XML de propiedades</p>
-                            <span th:unless="${feed.get('feed_enabled') == false}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ON</span>
-                            <span th:if="${feed.get('feed_enabled') == false}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">OFF</span>
+                    <div th:each="pt : ${portales}" class="border border-slate-200 dark:border-neutral-800 rounded-lg p-3">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <p class="font-semibold text-sm" th:text="${pt.get('nombre')}">Portal</p>
+                            <span th:if="${pt.get('listo') and pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">LISTO</span>
+                            <span th:if="${!pt.get('listo') and pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">PENDIENTE DEL PORTAL</span>
+                            <span th:unless="${pt.get('activo')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">DESACTIVADO</span>
                         </div>
+                        <p class="text-xs text-slate-500 mb-2" th:text="${pt.get('estado')}">—</p>
                         <div class="flex gap-1">
-                            <input type="text" readonly th:value="${baseUrl + '/portal/' + feed.get('feed_token') + '/feed.xml'}" class="flex-1 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
-                            <button onclick="copy(this)" th:attr="data-url=${baseUrl + '/portal/' + feed.get('feed_token') + '/feed.xml'}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">Copiar</button>
+                            <input type="text" readonly th:value="${pt.get('url')}" class="flex-1 min-w-0 px-2 py-1.5 text-xs font-mono border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                            <button type="button" onclick="copiar(this)" th:data-url="${pt.get('url')}" class="px-3 py-1.5 text-xs rounded bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800">Copiar</button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-2">Incluye precio en <span th:text="${pais.moneda()}">MXN</span>, país, superficie, características, fotos y datos de contacto. Si un portal pide su propio formato, avísanos y lo añadimos.</p>
                     </div>
                 </div>
 
-                <form method="post" action="/feeds/regenerar-token" class="mt-4 pt-3 border-t border-slate-100 dark:border-neutral-800" onsubmit="return confirm('Esto invalidará las URLs actuales. Tendrás que volver a darlas de alta en los portales. ¿Continuar?')">
-                    <button class="text-xs text-red-600 hover:underline"> Regenerar token (invalida URLs actuales)</button>
+                <form method="post" action="/feeds/regenerar-token" class="mt-4 pt-3 border-t border-slate-100 dark:border-neutral-800" onsubmit="return confirm('Esto invalidará los enlaces actuales. Tendrás que volver a darlos en los portales. ¿Continuar?')">
+                    <button class="text-xs text-red-600 hover:underline">Cambiar los enlaces (invalida los actuales)</button>
                 </form>
             </div>
 
-            <!-- Logs accesos -->
+            <!-- Qué se publica -->
+            <form method="post" action="/feeds/inmuebles" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-semibold text-sm flex items-center gap-1.5"><i data-lucide="home" class="h-4 w-4"></i> Qué se publica</h3>
+                        <p class="text-xs text-slate-500 mt-0.5" th:if="${#bools.isTrue(feed.get('publicar_todas'))}">Tienes activado «Publicar todos»: salen todos los disponibles con precio.</p>
+                        <p class="text-xs text-slate-500 mt-0.5" th:unless="${#bools.isTrue(feed.get('publicar_todas'))}">Marca los inmuebles que quieres anunciar. Sin precio no se publican; reservados, vendidos y alquilados tampoco.</p>
+                    </div>
+                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium">Guardar selección</button>
+                </div>
+                <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead class="bg-slate-50 dark:bg-neutral-800/50">
+                    <tr class="text-[10px] uppercase text-slate-500">
+                        <th class="text-left px-3 py-2">Publicar</th>
+                        <th class="text-left px-3 py-2">Inmueble</th>
+                        <th class="text-left px-3 py-2">Operación</th>
+                        <th class="text-right px-3 py-2">Precio</th>
+                        <th class="text-right px-3 py-2">Fotos</th>
+                        <th class="text-left px-3 py-2">Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="i : ${inmuebles}">
+                        <td class="px-3 py-2"><input type="checkbox" name="publicar" th:value="${i.get('id')}" th:checked="${i.get('marcado')}" class="rounded"></td>
+                        <td class="px-3 py-2">
+                            <p class="font-medium" th:text="${i.get('titulo')}">—</p>
+                            <p class="text-slate-500" th:text="${i.get('municipio')}">—</p>
+                        </td>
+                        <td class="px-3 py-2">
+                            <select th:name="${'op_' + i.get('id')}" class="px-2 py-1 border border-slate-200 rounded dark:bg-neutral-800 dark:border-neutral-700">
+                                <option value="venta" th:selected="${i.get('operacion') == 'venta'}">Venta</option>
+                                <option value="alquiler" th:selected="${i.get('operacion') == 'alquiler'}">Alquiler</option>
+                                <option value="alquiler_temporal" th:selected="${i.get('operacion') == 'alquiler_temporal'}">Alquiler temporal</option>
+                                <option value="traspaso" th:selected="${i.get('operacion') == 'traspaso'}">Traspaso</option>
+                            </select>
+                        </td>
+                        <td class="px-3 py-2 text-right font-mono" th:text="${i.get('precio') != null ? #numbers.formatDecimal(i.get('precio'), 1, 'DEFAULT', 0, 'DEFAULT') + ' ' + mon : '—'}">—</td>
+                        <td class="px-3 py-2 text-right font-mono" th:text="${i.get('fotos')}">0</td>
+                        <td class="px-3 py-2">
+                            <span th:if="${i.get('sale')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">En portales</span>
+                            <span th:unless="${i.get('sale')}" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">No sale</span>
+                            <p th:if="${!#strings.isEmpty(i.get('faltan'))}" class="text-[10px] text-amber-700 mt-1" th:text="${'Falta: ' + i.get('faltan')}">—</p>
+                        </td>
+                    </tr>
+                    <tr th:if="${inmuebles.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500">Aún no tienes inmuebles en la cartera.</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </form>
+
+            <!-- Lecturas de los portales -->
             <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
                 <div class="p-4 border-b border-slate-100 dark:border-neutral-800">
                     <h3 class="font-semibold text-sm flex items-center gap-1.5">
-                        <i data-lucide="activity" class="h-4 w-4"></i> Últimos accesos
+                        <i data-lucide="activity" class="h-4 w-4"></i> Últimas lecturas de los portales
                     </h3>
                 </div>
+                <div class="overflow-x-auto">
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 dark:bg-neutral-800/50">
                     <tr class="text-[10px] uppercase text-slate-500">
                         <th class="text-left px-3 py-2">Fecha</th>
                         <th class="text-left px-3 py-2">Portal</th>
-                        <th class="text-left px-3 py-2">IP</th>
-                        <th class="text-right px-3 py-2">Propiedades</th>
+                        <th class="text-right px-3 py-2">Inmuebles</th>
                         <th class="text-right px-3 py-2">Tamaño</th>
-                        <th class="text-right px-3 py-2">Tiempo</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
                     <tr th:each="l : ${logs}">
                         <td class="px-3 py-2 font-mono" th:text="${#strings.substring(l.get('created_at'), 0, 16)}">—</td>
                         <td class="px-3 py-2 capitalize" th:text="${l.get('portal')}">—</td>
-                        <td class="px-3 py-2 font-mono text-slate-500" th:text="${l.get('ip')}">—</td>
                         <td class="px-3 py-2 text-right font-mono" th:text="${l.get('propiedades_count')}">—</td>
                         <td class="px-3 py-2 text-right font-mono" th:text="${l.get('bytes_servidos') != null ? #numbers.formatDecimal(l.get('bytes_servidos') / 1024.0, 1, 1) + ' KB' : '—'}">—</td>
-                        <td class="px-3 py-2 text-right font-mono" th:text="${l.get('duracion_ms') + ' ms'}">—</td>
                     </tr>
-                    <tr th:if="${logs.isEmpty()}"><td colspan="6" class="py-8 text-center text-slate-500">Sin accesos aún.</td></tr>
+                    <tr th:if="${logs.isEmpty()}"><td colspan="4" class="py-8 text-center text-slate-500">Ningún portal ha leído tus enlaces todavía.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
-        <!-- Form configuración -->
-        <form method="post" action="/feeds/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
-            <h3 class="font-semibold text-sm mb-2"> Configuración</h3>
-
-            <div>
-                <label class="block text-xs font-medium mb-1">Nombre empresa</label>
-                <input type="text" name="company_name" th:value="${feed.get('company_name')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
-            </div>
-            <div>
-                <label class="block text-xs font-medium mb-1">Teléfono</label>
-                <input type="text" name="company_phone" th:value="${feed.get('company_phone')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
-            </div>
-            <div>
-                <label class="block text-xs font-medium mb-1">Email contacto</label>
-                <input type="email" name="company_email" th:value="${feed.get('company_email')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
-            </div>
-            <div>
-                <label class="block text-xs font-medium mb-1">Web</label>
-                <input type="url" name="company_website" th:value="${feed.get('company_website')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
-            </div>
-            <div>
-                <label class="block text-xs font-medium mb-1">Logo (URL)</label>
-                <input type="url" name="company_logo_url" th:value="${feed.get('company_logo_url')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+        <div class="space-y-4">
+            <!-- Cómo se activa -->
+            <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-800 p-5 text-xs text-amber-900 dark:text-amber-100 space-y-2">
+                <h3 class="font-semibold text-sm">Cómo se activa en tu portal</h3>
+                <p>Copia el enlace del feed y dáselo al área técnica de tu portal (sección de importación o carga por XML)
+                    o a tu integrador. Portales habituales en <span th:text="${pais.nombre()}">tu país</span>:
+                    <span th:text="${pais.portales()}">—</span>.</p>
+                <p>El feed lleva los precios en <strong th:text="${pais.moneda()}">MXN</strong> y el país de tu inmobiliaria.
+                    Si un portal exige su propio formato, avísanos y lo añadimos. Necesitas tener contratado el portal.</p>
             </div>
 
-            <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-1">
-                <p class="text-xs font-semibold mb-2">Estado del feed</p>
-                <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="feed_enabled" th:checked="${feed.get('feed_enabled') != false}" class="rounded"> Feed activo</label>
-            </div>
+            <!-- Configuración -->
+            <form method="post" action="/feeds/guardar" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+                <h3 class="font-semibold text-sm mb-2">Datos de contacto en los anuncios</h3>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Nombre empresa</label>
+                    <input type="text" name="company_name" th:value="${feed.get('company_name')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Teléfono</label>
+                    <input type="text" name="company_phone" th:value="${feed.get('company_phone')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Email contacto</label>
+                    <input type="email" name="company_email" th:value="${feed.get('company_email')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Web</label>
+                    <input type="url" name="company_website" th:value="${feed.get('company_website')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Logo (URL)</label>
+                    <input type="url" name="company_logo_url" th:value="${feed.get('company_logo_url')}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                </div>
 
-            <div class="pt-3 border-t border-slate-100 dark:border-neutral-800">
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="publicar_todas" th:checked="${feed.get('publicar_todas')}" class="rounded">
-                    Publicar TODAS las propiedades activas
-                </label>
-                <p class="text-[10px] text-slate-500 mt-1">Si no, solo las marcadas como "publicar en portales"</p>
-            </div>
+                <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-1">
+                    <p class="text-xs font-semibold mb-2">Enlaces activos</p>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="feed_enabled" th:checked="${feed.get('feed_enabled') != false}" class="rounded"> Feed XML de propiedades</label>
+                </div>
 
-            <button type="submit" class="w-full mt-2 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium">
-                <i data-lucide="save" class="h-4 w-4 inline-block"></i> Guardar
-            </button>
-        </form>
+                <div class="pt-3 border-t border-slate-100 dark:border-neutral-800">
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="publicar_todas" th:checked="${#bools.isTrue(feed.get('publicar_todas'))}" class="rounded">
+                        Publicar todos los inmuebles disponibles
+                    </label>
+                    <p class="text-[10px] text-slate-500 mt-1">Si no, solo los marcados en «Qué se publica».</p>
+                </div>
+
+                <button type="submit" class="w-full mt-2 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium">
+                    <i data-lucide="save" class="h-4 w-4 inline-block"></i> Guardar
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
-        function copy(btn) {
-            const url = btn.dataset.url;
-            navigator.clipboard.writeText(url);
-            btn.innerHTML = '';
-            setTimeout(() => btn.innerHTML = '', 1500);
-            if (window.toast) toast('URL copiada al portapapeles', 'ok');
+        function copiar(btn) {
+            navigator.clipboard.writeText(btn.dataset.url);
+            if (window.toast) toast('Enlace copiado', 'ok');
         }
     </script>
 
