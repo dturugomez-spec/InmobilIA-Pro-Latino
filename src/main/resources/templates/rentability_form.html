@@ -20,6 +20,17 @@
         <!-- Formulario -->
         <div class="xl:col-span-2 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-4">
 
+            <div th:if="${!propiedades.isEmpty()}">
+                <label class="block text-xs font-medium mb-1">Rellenar con un inmueble de tu cartera (opcional)</label>
+                <select x-model="propiedadId" @change="desdeInmueble($event.target.selectedOptions[0])"
+                        class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                    <option value="">— Ninguno —</option>
+                    <option th:each="p : ${propiedades}" th:value="${p.get('id')}"
+                            th:attr="data-precio=${p.get('purchase_price') ?: p.get('current_value')},data-renta=${p.get('rental_income')}"
+                            th:text="${p.get('name') ?: p.get('address')}">Inmueble</option>
+                </select>
+            </div>
+
             <details open class="group">
                 <summary class="font-semibold text-sm cursor-pointer flex items-center gap-1 text-emerald-700">
                     <i data-lucide="chevron-right" class="h-4 w-4 group-open:rotate-90 transition"></i>  Inversión inicial
@@ -119,10 +130,23 @@
                 </div>
             </details>
 
-            <button @click="calc()" :disabled="loading"
+            <button type="button" @click="calc()" :disabled="loading"
                     class="w-full mt-3 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium disabled:opacity-60">
                 <i data-lucide="calculator" class="h-4 w-4"></i> <span x-text="loading ? 'Calculando...' : 'Analizar rentabilidad'"></span>
             </button>
+            <p x-show="error" x-text="error" class="text-sm text-red-600"></p>
+
+            <!-- Guardar -->
+            <div x-show="result.ok" class="pt-4 border-t border-slate-100 dark:border-neutral-800 space-y-2">
+                <label class="block text-xs font-medium">Guardar este análisis</label>
+                <input type="text" x-model="nombre" maxlength="120" placeholder="Ej.: Departamento calle Mayor 12"
+                       class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg dark:bg-neutral-800 dark:border-neutral-700">
+                <button type="button" @click="guardar()" :disabled="guardando"
+                        class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-neutral-800 ring-1 ring-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium disabled:opacity-60">
+                    <i data-lucide="save" class="h-4 w-4"></i> <span x-text="guardando ? 'Guardando…' : 'Guardar análisis'"></span>
+                </button>
+                <p x-show="guardado" class="text-xs text-emerald-700">Guardado. <a href="/rentabilidad" class="underline">Ver mis análisis</a></p>
+            </div>
         </div>
 
         <!-- Resultados -->
@@ -205,7 +229,7 @@
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
-                        <template x-for="r in result.proyeccion">
+                        <template x-for="r in (result.proyeccion || [])">
                             <tr>
                                 <td class="px-3 py-2 font-mono font-bold" x-text="r.year"></td>
                                 <td class="px-3 py-2 text-right font-mono" x-text="fmt(r.rentaMensual) + (' ' + (window.MON||''))"></td>
@@ -236,8 +260,15 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        // El gráfico va FUERA del estado de Alpine: antes se enviaba con el formulario
+        // (JSON.stringify de todo el estado) y, al tener referencias circulares, la segunda
+        // pulsación de "Analizar" fallaba en silencio y no aparecía nada.
+        let graficoRent = null;
+        const CAMPOS_RENT = ['precioCompra', 'gastosCompra', 'reformas', 'mobiliario', 'hipoteca', 'capitalHipoteca',
+            'tipoInteres', 'plazoAnos', 'rentaMensual', 'incrementoRentaAnual', 'ibi', 'comunidad', 'seguroHogar',
+            'seguroImpago', 'mantenimiento', 'gestion', 'otrosGastos', 'tasaVacancia', 'revalorizacionAnual', 'horizonteAnos'];
         function rentAnalyzer() {
             return {
                 precioCompra: 200000, gastosCompra: 20000, reformas: 10000, mobiliario: 5000,
@@ -246,28 +277,68 @@
                 ibi: 400, comunidad: 50, seguroHogar: 250, seguroImpago: 350,
                 mantenimiento: 600, gestion: 0, otrosGastos: 100, tasaVacancia: 5.0,
                 revalorizacionAnual: 3.0, horizonteAnos: 15,
-                loading: false, result: {}, chart: null,
+                propiedadId: '', nombre: '',
+                loading: false, result: {}, error: '', guardando: false, guardado: false,
                 fmt(v) { return new Intl.NumberFormat(window.LOC||'es', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0); },
+                datos() {
+                    const d = {};
+                    CAMPOS_RENT.forEach(k => d[k] = this[k]);
+                    return d;
+                },
+                desdeInmueble(opt) {
+                    if (!opt || !opt.value) return;
+                    const precio = parseFloat(opt.dataset.precio), renta = parseFloat(opt.dataset.renta);
+                    if (precio > 0) { this.precioCompra = precio; this.capitalHipoteca = Math.round(precio * 0.8); this.gastosCompra = Math.round(precio * 0.1); }
+                    if (renta > 0) this.rentaMensual = renta;
+                    if (!this.nombre) this.nombre = opt.textContent.trim();
+                    this.calc();
+                },
                 async calc() {
-                    this.loading = true;
+                    this.loading = true; this.error = ''; this.guardado = false;
                     try {
                         const res = await fetch('/rentabilidad/calcular', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.$data)
+                            body: JSON.stringify(this.datos())
                         });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
                         this.result = await res.json();
                         this.$nextTick(() => { this.render(); if (window.lucide) window.lucide.createIcons(); });
-                    } catch(e) { this.result = { error: 'Error' }; }
+                    } catch (e) {
+                        this.result = {};
+                        this.error = 'No se pudo calcular. Recarga la página e inténtalo de nuevo (puede que la sesión haya caducado).';
+                    }
                     this.loading = false;
                 },
-                render() {
+                async guardar() {
                     if (!this.result.ok) return;
+                    this.guardando = true; this.error = '';
+                    try {
+                        const r = this.result;
+                        const res = await fetch('/rentabilidad/guardar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(Object.assign(this.datos(), {
+                                nombre: this.nombre || 'Análisis', propiedadId: this.propiedadId || null,
+                                rentabilidadBruta: r.rentabilidadBruta, rentabilidadNeta: r.rentabilidadNeta,
+                                cashOnCash: r.cashOnCash, tir: r.tir, cuotaMensual: r.cuotaMensualHipoteca
+                            }))
+                        });
+                        const d = await res.json();
+                        if (!d.ok) throw new Error(d.error || 'error');
+                        this.guardado = true;
+                    } catch (e) {
+                        this.error = 'No se pudo guardar el análisis. Inténtalo de nuevo.';
+                    }
+                    this.guardando = false;
+                },
+                render() {
+                    if (!this.result.ok || typeof Chart === 'undefined') return;
                     const ctx = document.getElementById('rentChart');
                     if (!ctx) return;
-                    if (this.chart) this.chart.destroy();
+                    if (graficoRent) graficoRent.destroy();
                     const labels = this.result.proyeccion.map(r => 'Año ' + r.year);
-                    this.chart = new Chart(ctx, {
+                    graficoRent = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels,

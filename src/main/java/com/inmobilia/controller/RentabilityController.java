@@ -189,10 +189,19 @@ public class RentabilityController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return Map.of("ok", false);
 
+        if (pd(body.get("precioCompra")) <= 0 || pd(body.get("rentaMensual")) <= 0) {
+            return Map.of("ok", false, "error", "Faltan el precio de compra o la renta");
+        }
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("user_id", uid);
-        data.put("propiedad_id", body.get("propiedadId"));
-        data.put("nombre", body.getOrDefault("nombre", "Análisis"));
+        // Solo un inmueble de esta inmobiliaria
+        String propiedadId = body.get("propiedadId") == null ? "" : String.valueOf(body.get("propiedadId"));
+        if (!propiedadId.isBlank() && !supabase.selectOwned("propiedades", propiedadId, uid).isEmpty()) {
+            data.put("propiedad_id", propiedadId);
+        }
+        String nombre = String.valueOf(body.getOrDefault("nombre", "")).trim();
+        data.put("nombre", nombre.isEmpty() ? "Análisis" : nombre.substring(0, Math.min(120, nombre.length())));
+        data.put("cuota_mensual", body.get("cuotaMensual"));
         data.put("precio_compra", body.get("precioCompra"));
         data.put("gastos_compra", body.get("gastosCompra"));
         data.put("reformas", body.get("reformas"));
@@ -213,10 +222,11 @@ public class RentabilityController {
         data.put("tasa_vacancia", body.get("tasaVacancia"));
         data.put("revalorizacion_anual", body.get("revalorizacionAnual"));
         data.put("horizonte_anos", body.get("horizonteAnos"));
-        data.put("rentabilidad_bruta", body.get("rentabilidadBruta"));
-        data.put("rentabilidad_neta", body.get("rentabilidadNeta"));
-        data.put("cash_on_cash", body.get("cashOnCash"));
-        data.put("tir_estimada", body.get("tir"));
+        // Columnas NUMERIC(5,2): por encima de ±999,99 Postgres rechaza la fila entera
+        data.put("rentabilidad_bruta", acotar(body.get("rentabilidadBruta")));
+        data.put("rentabilidad_neta", acotar(body.get("rentabilidadNeta")));
+        data.put("cash_on_cash", acotar(body.get("cashOnCash")));
+        data.put("tir_estimada", acotar(body.get("tir")));
         data.put("created_at", OffsetDateTime.now().toString());
         data.put("updated_at", OffsetDateTime.now().toString());
 
