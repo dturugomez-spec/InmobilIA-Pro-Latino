@@ -2,6 +2,7 @@ package com.inmobilia.controller;
 
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.PlanService;
+import com.inmobilia.service.PlazasService;
 import com.inmobilia.service.StripeService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -26,6 +27,7 @@ public class BillingController {
     private final StripeService stripeService;
     private final PlanService planService;
     private final AIService aiService;
+    private final PlazasService plazas;
 
     /** Página de planes (upgrade desde dentro de la app). */
     @GetMapping("/upgrade")
@@ -41,6 +43,7 @@ public class BillingController {
         model.addAttribute("suscrito", planService.tieneSuscripcionActiva(user));
         model.addAttribute("trialDisponible", !PlanService.haSuscritoAlgunaVez(user));
         model.addAttribute("planActual", user == null ? "" : String.valueOf(user.getOrDefault("plan", "")).toLowerCase());
+        model.addAttribute("usuarios", plazas.contar(SessionUtils.uid(session)));
         return "billing/upgrade";
     }
 
@@ -52,6 +55,12 @@ public class BillingController {
         model.addAttribute("page", "Facturación y plan");
         model.addAttribute("user", user);
         model.addAttribute("planStatus", planService.statusFor(user));
+        int usuarios = plazas.contar(SessionUtils.uid(session));
+        String plan = user == null ? "" : String.valueOf(user.getOrDefault("plan", ""));
+        model.addAttribute("usuarios", usuarios);
+        model.addAttribute("precioUsuario", PlanService.precioMensual(plan, 1));
+        model.addAttribute("precioTotal", PlanService.precioMensual(plan, usuarios));
+        model.addAttribute("creditosMes", PlanService.creditosMensuales(plan, usuarios));
         return "billing/index";
     }
 
@@ -100,7 +109,7 @@ public class BillingController {
             return "redirect:/billing";
         }
         try {
-            String url = stripeService.createCheckoutSession(user, plan);
+            String url = stripeService.createCheckoutSession(user, plan, plazas.contar(SessionUtils.uid(session)));
             return "redirect:" + url;
         } catch (Exception e) {
             log.error("Error creando checkout: {}", e.getMessage());
@@ -144,8 +153,13 @@ public class BillingController {
         return "billing/cancel";
     }
 
+    /**
+     * La cuenta que paga es la de la inmobiliaria (su titular), no la de quien ha iniciado sesión:
+     * antes, si pagaba un empleado, la suscripción y los créditos quedaban en su usuario y la
+     * inmobiliaria seguía bloqueada.
+     */
     private Map<String, Object> currentUser(HttpSession session) {
-        String uid = SessionUtils.realUid(session);
+        String uid = SessionUtils.uid(session);
         List<Map<String, Object>> r = supabase.findBy("users", Map.of("id", uid));
         return r.isEmpty() ? null : r.get(0);
     }

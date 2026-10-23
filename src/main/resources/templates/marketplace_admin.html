@@ -27,7 +27,7 @@
     </div>
 </div>
 
-<!-- Estado del add-on -->
+<!-- Estado del marketplace -->
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 mb-5">
     <div th:if="${activo}" class="flex items-start gap-4">
         <div class="h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
@@ -36,13 +36,13 @@
         <div class="flex-1">
             <p class="font-bold text-lg">Marketplace activo </p>
             <p class="text-sm text-slate-500 mt-1">Tus inmuebles publicados ya aparecen para los compradores. Recibirás sus contactos como leads automáticamente.</p>
-            <p class="text-xs text-slate-400 mt-1">Add-on: <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes</strong> (+25% sobre tu plan).</p>
+            <p class="text-xs text-slate-400 mt-1">Incluido en tu plan, sin coste adicional.</p>
             <a href="/descubre" target="_blank" class="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-blue-700 hover:underline">
                 <i data-lucide="external-link" class="h-4 w-4"></i> Ver el buscador público
             </a>
             <form th:action="@{/marketplace/toggle}" method="post" class="mt-4" onsubmit="return confirm('¿Desactivar el marketplace? Tus inmuebles dejarán de aparecer a los compradores.')">
                 <input type="hidden" name="activar" value="false">
-                <button class="text-xs text-red-500 hover:underline">Desactivar add-on</button>
+                <button class="text-xs text-red-500 hover:underline">Desactivar marketplace</button>
             </form>
         </div>
     </div>
@@ -54,7 +54,7 @@
             </div>
             <div class="flex-1">
                 <p class="font-bold text-lg">Activa el marketplace de compradores</p>
-                <p class="text-sm text-slate-500 mt-1">Por <strong><span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes</strong> (+25% de tu plan <span th:text="${#strings.capitalize(plan)} + ' · ' + ${planPrice} + ' ' + ${mon}">—</span>), tus inmuebles aparecen en el buscador público tipo swipe y cada comprador interesado entra como lead en tu CRM.</p>
+                <p class="text-sm text-slate-500 mt-1">Incluido en tu plan: tus inmuebles aparecen en el buscador público tipo swipe y cada comprador interesado entra como lead en tu CRM.</p>
                 <ul class="text-sm text-slate-600 mt-3 space-y-1">
                     <li> Captación de compradores 24/7 sin esfuerzo</li>
                     <li> Leads con scoring (like 60 · super like 80)</li>
@@ -63,7 +63,7 @@
                 <form th:action="@{/marketplace/toggle}" method="post" class="mt-4">
                     <input type="hidden" name="activar" value="true">
                     <button class="px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">
-                        Activar por <span th:text="${#numbers.formatDecimal(addonPrice, 1, 2, 'DEFAULT')}">0</span> [[${mon}]]/mes
+                        Activar marketplace
                     </button>
                 </form>
             </div>
@@ -74,7 +74,7 @@
             </div>
             <div class="flex-1">
                 <p class="font-bold text-lg">Disponible en planes de pago</p>
-                <p class="text-sm text-slate-500 mt-1">El marketplace es un add-on (+25%) para planes Pro, Agency o Enterprise. Mejora tu plan para activarlo.</p>
+                <p class="text-sm text-slate-500 mt-1">El marketplace está incluido en los planes Pro y Agency. Activa tu suscripción para usarlo.</p>
                 <a href="/upgrade" class="inline-block mt-3 px-5 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-bold">Ver planes</a>
             </div>
         </div>

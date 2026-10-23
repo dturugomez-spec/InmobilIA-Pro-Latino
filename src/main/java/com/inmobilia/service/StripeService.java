@@ -141,16 +141,24 @@ public class StripeService {
     }
 
     private SessionCreateParams.LineItem lineaConIva(String priceId) {
+        return lineaConIva(priceId, 1);
+    }
+
+    private SessionCreateParams.LineItem lineaConIva(String priceId, int cantidad) {
         SessionCreateParams.LineItem.Builder item = SessionCreateParams.LineItem.builder()
                 .setPrice(priceId)
-                .setQuantity(1L);
+                .setQuantity((long) Math.max(1, cantidad));
         String iva = ivaTaxRateId();
         if (iva != null) item.addTaxRate(iva);
         return item.build();
     }
 
-    /** Crea sesión de Stripe Checkout para suscripción nueva. */
-    public String createCheckoutSession(Map<String, Object> user, String plan) throws StripeException {
+    /**
+     * Crea sesión de Stripe Checkout para suscripción nueva, con tantas unidades como usuarios
+     * tenga la inmobiliaria: los precios de Stripe (STRIPE_PRICE_PRO / STRIPE_PRICE_AGENCY) son
+     * POR USUARIO y mes. Después PlazasService ajusta la cantidad al invitar o desactivar.
+     */
+    public String createCheckoutSession(Map<String, Object> user, String plan, int usuarios) throws StripeException {
         String priceId = priceIdFor(plan);
         if (priceId == null || priceId.isBlank()) {
             throw new IllegalArgumentException("Plan no válido o priceId no configurado: " + plan);
@@ -166,9 +174,10 @@ public class StripeService {
                 .setCancelUrl(baseUrl + "/billing/cancel")
                 .setAllowPromotionCodes(true)
                 .setLocale(SessionCreateParams.Locale.ES_419)
-                .addLineItem(lineaConIva(priceId))
+                .addLineItem(lineaConIva(priceId, usuarios))
                 .putMetadata("user_id", String.valueOf(user.get("id")))
                 .putMetadata("plan", plan)
+                .putMetadata("usuarios", String.valueOf(Math.max(1, usuarios)))
                 // Tarjeta por adelantado siempre.
                 .setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
                 // Desactivar Managed Payments (merchant of record, +3,5% y exige tax code).
@@ -184,6 +193,43 @@ public class StripeService {
 
         Session session = Session.create(b.build());
         return session.getUrl();
+    }
+
+    /**
+     * Pone en la suscripción tantas unidades como usuarios. Stripe prorratea: un usuario que
+     * entra a mitad de mes se cobra la parte proporcional en la siguiente factura, y uno que sale
+     * deja saldo a favor. Devuelve la cantidad que había antes, o -1 si no se cambió nada
+     * (ya coincidía, o la suscripción es de un precio antiguo que no es por usuario).
+     */
+    public long actualizarUsuarios(String subscriptionId, int usuarios) throws StripeException {
+        com.stripe.model.Subscription sub = com.stripe.model.Subscription.retrieve(subscriptionId);
+        if (sub.getItems() == null || sub.getItems().getData() == null || sub.getItems().getData().isEmpty()) return -1;
+        com.stripe.model.SubscriptionItem item = sub.getItems().getData().get(0);
+        String priceId = item.getPrice() == null ? null : item.getPrice().getId();
+        if (planForPrice(priceId) == null) {
+            log.warn("Suscripción {} con un precio que no es por usuario ({}): no se ajusta la cantidad", subscriptionId, priceId);
+            return -1;
+        }
+        long antes = item.getQuantity() == null ? 1 : item.getQuantity();
+        long ahora = Math.max(1, usuarios);
+        if (antes == ahora) return -1;
+        item.update(com.stripe.param.SubscriptionItemUpdateParams.builder()
+                .setQuantity(ahora)
+                .setProrationBehavior(com.stripe.param.SubscriptionItemUpdateParams.ProrationBehavior.CREATE_PRORATIONS)
+                .build());
+        log.info("Suscripción {}: {} → {} usuarios", subscriptionId, antes, ahora);
+        return antes;
+    }
+
+    /** Usuarios (unidades) que se están cobrando en la suscripción, o -1 si no se puede leer. */
+    public long usuariosFacturados(String subscriptionId) {
+        try {
+            var items = com.stripe.model.Subscription.retrieve(subscriptionId).getItems();
+            if (items == null || items.getData().isEmpty() || items.getData().get(0).getQuantity() == null) return -1;
+            return items.getData().get(0).getQuantity();
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     /** Plan ("pro"/"agency") que corresponde a un price de Stripe, o null si no es de un plan. */

@@ -115,10 +115,12 @@ public class StripeWebhookController {
         upd.put("stripe_subscription_id", session.getSubscription());
         // Estado real de la suscripción: "trialing" durante los 14 días gratis, "active" si ya cobra.
         String estado = "active";
+        int usuarios = Math.max(1, parseIntSafe(session.getMetadata().get("usuarios")));
         if (session.getSubscription() != null) {
             try {
                 Subscription sub = Subscription.retrieve(session.getSubscription());
                 if (sub.getStatus() != null) estado = sub.getStatus();
+                usuarios = usuariosDe(sub, usuarios);
                 if (sub.getCurrentPeriodEnd() != null) {
                     upd.put("subscription_ends_at", OffsetDateTime.ofInstant(
                             Instant.ofEpochSecond(sub.getCurrentPeriodEnd()), ZoneOffset.UTC).toString());
@@ -131,8 +133,18 @@ public class StripeWebhookController {
         supabase.update("users", userId, upd, userId);
         log.info(">>> Usuario {} → plan {}", userId, plan);
 
-        // Créditos de IA del plan desde el primer día (después se reponen cada mes)
-        aiService.reponerCreditos(userId, PlanService.creditosMensuales(plan != null ? plan : "pro"), true);
+        // Créditos de IA del plan (por usuario) desde el primer día; después se reponen cada mes
+        aiService.reponerCreditos(userId, PlanService.creditosMensuales(plan != null ? plan : "pro", usuarios), true);
+    }
+
+    /** Usuarios (unidades) que cobra la suscripción. */
+    private static int usuariosDe(Subscription sub, int porDefecto) {
+        try {
+            Long q = sub.getItems().getData().get(0).getQuantity();
+            return q == null ? porDefecto : Math.max(1, q.intValue());
+        } catch (Exception e) {
+            return porDefecto;
+        }
     }
 
     private void handleSubscriptionUpdate(Event event) {
@@ -160,10 +172,12 @@ public class StripeWebhookController {
         } catch (Exception ignored) { }
         // Al subir de plan (Pro → Agency), el saldo sube ya a la asignación del nuevo plan.
         // Al bajar no se quita nada: el ajuste llega con la siguiente reposición mensual.
+        // (Los usuarios que se añaden a mitad de mes suman sus créditos en PlazasService.)
         String planAnterior = String.valueOf(users.get(0).get("plan"));
+        int usuarios = usuariosDe(sub, 1);
         if (planNuevo != null
                 && PlanService.creditosMensuales(planNuevo) > PlanService.creditosMensuales(planAnterior)) {
-            aiService.reponerCreditos(userId, PlanService.creditosMensuales(planNuevo), false);
+            aiService.reponerCreditos(userId, PlanService.creditosMensuales(planNuevo, usuarios), false);
         }
         if (sub.getCurrentPeriodEnd() != null) {
             OffsetDateTime end = OffsetDateTime.ofInstant(

@@ -260,9 +260,11 @@ public class AuthService {
         return r.isEmpty() ? Optional.empty() : Optional.of(r.get(0));
     }
 
-    /** Lista todos los miembros de un equipo (organization_id). */
+    /** Empleados del equipo (organization_id). Los inquilinos con acceso al portal no son empleados. */
     public List<Map<String, Object>> teamMembers(String orgId) {
-        return supabase.findBy("users", Map.of("organization_id", orgId));
+        return supabase.findBy("users", Map.of("organization_id", orgId)).stream()
+                .filter(u -> !"tenant_portal".equals(String.valueOf(u.get("role"))))
+                .toList();
     }
 
     /** Cambia el rol de un miembro. */

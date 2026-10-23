@@ -62,14 +62,19 @@
                         <div class="text-lg font-bold font-mono mt-0.5" th:text="${planStatus.limits.maxProperties() < 0 ? 'Ilimitadas' : planStatus.limits.maxProperties()}">—</div>
                     </div>
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
-                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Equipo</div>
-                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${planStatus.limits.maxTeamMembers() < 0 ? 'Ilimitado' : planStatus.limits.maxTeamMembers()}">—</div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Usuarios que se cobran</div>
+                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${usuarios}">1</div>
                     </div>
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Créditos IA/mes</div>
-                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${planStatus.limits.aiCreditsPerMonth()}">0</div>
+                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${creditosMes}">0</div>
                     </div>
                 </div>
+                <p th:if="${precioUsuario > 0}" class="mt-4 text-sm text-slate-600 dark:text-slate-400">
+                    Cuota: <span th:text="${usuarios}">1</span> × US$<span th:text="${precioUsuario}">29</span> =
+                    <strong th:text="${'US$' + precioTotal + '/mes'}">US$29/mes</strong> + impuestos.
+                    Cuentan el titular y los empleados activos; los desactivados y los inquilinos del portal no se cobran.
+                </p>
             </div>
         </div>
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InmobilIA Pro · CRM inmobiliario con IA · Latinoamérica</title>
-    <meta name="description" content="Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización. Desde US$78/mes.">
+    <meta name="description" th:content="|Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización. Desde US$${precioPro} por usuario al mes.|" content="Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización.">
     <meta property="og:title" content="InmobilIA Pro · Software para inmobiliarias">
     <meta property="og:description" content="Gestiona propiedades, leads, contratos, visitas y facturación desde un único panel. Con IA y cumplimiento legal incluido.">
     <meta property="og:type" content="website">
@@ -261,38 +261,37 @@
         <div class="max-w-3xl mx-auto text-center mb-16">
             <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Planes y precios</p>
             <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Precios transparentes. Sin sorpresas.</h2>
-            <p class="text-lg text-slate-600">14 días gratis en cualquier plan: pones la tarjeta al empezar y no se cobra nada hasta el día 15. Precios en dólares (USD), sin impuestos locales.</p>
+            <p class="text-lg text-slate-600">Pagas por cada persona de tu equipo que usa la app. 14 días gratis en cualquier plan: pones la tarjeta al empezar y no se cobra nada hasta el día 15. Precios en dólares (USD), sin impuestos locales.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
             <!-- ─── PRO ─── -->
             <div class="bg-slate-900 text-white rounded-2xl p-7 relative shadow-2xl shadow-slate-900/20 flex flex-col">
                 <div class="absolute -top-3 left-7 px-3 py-1 bg-amber-400 text-amber-950 rounded-full text-xs font-bold">MÁS ELEGIDO</div>
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Pro</p><p class="text-xs text-slate-400">Autónomos y agencias pequeñas</p></div>
-                <div><span class="display text-4xl font-extrabold">US$78</span><span class="text-slate-400 text-sm">/mes + impuestos</span></div>
-                <p class="text-xs text-emerald-300 font-medium mt-1 mb-6">14 días gratis</p>
+                <div><span class="display text-4xl font-extrabold">US$[[${precioPro}]]</span><span class="text-slate-400 text-sm">/usuario/mes + impuestos</span></div>
+                <p class="text-xs text-emerald-300 font-medium mt-1 mb-6">14 días gratis · un agente solo: US$[[${precioPro}]]/mes</p>
                 <a href="#contacto" data-plan="pro" class="block text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm mb-6 transition">Solicitar acceso →</a>
                 <ul class="space-y-2.5 text-sm">
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> 15 propiedades</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> 2 usuarios</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Inmuebles ilimitados</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Pipeline kanban y calendario de visitas</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Facturación y control de cobros</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Publicación en portales</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Facturas y recibos</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Informes en PDF</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Agente IA · 200 créditos al mes</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Agente IA · 100 créditos por usuario al mes</li>
                 </ul>
             </div>
 
             <!-- ─── AGENCY ─── -->
             <div class="bg-white rounded-2xl p-7 border border-slate-200 flex flex-col">
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Agency</p><p class="text-xs text-slate-500">Agencias con equipo</p></div>
-                <div><span class="display text-4xl font-extrabold">US$198</span><span class="text-slate-500 text-sm">/mes + impuestos</span></div>
-                <p class="text-xs text-emerald-700 font-medium mt-1 mb-6">14 días gratis</p>
+                <div><span class="display text-4xl font-extrabold">US$[[${precioAgency}]]</span><span class="text-slate-500 text-sm">/usuario/mes + impuestos</span></div>
+                <p class="text-xs text-emerald-700 font-medium mt-1 mb-6">14 días gratis · equipo de 5: US$[[${precioAgency != null ? precioAgency * 5 : ''}]]/mes</p>
                 <a href="#contacto" data-plan="agency" class="block text-center px-4 py-2.5 rounded-lg border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white font-semibold text-sm mb-6 transition">Solicitar acceso</a>
                 <ul class="space-y-2.5 text-sm text-slate-700">
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Propiedades y usuarios ilimitados</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Todo lo de Pro, más:</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Integraciones con banco y portales</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Agente IA · 1.000 créditos al mes</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Auditor IA y más de 60 herramientas</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Importar extractos del banco y conciliar cobros</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Exportación para AEAT (modelos 303 y 100)</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Agente IA · 300 créditos por usuario al mes</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Soporte prioritario</li>
                 </ul>
             </div>
@@ -306,7 +305,7 @@
                 <ul class="space-y-2.5 text-sm text-amber-950">
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Todo lo de Agency</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Varias sedes</li>
-                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Marca blanca y subdominio propio</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Precio por volumen de usuarios</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Red colaborativa entre agencias (MLS)</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> API REST y webhooks</li>
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-amber-700"></i> Implantación acompañada</li>
@@ -367,7 +366,7 @@
                 <div><label class="block text-sm font-semibold mb-2">Email profesional <span class="text-red-500">*</span></label><input type="email" name="email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
                 <div><label class="block text-sm font-semibold mb-2">Teléfono <span class="text-red-500">*</span></label><input type="tel" name="telefono" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"></div>
                 <div><label class="block text-sm font-semibold mb-2">País <span class="text-red-500">*</span></label><select name="pais" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option th:each="p : ${paises}" th:value="${p.codigo()}" th:text="|${p.bandera()} ${p.nombre()}|">México</option></select></div>
-                <div><label class="block text-sm font-semibold mb-2">Plan de interés</label><select name="plan" id="plan-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="pro" selected>Pro · US$78/mes + impuestos · 14 días gratis</option><option value="agency">Agency · US$198/mes + impuestos · 14 días gratis</option><option value="enterprise">A medida · redes y franquicias</option></select></div>
+                <div><label class="block text-sm font-semibold mb-2">Plan de interés</label><select name="plan" id="plan-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="pro" selected>Pro · US$[(${precioPro})]/usuario/mes + impuestos · 14 días gratis</option><option value="agency">Agency · US$[(${precioAgency})]/usuario/mes + impuestos · 14 días gratis</option><option value="enterprise">A medida · redes y franquicias</option></select></div>
                 <div><label class="block text-sm font-semibold mb-2">Tamaño de cartera</label><select name="num_propiedades" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="1-20">1 a 20 propiedades</option><option value="21-50">21 a 50</option><option value="51-100">51 a 100</option><option value="101+">Más de 100</option></select></div>
             </div>
             <div class="mb-6"><label class="block text-sm font-semibold mb-2">¿Qué buscas mejorar en tu inmobiliaria?</label><textarea name="mensaje" rows="4" placeholder="Cuéntanos brevemente tu situación actual y qué herramienta estás evaluando." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition resize-none"></textarea></div>

@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * 💞 "Tinder de pisos".
  *  - Público: /descubre (swipe), /descubre/pool, /descubre/swipe
- *  - Admin: /marketplace (activar add-on +25% y ver resultados)
+ *  - Admin: /marketplace (activar, incluido en los planes de pago, y ver resultados)
  */
 @Controller
 @RequiredArgsConstructor
@@ -29,7 +29,6 @@ public class MarketplaceController {
     private String baseUrl;
 
     private static final Set<String> PLANES_PAGO = Set.of("pro", "agency", "enterprise");
-    private static final double ADD_ON_PCT = 0.25;
 
     // ─── PÚBLICO ───
     /** Buscador GLOBAL (red compartida de todas las agencias). */
@@ -108,14 +107,9 @@ public class MarketplaceController {
         long likes = swipes.stream().filter(s -> "like".equals(s.get("accion")) || "superlike".equals(s.get("accion"))).count();
         long leads = swipes.stream().filter(s -> s.get("lead_id") != null).count();
 
-        // Precio del add-on = 25% del precio del plan
-        PlanService.PlanLimits limits = PlanService.PLANS.get(plan);
-        int planPrice = limits != null ? limits.monthlyPriceEur() : 0;
-        double addonPrice = Math.round(planPrice * ADD_ON_PCT * 100.0) / 100.0;
-
+        // Antes se anunciaba como add-on de pago (+25 % del plan) pero nunca se cobraba: ahora es
+        // parte de los planes de pago.
         model.addAttribute("plan", plan);
-        model.addAttribute("planPrice", planPrice);
-        model.addAttribute("addonPrice", addonPrice);
         model.addAttribute("activo", activo);
         model.addAttribute("puede", puede);
         model.addAttribute("totalSwipes", swipes.size());

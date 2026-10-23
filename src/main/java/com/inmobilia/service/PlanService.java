@@ -22,11 +22,15 @@ public class PlanService {
     public static final String PRO    = "pro";
     public static final String AGENCY = "agency";
 
-    /** Límites por plan. Usar -1 para "ilimitado". */
+    /**
+     * Límites por plan. Usar -1 para "ilimitado".
+     * Los planes de pago se cobran POR USUARIO: monthlyPriceUsd y aiCreditsPerMonth son por
+     * cada usuario de la inmobiliaria (ver PlazasService). Precios en USD, sin impuestos locales.
+     */
     public record PlanLimits(
             String name,
             String label,
-            int monthlyPriceEur,
+            int monthlyPriceUsd,
             int maxProperties,
             int maxTeamMembers,
             int aiCreditsPerMonth,
@@ -38,11 +42,24 @@ public class PlanService {
             boolean prioritySupport
     ) {}
 
+    /**
+     * Precio por usuario y mes en USD (sin impuestos locales), el que ve la web. Lo que se cobra
+     * lo fija el precio de Stripe (STRIPE_PRICE_PRO / STRIPE_PRICE_AGENCY): tienen que coincidir.
+     */
+    public static final int PRECIO_PRO_USD = 29;
+    public static final int PRECIO_AGENCY_USD = 49;
+
     public static final Map<String, PlanLimits> PLANS = new LinkedHashMap<>();
     static {
         PLANS.put(FREE,   new PlanLimits(FREE,   "Free",    0,  1,   1,    0,    false, false, false, false, false, false));
-        PLANS.put(PRO,    new PlanLimits(PRO,    "Pro",    78, 15,   2,  200,    true,  true,  false, true,  true,  false));
-        PLANS.put(AGENCY, new PlanLimits(AGENCY, "Agency", 198, -1,  -1, 1000,    true,  true,  true,  true,  true,  true));
+        PLANS.put(PRO,    new PlanLimits(PRO,    "Pro",    PRECIO_PRO_USD,    -1, -1, 100, true, true, false, true, true, false));
+        PLANS.put(AGENCY, new PlanLimits(AGENCY, "Agency", PRECIO_AGENCY_USD, -1, -1, 300, true, true, true,  true, true, true));
+    }
+
+    /** Precio al mes en USD (sin impuestos locales) de un plan para N usuarios. */
+    public static int precioMensual(String plan, int usuarios) {
+        PlanLimits l = plan == null ? null : PLANS.get(plan.trim().toLowerCase());
+        return l == null ? 0 : l.monthlyPriceUsd() * Math.max(1, usuarios);
     }
 
     private final SupabaseService supabase;
@@ -99,11 +116,16 @@ public class PlanService {
         return !tieneSuscripcionActiva(u);
     }
 
-    /** Créditos de IA que incluye cada mes el plan (pro 200, agency 1.000; 0 si no es de pago). */
+    /** Créditos de IA que incluye cada mes el plan POR USUARIO (pro 100, agency 300; 0 si no es de pago). */
     public static int creditosMensuales(String plan) {
         if (plan == null) return 0;
         PlanLimits l = PLANS.get(plan.trim().toLowerCase());
         return l == null ? 0 : Math.max(0, l.aiCreditsPerMonth());
+    }
+
+    /** Créditos de IA del mes para toda la inmobiliaria: los del plan por cada usuario. */
+    public static int creditosMensuales(String plan, int usuarios) {
+        return creditosMensuales(plan) * Math.max(1, usuarios);
     }
 
     /** ¿Es uno de los propietarios de la plataforma (ADMIN_EMAILS)? Ojo: NO es el "admin" de una inmobiliaria. */
@@ -176,7 +198,9 @@ public class PlanService {
         PlanLimits l = limitsFor(user);
         if (l.maxTeamMembers() < 0) return true;
         try {
-            int current = supabase.findBy("users", Map.of("organization_id", orgId)).size();
+            // El titular + empleados; los inquilinos del portal no ocupan plaza
+            int current = (int) supabase.findBy("users", Map.of("organization_id", orgId)).stream()
+                    .filter(u -> !"tenant_portal".equals(String.valueOf(u.get("role")))).count() + 1;
             return current < l.maxTeamMembers();
         } catch (Exception e) { return true; }
     }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ⚡ Reposición mensual de los créditos de IA del plan (Pro 200, Agency 1.000).
+ * ⚡ Reposición mensual de los créditos de IA del plan, por usuario (Pro 100, Agency 300 cada uno).
  *
  * Cada día repasa las cuentas con suscripción de Stripe activa o en prueba y, si hace un mes
  * (o más) de la última reposición, deja el saldo en la asignación del plan más lo que quede de
@@ -29,6 +29,7 @@ public class CreditosMensualesService {
 
     private final SupabaseService supabase;
     private final AIService aiService;
+    private final PlazasService plazas;
 
     @Scheduled(cron = "0 15 4 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void reponerVencidos() {
@@ -41,7 +42,7 @@ public class CreditosMensualesService {
         int repuestas = 0;
         for (Map<String, Object> u : cuentas) {
             if (!tocaReponer(u.get("ai_credits_renewed_at"), OffsetDateTime.now(ZoneOffset.UTC))) continue;
-            int asignacion = PlanService.creditosMensuales(String.valueOf(u.get("plan")));
+            int asignacion = PlanService.creditosMensuales(String.valueOf(u.get("plan")), plazas.contar(String.valueOf(u.get("id"))));
             if (asignacion <= 0) continue;
             if (aiService.reponerCreditos(String.valueOf(u.get("id")), asignacion, true) >= 0) repuestas++;
         }

@@ -163,10 +163,17 @@ public class AIService {
     @CacheEvict(value = "aiCredits", key = "#uid")
     public void devolverCreditos(String uid, int n) {
         if (!hasPlatformKey() || n <= 0) return;
+        sumarCreditosDelPlan(uid, n);
+    }
+
+    /** Suma créditos del plan (p. ej. al añadir un usuario a mitad de mes). No cuentan como comprados. */
+    @CacheEvict(value = "aiCredits", key = "#uid")
+    public void sumarCreditosDelPlan(String uid, int n) {
+        if (uid == null || n <= 0) return;
         try {
             supabase.update("users", uid, Map.of("ai_credits", getCredits(uid) + n), uid);
         } catch (Exception e) {
-            log.warn("devolverCreditos {}: {}", uid, e.getMessage());
+            log.warn("sumarCreditosDelPlan {}: {}", uid, e.getMessage());
         }
     }
 

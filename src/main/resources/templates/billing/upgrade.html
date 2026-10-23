@@ -41,7 +41,9 @@
     <div class="text-center mb-8">
         <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">Elige el plan que mejor se adapta a ti</h1>
-        <p class="text-slate-600 dark:text-slate-400">Sin permanencia. Cancela cuando quieras. Precios en dólares (USD), impuestos locales no incluidos.</p>
+        <p class="text-slate-600 dark:text-slate-400">Pagas por cada usuario de tu inmobiliaria. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.</p>
+        <p class="text-sm text-slate-500 mt-1">Tu equipo ahora: <strong th:text="${usuarios}">1</strong> <span th:text="${usuarios == 1 ? 'usuario' : 'usuarios'}">usuario</span>.
+            Si añades o desactivas a alguien, la cuota se ajusta sola (prorrateada).</p>
     </div>
 
     <!-- Sin Stripe configurado -->
@@ -61,17 +63,18 @@
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Más popular</div>
             <h3 class="font-bold text-lg">Pro</h3>
             <p class="text-xs text-white/70 mt-1 mb-4">Para autónomos y micro-agencias</p>
-            <div class="mb-5">
-                <span class="text-4xl font-bold tracking-tight">US$78</span>
-                <span class="text-white/70 text-sm">/mes</span>
+            <div class="mb-1">
+                <span class="text-4xl font-bold tracking-tight">US$[[${precioPro}]]</span>
+                <span class="text-white/70 text-sm">/usuario/mes</span>
             </div>
+            <p class="text-xs text-white/70 mb-5">Tu equipo: <span th:text="${usuarios}">1</span> × US$[[${precioPro}]] = <strong th:text="${'US$' + (usuarios * precioPro) + '/mes'}">US$29/mes</strong></p>
             <ul class="space-y-2.5 text-sm text-white/90 mb-6 flex-1">
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 15 propiedades</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 2 usuarios del equipo</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Pipeline Kanban</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Facturación y control de cobros</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Reportes PDF</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 200 créditos IA/mes</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Inmuebles ilimitados</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Leads, visitas y pipeline Kanban</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Publicación en portales</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Facturas y recibos</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Informes PDF</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 100 créditos de IA por usuario/mes</li>
             </ul>
             <button th:if="${suscrito and planActual == 'pro'}" disabled
                     class="w-full text-center px-4 py-2.5 rounded-lg bg-white/20 text-white text-sm font-bold cursor-default">Tu plan actual</button>
@@ -92,16 +95,16 @@
         <div class="rounded-2xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 flex flex-col">
             <h3 class="font-bold text-lg">Agency</h3>
             <p class="text-xs text-slate-500 mt-1 mb-4">Para agencias y asset managers</p>
-            <div class="mb-5">
-                <span class="text-4xl font-bold tracking-tight">US$198</span>
-                <span class="text-slate-500 text-sm">/mes</span>
+            <div class="mb-1">
+                <span class="text-4xl font-bold tracking-tight">US$[[${precioAgency}]]</span>
+                <span class="text-slate-500 text-sm">/usuario/mes</span>
             </div>
+            <p class="text-xs text-slate-500 mb-5">Tu equipo: <span th:text="${usuarios}">1</span> × US$[[${precioAgency}]] = <strong th:text="${'US$' + (usuarios * precioAgency) + '/mes'}">US$49/mes</strong></p>
             <ul class="space-y-2.5 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Propiedades ilimitadas</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Equipo ilimitado · 7 roles</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Integraciones banco + portales</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Auditor IA + 60+ herramientas</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 1.000 créditos IA/mes</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Todo lo de Pro</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Importar extractos del banco y conciliar cobros</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Exportación para AEAT (modelos 303 y 100)</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 300 créditos de IA por usuario/mes</li>
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Soporte prioritario</li>
             </ul>
             <button th:if="${suscrito and planActual == 'agency'}" disabled
@@ -122,7 +125,7 @@
 
     <!-- Footer comparativa -->
     <div class="mt-12 text-center text-xs text-slate-500 dark:text-neutral-400">
-        <p>Pago seguro vía <strong>Stripe</strong>. Tarjeta de crédito o débito. Cancelación con un click.</p>
+        <p>Pago seguro con <strong>Stripe</strong>. Factura en USD cada mes. Cancelación desde el portal de cliente.</p>
         <p class="mt-1">¿Necesitas más? <a href="mailto:inmobilia.support@gmail.com" class="text-brand-700 dark:text-brand-400 hover:underline">Plan Enterprise a medida</a>.</p>
     </div>
 

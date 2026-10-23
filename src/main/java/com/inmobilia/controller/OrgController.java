@@ -4,6 +4,7 @@ import com.inmobilia.service.AuditTrail;
 import com.inmobilia.service.AuthService;
 import com.inmobilia.service.PermissionService;
 import com.inmobilia.service.PlanService;
+import com.inmobilia.service.PlazasService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -31,6 +32,7 @@ public class OrgController {
     private final PermissionService permissions;
     private final PlanService planService;
     private final AuditTrail audit;
+    private final PlazasService plazas;
 
     @GetMapping("/equipo")
     public String list(HttpSession session, Model model) {
@@ -69,6 +71,7 @@ public class OrgController {
         }
 
         model.addAttribute("page", "Invitar a un empleado");
+        coste(orgId, model);
         model.addAttribute("roles", PermissionService.ALL_ROLES);
         model.addAttribute("roleLabels", PermissionService.ROLE_LABELS);
         model.addAttribute("roleIcons", PermissionService.ROLE_ICONS);
@@ -95,13 +98,21 @@ public class OrgController {
         }
 
         String orgId = SessionUtils.uid(session);
+        // El límite se comprobaba solo al abrir el formulario: enviándolo directamente se saltaba
+        if (!planService.canAddTeamMember(orgId)) {
+            SessionUtils.flash(session, "Tu plan no permite añadir más empleados.");
+            return "redirect:/upgrade";
+        }
         String invitedBy = SessionUtils.realUid(session);
 
         boolean ok = authService.invite(email, password,
                 name != null ? name : email,
                 rol, orgId, invitedBy);
-        if (ok) audit.registrar(req, session, "equipo_alta", "users", null,
-                "Dio de alta a " + email + " con rol " + permissions.label(rol), "security", AuditTrail.EQUIPO);
+        if (ok) {
+            audit.registrar(req, session, "equipo_alta", "users", null,
+                    "Dio de alta a " + email + " con rol " + permissions.label(rol), "security", AuditTrail.EQUIPO);
+            plazas.sincronizarEnSegundoPlano(orgId);   // se cobra por usuario
+        }
 
         SessionUtils.flash(session, ok ? "Empleado añadido al equipo correctamente." : "ERROR al añadir empleado. ¿Usuario duplicado o datos inválidos?");
         return "redirect:/equipo";
@@ -156,11 +167,23 @@ public class OrgController {
             return "redirect:/equipo";
         }
         boolean ok = authService.setActive(id, active, orgId);
+        if (ok) plazas.sincronizarEnSegundoPlano(orgId);   // desactivado = deja de cobrarse
         if (ok) audit.registrar(req, session, active ? "equipo_reactivado" : "equipo_desactivado", "users", id,
                 (active ? "Reactivó a " : "Desactivó a ") + emailDe(id) + (active ? "" : " (pierde el acceso en menos de 1 minuto)"),
                 active ? "security" : "critical", AuditTrail.EQUIPO);
         SessionUtils.flash(session, ok ? (active ? "Usuario reactivado." : "Usuario desactivado: pierde el acceso en menos de un minuto.") : "ERROR.");
         return "redirect:/equipo";
+    }
+
+    /** Lo que cuesta un usuario más, para avisarlo antes de invitar (se cobra por usuario). */
+    private void coste(String orgId, Model model) {
+        Map<String, Object> titular = authService.findById(orgId).orElse(null);
+        String plan = titular == null ? "" : String.valueOf(titular.getOrDefault("plan", "")).toLowerCase();
+        int usuarios = plazas.contar(orgId);
+        model.addAttribute("suscrito", planService.tieneSuscripcionActiva(titular));
+        model.addAttribute("usuariosAhora", usuarios);
+        model.addAttribute("precioUsuario", PlanService.precioMensual(plan, 1));
+        model.addAttribute("precioConNuevo", PlanService.precioMensual(plan, usuarios + 1));
     }
 
     /** Rol válido y que quien lo asigna puede dar (solo un admin crea admins). */
