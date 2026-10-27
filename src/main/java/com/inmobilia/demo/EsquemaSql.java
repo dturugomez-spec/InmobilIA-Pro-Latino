@@ -1,4 +1,4 @@
-package com.inmobilia;
+package com.inmobilia.demo;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,20 +29,32 @@ public class EsquemaSql {
         return e.cargar();
     }
 
+    /** Desde la carpeta del proyecto (pruebas). */
+    public static EsquemaSql delProyecto() throws Exception {
+        return new EsquemaSql().cargar();
+    }
+
     private EsquemaSql cargar() throws Exception {
         List<Path> ficheros = new ArrayList<>();
         try (var s = Files.list(Path.of("src/main/resources/db/migration"))) { s.filter(p -> p.toString().endsWith(".sql")).forEach(ficheros::add); }
         try (var s = Files.list(Path.of("."))) { s.filter(p -> p.toString().endsWith(".sql")).forEach(ficheros::add); }
-        for (Path f : ficheros) leer(Files.readString(f).replaceAll("--[^\\n]*", ""));
+        for (Path f : ficheros) leer(Files.readString(f));
         return this;
     }
 
-    public static EsquemaSql delProyecto() throws Exception {
-        List<Path> ficheros = new ArrayList<>();
-        try (var s = Files.list(Path.of("src/main/resources/db/migration"))) { s.filter(p -> p.toString().endsWith(".sql")).forEach(ficheros::add); }
-        try (var s = Files.list(Path.of("."))) { s.filter(p -> p.toString().endsWith(".sql")).forEach(ficheros::add); }
+    /**
+     * Desde dentro del .jar (demo local): las migraciones y los esquemas completos de la raíz,
+     * que Maven copia a db/esquema.
+     */
+    public static EsquemaSql delClasspath() throws Exception {
+        var resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver();
         EsquemaSql e = new EsquemaSql();
-        for (Path f : ficheros) e.leer(Files.readString(f).replaceAll("--[^\\n]*", ""));
+        for (String patron : List.of("classpath*:db/migration/*.sql", "classpath*:db/esquema/*.sql")) {
+            var ficheros = new ArrayList<>(List.of(resolver.getResources(patron)));
+            ficheros.sort(Comparator.comparing(r -> String.valueOf(r.getFilename())));
+            for (var r : ficheros) e.leer(r.getContentAsString(java.nio.charset.StandardCharsets.UTF_8));
+        }
+        if (e.tablas.isEmpty()) throw new IllegalStateException("No hay esquema SQL dentro de la aplicación");
         return e;
     }
 
@@ -53,6 +65,7 @@ public class EsquemaSql {
     private static final Set<String> NO_COLUMNA = Set.of("primary", "unique", "constraint", "foreign", "check", "exclude");
 
     private void leer(String sql) {
+        sql = sql.replaceAll("--[^\\n]*", "");
         Matcher m = CREAR.matcher(sql);
         while (m.find()) {
             String tabla = m.group(1).toLowerCase();

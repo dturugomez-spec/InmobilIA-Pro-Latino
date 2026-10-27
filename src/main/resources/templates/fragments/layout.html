@@ -580,6 +580,14 @@
                     <i data-lucide="sparkles" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Ejemplos para demos</span>
                 </a>
+                <!-- Solo el propietario de la plataforma: abre una inmobiliaria de ejemplo para enseñar la app -->
+                <form th:if="${nav.ve('/demo')}" method="post" action="/demo" class="m-0"
+                      onsubmit="return confirm('Vas a entrar en una inmobiliaria de ejemplo. Para volver a tu cuenta tendrás que cerrar sesión y entrar con la tuya. ¿Seguir?')">
+                    <button type="submit" :class="sidebarCollapsed ? 'justify-center' : ''" class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Entrar a la demo">
+                        <i data-lucide="play-circle" class="h-4 w-4 flex-shrink-0"></i>
+                        <span x-show="!sidebarCollapsed" class="truncate">Entrar a la demo</span>
+                    </button>
+                </form>
                 <a th:if="${nav.ve('/trash')}" href="/trash" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Papelera">
                     <i data-lucide="trash-2" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Papelera</span>

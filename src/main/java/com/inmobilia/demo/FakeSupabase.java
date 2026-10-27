@@ -1,4 +1,4 @@
-package com.inmobilia;
+package com.inmobilia.demo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,10 @@ import java.util.regex.Pattern;
 /**
  * Supabase (PostgREST) en memoria para probar la app entera sin base de datos: filtros
  * eq/neq/in/is/gt/lt/like/ilike/cs, not., or=(...), order, limit y offset; POST, PATCH y DELETE.
- * Lo que no sea {@code *.supabase.co/rest/v1} (OpenAI, etc.) responde 503 al momento.
+ * También guarda los ficheros que se suben a Storage. Lo que no vaya a {@link #dominio}
+ * (OpenAI, etc.) responde 503 al momento: nada sale del ordenador.
+ *
+ * La usan las pruebas y la demo local ({@link DemoLocalConfig}).
  */
 public class FakeSupabase implements ExchangeFunction {
 
@@ -31,18 +34,28 @@ public class FakeSupabase implements ExchangeFunction {
     public volatile EsquemaSql esquema;
     /** Rechazos (tabla: motivo), para el informe. */
     public final List<String> rechazos = Collections.synchronizedList(new ArrayList<>());
+    /** Host al que se responde como si fuera Supabase (el de la petición termina en él). */
+    public volatile String dominio = "supabase.co";
+
+    public record Fichero(String tipo, byte[] datos) {}
+    /** Storage: "bucket/carpeta/nombre.jpg" → fichero. */
+    public final Map<String, Fichero> ficheros = new ConcurrentHashMap<>();
 
     public List<Map<String, Object>> tabla(String t) {
         return tablas.computeIfAbsent(t, k -> Collections.synchronizedList(new ArrayList<>()));
     }
 
-    public void vaciar() { tablas.clear(); }
+    public void vaciar() { tablas.clear(); ficheros.clear(); }
+
+    private static final String STORAGE = "/storage/v1/object/";
 
     @Override
     public Mono<ClientResponse> exchange(ClientRequest req) {
         String host = req.url().getHost() == null ? "" : req.url().getHost();
         String path = req.url().getRawPath();
-        if (!host.endsWith("supabase.co") || !path.startsWith("/rest/v1/")) return responder(503, "{\"error\":\"sin red en pruebas\"}");
+        if (!host.endsWith(dominio)) return responder(503, "{\"error\":\"sin red en pruebas\"}");
+        if (path.startsWith(STORAGE)) return storage(req, URLDecoder.decode(path.substring(STORAGE.length()), StandardCharsets.UTF_8));
+        if (!path.startsWith("/rest/v1/")) return responder(503, "{\"error\":\"sin red en pruebas\"}");
         String tabla = path.substring("/rest/v1/".length());
         if (tabla.startsWith("rpc/")) return responder(200, "[]");
         List<String[]> params = params(req.url().getRawQuery());
@@ -288,11 +301,29 @@ public class FakeSupabase implements ExchangeFunction {
 
     private static int parseInt(String s, int def) { try { return s == null ? def : Integer.parseInt(s); } catch (Exception e) { return def; } }
 
+    /** Storage: subir (POST o PUT, con o sin upsert) y borrar un fichero. */
+    private Mono<ClientResponse> storage(ClientRequest req, String ruta) {
+        if (req.method() == HttpMethod.DELETE) {
+            ficheros.remove(ruta);
+            return responder(200, "{}");
+        }
+        if (req.method() != HttpMethod.POST && req.method() != HttpMethod.PUT) return responder(405, "{}");
+        String tipo = req.headers().getContentType() == null ? "application/octet-stream" : req.headers().getContentType().toString();
+        return bytes(req).flatMap(datos -> {
+            ficheros.put(ruta, new Fichero(tipo, datos));
+            return responder(200, "{\"Key\":\"" + ruta.replace("\"", "") + "\"}");
+        });
+    }
+
     private static Mono<String> cuerpo(ClientRequest req) {
+        return bytes(req).map(b -> new String(b, StandardCharsets.UTF_8));
+    }
+
+    private static Mono<byte[]> bytes(ClientRequest req) {
         // El cuerpo ya serializado: se captura escribiéndolo en un ClientHttpRequest falso
         CapturaCuerpo c = new CapturaCuerpo();
         return req.writeTo(c, org.springframework.web.reactive.function.client.ExchangeStrategies.withDefaults())
-                .then(Mono.fromSupplier(c::texto));
+                .then(Mono.fromSupplier(c::bytes));
     }
 
     private static Mono<ClientResponse> responder(int status, String json) {
@@ -300,12 +331,12 @@ public class FakeSupabase implements ExchangeFunction {
                 .header("Content-Type", "application/json").body(json).build());
     }
 
-    /** ClientHttpRequest mínimo para obtener el cuerpo JSON que la app envía. */
+    /** ClientHttpRequest mínimo para obtener el cuerpo (JSON o un fichero) que la app envía. */
     static final class CapturaCuerpo implements org.springframework.http.client.reactive.ClientHttpRequest {
         private final org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         private final org.springframework.core.io.buffer.DefaultDataBufferFactory factory = new org.springframework.core.io.buffer.DefaultDataBufferFactory();
-        private final StringBuilder sb = new StringBuilder();
-        String texto() { return sb.toString(); }
+        private final java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] bytes() { return out.toByteArray(); }
         @Override public HttpMethod getMethod() { return HttpMethod.POST; }
         @Override public java.net.URI getURI() { return java.net.URI.create("http://x"); }
         @Override public org.springframework.util.MultiValueMap<String, org.springframework.http.HttpCookie> getCookies() { return new org.springframework.util.LinkedMultiValueMap<>(); }
@@ -316,7 +347,9 @@ public class FakeSupabase implements ExchangeFunction {
         @Override public boolean isCommitted() { return false; }
         @Override public Mono<Void> writeWith(org.reactivestreams.Publisher<? extends org.springframework.core.io.buffer.DataBuffer> body) {
             return reactor.core.publisher.Flux.from(body).doOnNext(b -> {
-                sb.append(b.toString(StandardCharsets.UTF_8));
+                byte[] trozo = new byte[b.readableByteCount()];
+                b.read(trozo);
+                out.writeBytes(trozo);
                 DataBufferUtils.release(b);
             }).then();
         }

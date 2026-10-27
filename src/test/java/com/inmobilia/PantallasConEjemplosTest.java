@@ -1,5 +1,7 @@
 package com.inmobilia;
 
+import com.inmobilia.demo.EsquemaSql;
+import com.inmobilia.demo.FakeSupabase;
 import com.inmobilia.service.EjemplosService;
 import com.inmobilia.util.SessionUtils;
 import org.junit.jupiter.api.Test;
@@ -222,5 +224,40 @@ class PantallasConEjemplosTest {
         Files.writeString(informeTxt, rep.toString() + "\nSIN EJEMPLOS: " + sinEjemplos + "\nFALLOS: " + fallos + "\n");
         System.out.println(rep);
         assertTrue(fallos.isEmpty(), "Pantallas que fallan: " + fallos);
+    }
+
+    /** "Entrar a la demo" solo sale en la cuenta del propietario; nadie más puede crear demos. */
+    @Test
+    void laDemoSoloLaAbreElPropietario() throws Exception {
+        BD.vaciar();
+        BD.esquema = EsquemaSql.delProyecto();
+        cuenta();
+        String otra = "00000000-0000-4000-8000-000000000002";
+        BD.tabla("users").add(new LinkedHashMap<>(Map.of("id", otra, "email", "otra@inmobiliaria.example.com",
+                "name", "Otra", "role", "admin", "active", true, "plan", "agency", "plan_status", "active")));
+        MockHttpSession deOtra = new MockHttpSession();
+        SessionUtils.loginFull(deOtra, otra, otra, "otra@inmobiliaria.example.com", "Otra", "admin");
+        deOtra.setAttribute(SessionUtils.KEY_REVISADO, System.currentTimeMillis());
+
+        String login = mvc.perform(get("/login")).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(login.contains("Entrar a la demo"));
+        String panelOtra = mvc.perform(get("/dashboard").session(deOtra)).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(panelOtra.contains("action=\"/demo\""), "otra inmobiliaria no ve el botón");
+        String panelMio = mvc.perform(get("/dashboard").session(sesion())).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(panelMio.contains("action=\"/demo\""), "el propietario sí");
+
+        var post = org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/demo");
+        assertEquals("/login", mvc.perform(post.session(deOtra)).andReturn().getResponse().getRedirectedUrl());
+        assertEquals("/login", mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/demo")).andReturn().getResponse().getRedirectedUrl());
+        assertEquals("/dashboard", mvc.perform(get("/demo")).andReturn().getResponse().getRedirectedUrl(), "un enlace a /demo ya no crea nada");
+        assertEquals(2, BD.tabla("users").size(), "ninguna cuenta demo creada");
+
+        MockHttpSession mia = sesion();
+        assertEquals("/dashboard", mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/demo").session(mia))
+                .andReturn().getResponse().getRedirectedUrl());
+        String demo = SessionUtils.uid(mia);
+        assertNotEquals(ORG, demo, "el propietario entra en la inmobiliaria de ejemplo");
+        for (int i = 0; i < 600 && (ejemplos.estado(demo).enCurso() || ejemplos.filasCargadas(demo) == 0); i++) Thread.sleep(100);
+        assertTrue(ejemplos.filasCargadas(demo) > 50, "con los ejemplos completos: " + ejemplos.estado(demo).mensaje());
     }
 }

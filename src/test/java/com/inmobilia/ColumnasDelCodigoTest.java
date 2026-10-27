@@ -1,5 +1,6 @@
 package com.inmobilia;
 
+import com.inmobilia.demo.EsquemaSql;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;

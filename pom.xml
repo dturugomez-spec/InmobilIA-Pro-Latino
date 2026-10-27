@@ -133,6 +133,19 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Esquemas completos de la raíz: la demo local monta con ellos su base en memoria (EsquemaSql) -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>*.sql</include>
+                </includes>
+                <targetPath>db/esquema</targetPath>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -127,8 +127,8 @@ public class GlobalModelAdvice {
         }
 
         public boolean ve(String href) {
-            // Ejemplos para demos: solo en la cuenta de demostración del propietario de la plataforma
-            if (href != null && href.startsWith("/ejemplos")) return propietarioPlataforma && "admin".equals(role);
+            // Ejemplos para demos y "Entrar a la demo": solo en la cuenta del propietario de la plataforma
+            if (href != null && (href.startsWith("/ejemplos") || href.equals("/demo"))) return propietarioPlataforma && "admin".equals(role);
             String seccion = com.inmobilia.config.SessionGuardInterceptor.seccionDe(href);
             return seccion == null || permissions.canRead(role, seccion);
         }

@@ -1,5 +1,7 @@
 package com.inmobilia;
 
+import com.inmobilia.demo.EsquemaSql;
+import com.inmobilia.demo.FakeSupabase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inmobilia.service.DemoDataService;
 import com.inmobilia.service.EjemplosService;
