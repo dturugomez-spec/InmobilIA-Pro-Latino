@@ -6,17 +6,19 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
- * Cron diario que desactiva las cuentas Starter cuyo trial de 10 días ha expirado.
+ * Fin de la prueba gratis (14 días de Business sin tarjeta, desde la aprobación).
  *
- * Reglas:
- *  - Plan "starter" o "free": dura 10 días desde created_at
- *  - Plan "pro" o "agency": tienen trial_ends_at fijado por la aprobación
- *  - Si trial_ends_at < hoy → set active=false + email avisando
+ *  - 3 días y 1 día antes: aviso por correo.
+ *  - Al acabar, si no ha elegido plan: la cuenta pasa a Free y CONSERVA sus datos. Free incluye
+ *    3 activos y 1 usuario: puede seguir entrando, pero no añadir más activos ni más personas
+ *    hasta que mejore el plan (y los empleados que no caben no entran; ver SubscriptionGateInterceptor).
+ *
+ * Mientras tanto PlanService.planEfectivo ya trata como Free una prueba acabada, así que nada
+ * depende de la hora a la que pase este cron.
  */
 @Service
 @RequiredArgsConstructor
@@ -25,75 +27,70 @@ public class TrialExpiryService {
 
     private final SupabaseService supabase;
     private final EmailService emailService;
+    private final PlanService planService;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
     /** Cron diario a las 03:00. */
     @Scheduled(cron = "0 0 3 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
-    public void desactivarTrialsExpirados() {
-        log.info("[CRON] Comprobando trials expirados...");
+    public void pasarAFreeLasPruebasAcabadas() {
+        log.info("[CRON] Comprobando pruebas acabadas...");
         try {
-            List<Map<String, Object>> users = supabase.selectFilter(
-                    "users", "active=eq.true&plan=in.(starter,free,trial)");
-
+            List<Map<String, Object>> users = supabase.selectFilter("users",
+                    "select=id,email,trial_ends_at,stripe_subscription_id&plan_status=eq.trialing"
+                    + "&stripe_subscription_id=is.null&organization_id=is.null&limit=1000");
             LocalDate hoy = LocalDate.now();
-            int desactivados = 0, avisados = 0;
-
+            int aFree = 0, avisados = 0;
             for (Map<String, Object> u : users) {
+                LocalDate fin = parseDate(u.get("trial_ends_at"));
+                if (fin == null) continue;
                 String userId = String.valueOf(u.get("id"));
                 String email = String.valueOf(u.get("email"));
-                String plan = String.valueOf(u.getOrDefault("plan", ""));
-
-                LocalDate inicio = parseDate(u.get("created_at"));
-                LocalDate fin = parseDate(u.get("trial_ends_at"));
-                if (fin == null && inicio != null) {
-                    // Si no hay trial_ends_at, calculo desde created_at + 10 días
-                    fin = inicio.plusDays(10);
-                }
-                if (fin == null) continue;
-
                 long diasRestantes = ChronoUnit.DAYS.between(hoy, fin);
-
                 if (diasRestantes < 0) {
-                    // Trial expirado → desactivar
-                    supabase.update("users", userId, Map.of(
-                            "active", false,
-                            "plan_status", "expired"
-                    ), userId);
-                    try {
-                        emailService.send(null, email,
-                                "⏰ Tu prueba InmobilIA Pro ha finalizado",
-                                String.format(
-                                    "<h2>Hola</h2>" +
-                                    "<p>Tu período de prueba de 10 días con plan %s ha finalizado y tu cuenta se ha desactivado.</p>" +
-                                    "<p>Si quieres seguir utilizando InmobilIA Pro, solicita el plan Pro o Agency:</p>" +
-                                    "<p><a href='%s/#contacto' style='display:inline-block;padding:12px 24px;background:#0f172a;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>Solicitar plan Pro o Agency →</a></p>" +
-                                    "<p>Tus datos quedan guardados durante 30 días. Si activas un nuevo plan, los recuperas todos.</p>" +
-                                    "<p>— Equipo InmobilIA Pro</p>",
-                                    plan, BASE_URL));
-                    } catch (Exception ignored) {}
-                    desactivados++;
+                    if (pasarAFree(userId)) {
+                        aFree++;
+                        enviar(email, "Tu prueba de InmobilIA Pro ha terminado: sigues en el plan Free",
+                                "<h2>Hola</h2>"
+                                + "<p>Tu prueba gratis del plan Business ha terminado. <strong>Tu cuenta sigue activa en el plan Free y conserva todos tus datos.</strong></p>"
+                                + "<p>Free incluye 3 activos, 1 usuario y 20 créditos de IA al mes. Si gestionas más activos o trabajas en equipo, elige el plan que te encaje:</p>"
+                                + boton("Ver planes", BASE_URL + "/upgrade")
+                                + "<p>Pro desde US$39/mes y Business desde US$119/mes pagando el año (impuestos locales no incluidos). Sin permanencia.</p>"
+                                + "<p>— Equipo InmobilIA Pro</p>");
+                    }
                 } else if (diasRestantes == 3 || diasRestantes == 1) {
-                    // Aviso a 3 días y a 1 día de finalizar
-                    try {
-                        emailService.send(null, email,
-                                String.format("⏰ Tu prueba acaba en %d %s", diasRestantes, diasRestantes == 1 ? "día" : "días"),
-                                String.format(
-                                    "<h2>Hola</h2>" +
-                                    "<p>Tu período de prueba de 10 días con InmobilIA Pro acaba en <strong>%d %s</strong>.</p>" +
-                                    "<p>Si quieres seguir utilizando la plataforma sin interrupción, solicita ahora el plan Pro o Agency:</p>" +
-                                    "<p><a href='%s/#contacto' style='display:inline-block;padding:12px 24px;background:#0f172a;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>Solicitar plan →</a></p>" +
-                                    "<p>— Equipo InmobilIA Pro</p>",
-                                    diasRestantes, diasRestantes == 1 ? "día" : "días", BASE_URL));
-                    } catch (Exception ignored) {}
                     avisados++;
+                    enviar(email, String.format("Tu prueba acaba en %d %s", diasRestantes, diasRestantes == 1 ? "día" : "días"),
+                            String.format("<h2>Hola</h2>"
+                                + "<p>Tu prueba gratis del plan Business acaba en <strong>%d %s</strong>.</p>"
+                                + "<p>Si no eliges un plan, tu cuenta pasará al plan Free (3 activos y 1 usuario) y conservarás tus datos. "
+                                + "Para seguir con todo, elige tu plan antes:</p>%s<p>— Equipo InmobilIA Pro</p>",
+                                diasRestantes, diasRestantes == 1 ? "día" : "días", boton("Elegir plan", BASE_URL + "/upgrade")));
                 }
             }
-
-            log.info("[CRON] Trials: {} desactivados, {} avisados", desactivados, avisados);
+            log.info("[CRON] Pruebas: {} pasan a Free, {} avisadas", aFree, avisados);
         } catch (Exception e) {
-            log.error("[CRON] Error desactivando trials: {}", e.getMessage());
+            log.error("[CRON] Error con las pruebas acabadas: {}", e.getMessage());
         }
+    }
+
+    /** Pasa la cuenta a Free (sin tocar sus datos). */
+    boolean pasarAFree(String userId) {
+        boolean ok = supabase.update("users", userId, Map.of(
+                "plan", PlanService.FREE,
+                "plan_status", "active"
+        ), userId);
+        planService.olvidarExceso(userId);
+        return ok;
+    }
+
+    private void enviar(String email, String asunto, String html) {
+        try { emailService.send(null, email, asunto, html); } catch (Exception ignored) {}
+    }
+
+    private static String boton(String texto, String url) {
+        return "<p><a href='" + url + "' style='display:inline-block;padding:12px 24px;background:#0f172a;color:white;"
+                + "text-decoration:none;border-radius:8px;font-weight:bold'>" + texto + " →</a></p>";
     }
 
     private LocalDate parseDate(Object o) {

@@ -89,7 +89,8 @@ public final class NavConfig {
             new Tool("Cazador de Oportunidades", "🎯", "Sistema de alertas de oportunidades"),
             new Tool("Informe PDF Profesional",  "📄", "Informes profesionales para clientes"),
             new Tool("Comandos de Voz",          "🎙️", "Control por comandos de voz"),
-            new Tool("Multi-Empresa",            "🏢", "Gestion de cartera multi-sociedad")
+            new Tool("Multi-Empresa",            "🏢", "Gestion de cartera multi-sociedad"),
+            new Tool("Negotiation Co-Pilot",     "🤝", "Argumentos y rango de precio para negociar")
         )));
 
         m.put("Operaciones", new Category("Operaciones", "⚙️", "#4361ee", List.of(

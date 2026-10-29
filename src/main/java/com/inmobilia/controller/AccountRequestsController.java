@@ -4,6 +4,7 @@ import com.inmobilia.service.AuthService;
 import com.inmobilia.service.DefaultAutomationsSeeder;
 import com.inmobilia.service.EmailService;
 import com.inmobilia.service.NotificationService;
+import com.inmobilia.service.PlanService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 /**
- * Sistema de solicitudes de cuenta con aprobación manual (planes Pro/Agency/Enterprise).
+ * Sistema de solicitudes de cuenta con aprobación manual (prueba de Business; luego Free, Pro, Business o Enterprise).
  * El plan Free → registro directo desde /register?plan=free
  */
 @Controller
@@ -198,8 +199,14 @@ public class AccountRequestsController {
         return "admin_solicitudes";
     }
 
+    /** Días de prueba que se pueden dar al aprobar: 14 normal, más para los socios fundadores. */
+    static final java.util.List<Integer> DIAS_PRUEBA = java.util.List.of(PlanService.DIAS_PRUEBA, 30, 45, 60);
+
     @PostMapping("/admin/solicitudes/{id}/aprobar")
-    public String aprobar(@PathVariable String id, HttpSession session) {
+    public String aprobar(@PathVariable String id,
+                          @RequestParam(defaultValue = "14") int dias,
+                          HttpSession session) {
+        int diasPrueba = DIAS_PRUEBA.contains(dias) ? dias : PlanService.DIAS_PRUEBA;
         String adminUid = SessionUtils.uid(session);
         if (adminUid == null) return "redirect:/login";
         if (!esPropietario(session)) return "redirect:/dashboard";
@@ -220,12 +227,12 @@ public class AccountRequestsController {
             return "redirect:/admin/solicitudes";
         }
 
-        // 2. Actualizar usuario con nombre + plan
+        // 2. Actualizar usuario: la prueba es siempre del plan Business completo (luego pasa a Free)
         supabase.update("users", reg.get("id"), Map.of(
                 "name", nombre,
-                "plan", plan,
+                "plan", PlanService.BUSINESS,
                 "plan_status", "trialing",
-                "trial_ends_at", OffsetDateTime.now().plusDays(14).toString(),
+                "trial_ends_at", OffsetDateTime.now().plusDays(diasPrueba).toString(),
                 "empresa", empresa,
                 "pais", com.inmobilia.util.Pais.de(s.get("pais")).codigo()
         ), reg.get("id"));
@@ -244,7 +251,7 @@ public class AccountRequestsController {
         try { automationsSeeder.seed(reg.get("id")); } catch (Exception ignored) {}
 
         // 4. Email de bienvenida con enlace para crear la contraseña
-        enviarBienvenida(email, nombre, empresa, plan, 14, enlaceBienvenida(reg.get("id"), email));
+        enviarBienvenida(email, nombre, empresa, "Business", diasPrueba, enlaceBienvenida(reg.get("id"), email));
 
         // 6. Notificación interna para los admins
         notif.create(adminUid, "✅ Solicitud aprobada",
@@ -307,7 +314,7 @@ public class AccountRequestsController {
             String html = String.format(
                 "<div style='font-family:sans-serif;max-width:600px;margin:auto'>" +
                 "  <h2>🎉 ¡Bienvenido a InmobilIA Pro, %s!</h2>" +
-                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s.</p>" +
+                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s, sin tarjeta. Al terminar, si no eliges plan, tu cuenta pasa al plan Free y conservas tus datos.</p>" +
                 "  <p>Para entrar, crea tu contraseña con este botón (el enlace sirve una sola vez y caduca en 7 días):</p>" +
                 "  <p style='text-align:center;margin:30px 0'>" +
                 "    <a href='%s' style='display:inline-block;padding:14px 28px;background:#0f172a;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>Crear mi contraseña →</a>" +
@@ -381,11 +388,11 @@ public class AccountRequestsController {
             return "email_action_result";
         }
 
-        // 3. Actualizar usuario con nombre + plan + duración trial
-        int diasTrial = "starter".equals(plan) ? 10 : 14;
+        // 3. Actualizar usuario: prueba del plan Business completo (luego pasa a Free)
+        int diasTrial = PlanService.DIAS_PRUEBA;
         supabase.update("users", reg.get("id"), Map.of(
                 "name", nombre,
-                "plan", plan,
+                "plan", PlanService.BUSINESS,
                 "plan_status", "trialing",
                 "trial_ends_at", OffsetDateTime.now().plusDays(diasTrial).toString(),
                 "empresa", empresa,
@@ -406,7 +413,7 @@ public class AccountRequestsController {
         try { automationsSeeder.seed(reg.get("id")); } catch (Exception ignored) {}
 
         // 5. Email de bienvenida con enlace para crear la contraseña
-        enviarBienvenida(email, nombre, empresa, plan, diasTrial, enlaceBienvenida(reg.get("id"), email));
+        enviarBienvenida(email, nombre, empresa, "Business", diasTrial, enlaceBienvenida(reg.get("id"), email));
 
         log.info(">>> Solicitud {} aprobada por email-action. User creado: {}", s.get("id"), reg.get("id"));
 

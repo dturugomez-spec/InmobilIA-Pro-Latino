@@ -293,7 +293,7 @@ public class CrudController {
         if ("propiedades".equals(table)) {
             String orgId = SessionUtils.uid(session);
             if (!planService.canAddProperty(orgId)) {
-                SessionUtils.flash(session, "Has alcanzado el límite de propiedades de tu plan. Mejora a un plan superior.");
+                SessionUtils.flash(session, planService.mensajeLimiteActivos(orgId));
                 return "redirect:/upgrade";
             }
         }
@@ -390,6 +390,11 @@ public class CrudController {
         if (meta == null) return "redirect:/dashboard";
         String uid = SessionUtils.uid(session);
         String id  = request.getParameter("id");
+        // El límite de activos se comprobaba solo al abrir el formulario: enviándolo directamente se saltaba
+        if ("propiedades".equals(table) && (id == null || id.isBlank()) && !planService.canAddProperty(uid)) {
+            SessionUtils.flash(session, planService.mensajeLimiteActivos(uid));
+            return "redirect:/upgrade";
+        }
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("user_id", uid);

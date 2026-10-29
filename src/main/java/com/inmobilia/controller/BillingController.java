@@ -2,7 +2,6 @@ package com.inmobilia.controller;
 
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.PlanService;
-import com.inmobilia.service.PlazasService;
 import com.inmobilia.service.StripeService;
 import com.inmobilia.service.SupabaseService;
 import com.inmobilia.util.SessionUtils;
@@ -14,9 +13,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,55 +30,78 @@ public class BillingController {
     private final StripeService stripeService;
     private final PlanService planService;
     private final AIService aiService;
-    private final PlazasService plazas;
 
     /** Página de planes (upgrade desde dentro de la app). */
     @GetMapping("/upgrade")
-    public String upgrade(HttpSession session, Model model) {
+    public String upgrade(@RequestParam(required = false) String herramienta,
+                          @RequestParam(required = false) String limite,
+                          HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         Map<String, Object> user = currentUser(session);
-        model.addAttribute("page", "Mejorar plan");
+        String org = SessionUtils.uid(session);
+        model.addAttribute("page", "Planes y precios");
         model.addAttribute("planStatus", planService.statusFor(user));
         model.addAttribute("plans", PlanService.PLANS);
+        model.addAttribute("modulos", PlanService.MODULOS);
+        model.addAttribute("precioActivoExtra", PlanService.PRECIO_ACTIVO_EXTRA);
+        model.addAttribute("precioSociedadExtra", PlanService.PRECIO_SOCIEDAD_EXTRA);
         model.addAttribute("stripeConfigured", stripeService.isConfigured());
-        // Estado de cobro para pintar bien los botones (sin dobles suscripciones)
-        model.addAttribute("requierePago", planService.requierePago(SessionUtils.uid(session)));
         model.addAttribute("suscrito", planService.tieneSuscripcionActiva(user));
-        model.addAttribute("trialDisponible", !PlanService.haSuscritoAlgunaVez(user));
-        model.addAttribute("planActual", user == null ? "" : String.valueOf(user.getOrDefault("plan", "")).toLowerCase());
-        model.addAttribute("usuarios", plazas.contar(SessionUtils.uid(session)));
+        model.addAttribute("planActual", planService.planEfectivo(user));
+        model.addAttribute("activosUsados", planService.activosUsados(org));
+        model.addAttribute("usuarios", planService.usuariosActivos(org));
+        model.addAttribute("anual", "anual".equals(user == null ? null : String.valueOf(user.get("periodo_facturacion"))));
+        // Viene de una herramienta que su plan no incluye: decir qué plan (o módulo) la trae
+        PlanService.Herramienta h = PlanService.HERRAMIENTAS.stream()
+                .filter(x -> x.nombre().equals(herramienta)).findFirst().orElse(null);
+        if (h != null) {
+            model.addAttribute("herramienta", h.nombre());
+            model.addAttribute("herramientaPlan", PlanService.PLANS.get(h.planMinimo()).label());
+            model.addAttribute("herramientaModulo", h.modulo() == null ? null : PlanService.modulo(h.modulo()));
+        }
+        boolean titular = org != null && org.equals(SessionUtils.realUid(session));
+        model.addAttribute("limiteUsuarios", "usuarios".equals(limite) && !titular);
         return "billing/upgrade";
     }
 
-    /** Página /billing: ver estado de suscripción + portal de cliente. */
+    /** Página /billing: plan, uso, extras y portal de cliente. */
     @GetMapping("/billing")
     public String billing(HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         Map<String, Object> user = currentUser(session);
+        String org = SessionUtils.uid(session);
+        String plan = planService.planEfectivo(user);
         model.addAttribute("page", "Facturación y plan");
         model.addAttribute("user", user);
         model.addAttribute("planStatus", planService.statusFor(user));
-        int usuarios = plazas.contar(SessionUtils.uid(session));
-        String plan = user == null ? "" : String.valueOf(user.getOrDefault("plan", ""));
-        model.addAttribute("usuarios", usuarios);
-        model.addAttribute("precioUsuario", PlanService.precioMensual(plan, 1));
-        model.addAttribute("precioTotal", PlanService.precioMensual(plan, usuarios));
-        model.addAttribute("creditosMes", PlanService.creditosMensuales(plan, usuarios));
+        model.addAttribute("activosUsados", planService.activosUsados(org));
+        model.addAttribute("usuarios", planService.usuariosActivos(org));
+        model.addAttribute("creditosMes", PlanService.creditosMensuales(plan));
+        model.addAttribute("precioActivoExtra", PlanService.PRECIO_ACTIVO_EXTRA);
+        model.addAttribute("modulos", PlanService.MODULOS);
+        // Extras: sobre una suscripción de Stripe a Pro o Business
+        boolean suscrito = planService.tieneSuscripcionActiva(user) && PlanService.tieneSuscripcionStripe(user);
+        model.addAttribute("puedeExtras", suscrito && PlanService.PLANES_DE_PAGO.contains(plan));
+        model.addAttribute("modulosIncluidos", PlanService.alcanza(plan, PlanService.BUSINESS));
+        model.addAttribute("precioSociedadExtra", PlanService.PRECIO_SOCIEDAD_EXTRA);
+        model.addAttribute("sociedadesBusiness", PlanService.SOCIEDADES_BUSINESS);
+        model.addAttribute("planActual", plan);
         return "billing/index";
     }
 
-    /** Página de compra de packs de créditos de IA. */
+    /** Página de compra del pack de créditos de IA. */
     @GetMapping("/creditos")
     public String creditos(HttpSession session, Model model) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         model.addAttribute("page", "Créditos de IA");
         model.addAttribute("saldo", aiService.getCredits(SessionUtils.uid(session)));
-        model.addAttribute("packs", stripeService.creditPacks());
+        model.addAttribute("packCreditos", PlanService.PACK_CREDITOS);
+        model.addAttribute("packPrecio", PlanService.PRECIO_PACK_CREDITOS);
         model.addAttribute("stripeConfigured", stripeService.isConfigured());
         return "billing/creditos";
     }
 
-    /** Comprar un pack de créditos (pago único vía Stripe Checkout). */
+    /** Comprar el pack de créditos (pago único vía Stripe Checkout). */
     @PostMapping("/billing/credits/{pack}")
     public String buyCredits(@PathVariable String pack, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
@@ -83,10 +109,8 @@ public class BillingController {
             SessionUtils.flash(session, "Stripe no está configurado. Contacta con soporte.");
             return "redirect:/creditos";
         }
-        Map<String, Object> user = currentUser(session);
         try {
-            String url = stripeService.createCreditCheckoutSession(user, pack);
-            return "redirect:" + url;
+            return "redirect:" + stripeService.createCreditCheckoutSession(currentUser(session));
         } catch (Exception e) {
             log.error("Error creando checkout de créditos: {}", e.getMessage());
             SessionUtils.flash(session, "ERROR: " + e.getMessage());
@@ -94,28 +118,136 @@ public class BillingController {
         }
     }
 
-    /** Crear sesión de Stripe Checkout y redirigir. */
+    /** Suscribirse a Pro o Business, mensual o anual (Stripe Checkout). */
     @PostMapping("/billing/checkout/{plan}")
-    public String checkout(@PathVariable String plan, HttpSession session) {
+    public String checkout(@PathVariable String plan,
+                           @RequestParam(defaultValue = "mensual") String periodo,
+                           HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
         if (!stripeService.isConfigured()) {
             SessionUtils.flash(session, "Stripe no está configurado. Contacta con soporte.");
             return "redirect:/upgrade";
         }
+        if (!PlanService.PLANES_DE_PAGO.contains(plan)) {
+            SessionUtils.flash(session, "Enterprise se contrata a medida: escríbenos a inmobilia.support@gmail.com.");
+            return "redirect:/upgrade";
+        }
         Map<String, Object> user = currentUser(session);
         // Nunca crear una segunda suscripción: se cobrarían las dos.
-        if (planService.tieneSuscripcionActiva(user)) {
+        if (PlanService.tieneSuscripcionStripe(user) && planService.tieneSuscripcionActiva(user)) {
             SessionUtils.flash(session, "Ya tienes una suscripción activa. Para cambiar de plan, de tarjeta o cancelar, usa el portal de cliente.");
             return "redirect:/billing";
         }
         try {
-            String url = stripeService.createCheckoutSession(user, plan, plazas.contar(SessionUtils.uid(session)));
-            return "redirect:" + url;
+            return "redirect:" + stripeService.createCheckoutSession(user, plan, "anual".equals(periodo));
         } catch (Exception e) {
             log.error("Error creando checkout: {}", e.getMessage());
             SessionUtils.flash(session, "ERROR: " + e.getMessage());
             return "redirect:/upgrade";
         }
+    }
+
+    /** Activos adicionales (4 USD/mes cada uno) sobre la suscripción. 0 los quita. */
+    @PostMapping("/billing/extras/activos")
+    public String activosExtra(@RequestParam int cantidad, HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        Map<String, Object> user = currentUser(session);
+        String sub = suscripcionParaExtras(user, session);
+        if (sub == null) return "redirect:/billing";
+        int n = Math.max(0, Math.min(1000, cantidad));
+        String org = SessionUtils.uid(session);
+        // No quitar huecos que ya están ocupados por activos
+        int base = planService.limitsFor(user).maxProperties();
+        if (n < PlanService.activosExtra(user) && planService.activosUsados(org) > base + n) {
+            SessionUtils.flash(session, "Tienes " + planService.activosUsados(org) + " activos: necesitas al menos "
+                    + (planService.activosUsados(org) - base) + " adicionales. Borra activos antes de quitar huecos.");
+            return "redirect:/billing";
+        }
+        try {
+            stripeService.ajustarExtra(sub, StripeService.ACTIVO_EXTRA, n);
+            supabase.update("users", org, Map.of("activos_extra", n), org);
+            SessionUtils.flash(session, n == 0 ? "Activos adicionales quitados."
+                    : "Ahora tienes " + n + " activos adicionales (" + n * PlanService.PRECIO_ACTIVO_EXTRA
+                      + " USD/mes + impuestos, prorrateado este mes).");
+        } catch (Exception e) {
+            log.error("Error ajustando activos adicionales: {}", e.getMessage());
+            SessionUtils.flash(session, "ERROR: " + e.getMessage());
+        }
+        return "redirect:/billing";
+    }
+
+    /** Sociedades adicionales de la gestión multi-empresa (15 USD/mes cada una, sobre Business). */
+    @PostMapping("/billing/extras/sociedades")
+    public String sociedadesExtra(@RequestParam int cantidad, HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        Map<String, Object> user = currentUser(session);
+        if (!PlanService.BUSINESS.equals(planService.planEfectivo(user))) {
+            SessionUtils.flash(session, "Las sociedades adicionales se añaden al plan Business (en Enterprise son ilimitadas).");
+            return "redirect:/billing";
+        }
+        String sub = suscripcionParaExtras(user, session);
+        if (sub == null) return "redirect:/billing";
+        int n = Math.max(0, Math.min(100, cantidad));
+        String org = SessionUtils.uid(session);
+        int tiene = supabase.selectFilter("sociedades", "select=id&user_id=eq." + org + "&limit=500").size();
+        if (tiene > PlanService.SOCIEDADES_BUSINESS + n) {
+            SessionUtils.flash(session, "Tienes " + tiene + " sociedades: necesitas al menos " + (tiene - PlanService.SOCIEDADES_BUSINESS)
+                    + " adicionales. Borra sociedades antes de quitar huecos.");
+            return "redirect:/billing";
+        }
+        try {
+            stripeService.ajustarExtra(sub, StripeService.SOCIEDAD_EXTRA, n);
+            supabase.update("users", org, Map.of("sociedades_extra", n), org);
+            SessionUtils.flash(session, n == 0 ? "Sociedades adicionales quitadas."
+                    : "Ahora tienes " + n + " sociedades adicionales (" + n * PlanService.PRECIO_SOCIEDAD_EXTRA
+                      + " USD/mes + impuestos, prorrateado este mes).");
+        } catch (Exception e) {
+            log.error("Error ajustando sociedades adicionales: {}", e.getMessage());
+            SessionUtils.flash(session, "ERROR: " + e.getMessage());
+        }
+        return "redirect:/billing";
+    }
+
+    /** Añadir o quitar un módulo (solo en Pro: en Business ya vienen incluidos). */
+    @PostMapping("/billing/modulos/{clave}")
+    public String modulo(@PathVariable String clave, @RequestParam boolean activo, HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        PlanService.Modulo m = PlanService.modulo(clave);
+        Map<String, Object> user = currentUser(session);
+        if (m == null) return "redirect:/billing";
+        if (!PlanService.PRO.equals(planService.planEfectivo(user))) {
+            SessionUtils.flash(session, "Los módulos se añaden al plan Pro. En Business ya vienen incluidos.");
+            return "redirect:/billing";
+        }
+        String sub = suscripcionParaExtras(user, session);
+        if (sub == null) return "redirect:/billing";
+        String org = SessionUtils.uid(session);
+        try {
+            stripeService.ajustarExtra(sub, "modulo_" + m.clave(), activo ? 1 : 0);
+            Set<String> modulos = new LinkedHashSet<>(PlanService.modulosComprados(user));
+            if (activo) modulos.add(m.clave()); else modulos.remove(m.clave());
+            supabase.update("users", org, Map.of("modulos", new ArrayList<>(modulos)), org);
+            SessionUtils.flash(session, activo ? m.nombre() + " añadido (" + m.precioMensual() + " USD/mes + impuestos, prorrateado este mes)."
+                                               : m.nombre() + " quitado.");
+        } catch (Exception e) {
+            log.error("Error con el módulo {}: {}", clave, e.getMessage());
+            SessionUtils.flash(session, "ERROR: " + e.getMessage());
+        }
+        return "redirect:/billing";
+    }
+
+    /** Id de la suscripción de Stripe a la que añadir extras, o null (con el motivo en el flash). */
+    private String suscripcionParaExtras(Map<String, Object> user, HttpSession session) {
+        if (!stripeService.isConfigured()) {
+            SessionUtils.flash(session, "Stripe no está configurado. Contacta con soporte.");
+            return null;
+        }
+        if (!PlanService.tieneSuscripcionStripe(user) || !planService.tieneSuscripcionActiva(user)
+                || !PlanService.PLANES_DE_PAGO.contains(planService.planEfectivo(user))) {
+            SessionUtils.flash(session, "Los extras se añaden a una suscripción de Pro o Business. Elige primero tu plan.");
+            return null;
+        }
+        return String.valueOf(user.get("stripe_subscription_id"));
     }
 
     /** Abrir portal de cliente Stripe (cambiar tarjeta, cancelar). */

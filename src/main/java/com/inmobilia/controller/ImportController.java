@@ -28,6 +28,7 @@ import java.util.*;
 public class ImportController {
 
     private final SupabaseService supabase;
+    private final com.inmobilia.service.PlanService planService;
 
     private static final Set<String> SUPPORTED = Set.of("propiedades", "inquilinos", "leads", "transacciones");
 
@@ -55,8 +56,10 @@ public class ImportController {
 
         String uid = SessionUtils.uid(session);
         char sep = separator.isEmpty() ? ';' : separator.charAt(0);
-        int imported = 0, skipped = 0;
+        int imported = 0, skipped = 0, porLimite = 0;
         List<String> headers = null;
+        // Activos: solo hasta el límite del plan
+        int libres = "propiedades".equals(table) ? planService.activosLibres(uid) : Integer.MAX_VALUE;
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
@@ -80,6 +83,7 @@ public class ImportController {
                 }
                 row.put("created_at", OffsetDateTime.now().toString());
 
+                if (imported >= libres) { porLimite++; continue; }
                 if (supabase.insert(table, row) != null) imported++;
                 else skipped++;
             }
@@ -89,7 +93,9 @@ public class ImportController {
             return "redirect:/import";
         }
 
-        SessionUtils.flash(session, String.format("Importación completada: %d registros · %d omitidos", imported, skipped));
+        String msg = String.format("Importación completada: %d registros · %d omitidos", imported, skipped);
+        if (porLimite > 0) msg += String.format(" · %d sin importar por el límite de activos de tu plan. %s", porLimite, planService.mensajeLimiteActivos(uid));
+        SessionUtils.flash(session, msg);
         return "redirect:/crud/" + table;
     }
 

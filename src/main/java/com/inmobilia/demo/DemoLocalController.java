@@ -51,7 +51,7 @@ public class DemoLocalController {
             u.put("role", "admin");
             u.put("active", true);
             u.put("email_verified", true);
-            u.put("plan", "agency");             // todas las herramientas
+            u.put("plan", "business");           // todas las herramientas (la cuenta demo no tiene límites)
             u.put("plan_status", "active");
             u.put("ai_credits", 100);
             u.put("pais", "MX");

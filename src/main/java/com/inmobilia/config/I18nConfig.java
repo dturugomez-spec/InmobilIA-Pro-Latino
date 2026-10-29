@@ -74,7 +74,8 @@ public class I18nConfig implements WebMvcConfigurer {
                 "/css/**", "/js/**", "/icons/**", "/brand/**",
                 "/favicon.ico", "/favicon.svg", "/manifest.json", "/sw.js",
                 "/robots.txt", "/sitemap.xml", "/stripe/webhook");
-        // Candado de suscripción: las secciones de la app exigen estar suscrito.
+        // Candado de usuarios: si la cuenta tiene más personas de las que incluye su plan (p. ej. al
+        // pasar a Free con empleados), solo entra el titular a las secciones de la app.
         // NO incluye /upgrade, /billing, /login, /logout, /config, /account, /welcome,
         // páginas públicas, /api ni estáticos → nunca hay bucle ni bloqueo del pago.
         registry.addInterceptor(subscriptionGate).addPathPatterns(
@@ -89,13 +90,9 @@ public class I18nConfig implements WebMvcConfigurer {
                 "/gastos-agente/**", "/busquedas-guardadas/**", "/creditos",
                 "/preferencias", "/preferencias/**", "/herramientas/**",
                 "/propiedades/mapa", "/trash", "/team/**");
-        // Paywall: solo en las rutas de features premium
-        registry.addInterceptor(paywallInterceptor).addPathPatterns(
-                "/integrations", "/integrations/**",
-                "/invoices", "/invoices/**",
-                "/receipts", "/receipts/**",
-                "/reports", "/reports/**",
-                "/kanban", "/kanban/**",
-                "/pipelines", "/pipelines/**");
+        // Paywall: herramientas que no están en todos los planes (la lista está en PlanService.HERRAMIENTAS)
+        registry.addInterceptor(paywallInterceptor).addPathPatterns("/**").excludePathPatterns(
+                "/css/**", "/js/**", "/icons/**", "/brand/**", "/img/**",
+                "/favicon.ico", "/favicon.svg", "/manifest.json", "/sw.js", "/stripe/webhook");
     }
 }

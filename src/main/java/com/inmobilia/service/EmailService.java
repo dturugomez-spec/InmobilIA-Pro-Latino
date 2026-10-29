@@ -46,7 +46,17 @@ public class EmailService {
         return send(null, to, subject, body);
     }
 
+    /** Como send(), pero las respuestas del destinatario van a replyTo (p. ej. la gestora, no no-reply@). */
+    public SendResult sendConRespuesta(String to, String subject, String body, String replyTo) {
+        return send(null, to, subject, body, replyTo);
+    }
+
     public SendResult send(SmtpConfig cfg, String to, String subject, String body) {
+        return send(cfg, to, subject, body, null);
+    }
+
+    private SendResult send(SmtpConfig cfg, String to, String subject, String body, String replyTo) {
+        boolean conRespuesta = replyTo != null && replyTo.contains("@") && !esDireccionDeEjemplo(replyTo);
         // Direcciones de ejemplo (datos de demostración, pruebas): no se envían. Cada rebote
         // contra example.com resta reputación al dominio de envío.
         if (esDireccionDeEjemplo(to)) {
@@ -55,7 +65,7 @@ public class EmailService {
         }
         // Si hay Resend y no se pasó una config SMTP propia del cliente → enviar por API HTTP
         if ((cfg == null || !cfg.valid()) && resendKey != null && !resendKey.isBlank()) {
-            return sendViaResend(to, subject, body);
+            return sendViaResend(to, subject, body, conRespuesta ? replyTo : null);
         }
         SmtpConfig eff = cfg != null && cfg.valid() ? cfg : defaultConfig();
         if (!eff.valid()) {
@@ -85,7 +95,8 @@ public class EmailService {
             h.setFrom(from);
             h.setTo(to);
             h.setSubject(subject);
-            h.setText(body, false);
+            if (conRespuesta) h.setReplyTo(replyTo);
+            h.setText(body, body != null && body.contains("<"));   // los cuerpos HTML no se envían como texto
             sender.send(msg);
             return new SendResult(true, "Email enviado a " + to);
         } catch (Exception e) {
@@ -108,7 +119,7 @@ public class EmailService {
                 || d.endsWith(".invalid") || d.endsWith(".localhost");
     }
 
-    private SendResult sendViaResend(String to, String subject, String body) {
+    private SendResult sendViaResend(String to, String subject, String body, String replyTo) {
         try {
             // Si el cuerpo no parece HTML, lo convertimos (saltos de línea → <br>) para que se lea bien
             String html = body != null && body.contains("<") ? body : ("<div style=\"font-family:sans-serif\">"
@@ -116,6 +127,7 @@ public class EmailService {
             String payload = "{\"from\":\"" + jsonEsc(resendFrom) + "\","
                     + "\"to\":[\"" + jsonEsc(to) + "\"],"
                     + "\"subject\":\"" + jsonEsc(subject) + "\","
+                    + (replyTo == null ? "" : "\"reply_to\":\"" + jsonEsc(replyTo) + "\",")
                     + "\"html\":\"" + jsonEsc(html) + "\"}";
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
             HttpRequest req = HttpRequest.newBuilder()

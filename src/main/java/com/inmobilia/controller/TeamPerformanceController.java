@@ -12,7 +12,7 @@ import java.util.*;
 
 /**
  * 👥 Rendimiento del equipo: métricas por agente (leads asignados, firmados, visitas)
- * para el director de la agencia. Multi-agente (Agency/Enterprise).
+ * para el director de la agencia. Multi-agente (Business/Enterprise).
  */
 @Controller
 @RequiredArgsConstructor

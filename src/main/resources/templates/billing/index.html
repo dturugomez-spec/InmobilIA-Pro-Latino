@@ -6,7 +6,9 @@
 <body>
 <div layout:fragment="content">
 
-    <div class="max-w-3xl mx-auto space-y-5">
+    <div class="max-w-3xl mx-auto space-y-5"
+         th:with="conStripe=${user.get('stripe_customer_id') != null and !#strings.isEmpty(user.get('stripe_customer_id'))},
+                  maxActivos=${planStatus.maxActivos}, maxUsuarios=${planStatus.limits.maxTeamMembers()}">
 
         <!-- Estado del plan -->
         <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-hidden">
@@ -14,17 +16,20 @@
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">Plan actual</div>
-                        <div class="text-3xl font-bold tracking-tight mt-1" th:text="${planStatus.planLabel}">Free</div>
+                        <div class="text-3xl font-bold tracking-tight mt-1">
+                            <span th:text="${planStatus.planLabel}">Free</span>
+                            <span th:if="${planStatus.subscribed}" class="text-base font-medium text-slate-500" th:text="${planStatus.anual ? '· anual' : '· mensual'}">· mensual</span>
+                        </div>
                         <div class="text-sm text-slate-500 dark:text-neutral-400 mt-1">
                             <span th:if="${planStatus.isTrialing}" class="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                                 <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                En prueba · <strong th:text="${planStatus.trialDaysLeft}">14</strong> días restantes
+                                Prueba de Business · <strong th:text="${planStatus.trialDaysLeft}">14</strong> días restantes. Después, plan Free con tus datos.
                             </span>
                             <span th:if="${planStatus.stripeTrial}" class="inline-flex items-center gap-1.5 text-blue-700 dark:text-blue-400">
                                 <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
                                 Prueba gratis · primer cobro automático en <strong th:text="${planStatus.stripeTrialDaysLeft}">14</strong> días
                             </span>
-                            <span th:if="${!planStatus.isTrialing and planStatus.status == 'active'}" class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                            <span th:if="${!planStatus.isTrialing and planStatus.subscribed and planStatus.status == 'active'}" class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                                 Activo
                             </span>
@@ -34,16 +39,16 @@
                             </span>
                             <span th:if="${planStatus.status == 'canceled'}" class="inline-flex items-center gap-1.5 text-slate-500">
                                 <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-                                Cancelado
+                                Suscripción cancelada: estás en Free y conservas tus datos
                             </span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium shadow-card">
                             <i data-lucide="arrow-up-circle" class="h-4 w-4"></i>
-                            Cambiar plan
+                            Ver planes
                         </a>
-                        <form action="/billing/portal" method="post" th:if="${user.get('stripe_customer_id') != null and !#strings.isEmpty(user.get('stripe_customer_id'))}">
+                        <form action="/billing/portal" method="post" th:if="${conStripe}">
                             <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium">
                                 <i data-lucide="external-link" class="h-4 w-4"></i>
                                 Portal de cliente
@@ -53,34 +58,85 @@
                 </div>
             </div>
 
-            <!-- Límites del plan -->
+            <!-- Uso del plan -->
             <div class="p-6">
-                <h3 class="text-sm font-semibold mb-4 text-slate-700 dark:text-slate-300">Lo que incluye tu plan</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <h3 class="text-sm font-semibold mb-4 text-slate-700 dark:text-slate-300">Uso de tu plan</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
-                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Propiedades</div>
-                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${planStatus.limits.maxProperties() < 0 ? 'Ilimitadas' : planStatus.limits.maxProperties()}">—</div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Activos</div>
+                        <div class="text-lg font-bold font-mono mt-0.5"
+                             th:classappend="${maxActivos >= 0 and activosUsados >= maxActivos ? 'text-amber-600' : ''}"
+                             th:text="${maxActivos < 0 ? activosUsados + ' (ilimitados)' : activosUsados + ' de ' + maxActivos}">0 de 3</div>
+                        <div th:if="${planStatus.activosExtra > 0}" class="text-xs text-slate-500" th:text="${'incluye ' + planStatus.activosExtra + ' adicionales'}">incluye 2 adicionales</div>
                     </div>
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
-                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Usuarios que se cobran</div>
-                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${usuarios}">1</div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Usuarios</div>
+                        <div class="text-lg font-bold font-mono mt-0.5"
+                             th:classappend="${maxUsuarios >= 0 and usuarios > maxUsuarios ? 'text-red-600' : ''}"
+                             th:text="${maxUsuarios < 0 ? usuarios + ' (ilimitados)' : usuarios + ' de ' + maxUsuarios}">1 de 1</div>
+                        <div th:if="${maxUsuarios >= 0 and usuarios > maxUsuarios}" class="text-xs text-red-600">Solo entra el titular hasta que mejores el plan o desactives a alguien.</div>
                     </div>
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Créditos IA/mes</div>
-                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${creditosMes}">0</div>
+                        <div class="text-lg font-bold font-mono mt-0.5" th:text="${#numbers.formatInteger(creditosMes, 0, 'POINT')}">20</div>
+                        <a href="/creditos" class="text-xs text-brand-700 hover:underline">Comprar 100 por US$10</a>
                     </div>
                 </div>
-                <p th:if="${precioUsuario > 0}" class="mt-4 text-sm text-slate-600 dark:text-slate-400">
-                    Cuota: <span th:text="${usuarios}">1</span> × US$<span th:text="${precioUsuario}">29</span> =
-                    <strong th:text="${'US$' + precioTotal + '/mes'}">US$29/mes</strong> + impuestos.
-                    Cuentan el titular y los empleados activos; los desactivados y los inquilinos del portal no se cobran.
-                </p>
+            </div>
+        </div>
+
+        <!-- Extras: activos adicionales y módulos -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-1 flex items-center gap-2"><i data-lucide="plus-circle" class="h-4 w-4 text-brand-600"></i> Módulos y extras</h3>
+            <p th:unless="${puedeExtras}" class="text-sm text-slate-600 dark:text-slate-400">Los activos adicionales y los módulos se añaden a una suscripción de Pro o Business.
+                <a href="/upgrade" class="text-brand-700 hover:underline">Ver planes</a></p>
+
+            <div th:if="${puedeExtras}" class="space-y-4 mt-3">
+                <form action="/billing/extras/activos" method="post" class="flex items-end gap-3 flex-wrap">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Activos adicionales
+                            (US$<span th:text="${precioActivoExtra}">4</span>/mes cada uno<span th:if="${planStatus.anual}">, facturados al año</span>)</label>
+                        <input type="number" name="cantidad" min="0" max="1000" th:value="${planStatus.activosExtra}"
+                               class="w-28 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    </div>
+                    <button type="submit" class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium">Guardar</button>
+                    <p class="text-xs text-slate-500 w-full">Se prorratea: lo que añadas hoy se cobra en proporción en tu próxima factura.</p>
+                </form>
+
+                <form th:if="${planActual == 'business'}" action="/billing/extras/sociedades" method="post" class="flex items-end gap-3 flex-wrap border-t border-slate-100 dark:border-neutral-800 pt-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Sociedades adicionales de la gestión multi-empresa
+                            (US$<span th:text="${precioSociedadExtra}">15</span>/mes cada una; tu plan incluye <span th:text="${sociedadesBusiness}">3</span>)</label>
+                        <input type="number" name="cantidad" min="0" max="100" th:value="${planStatus.sociedadesExtra}"
+                               class="w-28 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    </div>
+                    <button type="submit" class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium">Guardar</button>
+                </form>
+
+                <div class="border-t border-slate-100 dark:border-neutral-800 pt-4">
+                    <p th:if="${modulosIncluidos}" class="text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="h-4 w-4 text-emerald-500 inline-block align-[-3px]"></i>
+                        Tu plan ya incluye Future-Proof Score.</p>
+                    <div th:unless="${modulosIncluidos}" class="space-y-2">
+                        <div th:each="m : ${modulos}" class="flex items-center justify-between gap-3">
+                            <div class="text-sm">
+                                <span class="font-medium" th:text="${m.nombre()}">Módulo</span>
+                                <span class="text-slate-500" th:text="${'· US$' + m.precioMensual() + '/mes'}">· US$29/mes</span>
+                            </div>
+                            <form th:action="@{|/billing/modulos/${m.clave()}|}" method="post">
+                                <input type="hidden" name="activo" th:value="${!planStatus.modulos.contains(m.clave())}">
+                                <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                        th:classappend="${planStatus.modulos.contains(m.clave()) ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-brand-800 hover:bg-brand-900 text-white'}"
+                                        th:text="${planStatus.modulos.contains(m.clave()) ? 'Quitar' : 'Añadir'}">Añadir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Métodos de pago / facturas -->
-        <div th:if="${user.get('stripe_customer_id') != null and !#strings.isEmpty(user.get('stripe_customer_id'))}"
-             class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <div th:if="${conStripe}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
             <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"><i data-lucide="credit-card" class="h-4 w-4 text-brand-600"></i> Método de pago y facturas</h3>
             <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 Gestiona tu tarjeta, descarga facturas anteriores y cambia/cancela tu suscripción desde el portal de Stripe.
@@ -91,22 +147,6 @@
                     Abrir portal de cliente
                 </button>
             </form>
-        </div>
-
-        <!-- Sin suscripción -->
-        <div th:unless="${user.get('stripe_customer_id') != null and !#strings.isEmpty(user.get('stripe_customer_id'))}"
-             class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-5">
-            <div class="flex items-start gap-3">
-                <i data-lucide="info" class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <h3 class="font-semibold text-sm text-amber-900 dark:text-amber-200 mb-1">Aún no tienes suscripción activa</h3>
-                    <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">Suscríbete a un plan para desbloquear todas las funciones y mantener tu cuenta cuando termine el período de prueba.</p>
-                    <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium">
-                        <i data-lucide="arrow-up-circle" class="h-3.5 w-3.5"></i>
-                        Ver planes
-                    </a>
-                </div>
-            </div>
         </div>
 
     </div>

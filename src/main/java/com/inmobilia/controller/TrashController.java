@@ -33,6 +33,7 @@ public class TrashController {
     private final ObjectMapper mapper;
     private final PermissionService permissions;
     private final AuditTrail audit;
+    private final com.inmobilia.service.PlanService planService;
 
     @GetMapping("/trash")
     public String view(HttpSession session, Model model) {
@@ -71,6 +72,10 @@ public class TrashController {
         if (PermissionService.SECTIONS.contains(tableName) ? !permissions.canWrite(rol, tableName)
                                                            : !PermissionService.ADMIN.equals(rol)) {
             SessionUtils.flash(session, "Tu rol no tiene permiso para restaurar registros de esta sección.");
+            return "redirect:/trash";
+        }
+        if ("propiedades".equals(tableName) && !planService.canAddProperty(orgId)) {
+            SessionUtils.flash(session, planService.mensajeLimiteActivos(orgId));
             return "redirect:/trash";
         }
         audit.registrar(req, session, "restaurar", tableName, String.valueOf(entry.get("record_id")),

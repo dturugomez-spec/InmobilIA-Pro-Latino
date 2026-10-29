@@ -13,22 +13,23 @@ class CreditosMensualesTest {
     private static final OffsetDateTime AHORA = OffsetDateTime.of(2026, 10, 13, 4, 15, 0, 0, ZoneOffset.UTC);
 
     @Test
-    void asignacionPorPlanYUsuario() {
-        assertEquals(100, PlanService.creditosMensuales("pro"));
-        assertEquals(300, PlanService.creditosMensuales("agency"));
-        assertEquals(0, PlanService.creditosMensuales("free"));
+    void asignacionPorPlanParaTodaLaCuenta() {
+        assertEquals(20, PlanService.creditosMensuales("free"));
+        assertEquals(200, PlanService.creditosMensuales("pro"));
+        assertEquals(1000, PlanService.creditosMensuales("business"));
+        assertEquals(1000, PlanService.creditosMensuales("agency"), "el plan antiguo cuenta como Business");
+        assertEquals(3000, PlanService.creditosMensuales("enterprise"));
         assertEquals(0, PlanService.creditosMensuales(null));
-        assertEquals(300, PlanService.creditosMensuales("pro", 3));
-        assertEquals(1500, PlanService.creditosMensuales("agency", 5));
-        assertEquals(300, PlanService.creditosMensuales("agency", 0), "mínimo el titular");
     }
 
     @Test
-    void precioPorUsuario() {
-        assertEquals(PlanService.PRECIO_PRO_USD, PlanService.precioMensual("pro", 1));
-        assertEquals(PlanService.PRECIO_PRO_USD * 5, PlanService.precioMensual("pro", 5));
-        assertEquals(PlanService.PRECIO_AGENCY_USD * 5, PlanService.precioMensual("agency", 5));
-        assertEquals(0, PlanService.precioMensual("free", 3));
+    void precioPorPlanNoPorUsuario() {
+        assertEquals(0, PlanService.precioMensual("free", false));
+        assertEquals(49, PlanService.precioMensual("pro", false));
+        assertEquals(39, PlanService.precioMensual("pro", true), "pagando el año, un 20 % menos");
+        assertEquals(149, PlanService.precioMensual("business", false));
+        assertEquals(119, PlanService.precioMensual("business", true));
+        assertEquals(399, PlanService.precioMensual("enterprise", true), "Enterprise: desde 399, a medida");
     }
 
     @Test

@@ -8,16 +8,16 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * ⚡ Reposición mensual de los créditos de IA del plan, por usuario (Pro 100, Agency 300 cada uno).
+ * ⚡ Reposición mensual de los créditos de IA del plan, para toda la cuenta
+ * (Free 20, Pro 200, Business 1.000, Enterprise 3.000 de base).
  *
- * Cada día repasa las cuentas con suscripción de Stripe activa o en prueba y, si hace un mes
- * (o más) de la última reposición, deja el saldo en la asignación del plan más lo que quede de
- * packs comprados (ver AIService.saldoTrasReponer). La primera reposición se hace al
- * suscribirse (StripeWebhookController).
+ * Cada día repasa las cuentas con suscripción de Stripe activa o en prueba, las de Free y las de
+ * Enterprise pactado sin Stripe y, si hace un mes (o más) de la última reposición, deja el saldo
+ * en la asignación del plan más lo que quede de packs comprados (ver AIService.saldoTrasReponer).
+ * La primera reposición de un plan de pago se hace al suscribirse (StripeWebhookController).
  *
  * Necesita las columnas users.ai_credits_renewed_at y ai_credits_comprados (migración V83).
  * Sin ellas, la consulta falla sin romper nada y simplemente no repone.
@@ -29,20 +29,24 @@ public class CreditosMensualesService {
 
     private final SupabaseService supabase;
     private final AIService aiService;
-    private final PlazasService plazas;
 
     @Scheduled(cron = "0 15 4 * * *", zone = "${app.zona-horaria:America/Mexico_City}")
     public void reponerVencidos() {
         String haceUnMes = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1).toString();
-        List<Map<String, Object>> cuentas = supabase.selectFilter("users",
-                "select=id,plan,plan_status,ai_credits,ai_credits_renewed_at,stripe_subscription_id"
-                + "&plan_status=in.(active,trialing)&stripe_subscription_id=not.is.null"
-                + "&or=(ai_credits_renewed_at.is.null,ai_credits_renewed_at.lt." + haceUnMes + ")"
-                + "&limit=1000");
+        String vencidos = "&organization_id=is.null&or=(ai_credits_renewed_at.is.null,ai_credits_renewed_at.lt." + haceUnMes + ")&limit=1000";
+        String campos = "select=id,plan,plan_status,ai_credits,ai_credits_renewed_at,stripe_subscription_id";
+        List<Map<String, Object>> cuentas = new ArrayList<>();
+        cuentas.addAll(supabase.selectFilter("users", campos
+                + "&plan_status=in.(active,trialing)&stripe_subscription_id=not.is.null" + vencidos));
+        cuentas.addAll(supabase.selectFilter("users", campos + "&plan=eq.free&active=eq.true" + vencidos));
+        cuentas.addAll(supabase.selectFilter("users", campos
+                + "&plan=eq.enterprise&plan_status=eq.active&stripe_subscription_id=is.null" + vencidos));
         int repuestas = 0;
+        Set<String> vistas = new HashSet<>();
         for (Map<String, Object> u : cuentas) {
+            if (!vistas.add(String.valueOf(u.get("id")))) continue;
             if (!tocaReponer(u.get("ai_credits_renewed_at"), OffsetDateTime.now(ZoneOffset.UTC))) continue;
-            int asignacion = PlanService.creditosMensuales(String.valueOf(u.get("plan")), plazas.contar(String.valueOf(u.get("id"))));
+            int asignacion = PlanService.creditosMensuales(String.valueOf(u.get("plan")));
             if (asignacion <= 0) continue;
             if (aiService.reponerCreditos(String.valueOf(u.get("id")), asignacion, true) >= 0) repuestas++;
         }

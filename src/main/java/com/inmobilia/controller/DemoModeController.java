@@ -64,7 +64,7 @@ public class DemoModeController {
         data.put("active", true);
         data.put("email_verified", true);
         data.put("ai_credits", 10);
-        data.put("plan", "agency");          // demo siempre con todas las features
+        data.put("plan", "business");        // demo siempre con todas las features
         data.put("plan_status", "trialing");
         data.put("trial_ends_at", OffsetDateTime.now().plusDays(1).toString());
         data.put("pais", "MX");              // los ejemplos son de una inmobiliaria de CDMX

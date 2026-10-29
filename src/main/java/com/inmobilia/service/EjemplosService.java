@@ -112,7 +112,7 @@ public class EjemplosService {
     private static final String[][] HIJOS = {
             {"tareas", "lead_id"}, {"tareas", "propiedad_id"}, {"agente_acciones", "lead_id"}, {"agente_acciones", "propiedad_id"},
             {"lead_interacciones", "lead_id"}, {"matches", "lead_id"}, {"matches", "propiedad_id"},
-            {"visitas", "lead_id"}, {"visitas", "propiedad_id"}, {"notas_voz", "lead_id"}};
+            {"visitas", "lead_id"}, {"visitas", "propiedad_id"}, {"notas_voz", "lead_id"}, {"negociaciones", "propiedad_id"}};
 
     @Async
     public void quitarEnSegundoPlano(String orgId) {
@@ -329,6 +329,34 @@ public class EjemplosService {
             bloque("inquilinos", this::portalInquilinos);
             bloque("inteligencia", this::inteligencia);
             bloque("rentabilidad", this::rentabilidad);
+            bloque("multi-empresa y negociación", this::multiEmpresaYNegociacion);
+        }
+
+        // ── Gestión multi-empresa y Negotiation Co-Pilot ───────────────────────
+        void multiEmpresaYNegociacion() {
+            Map<String, Object> centro = ins("sociedades", u("nombre", "Patrimonial Centro S.A. de C.V.", "cif", "PCE200115AB1",
+                    "notas", "Viviendas y locales del centro de la ciudad"));
+            Map<String, Object> logistica = ins("sociedades", u("nombre", "Logística Norte Inversiones S.A. de C.V.", "cif", "LNI190320KD5",
+                    "notas", "Naves y oficinas"));
+            List<Map<String, Object>> props = guardadas.getOrDefault("propiedades", List.of());
+            for (int i = 0; i < props.size(); i++) {
+                Map<String, Object> s = i == 2 || i == 6 || i == 11 ? logistica : i < 6 ? centro : null;
+                if (s != null) supabase.update("propiedades", String.valueOf(props.get(i).get("id")),
+                        Map.of("sociedad_id", s.get("id"), "publicar_portales", false), org);   // nada de ejemplo va a portales
+            }
+            // Una negociación ya preparada (con la plantilla, sin gastar IA)
+            String nave = id("propiedades", 11);
+            if (nave == null) return;
+            // Importes de ejemplo en euros, convertidos a la moneda de la inmobiliaria como el resto
+            double referencia = 520000 * demo.factorEur(org), pedido = 560000 * demo.factorEur(org);
+            NegociacionService.Rango r = NegociacionService.rango(referencia, pedido, "vendo", false,
+                    "el valor actual que tienes apuntado del activo");
+            Map<String, Object> plan = new LinkedHashMap<>(NegociacionService.plantilla("venta", "vendo", "nave", 400, pedido, r));
+            plan.put("base", r.base());
+            plan.put("referencia", r.referencia());
+            plan.put("con_ia", false);
+            ins("negociaciones", u("propiedad_id", nave, "titulo", "Vendo · " + nombreProp(11), "operacion", "venta", "rol", "vendo",
+                    "precio_pedido", Math.round(pedido), "apertura", r.apertura(), "objetivo", r.objetivo(), "limite", r.limite(), "plan", plan));
         }
 
         // ── Cartera: mapa, portales, galería, obra nueva, tours, staging ───────

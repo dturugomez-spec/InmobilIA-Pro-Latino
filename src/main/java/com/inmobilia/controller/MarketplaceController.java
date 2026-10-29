@@ -28,7 +28,7 @@ public class MarketplaceController {
     @org.springframework.beans.factory.annotation.Value("${app.base-url:https://www.inmobiliapro.es}")
     private String baseUrl;
 
-    private static final Set<String> PLANES_PAGO = Set.of("pro", "agency", "enterprise");
+    private static final Set<String> PLANES_PAGO = Set.of("pro", "business", "agency", "enterprise");
 
     // ─── PÚBLICO ───
     /** Buscador GLOBAL (red compartida de todas las agencias). */

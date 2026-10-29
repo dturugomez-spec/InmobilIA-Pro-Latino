@@ -2,17 +2,26 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
-<head><title>Mejorar plan</title></head>
+<head><title>Planes y precios</title></head>
 <body>
-<div layout:fragment="content">
+<div layout:fragment="content" x-data="{ anual: false }" th:attr="x-data=|{ anual: ${anual} }|">
 
-    <!-- Cliente que aún no se ha suscrito: debe activar su plan para entrar -->
-    <div th:if="${requierePago}" class="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/20 ring-1 ring-blue-200 dark:ring-blue-900/40 p-4 mb-6 flex items-center gap-3">
-        <i data-lucide="credit-card" class="h-5 w-5 text-blue-700 flex-shrink-0"></i>
+    <!-- Empleado de una cuenta con más personas de las que incluye su plan -->
+    <div th:if="${limiteUsuarios}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-center gap-3">
+        <i data-lucide="users" class="h-5 w-5 text-amber-700 flex-shrink-0"></i>
         <div class="text-sm">
-            <p class="font-semibold text-blue-950 dark:text-blue-200">Activa tu suscripción para empezar</p>
-            <p th:if="${trialDisponible}" class="text-blue-900 dark:text-blue-300">Tienes <strong>14 días gratis</strong>: pones la tarjeta ahora y no se te cobra nada hasta que terminen. Cancela cuando quieras.</p>
-            <p th:unless="${trialDisponible}" class="text-blue-900 dark:text-blue-300">Elige un plan para reactivar tu cuenta. Tus datos siguen guardados.</p>
+            <p class="font-semibold text-amber-900 dark:text-amber-200">Tu cuenta tiene más usuarios de los que incluye su plan</p>
+            <p class="text-amber-800 dark:text-amber-300">Mientras tanto solo puede entrar el titular. Pídele que mejore el plan o que desactive a alguien en Equipo. Los datos no se pierden.</p>
+        </div>
+    </div>
+
+    <!-- Viene de una herramienta que su plan no incluye -->
+    <div th:if="${herramienta}" class="rounded-xl bg-blue-50 dark:bg-blue-950/30 ring-1 ring-blue-200 dark:ring-blue-900/40 p-4 mb-6 flex items-center gap-3">
+        <i data-lucide="lock" class="h-5 w-5 text-blue-700 flex-shrink-0"></i>
+        <div class="text-sm">
+            <p class="font-semibold text-blue-950 dark:text-blue-200"><span th:text="${herramienta}">Herramienta</span> está en el plan <span th:text="${herramientaPlan}">Business</span></p>
+            <p th:if="${herramientaModulo}" class="text-blue-900 dark:text-blue-300">Si estás en Pro, puedes añadirla suelta por
+                <strong th:text="${'US$' + herramientaModulo.precioMensual() + '/mes'}">US$29/mes</strong> en Facturación, sin pasarte a Business.</p>
         </div>
     </div>
 
@@ -21,29 +30,37 @@
         <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-700 flex-shrink-0"></i>
         <div class="text-sm flex-1">
             <p class="font-semibold text-emerald-900 dark:text-emerald-200">Tu suscripción está activa</p>
-            <p class="text-emerald-800 dark:text-emerald-300">Para cambiar de plan, de tarjeta o cancelar, usa el portal de cliente.</p>
+            <p class="text-emerald-800 dark:text-emerald-300">Para cambiar de plan, de tarjeta o cancelar, usa el portal de cliente. Activos adicionales y módulos, en <a href="/billing" class="underline">Facturación</a>.</p>
         </div>
         <form action="/billing/portal" method="post">
             <button type="submit" class="px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold">Gestionar suscripción</button>
         </form>
     </div>
 
-    <!-- Prueba sin tarjeta (cuentas demo) -->
-    <div th:if="${planStatus.isTrialing and !requierePago and !suscrito}" class="rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-center gap-3">
+    <!-- Prueba sin tarjeta -->
+    <div th:if="${planStatus.isTrialing and !suscrito}" class="rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-center gap-3">
         <i data-lucide="zap" class="h-5 w-5 text-amber-600 flex-shrink-0"></i>
         <div class="text-sm">
-            <p class="font-semibold text-amber-900 dark:text-amber-200">Estás en período de prueba</p>
-            <p class="text-amber-800 dark:text-amber-300">Te quedan <strong th:text="${planStatus.trialDaysLeft}">14</strong> días con acceso completo.</p>
+            <p class="font-semibold text-amber-900 dark:text-amber-200">Estás probando el plan Business</p>
+            <p class="text-amber-800 dark:text-amber-300">Te quedan <strong th:text="${planStatus.trialDaysLeft}">14</strong> días. Si no eliges plan, tu cuenta pasará a Free y conservarás tus datos. Si te suscribes ahora, no se cobra nada hasta que acabe la prueba.</p>
         </div>
     </div>
 
     <!-- Header -->
-    <div class="text-center mb-8">
+    <div class="text-center mb-6">
         <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
-        <h1 class="text-3xl font-bold tracking-tight mb-2">Elige el plan que mejor se adapta a ti</h1>
-        <p class="text-slate-600 dark:text-slate-400">Pagas por cada usuario de tu inmobiliaria. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.</p>
-        <p class="text-sm text-slate-500 mt-1">Tu equipo ahora: <strong th:text="${usuarios}">1</strong> <span th:text="${usuarios == 1 ? 'usuario' : 'usuarios'}">usuario</span>.
-            Si añades o desactivas a alguien, la cuota se ajusta sola (prorrateada).</p>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">El precio depende de cuántos activos gestionas</h1>
+        <p class="text-slate-600 dark:text-slate-400">No del número de usuarios. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.</p>
+        <p class="text-sm text-slate-500 mt-1">Ahora tienes <strong th:text="${activosUsados}">0</strong> activos y <strong th:text="${usuarios}">1</strong>
+            <span th:text="${usuarios == 1 ? 'usuario' : 'usuarios'}">usuario</span>.</p>
+    </div>
+
+    <!-- Mensual / anual -->
+    <div class="flex justify-center mb-8">
+        <div class="inline-flex rounded-lg bg-slate-100 dark:bg-neutral-800 p-1 text-sm">
+            <button type="button" @click="anual = false" :class="!anual ? 'bg-white dark:bg-neutral-900 shadow-card font-semibold' : 'text-slate-500'" class="px-4 py-1.5 rounded-md">Mensual</button>
+            <button type="button" @click="anual = true" :class="anual ? 'bg-white dark:bg-neutral-900 shadow-card font-semibold' : 'text-slate-500'" class="px-4 py-1.5 rounded-md">Anual <span class="text-emerald-600 font-semibold">−20 %</span></button>
+        </div>
     </div>
 
     <!-- Sin Stripe configurado -->
@@ -56,77 +73,109 @@
     </div>
 
     <!-- Cards de planes -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 max-w-6xl mx-auto">
 
-        <!-- Pro -->
-        <div class="rounded-2xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-6 flex flex-col ring-2 ring-brand-500 relative shadow-card-xl">
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Más popular</div>
-            <h3 class="font-bold text-lg">Pro</h3>
-            <p class="text-xs text-white/70 mt-1 mb-4">Para autónomos y micro-agencias</p>
-            <div class="mb-1">
-                <span class="text-4xl font-bold tracking-tight">US$[[${precioPro}]]</span>
-                <span class="text-white/70 text-sm">/usuario/mes</span>
-            </div>
-            <p class="text-xs text-white/70 mb-5">Tu equipo: <span th:text="${usuarios}">1</span> × US$[[${precioPro}]] = <strong th:text="${'US$' + (usuarios * precioPro) + '/mes'}">US$29/mes</strong></p>
-            <ul class="space-y-2.5 text-sm text-white/90 mb-6 flex-1">
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Inmuebles ilimitados</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Leads, visitas y pipeline Kanban</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Publicación en portales</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Facturas y recibos</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Informes PDF</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> 100 créditos de IA por usuario/mes</li>
+        <!-- Free -->
+        <div class="rounded-2xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 flex flex-col">
+            <h3 class="font-bold text-lg">Free</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Para probar la herramienta con tu cartera real</p>
+            <div class="mb-4"><span class="text-4xl font-bold tracking-tight">US$0</span></div>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Hasta 3 activos · 1 usuario</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 20 créditos de IA al mes</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Calculadora de rentabilidad y valoración por m²</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Ficha de cada activo</li>
             </ul>
-            <button th:if="${suscrito and planActual == 'pro'}" disabled
-                    class="w-full text-center px-4 py-2.5 rounded-lg bg-white/20 text-white text-sm font-bold cursor-default">Tu plan actual</button>
-            <form th:if="${suscrito and planActual != 'pro'}" action="/billing/portal" method="post">
-                <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-brand-800 text-sm font-bold transition-colors">Cambiar en el portal</button>
-            </form>
-            <form th:unless="${suscrito}" action="/billing/checkout/pro" method="post">
-                <button type="submit" th:disabled="${!stripeConfigured}"
-                        class="w-full text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-brand-800 text-sm font-bold transition-colors"
-                        th:text="${trialDisponible ? 'Empezar 14 días gratis' : 'Suscribirme'}">
-                    Empezar 14 días gratis
-                </button>
-            </form>
-            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-white/70">Facturado en USD · impuestos según tu país</p>
+            <button th:if="${planActual == 'free'}" disabled class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-neutral-800 text-slate-500 text-sm font-bold cursor-default">Tu plan actual</button>
         </div>
 
-        <!-- Agency -->
-        <div class="rounded-2xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 flex flex-col">
-            <h3 class="font-bold text-lg">Agency</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-4">Para agencias y asset managers</p>
+        <!-- Pro y Business -->
+        <div th:each="clave : ${ {'pro', 'business'} }" th:with="l=${plans.get(clave)}, destacado=${clave == 'business'}"
+             class="rounded-2xl p-6 flex flex-col relative"
+             th:classappend="${destacado ? 'bg-gradient-to-br from-brand-800 to-brand-950 text-white ring-2 ring-brand-500 shadow-card-xl' : 'bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800'}">
+            <div th:if="${destacado}" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Recomendado</div>
+            <h3 class="font-bold text-lg" th:text="${l.label()}">Pro</h3>
+            <p class="text-xs mt-1 mb-4" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}"
+               th:text="${destacado ? 'Gestores de patrimonio y carteras profesionales' : 'Pequeños inversores con varias naves o locales'}">Para quién</p>
             <div class="mb-1">
-                <span class="text-4xl font-bold tracking-tight">US$[[${precioAgency}]]</span>
-                <span class="text-slate-500 text-sm">/usuario/mes</span>
+                <span class="text-4xl font-bold tracking-tight" x-show="!anual" th:text="${'US$' + l.monthlyPriceEur()}">US$49</span>
+                <span class="text-4xl font-bold tracking-tight" x-show="anual" x-cloak th:text="${'US$' + l.annualMonthlyPriceEur()}">US$39</span>
+                <span class="text-sm" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}">/mes</span>
             </div>
-            <p class="text-xs text-slate-500 mb-5">Tu equipo: <span th:text="${usuarios}">1</span> × US$[[${precioAgency}]] = <strong th:text="${'US$' + (usuarios * precioAgency) + '/mes'}">US$49/mes</strong></p>
-            <ul class="space-y-2.5 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Todo lo de Pro</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Importar extractos del banco y conciliar cobros</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Exportación para AEAT (modelos 303 y 100)</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 300 créditos de IA por usuario/mes</li>
-                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Soporte prioritario</li>
+            <p class="text-xs mb-5" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}">
+                <span x-show="!anual">Pagando el año: <span th:text="${'US$' + l.annualMonthlyPriceEur() + '/mes'}">US$39/mes</span></span>
+                <span x-show="anual" x-cloak th:text="${'Un pago de US$' + (l.annualMonthlyPriceEur() * 12) + ' al año'}">US$468 al año</span>
+            </p>
+            <ul class="space-y-2 text-sm mb-6 flex-1" th:classappend="${destacado ? 'text-white/90' : 'text-slate-600 dark:text-slate-400'}">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0" th:classappend="${destacado ? 'text-emerald-300' : 'text-emerald-500'}"></i>
+                    <span th:text="${'Hasta ' + l.maxProperties() + ' activos · ' + l.maxTeamMembers() + ' usuarios'}">Hasta 15 activos</span></li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0" th:classappend="${destacado ? 'text-emerald-300' : 'text-emerald-500'}"></i>
+                    <span th:text="${#numbers.formatInteger(l.aiCreditsPerMonth(), 0, 'POINT') + ' créditos de IA al mes'}">200 créditos</span></li>
+                <th:block th:if="${clave == 'pro'}">
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Todo lo de Free</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Escáner de documentos (OCR) y portal del inquilino</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Portfolio Health Score e informes en PDF</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Communication AutoPilot y comandos de voz</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Pipeline kanban, facturas y recibos</li>
+                </th:block>
+                <th:block th:if="${clave == 'business'}">
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Todo lo de Pro</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Future-Proof Score y ESG Score</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Live Market Radar y Opportunity Hunter</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Negotiation Co-Pilot</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Mantenimiento predictivo</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Gestión multi-empresa (hasta 3 sociedades)</li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-300 mt-0.5 flex-shrink-0"></i> Integraciones</li>
+                </th:block>
             </ul>
-            <button th:if="${suscrito and planActual == 'agency'}" disabled
-                    class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-neutral-800 text-slate-500 text-sm font-bold cursor-default">Tu plan actual</button>
-            <form th:if="${suscrito and planActual != 'agency'}" action="/billing/portal" method="post">
-                <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-colors">Cambiar en el portal</button>
+            <button th:if="${suscrito and planActual == clave}" disabled
+                    class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold cursor-default"
+                    th:classappend="${destacado ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-neutral-800 text-slate-500'}">Tu plan actual</button>
+            <form th:if="${suscrito and planActual != clave}" action="/billing/portal" method="post">
+                <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors"
+                        th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}">Cambiar en el portal</button>
             </form>
-            <form th:unless="${suscrito}" action="/billing/checkout/agency" method="post">
+            <form th:unless="${suscrito}" th:action="@{|/billing/checkout/${clave}|}" method="post">
+                <input type="hidden" name="periodo" :value="anual ? 'anual' : 'mensual'" value="mensual">
                 <button type="submit" th:disabled="${!stripeConfigured}"
-                        class="w-full text-center px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-colors"
-                        th:text="${trialDisponible ? 'Empezar 14 días gratis' : 'Suscribirme'}">
-                    Empezar 14 días gratis
-                </button>
+                        class="w-full text-center px-4 py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold transition-colors"
+                        th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}"
+                        th:text="${'Elegir ' + l.label()}">Elegir</button>
             </form>
-            <p th:unless="${suscrito}" class="mt-2 text-center text-xs text-slate-500">Facturado en USD · impuestos según tu país</p>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 ring-1 ring-amber-300 dark:ring-amber-900/40 p-6 flex flex-col">
+            <h3 class="font-bold text-lg">Enterprise</h3>
+            <p class="text-xs text-amber-800 dark:text-amber-300 mt-1 mb-4">Family offices, fondos inmobiliarios y carteras grandes</p>
+            <div class="mb-4"><span class="text-sm text-amber-800 dark:text-amber-300">Desde</span> <span class="text-4xl font-bold tracking-tight">US$399</span><span class="text-sm text-amber-800 dark:text-amber-300">/mes</span></div>
+            <ul class="space-y-2 text-sm text-amber-950 dark:text-amber-100 mb-6 flex-1">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Activos y usuarios ilimitados</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Todo lo de Business</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Acceso por API</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Onboarding, migración de datos y soporte prioritario</li>
+            </ul>
+            <button th:if="${planActual == 'enterprise'}" disabled class="w-full text-center px-4 py-2.5 rounded-lg bg-white/60 text-amber-900 text-sm font-bold cursor-default">Tu plan actual</button>
+            <a th:unless="${planActual == 'enterprise'}" href="mailto:inmobilia.support@gmail.com?subject=Plan%20Enterprise" class="block w-full text-center px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold">Hablemos</a>
         </div>
     </div>
 
-    <!-- Footer comparativa -->
-    <div class="mt-12 text-center text-xs text-slate-500 dark:text-neutral-400">
-        <p>Pago seguro con <strong>Stripe</strong>. Factura en USD cada mes. Cancelación desde el portal de cliente.</p>
-        <p class="mt-1">¿Necesitas más? <a href="mailto:inmobilia.support@gmail.com" class="text-brand-700 dark:text-brand-400 hover:underline">Plan Enterprise a medida</a>.</p>
+    <!-- Extras -->
+    <div class="max-w-3xl mx-auto mt-10 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="text-sm font-semibold mb-3">Módulos y extras</h3>
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr><td class="py-2">Activo adicional</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioActivoExtra + '/mes por activo'}">US$4/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Planes de pago</td></tr>
+                <tr th:each="m : ${modulos}"><td class="py-2" th:text="${m.nombre()}">Módulo</td><td class="py-2 text-right font-semibold" th:text="${'US$' + m.precioMensual() + '/mes'}">US$29/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Pro (incluido en Business)</td></tr>
+                <tr><td class="py-2">Sociedad adicional (multi-empresa)</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioSociedadExtra + '/mes por sociedad'}">US$15/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Business y Enterprise</td></tr>
+                <tr><td class="py-2">Pack de 100 créditos de IA</td><td class="py-2 text-right font-semibold">US$10 (pago único)</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Todos los planes · <a href="/creditos" class="text-brand-700 hover:underline">Comprar</a></td></tr>
+            </tbody>
+        </table>
+        <p class="mt-3 text-xs text-slate-500">Se añaden desde <a href="/billing" class="text-brand-700 hover:underline">Facturación</a> una vez suscrito. Pagando el año, los extras se facturan también al año (12 meses de su precio).</p>
+    </div>
+
+    <div class="mt-8 text-center text-xs text-slate-500 dark:text-neutral-400">
+        <p>Pago seguro con <strong>Stripe</strong>. Factura en dólares (USD). Si bajas de plan, tus datos se mantienen.</p>
     </div>
 
 </div>

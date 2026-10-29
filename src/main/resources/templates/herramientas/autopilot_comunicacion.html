@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Communication AutoPilot</title></head>
+<body>
+<div layout:fragment="content" class="max-w-4xl mx-auto space-y-5">
+
+    <div class="rounded-xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-5">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i data-lucide="mail-check" class="h-5 w-5"></i> Communication AutoPilot</h1>
+        <p class="text-sm text-white/80 mt-1">Avisos a tus inquilinos sacados de tus datos: contratos que vencen, actualizaciones de renta,
+            recibos sin pagar e incidencias del portal sin responder. Revisa el borrador, mejóralo con IA si quieres y envíalo.</p>
+    </div>
+
+    <!-- Envío automático -->
+    <form method="post" action="/herramientas/autopilot-comunicacion/config"
+          class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="text-sm font-semibold mb-1">Enviar solos cada mañana</h3>
+        <p class="text-xs text-slate-500 mb-3">Se envían a las 9:00 con la plantilla (sin IA), una sola vez por aviso y solo a inquilinos con email.
+            Las incidencias siempre las respondes tú.</p>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" name="renovacion" value="true" th:checked="${config.get('auto_renovacion') == true}"> Contratos que vencen (90 días antes)</label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="actualizacion" value="true" th:checked="${config.get('auto_actualizacion') == true}"> Actualizaciones de renta (30 días antes)</label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="pago" value="true" th:checked="${config.get('auto_pago') == true}"> Recibos sin pagar (a los 5 días)</label>
+        </div>
+        <button class="mt-3 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium">Guardar</button>
+    </form>
+
+    <!-- Pendientes -->
+    <div>
+        <h3 class="text-sm font-semibold mb-2">Pendientes de enviar <span class="text-slate-400" th:text="${'(' + pendientes.size() + ')'}">(0)</span></h3>
+        <div th:if="${pendientes.isEmpty()}" class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4 text-sm text-emerald-900 dark:text-emerald-200">
+            No hay nada que comunicar ahora mismo. Aquí aparecerán los contratos que venzan en 90 días, las actualizaciones de renta del próximo mes,
+            los recibos sin pagar y las incidencias sin responder.
+        </div>
+        <div class="space-y-3">
+            <div th:each="a : ${pendientes}" x-data="{ abierto: false, cargando: false, error: '' }"
+                 class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+                <div class="flex items-start justify-between gap-3 flex-wrap">
+                    <div class="min-w-0">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1"
+                              th:classappend="${a.tipo() == 'pago' ? 'bg-red-100 text-red-700' : (a.tipo() == 'incidencia' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-700')}"
+                              th:text="${a.tipo() == 'renovacion' ? 'Renovación' : (a.tipo() == 'actualizacion' ? 'Actualización de renta' : (a.tipo() == 'pago' ? 'Recordatorio de pago' : 'Respuesta a incidencia'))}">Tipo</span>
+                        <p class="text-sm font-semibold" th:text="${a.destinatario() + ' · ' + a.inmueble()}">Inquilino · inmueble</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" th:text="${a.motivo()}">Motivo</p>
+                        <p th:if="${a.conEmail()}" class="text-xs text-slate-500" th:text="${a.email()}">email</p>
+                        <p th:unless="${a.conEmail()}" class="text-xs text-red-600">Sin email: añádelo en la ficha del inquilino para poder enviarlo.</p>
+                    </div>
+                    <button type="button" @click="abierto = !abierto" class="px-3 py-1.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-xs font-semibold"
+                            x-text="abierto ? 'Cerrar' : 'Ver y enviar'">Ver y enviar</button>
+                </div>
+                <form x-show="abierto" x-cloak method="post" action="/herramientas/autopilot-comunicacion/enviar" class="mt-3 space-y-2" x-ref="form">
+                    <input type="hidden" name="tipo" th:value="${a.tipo()}">
+                    <input type="hidden" name="ref" th:value="${a.refId()}">
+                    <input type="text" name="asunto" th:value="${a.asunto()}" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm font-medium">
+                    <textarea name="cuerpo" rows="9" x-ref="cuerpo" th:text="${a.cuerpo()}" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"></textarea>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <input type="text" x-ref="instrucciones" placeholder="Indicaciones para la IA (opcional): más formal, más breve…" class="flex-1 min-w-[12rem] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs">
+                        <button type="button" :disabled="cargando" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 text-xs font-semibold"
+                                @click="cargando = true; error = '';
+                                    const d = new FormData(); d.append('tipo', $refs.form.tipo.value); d.append('ref', $refs.form.ref.value);
+                                    d.append('cuerpo', $refs.cuerpo.value); d.append('instrucciones', $refs.instrucciones.value);
+                                    fetch('/herramientas/autopilot-comunicacion/ia', { method: 'POST', body: d }).then(r => r.json())
+                                      .then(j => { if (j.ok) $refs.cuerpo.value = j.cuerpo; else error = j.error; })
+                                      .catch(() => error = 'No se pudo contactar con la IA.').finally(() => cargando = false)"
+                                x-text="cargando ? 'Mejorando…' : 'Mejorar con IA (1 crédito)'">Mejorar con IA</button>
+                        <button type="submit" th:disabled="${!a.conEmail()}" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold">Enviar</button>
+                    </div>
+                    <p x-show="error" x-text="error" class="text-xs text-red-600"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <div th:if="${!historial.isEmpty()}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <h3 class="text-sm font-semibold mb-3">Últimos enviados</h3>
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="h : ${historial}">
+                <td class="py-2 pr-3 text-xs text-slate-500 whitespace-nowrap" th:text="${#strings.substring(h.get('created_at') + '', 0, 10)}">fecha</td>
+                <td class="py-2 pr-3" th:text="${h.get('destinatario')}">inquilino</td>
+                <td class="py-2 pr-3 text-slate-600 dark:text-slate-400" th:text="${h.get('asunto')}">asunto</td>
+                <td class="py-2 text-xs whitespace-nowrap">
+                    <span th:if="${h.get('enviado') == true}" class="text-emerald-700" th:text="${h.get('modo') == 'automatico' ? 'Enviado solo' : 'Enviado'}">Enviado</span>
+                    <span th:unless="${h.get('enviado') == true}" class="text-red-600" th:title="${h.get('error')}">No enviado</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

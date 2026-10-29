@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Negotiation Co-Pilot</title></head>
+<body>
+<div layout:fragment="content" class="max-w-5xl mx-auto space-y-5">
+
+    <div class="rounded-xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-5">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i data-lucide="handshake" class="h-5 w-5"></i> Negotiation Co-Pilot</h1>
+        <p class="text-sm text-white/80 mt-1">Prepara una compra, una venta o un alquiler: rango de precio con tus datos, argumentos, respuestas a objeciones y cómo abrir la conversación.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Formulario -->
+        <form method="post" action="/herramientas/negociacion" class="lg:col-span-1 rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3 self-start"
+              x-data="{ operacion: 'venta' }">
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Activo</label>
+                <select name="propiedad_id" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    <option value="">Otro (no está en mi cartera)</option>
+                    <option th:each="a : ${activos}" th:value="${a.get('id')}" th:selected="${propiedadElegida != null and propiedadElegida == a.get('id') + ''}"
+                            th:text="${a.get('name') + (a.get('city') != null ? ' · ' + a.get('city') : '')}">Activo</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Operación</label>
+                    <select name="operacion" x-model="operacion" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                        <option value="venta">Venta</option><option value="compra">Compra</option><option value="alquiler">Alquiler</option>
+                    </select>
+                </div>
+                <div x-show="operacion === 'alquiler'" x-cloak>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Yo soy</label>
+                    <select name="rol" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                        <option value="alquilo">El propietario</option>
+                        <option value="arriendo">El inquilino</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+                       th:attr="x-text=|operacion === 'alquiler' ? 'Renta sobre la mesa (${mon}/mes)' : 'Precio sobre la mesa (${mon})'|">Precio sobre la mesa</label>
+                <input type="number" name="precio" min="0" step="any" placeholder="El que pide o ofrece la otra parte, o tu precio"
+                       class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+            </div>
+            <details class="text-sm">
+                <summary class="cursor-pointer text-xs text-slate-500">Si el activo no está en tu cartera</summary>
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <select name="tipo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                        <option value="">Tipo</option><option value="nave">Nave</option><option value="local">Local</option><option value="oficina">Oficina</option><option value="vivienda">Vivienda</option>
+                    </select>
+                    <input type="number" name="metros" min="0" placeholder="m²" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    <input type="text" name="ciudad" placeholder="Provincia o ciudad" class="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                </div>
+            </details>
+            <textarea name="contraparte" rows="2" placeholder="La otra parte: quién es, qué le importa, prisa…" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"></textarea>
+            <textarea name="notas" rows="2" placeholder="Notas: estado del activo, plazos, lo que quieres conseguir…" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"></textarea>
+            <button class="w-full px-4 py-2.5 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold">Preparar negociación (1 crédito)</button>
+
+            <div th:if="${!historial.isEmpty()}" class="border-t border-slate-100 dark:border-neutral-800 pt-3">
+                <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Preparadas antes</p>
+                <a th:each="h : ${historial}" th:href="@{|/herramientas/negociacion/${h.get('id')}|}"
+                   class="block text-xs text-brand-700 hover:underline truncate py-0.5" th:text="${#strings.substring(h.get('created_at') + '', 0, 10) + ' · ' + h.get('titulo')}">fecha · título</a>
+            </div>
+        </form>
+
+        <!-- Resultado -->
+        <div class="lg:col-span-2 space-y-4">
+            <div th:if="${resultado == null}" class="rounded-xl bg-slate-50 dark:bg-neutral-800/60 p-6 text-sm text-slate-600 dark:text-slate-400">
+                Elige el activo y la operación. El rango sale del valor (o la renta) que tienes apuntado del activo; si no lo tienes, de una valoración
+                orientativa por m² de tu ciudad. Después la IA prepara los argumentos con esos números.
+            </div>
+
+            <th:block th:if="${resultado != null}" th:with="r=${resultado.get('rango')}, p=${resultado.get('plan')}, u=${#bools.isTrue(resultado.get('alquiler')) ? ' ' + mon + '/mes' : ' ' + mon}">
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                    <h2 class="font-semibold" th:text="${resultado.get('titulo')}">Título</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1" th:text="${p.get('resumen')}">Resumen</p>
+                    <div class="grid grid-cols-3 gap-3 mt-4 text-center">
+                        <div class="rounded-lg bg-slate-50 dark:bg-neutral-800/60 p-3">
+                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500" th:text="${r.pago() ? 'Abre en' : 'Sal en'}">Apertura</div>
+                            <div class="text-lg font-bold" th:text="${#numbers.formatDecimal(r.apertura(), 0, 'DEFAULT', 0, 'DEFAULT') + u}">0</div>
+                        </div>
+                        <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3">
+                            <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">Objetivo</div>
+                            <div class="text-lg font-bold text-emerald-800 dark:text-emerald-300" th:text="${#numbers.formatDecimal(r.objetivo(), 0, 'DEFAULT', 0, 'DEFAULT') + u}">0</div>
+                            <div th:if="${resultado.get('eurM2') != null}" class="text-[11px] text-emerald-700" th:text="${resultado.get('eurM2') + ' ' + mon + '/m²'}">/m²</div>
+                        </div>
+                        <div class="rounded-lg bg-red-50 dark:bg-red-950/30 p-3">
+                            <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700" th:text="${r.pago() ? 'No pases de' : 'No bajes de'}">Límite</div>
+                            <div class="text-lg font-bold text-red-800 dark:text-red-300" th:text="${#numbers.formatDecimal(r.limite(), 0, 'DEFAULT', 0, 'DEFAULT') + u}">0</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">
+                        <span th:if="${r.referencia() != null}" th:text="${'Referencia: ' + #numbers.formatDecimal(r.referencia(), 0, 'DEFAULT', 0, 'DEFAULT') + u + ', a partir de ' + r.base() + '.'}">Referencia</span>
+                        <span th:if="${r.referencia() == null}" th:text="${'Calculado sobre ' + r.base() + '.'}">Sin referencia</span>
+                        <span th:unless="${resultado.get('conIA')}"> Preparación básica sin IA (la IA no estaba disponible o no quedan créditos).</span>
+                    </p>
+                </div>
+
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                    <h3 class="text-sm font-semibold mb-2">Argumentos</h3>
+                    <ul class="space-y-1.5 text-sm list-disc pl-5"><li th:each="a : ${p.get('argumentos')}" th:text="${a}">Argumento</li></ul>
+                </div>
+
+                <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                    <h3 class="text-sm font-semibold mb-2">Si te dicen… responde</h3>
+                    <div class="space-y-2 text-sm">
+                        <div th:each="o : ${p.get('objeciones')}" class="rounded-lg bg-slate-50 dark:bg-neutral-800/60 p-3">
+                            <p class="font-medium" th:text="${'«' + o.get('objecion') + '»'}">Objeción</p>
+                            <p class="text-slate-600 dark:text-slate-400 mt-0.5" th:text="${o.get('respuesta')}">Respuesta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                        <h3 class="text-sm font-semibold mb-2">Qué puedes ceder (sin tocar el precio)</h3>
+                        <ul class="space-y-1 text-sm list-disc pl-5"><li th:each="c : ${p.get('concesiones')}" th:text="${c}">Concesión</li></ul>
+                    </div>
+                    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+                        <h3 class="text-sm font-semibold mb-2">Cómo abrir la conversación</h3>
+                        <p class="text-sm text-slate-700 dark:text-slate-300" th:text="${p.get('guion')}">Guion</p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500">Es una ayuda para preparar la negociación, no una tasación oficial ni asesoramiento legal.</p>
+            </th:block>
+        </div>
+    </div>
+</div>
+</body>
+</html>

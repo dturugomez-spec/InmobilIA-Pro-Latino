@@ -5,32 +5,48 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
- * Define los límites de cada plan y comprueba si el usuario puede usar una feature.
- * Tras comprar un plan superior, se actualiza users.plan vía webhook de Stripe.
+ * Planes y límites. El precio depende del número de ACTIVOS que gestiona la cuenta, no de los
+ * usuarios (hoja "Planes y precios" de oct-2026):
+ *
+ *   Free 0 USD (3 activos, 1 usuario, 20 créditos) · Pro 49 USD (15, 2, 200) · Business 149 USD (50, 5, 1.000)
+ *   · Enterprise desde 399 USD (ilimitado, a medida). Pagando el año, un 20 % menos. Impuestos locales no incluidos.
+ *   Los mismos números que la versión española, en dólares.
+ *
+ * Extras sobre un plan de pago: activos adicionales (4 USD/mes cada uno) y, en Pro, el módulo
+ * Future-Proof Score (29 USD/mes), incluido en Business. (El optimizador fiscal de holding es solo
+ * de la versión española: calcula con impuestos de España.)
+ *
+ * Prueba: 14 días de Business sin tarjeta (al aprobar la solicitud). Al acabar, si no ha elegido
+ * plan, la cuenta pasa a Free y conserva sus datos (TrialExpiryService).
+ *
+ * Tras comprar, users.plan, periodo_facturacion, activos_extra y modulos se actualizan vía el
+ * webhook de Stripe.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PlanService {
 
-    public static final String FREE   = "free";
-    public static final String PRO    = "pro";
-    public static final String AGENCY = "agency";
+    public static final String FREE       = "free";
+    public static final String PRO        = "pro";
+    public static final String BUSINESS   = "business";
+    public static final String ENTERPRISE = "enterprise";
+    /** Plan antiguo (cobro por usuario). Las cuentas que aún lo tengan tienen Business. */
+    public static final String AGENCY     = "agency";
 
     /**
-     * Límites por plan. Usar -1 para "ilimitado".
-     * Los planes de pago se cobran POR USUARIO: monthlyPriceUsd y aiCreditsPerMonth son por
-     * cada usuario de la inmobiliaria (ver PlazasService). Precios en USD, sin impuestos locales.
+     * Límites por plan. -1 = ilimitado. Precios en USD sin impuestos: el mensual y, pagando el año,
+     * lo que sale al mes (0 = a medida). Los créditos de IA son de la cuenta entera, cada mes.
      */
     public record PlanLimits(
             String name,
             String label,
-            int monthlyPriceUsd,
+            int monthlyPriceEur,
+            int annualMonthlyPriceEur,
             int maxProperties,
             int maxTeamMembers,
             int aiCreditsPerMonth,
@@ -42,24 +58,112 @@ public class PlanService {
             boolean prioritySupport
     ) {}
 
-    /**
-     * Precio por usuario y mes en USD (sin impuestos locales), el que ve la web. Lo que se cobra
-     * lo fija el precio de Stripe (STRIPE_PRICE_PRO / STRIPE_PRICE_AGENCY): tienen que coincidir.
-     */
-    public static final int PRECIO_PRO_USD = 29;
-    public static final int PRECIO_AGENCY_USD = 49;
-
     public static final Map<String, PlanLimits> PLANS = new LinkedHashMap<>();
     static {
-        PLANS.put(FREE,   new PlanLimits(FREE,   "Free",    0,  1,   1,    0,    false, false, false, false, false, false));
-        PLANS.put(PRO,    new PlanLimits(PRO,    "Pro",    PRECIO_PRO_USD,    -1, -1, 100, true, true, false, true, true, false));
-        PLANS.put(AGENCY, new PlanLimits(AGENCY, "Agency", PRECIO_AGENCY_USD, -1, -1, 300, true, true, true,  true, true, true));
+        PLANS.put(FREE,       new PlanLimits(FREE,       "Free",         0,   0,  3,  1,   20, false, false, false, false, true, false));
+        PLANS.put(PRO,        new PlanLimits(PRO,        "Pro",         49,  39, 15,  2,  200, true,  true,  false, true,  true, false));
+        PLANS.put(BUSINESS,   new PlanLimits(BUSINESS,   "Business",   149, 119, 50,  5, 1000, true,  true,  true,  true,  true, false));
+        // A medida: los créditos de Enterprise se pactan con cada cliente; esta es la base
+        PLANS.put(ENTERPRISE, new PlanLimits(ENTERPRISE, "Enterprise", 399,   0, -1, -1, 3000, true,  true,  true,  true,  true, true));
     }
 
-    /** Precio al mes en USD (sin impuestos locales) de un plan para N usuarios. */
-    public static int precioMensual(String plan, int usuarios) {
-        PlanLimits l = plan == null ? null : PLANS.get(plan.trim().toLowerCase());
-        return l == null ? 0 : l.monthlyPriceUsd() * Math.max(1, usuarios);
+    /** Planes que se contratan desde la app (Enterprise se pacta por correo). */
+    public static final List<String> PLANES_DE_PAGO = List.of(PRO, BUSINESS);
+
+    /** Cada activo por encima de los del plan, al mes (todos los planes de pago). */
+    public static final int PRECIO_ACTIVO_EXTRA = 4;
+    /** Sociedades de la gestión multi-empresa que incluye Business (Enterprise: ilimitadas). */
+    public static final int SOCIEDADES_BUSINESS = 3;
+    /** Cada sociedad por encima de las de Business, al mes. */
+    public static final int PRECIO_SOCIEDAD_EXTRA = 15;
+    /** Pack de créditos de IA de pago único (todos los planes; no caducan). */
+    public static final int PACK_CREDITOS = 100;
+    public static final int PRECIO_PACK_CREDITOS = 10;
+    /** Días de prueba con Business al aprobar una solicitud. */
+    public static final int DIAS_PRUEBA = 14;
+
+    /** Herramienta avanzada que en Pro se puede añadir suelta (en Business viene incluida). */
+    public record Modulo(String clave, String nombre, int precioMensual) {}
+
+    public static final Modulo FUTUREPROOF = new Modulo("futureproof", "Future-Proof Score", 29);
+    public static final List<Modulo> MODULOS = List.of(FUTUREPROOF);
+
+    public static Modulo modulo(String clave) {
+        for (Modulo m : MODULOS) if (m.clave().equals(clave)) return m;
+        return null;
+    }
+
+    /**
+     * Herramienta que no está en todos los planes: plan mínimo y, si lo hay, el módulo que la
+     * añade a Pro. En la ruta, "*" es un tramo cualquiera (un id). Lo que no está aquí lo tienen
+     * todos los planes (los límites de activos y usuarios siguen valiendo).
+     */
+    public record Herramienta(String ruta, String nombre, String planMinimo, String modulo) {
+        private static final Map<String, Pattern> PATRONES = new java.util.concurrent.ConcurrentHashMap<>();
+        private Pattern patron() {
+            return PATRONES.computeIfAbsent(ruta, r -> Pattern.compile(Pattern.quote(r).replace("*", "\\E[^/]+\\Q") + "(/.*)?"));
+        }
+        public boolean cubre(String uri) { return uri != null && patron().matcher(uri).matches(); }
+    }
+
+    public static final List<Herramienta> HERRAMIENTAS = List.of(
+            // Pro
+            new Herramienta("/herramientas/ocr", "Escáner de documentos (OCR)", PRO, null),
+            new Herramienta("/ia/contratos", "Escáner de documentos (OCR)", PRO, null),
+            new Herramienta("/inquilinos/*/invite-portal", "Portal del inquilino", PRO, null),
+            new Herramienta("/herramientas/health-score", "Portfolio Health Score", PRO, null),
+            new Herramienta("/herramientas/autopilot-comunicacion", "Communication AutoPilot", PRO, null),
+            new Herramienta("/herramientas/comandos-voz", "Comandos de voz", PRO, null),
+            new Herramienta("/reports", "Informes en PDF", PRO, null),
+            new Herramienta("/informes", "Informes en PDF", PRO, null),
+            new Herramienta("/ia/memo", "Informes en PDF", PRO, null),
+            new Herramienta("/invoices", "Facturas y recibos", PRO, null),
+            new Herramienta("/receipts", "Facturas y recibos", PRO, null),
+            new Herramienta("/kanban", "Pipeline kanban", PRO, null),
+            new Herramienta("/pipelines", "Pipeline kanban", PRO, null),
+            // Business (o módulo en Pro)
+            new Herramienta("/herramientas/future-proof", FUTUREPROOF.nombre(), BUSINESS, FUTUREPROOF.clave()),
+            new Herramienta("/herramientas/esg", "ESG Score", BUSINESS, null),
+            new Herramienta("/herramientas/radar", "Live Market Radar", BUSINESS, null),
+            new Herramienta("/ia/dealflow", "Opportunity Hunter", BUSINESS, null),
+            new Herramienta("/herramientas/mantenimiento-predictivo", "Mantenimiento predictivo", BUSINESS, null),
+            new Herramienta("/integrations", "Integraciones", BUSINESS, null),
+            new Herramienta("/herramientas/multi-empresa", "Gestión multi-empresa", BUSINESS, null),
+            new Herramienta("/herramientas/negociacion", "Negotiation Co-Pilot", BUSINESS, null),
+            // Enterprise
+            new Herramienta("/api-keys", "Acceso por API", ENTERPRISE, null),
+            new Herramienta("/api-key", "Acceso por API", ENTERPRISE, null)
+    );
+
+    /** Herramienta limitada que cubre esta ruta, o null si la tienen todos los planes. */
+    public static Herramienta herramientaDe(String uri) {
+        for (Herramienta h : HERRAMIENTAS) if (h.cubre(uri)) return h;
+        return null;
+    }
+
+    private static final List<String> ORDEN = List.of(FREE, PRO, BUSINESS, ENTERPRISE);
+
+    /** ¿El plan a llega al nivel del plan b? */
+    public static boolean alcanza(String a, String b) {
+        return ORDEN.indexOf(normalizar(a)) >= ORDEN.indexOf(normalizar(b));
+    }
+
+    /** Nombre de plan válido: los antiguos (agency, starter, trial) pasan a su equivalente. */
+    public static String normalizar(String plan) {
+        String p = plan == null ? "" : plan.trim().toLowerCase();
+        if (AGENCY.equals(p)) return BUSINESS;
+        return PLANS.containsKey(p) ? p : FREE;
+    }
+
+    /** Precio al mes (USD, sin impuestos) del plan; pagando el año, lo que sale al mes. */
+    public static int precioMensual(String plan, boolean anual) {
+        PlanLimits l = PLANS.get(normalizar(plan));
+        return anual && l.annualMonthlyPriceEur() > 0 ? l.annualMonthlyPriceEur() : l.monthlyPriceEur();
+    }
+
+    /** Créditos de IA que trae el plan cada mes (para toda la cuenta). */
+    public static int creditosMensuales(String plan) {
+        return plan == null ? 0 : PLANS.get(normalizar(plan)).aiCreditsPerMonth();
     }
 
     private final SupabaseService supabase;
@@ -68,14 +172,14 @@ public class PlanService {
     private String adminEmailsRaw;
 
     /**
-     * ¿Tiene la cuenta una suscripción de pago activa (o en trial de Stripe con tarjeta)?
-     * - plan_status "active" → sí (pagando).
+     * ¿Paga una suscripción (o está en su prueba de Stripe con tarjeta)? Free nunca.
+     * - plan_status "active" en un plan de pago → sí (pagando, o Enterprise pactado).
      * - "trialing"/"past_due" CON stripe_subscription_id → sí (se suscribió, tarjeta en Stripe).
-     * El trial de la aprobación (sin stripe_subscription_id) NO cuenta: debe meter tarjeta.
+     * La prueba de la aprobación (sin stripe_subscription_id) NO cuenta.
      */
     public boolean tieneSuscripcionActiva(Map<String, Object> user) {
-        if (user == null) return false;
-        String st = String.valueOf(user.getOrDefault("plan_status", "")).toLowerCase();
+        if (user == null || FREE.equals(normalizar(str(user.get("plan"))))) return false;
+        String st = str(user.get("plan_status")).toLowerCase();
         if ("active".equals(st)) return true;
         return tieneSuscripcionStripe(user) && ("trialing".equals(st) || "past_due".equals(st));
     }
@@ -84,48 +188,23 @@ public class PlanService {
         return o != null && !String.valueOf(o).isBlank() && !"null".equals(String.valueOf(o));
     }
 
+    private static String str(Object o) { return presente(o) ? String.valueOf(o) : ""; }
+
     /** Tiene (o tuvo) una suscripción creada en Stripe. */
     public static boolean tieneSuscripcionStripe(Map<String, Object> user) {
         return user != null && presente(user.get("stripe_subscription_id"));
     }
 
-    /** ¿Se ha suscrito alguna vez? Si sí, ya no le corresponde otra prueba gratis. */
+    /** ¿Se ha suscrito alguna vez? */
     public static boolean haSuscritoAlgunaVez(Map<String, Object> user) {
         return user != null && (presente(user.get("stripe_subscription_id")) || presente(user.get("plan_canceled_at")));
     }
 
-    /** Cuenta del modo demo público (/demo): email demo_xxxx (antiguas) o demo_xxxx@demo.inmobiliapro.es. */
+    /** Cuenta del modo demo (/demo): email demo_xxxx (antiguas) o demo_xxxx@demo.inmobiliapro.es. */
     public static boolean esCuentaDemo(String email) {
         if (email == null) return false;
         String e = email.toLowerCase().trim();
         return e.startsWith("demo_") && (!e.contains("@") || e.endsWith("@demo.inmobiliapro.es"));
-    }
-
-    /**
-     * ¿La cuenta (org) debe suscribirse antes de poder usar la app?
-     * Exenta: cuentas demo (email demo_*) y propietarios de la plataforma (ADMIN_EMAILS).
-     * Fail-open: si no se puede leer la cuenta, NO bloquea.
-     */
-    public boolean requierePago(String orgId) {
-        if (orgId == null || orgId.isBlank()) return false;
-        Map<String, Object> u = getUser(orgId);
-        if (u == null) return false; // fail-open
-        String email = String.valueOf(u.getOrDefault("email", "")).toLowerCase().trim();
-        if (esCuentaDemo(email)) return false;                        // cuentas demo
-        if (esAdminPlataforma(email)) return false;                   // propietario
-        return !tieneSuscripcionActiva(u);
-    }
-
-    /** Créditos de IA que incluye cada mes el plan POR USUARIO (pro 100, agency 300; 0 si no es de pago). */
-    public static int creditosMensuales(String plan) {
-        if (plan == null) return 0;
-        PlanLimits l = PLANS.get(plan.trim().toLowerCase());
-        return l == null ? 0 : Math.max(0, l.aiCreditsPerMonth());
-    }
-
-    /** Créditos de IA del mes para toda la inmobiliaria: los del plan por cada usuario. */
-    public static int creditosMensuales(String plan, int usuarios) {
-        return creditosMensuales(plan) * Math.max(1, usuarios);
     }
 
     /** ¿Es uno de los propietarios de la plataforma (ADMIN_EMAILS)? Ojo: NO es el "admin" de una inmobiliaria. */
@@ -137,116 +216,218 @@ public class PlanService {
         return false;
     }
 
-    /** Devuelve los límites del plan del usuario (o trial). */
-    public PlanLimits limitsFor(Map<String, Object> user) {
-        if (user == null) return PLANS.get(FREE);
+    /** Cuentas sin límites: las demo y las de los propietarios de la plataforma. */
+    private boolean exenta(Map<String, Object> user) {
+        String email = str(user.get("email"));
+        return esCuentaDemo(email) || esAdminPlataforma(email);
+    }
 
-        String plan = String.valueOf(user.getOrDefault("plan", FREE)).toLowerCase();
-        String status = String.valueOf(user.getOrDefault("plan_status", "active"));
-
-        // Trial sin tarjeta (demo) → Agency (acceso total). Si ya se suscribió en Stripe,
-        // durante su prueba tiene exactamente el plan que eligió.
-        if ("trialing".equals(status) && !isTrialExpired(user) && !tieneSuscripcionStripe(user)) {
-            return PLANS.get(AGENCY);
+    /**
+     * Plan que vale ahora: durante la prueba sin tarjeta, Business; acabada la prueba sin haber
+     * elegido plan, Free (aunque el aviso nocturno aún no haya cambiado users.plan).
+     */
+    public String planEfectivo(Map<String, Object> user) {
+        if (user == null) return FREE;
+        if (exenta(user)) return ENTERPRISE;
+        String status = str(user.get("plan_status")).toLowerCase();
+        if ("trialing".equals(status) && !tieneSuscripcionStripe(user)) {
+            return isTrialExpired(user) ? FREE : BUSINESS;
         }
+        if ("canceled".equals(status) || "expired".equals(status)) return FREE;
+        return normalizar(str(user.get("plan")));
+    }
 
-        return PLANS.getOrDefault(plan, PLANS.get(FREE));
+    /** Límites del plan que vale ahora. */
+    public PlanLimits limitsFor(Map<String, Object> user) {
+        return PLANS.get(planEfectivo(user));
+    }
+
+    /** Activos adicionales comprados (solo cuentan en un plan de pago). */
+    public static int activosExtra(Map<String, Object> user) {
+        try { return Math.max(0, Integer.parseInt(str(user.get("activos_extra")))); } catch (Exception e) { return 0; }
+    }
+
+    /** Activos que puede tener: los del plan + los adicionales. -1 = ilimitados. */
+    public int maxActivos(Map<String, Object> user) {
+        PlanLimits l = limitsFor(user);
+        if (l.maxProperties() < 0) return -1;
+        return l.maxProperties() + (FREE.equals(l.name()) ? 0 : activosExtra(user));
+    }
+
+    /** Sociedades adicionales compradas (solo cuentan en Business). */
+    public static int sociedadesExtra(Map<String, Object> user) {
+        try { return Math.max(0, Integer.parseInt(str(user.get("sociedades_extra")))); } catch (Exception e) { return 0; }
+    }
+
+    /** Sociedades que puede gestionar: Business 3 + adicionales, Enterprise ilimitadas (-1), el resto 0. */
+    public int maxSociedades(Map<String, Object> user) {
+        String plan = planEfectivo(user);
+        if (ENTERPRISE.equals(plan)) return -1;
+        return BUSINESS.equals(plan) ? SOCIEDADES_BUSINESS + sociedadesExtra(user) : 0;
+    }
+
+    /** Módulos comprados (columna users.modulos). */
+    public static Set<String> modulosComprados(Map<String, Object> user) {
+        Set<String> out = new LinkedHashSet<>();
+        Object m = user == null ? null : user.get("modulos");
+        if (m instanceof Collection<?> c) c.forEach(x -> out.add(String.valueOf(x)));
+        else if (presente(m)) for (String x : String.valueOf(m).replaceAll("[{}\\[\\]\"]", "").split(",")) if (!x.isBlank()) out.add(x.trim());
+        out.removeIf(x -> modulo(x) == null);
+        return out;
+    }
+
+    /** ¿Tiene esta herramienta (por su plan o por un módulo comprado en Pro)? */
+    public boolean puedeUsar(Map<String, Object> user, Herramienta h) {
+        if (h == null) return true;
+        String plan = planEfectivo(user);
+        if (alcanza(plan, h.planMinimo())) return true;
+        return h.modulo() != null && PRO.equals(plan) && modulosComprados(user).contains(h.modulo());
     }
 
     public boolean isTrialing(Map<String, Object> user) {
         if (user == null) return false;
-        return "trialing".equals(String.valueOf(user.getOrDefault("plan_status", ""))) && !isTrialExpired(user);
+        return "trialing".equals(str(user.get("plan_status"))) && !isTrialExpired(user);
     }
 
     public long trialDaysLeft(Map<String, Object> user) {
         return user == null ? 0 : diasHasta(user.get("trial_ends_at"));
     }
 
+    // Fechas.leer: antes se cortaba la fecha a 25 caracteres y, con fracciones de segundo
+    // ("…T10:00:00.123456+00:00"), no se podía leer: la prueba nunca acababa y quedaban 0 días.
     private static long diasHasta(Object fecha) {
-        try {
-            String s = String.valueOf(fecha);
-            if (s == null || s.isBlank() || "null".equals(s)) return 0;
-            OffsetDateTime end = OffsetDateTime.parse(s.length() > 25 ? s.substring(0, 25) : s);
-            long days = java.time.Duration.between(OffsetDateTime.now(), end).toDays();
-            return Math.max(0, days);
-        } catch (Exception e) { return 0; }
+        OffsetDateTime end = com.inmobilia.util.Fechas.leer(fecha);
+        if (end == null) return 0;
+        return Math.max(0, java.time.Duration.between(OffsetDateTime.now(), end).toDays());
     }
 
     public boolean isTrialExpired(Map<String, Object> user) {
-        try {
-            String s = String.valueOf(user.get("trial_ends_at"));
-            if (s == null || s.isBlank() || "null".equals(s)) return false;
-            OffsetDateTime end = OffsetDateTime.parse(s.length() > 25 ? s.substring(0, 25) : s);
-            return end.isBefore(OffsetDateTime.now());
-        } catch (Exception e) { return false; }
+        OffsetDateTime end = user == null ? null : com.inmobilia.util.Fechas.leer(user.get("trial_ends_at"));
+        return end != null && end.isBefore(OffsetDateTime.now());
     }
 
-    /** Comprueba si el usuario puede crear más propiedades según su plan. */
+    /** Activos (inmuebles con ficha) que tiene ahora la cuenta. */
+    public int activosUsados(String orgId) {
+        try {
+            return supabase.selectFilter("propiedades", "select=id&user_id=eq." + orgId + "&limit=100000").size();
+        } catch (Exception e) { return 0; }
+    }
+
+    /** ¿Puede dar de alta otro activo? */
     public boolean canAddProperty(String orgId) {
         Map<String, Object> user = getUser(orgId);
-        PlanLimits l = limitsFor(user);
-        if (l.maxProperties() < 0) return true;  // ilimitado
-        try {
-            int current = supabase.query("propiedades", orgId).size();
-            return current < l.maxProperties();
-        } catch (Exception e) { return true; }
+        if (user == null) return true;   // fail-open
+        int max = maxActivos(user);
+        return max < 0 || activosUsados(orgId) < max;
     }
 
-    /** Comprueba si el usuario puede invitar más miembros según su plan. */
-    public boolean canAddTeamMember(String orgId) {
+    /** Huecos libres para activos nuevos (Integer.MAX_VALUE si son ilimitados). */
+    public int activosLibres(String orgId) {
+        Map<String, Object> user = getUser(orgId);
+        int max = user == null ? -1 : maxActivos(user);
+        return max < 0 ? Integer.MAX_VALUE : Math.max(0, max - activosUsados(orgId));
+    }
+
+    /** Mensaje cuando el plan ya no admite más activos. */
+    public String mensajeLimiteActivos(String orgId) {
         Map<String, Object> user = getUser(orgId);
         PlanLimits l = limitsFor(user);
-        if (l.maxTeamMembers() < 0) return true;
-        try {
-            // El titular + empleados; los inquilinos del portal no ocupan plaza
-            int current = (int) supabase.findBy("users", Map.of("organization_id", orgId)).stream()
-                    .filter(u -> !"tenant_portal".equals(String.valueOf(u.get("role")))).count() + 1;
-            return current < l.maxTeamMembers();
-        } catch (Exception e) { return true; }
+        String extra = FREE.equals(l.name()) ? "Mejora a Pro (hasta 15 activos)."
+                : "Mejora el plan o añade activos adicionales (" + PRECIO_ACTIVO_EXTRA + " USD/mes cada uno) en Facturación.";
+        return "Tu plan " + l.label() + " incluye " + maxActivos(user) + " activos y ya los tienes todos. " + extra;
     }
 
     /**
-     * Acceso a feature por uid (para el paywall/interceptor).
-     * Fail-open: si no se puede leer el plan del usuario, NO bloquea (mejor dejar
-     * pasar puntualmente que bloquear a un cliente de pago por un fallo transitorio).
+     * Personas con acceso: el titular + los empleados activos. No cuentan los inquilinos del
+     * portal, los empleados desactivados ni los empleados de los ejemplos para demos.
      */
-    public boolean canUseByUid(String uid, String feature) {
-        if (uid == null || uid.isBlank()) return true;
-        Map<String, Object> user = getUser(uid);
-        if (user == null) return true;   // fail-open
-        return canUse(user, feature);
+    public int usuariosActivos(String orgId) {
+        if (orgId == null || orgId.isBlank()) return 1;
+        try {
+            List<Map<String, Object>> miembros = supabase.selectFilter("users",
+                    "select=id,role,active&organization_id=eq." + orgId);
+            Set<String> deEjemplo = new HashSet<>();
+            for (Map<String, Object> r : supabase.selectFilter("ejemplos_demo",
+                    "select=registro_id&user_id=eq." + orgId + "&tabla=eq.users&limit=100"))
+                deEjemplo.add(String.valueOf(r.get("registro_id")));
+            return 1 + (int) miembros.stream()
+                    .filter(m -> cuenta(m, orgId) && !deEjemplo.contains(String.valueOf(m.get("id")))).count();
+        } catch (Exception e) { return 1; }
     }
 
-    /** Acceso a feature concreta. */
-    public boolean canUse(Map<String, Object> user, String feature) {
-        PlanLimits l = limitsFor(user);
-        return switch (feature) {
-            case "kanban" -> l.kanban();
-            case "reports" -> l.reports();
-            case "integrations" -> l.integrations();
-            case "invoicing" -> l.invoicing();
-            case "ai" -> l.ai();
-            default -> true;
-        };
+    static boolean cuenta(Map<String, Object> miembro, String orgId) {
+        if (orgId.equals(String.valueOf(miembro.get("id")))) return false;           // el titular ya cuenta
+        if ("tenant_portal".equals(String.valueOf(miembro.get("role")))) return false;  // inquilinos del portal
+        Object activo = miembro.get("active");
+        return activo == null || Boolean.TRUE.equals(activo) || "true".equalsIgnoreCase(String.valueOf(activo));
+    }
+
+    /** ¿Puede invitar (o reactivar) a otra persona? */
+    public boolean canAddTeamMember(String orgId) {
+        Map<String, Object> user = getUser(orgId);
+        if (user == null) return true;   // fail-open
+        int max = limitsFor(user).maxTeamMembers();
+        return max < 0 || usuariosActivos(orgId) < max;
+    }
+
+    private record Exceso(boolean excede, long en) {}
+    private final Map<String, Exceso> excesos = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * ¿Tiene la cuenta más personas activas de las que incluye su plan (p. ej. al pasar a Free
+     * con empleados)? Entonces solo entra el titular hasta que mejore el plan o desactive a
+     * alguien. Se recuerda un minuto: se mira en cada petición.
+     */
+    public boolean excedeUsuarios(String orgId) {
+        if (orgId == null || orgId.isBlank()) return false;
+        Exceso e = excesos.get(orgId);
+        if (e != null && System.currentTimeMillis() - e.en() < 60_000) return e.excede();
+        Map<String, Object> user = getUser(orgId);
+        int max = user == null ? -1 : limitsFor(user).maxTeamMembers();
+        boolean excede = max >= 0 && usuariosActivos(orgId) > max;
+        excesos.put(orgId, new Exceso(excede, System.currentTimeMillis()));
+        return excede;
+    }
+
+    /** Tras cambiar el plan o el equipo: que se vuelva a mirar. */
+    public void olvidarExceso(String orgId) {
+        if (orgId != null) excesos.remove(orgId);
+    }
+
+    /**
+     * Acceso a una herramienta por uid (paywall). Fail-open: si no se puede leer la cuenta, NO
+     * bloquea (mejor dejar pasar puntualmente que bloquear a un cliente por un fallo de BD).
+     */
+    public boolean puedeUsarRuta(String uid, String uri) {
+        Herramienta h = herramientaDe(uri);
+        if (h == null || uid == null || uid.isBlank()) return true;
+        Map<String, Object> user = getUser(uid);
+        return user == null || puedeUsar(user, h);
     }
 
     /** Estado para mostrar en UI (banner/upgrade prompts). */
     public Map<String, Object> statusFor(Map<String, Object> user) {
         Map<String, Object> out = new LinkedHashMap<>();
         PlanLimits l = limitsFor(user);
-        out.put("plan", user != null ? user.get("plan") : FREE);
+        out.put("plan", l.name());
         out.put("planLabel", l.label());
         out.put("status", user != null ? user.get("plan_status") : "active");
         boolean suscrito = tieneSuscripcionActiva(user);
-        // "isTrialing" = prueba SIN tarjeta (demo/aprobación). Quien ya se suscribió no la ve.
+        // "isTrialing" = prueba SIN tarjeta (aprobación). Quien ya se suscribió no la ve.
         out.put("isTrialing", isTrialing(user) && !suscrito);
         out.put("trialDaysLeft", trialDaysLeft(user));
         out.put("subscribed", suscrito);
         // Prueba de Stripe (con tarjeta): días hasta el primer cobro automático.
         boolean stripeTrial = suscrito && user != null
-                && "trialing".equalsIgnoreCase(String.valueOf(user.get("plan_status")));
+                && "trialing".equalsIgnoreCase(str(user.get("plan_status")));
         out.put("stripeTrial", stripeTrial);
         out.put("stripeTrialDaysLeft", stripeTrial ? diasHasta(user.get("subscription_ends_at")) : 0L);
+        out.put("anual", user != null && "anual".equals(str(user.get("periodo_facturacion"))));
+        out.put("maxActivos", maxActivos(user));
+        out.put("activosExtra", user == null ? 0 : activosExtra(user));
+        out.put("modulos", modulosComprados(user));
+        out.put("maxSociedades", maxSociedades(user));
+        out.put("sociedadesExtra", user == null ? 0 : sociedadesExtra(user));
         out.put("limits", l);
         return out;
     }

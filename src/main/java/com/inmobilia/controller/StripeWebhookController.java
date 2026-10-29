@@ -2,6 +2,7 @@ package com.inmobilia.controller;
 
 import com.inmobilia.service.AIService;
 import com.inmobilia.service.PlanService;
+import com.inmobilia.service.StripeService;
 import com.inmobilia.service.SupabaseService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +47,8 @@ public class StripeWebhookController {
 
     private final SupabaseService supabase;
     private final AIService aiService;
-    private final com.inmobilia.service.StripeService stripeService;
+    private final StripeService stripeService;
+    private final PlanService planService;
 
     @PostMapping("/stripe/webhook")
     public ResponseEntity<String> handle(@RequestBody String payload,
@@ -110,17 +113,18 @@ public class StripeWebhookController {
         }
 
         Map<String, Object> upd = new LinkedHashMap<>();
-        upd.put("plan", plan != null ? plan : "pro");
+        upd.put("plan", PlanService.normalizar(plan != null ? plan : PlanService.PRO));
+        Map<String, Object> extras = new LinkedHashMap<>();
+        extras.put("periodo_facturacion", "anual".equals(session.getMetadata().get("periodo")) ? "anual" : "mensual");
         upd.put("stripe_customer_id", session.getCustomer());
         upd.put("stripe_subscription_id", session.getSubscription());
-        // Estado real de la suscripción: "trialing" durante los 14 días gratis, "active" si ya cobra.
+        // Estado real de la suscripción: "trialing" si aún le quedaban días de prueba, "active" si ya cobra.
         String estado = "active";
-        int usuarios = Math.max(1, parseIntSafe(session.getMetadata().get("usuarios")));
         if (session.getSubscription() != null) {
             try {
                 Subscription sub = Subscription.retrieve(session.getSubscription());
                 if (sub.getStatus() != null) estado = sub.getStatus();
-                usuarios = usuariosDe(sub, usuarios);
+                volcar(stripeService.leer(sub), upd, extras);
                 if (sub.getCurrentPeriodEnd() != null) {
                     upd.put("subscription_ends_at", OffsetDateTime.ofInstant(
                             Instant.ofEpochSecond(sub.getCurrentPeriodEnd()), ZoneOffset.UTC).toString());
@@ -131,20 +135,26 @@ public class StripeWebhookController {
         }
         upd.put("plan_status", estado);
         supabase.update("users", userId, upd, userId);
-        log.info(">>> Usuario {} → plan {}", userId, plan);
+        supabase.update("users", userId, extras, userId);
+        planService.olvidarExceso(userId);
+        log.info(">>> Usuario {} → plan {}", userId, upd.get("plan"));
 
-        // Créditos de IA del plan (por usuario) desde el primer día; después se reponen cada mes
-        aiService.reponerCreditos(userId, PlanService.creditosMensuales(plan != null ? plan : "pro", usuarios), true);
+        // Créditos de IA del plan desde el primer día; después se reponen cada mes
+        aiService.reponerCreditos(userId, PlanService.creditosMensuales(String.valueOf(upd.get("plan"))), true);
     }
 
-    /** Usuarios (unidades) que cobra la suscripción. */
-    private static int usuariosDe(Subscription sub, int porDefecto) {
-        try {
-            Long q = sub.getItems().getData().get(0).getQuantity();
-            return q == null ? porDefecto : Math.max(1, q.intValue());
-        } catch (Exception e) {
-            return porDefecto;
+    /**
+     * Plan, periodo, activos adicionales y módulos tal como los cobra Stripe. Las columnas de los
+     * extras (migración V92) van aparte: si aún no existen en la base, el plan se guarda igual.
+     */
+    private static void volcar(StripeService.EstadoSuscripcion e, Map<String, Object> upd, Map<String, Object> extras) {
+        if (e.plan() != null) {
+            upd.put("plan", PlanService.normalizar(e.plan()));
+            extras.put("periodo_facturacion", e.anual() ? "anual" : "mensual");
         }
+        extras.put("activos_extra", e.activosExtra());
+        extras.put("sociedades_extra", e.sociedadesExtra());
+        extras.put("modulos", new ArrayList<>(e.modulos()));
     }
 
     private void handleSubscriptionUpdate(Event event) {
@@ -160,24 +170,16 @@ public class StripeWebhookController {
         Map<String, Object> upd = new LinkedHashMap<>();
         upd.put("plan_status", sub.getStatus());          // active, past_due, canceled, trialing
         upd.put("stripe_subscription_id", sub.getId());
-        // Si cambió de plan desde el portal de cliente, reflejarlo.
-        String planNuevo = null;
-        try {
-            var items = sub.getItems();
-            if (items != null && items.getData() != null && !items.getData().isEmpty()
-                    && items.getData().get(0).getPrice() != null) {
-                planNuevo = stripeService.planForPrice(items.getData().get(0).getPrice().getId());
-                if (planNuevo != null) upd.put("plan", planNuevo);
-            }
-        } catch (Exception ignored) { }
-        // Al subir de plan (Pro → Agency), el saldo sube ya a la asignación del nuevo plan.
+        // Cambios desde el portal de cliente o desde Facturación (plan, anual, extras)
+        StripeService.EstadoSuscripcion estado = stripeService.leer(sub);
+        Map<String, Object> extras = new LinkedHashMap<>();
+        volcar(estado, upd, extras);
+        // Al subir de plan, el saldo sube ya a la asignación del nuevo plan.
         // Al bajar no se quita nada: el ajuste llega con la siguiente reposición mensual.
-        // (Los usuarios que se añaden a mitad de mes suman sus créditos en PlazasService.)
         String planAnterior = String.valueOf(users.get(0).get("plan"));
-        int usuarios = usuariosDe(sub, 1);
-        if (planNuevo != null
-                && PlanService.creditosMensuales(planNuevo) > PlanService.creditosMensuales(planAnterior)) {
-            aiService.reponerCreditos(userId, PlanService.creditosMensuales(planNuevo, usuarios), false);
+        if (estado.plan() != null
+                && PlanService.creditosMensuales(estado.plan()) > PlanService.creditosMensuales(planAnterior)) {
+            aiService.reponerCreditos(userId, PlanService.creditosMensuales(estado.plan()), false);
         }
         if (sub.getCurrentPeriodEnd() != null) {
             OffsetDateTime end = OffsetDateTime.ofInstant(
@@ -185,9 +187,12 @@ public class StripeWebhookController {
             upd.put("subscription_ends_at", end.toString());
         }
         supabase.update("users", userId, upd, userId);
+        supabase.update("users", userId, extras, userId);
+        planService.olvidarExceso(userId);
         log.info(">>> Sub actualizada para user {} → status {}", userId, sub.getStatus());
     }
 
+    /** Suscripción cancelada: la cuenta pasa a Free y conserva sus datos. */
     private void handleSubscriptionDeleted(Event event) {
         Optional<StripeObject> obj = deserialize(event);
         if (obj.isEmpty() || !(obj.get() instanceof Subscription sub)) return;
@@ -197,11 +202,13 @@ public class StripeWebhookController {
         String userId = String.valueOf(users.get(0).get("id"));
 
         Map<String, Object> upd = new LinkedHashMap<>();
-        upd.put("plan", "free");
+        upd.put("plan", PlanService.FREE);
         upd.put("plan_status", "canceled");
         upd.put("plan_canceled_at", OffsetDateTime.now().toString());
         supabase.update("users", userId, upd, userId);
-        log.info(">>> Sub cancelada para user {}", userId);
+        supabase.update("users", userId, Map.of("activos_extra", 0, "sociedades_extra", 0, "modulos", new ArrayList<>()), userId);
+        planService.olvidarExceso(userId);
+        log.info(">>> Sub cancelada para user {}: pasa a Free", userId);
     }
 
     private void handlePaymentFailed(Event event) {

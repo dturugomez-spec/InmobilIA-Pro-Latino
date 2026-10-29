@@ -511,6 +511,22 @@
                     <i data-lucide="scan-text" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">OCR de documentos</span>
                 </a>
+                <a th:if="${nav.ve('/herramientas/autopilot-comunicacion')}" href="/herramientas/autopilot-comunicacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Communication AutoPilot">
+                    <i data-lucide="mail-check" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Communication AutoPilot</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/comandos-voz')}" href="/herramientas/comandos-voz" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Comandos de voz">
+                    <i data-lucide="mic" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Comandos de voz</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/negociacion')}" href="/herramientas/negociacion" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Negotiation Co-Pilot">
+                    <i data-lucide="handshake" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Negotiation Co-Pilot</span>
+                </a>
+                <a th:if="${nav.ve('/herramientas/multi-empresa')}" href="/herramientas/multi-empresa" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Multi-empresa">
+                    <i data-lucide="building-2" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Multi-empresa</span>
+                </a>
                 <a th:if="${nav.ve('/seguros')}" href="/seguros" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Seguros">
                     <i data-lucide="shield" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Seguros</span>

@@ -10,13 +10,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * 💳 Candado de suscripción: un cliente aprobado debe suscribirse (tarjeta por
- * adelantado, 14 días gratis en Stripe) antes de usar la app. Si entra en una
- * sección de la app sin suscripción, va a /upgrade.
+ * Candado de usuarios. Ya no hace falta pagar para entrar (existe el plan Free), pero cada plan
+ * incluye un número de personas: si la cuenta tiene más (p. ej. al acabar la prueba de Business
+ * y pasar a Free con empleados), los empleados van a /upgrade y solo entra el titular, que puede
+ * mejorar el plan o desactivar a alguien. Los datos no se tocan.
  *
  * Solo se registra en las rutas de la app (ver I18nConfig), así que /upgrade,
  * /billing, /login, /logout, páginas públicas y estáticos nunca se bloquean.
- * Exentos (PlanService.requierePago): cuentas demo y propietarios (ADMIN_EMAILS).
  */
 @Component
 @RequiredArgsConstructor
@@ -29,8 +29,10 @@ public class SubscriptionGateInterceptor implements HandlerInterceptor {
         HttpSession session = req.getSession(false);
         if (session == null || !SessionUtils.isLoggedIn(session)) return true; // el controlador redirige a login
 
-        if (planService.requierePago(SessionUtils.uid(session))) {
-            resp.sendRedirect(req.getContextPath() + "/upgrade");
+        String org = SessionUtils.uid(session);
+        boolean titular = org != null && org.equals(SessionUtils.realUid(session));
+        if (!titular && planService.excedeUsuarios(org)) {
+            resp.sendRedirect(req.getContextPath() + "/upgrade?limite=usuarios");
             return false;
         }
         return true;

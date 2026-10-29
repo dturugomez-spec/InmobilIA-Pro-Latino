@@ -3,11 +3,18 @@ package com.inmobilia.service;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
-import com.stripe.model.TaxRate;
+import com.stripe.model.Price;
+import com.stripe.model.Product;
+import com.stripe.model.Subscription;
+import com.stripe.model.SubscriptionItem;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.CustomerCreateParams;
-import com.stripe.param.TaxRateCreateParams;
-import com.stripe.param.TaxRateListParams;
+import com.stripe.param.PriceCreateParams;
+import com.stripe.param.PriceListParams;
+import com.stripe.param.ProductCreateParams;
+import com.stripe.param.SubscriptionItemCreateParams;
+import com.stripe.param.SubscriptionItemDeleteParams;
+import com.stripe.param.SubscriptionItemUpdateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Wrapper sobre Stripe Java SDK.
- * Expone: crear sesión de checkout, crear sesión del portal de cliente, get/create customer.
+ * Wrapper sobre Stripe Java SDK: checkout de planes y del pack de créditos, extras de la
+ * suscripción (activos adicionales y módulos) y portal de cliente.
+ *
+ * Los precios NO se configuran a mano: cada uno tiene una lookup_key ("inmobilia_plan_pro_mensual"…)
+ * y la app lo busca en Stripe; si no existe, o el importe de PlanService ha cambiado, lo crea (y
+ * le pasa la lookup_key). Los importes salen de PlanService, en un único sitio.
  */
 @Service
 @RequiredArgsConstructor
@@ -30,44 +42,16 @@ public class StripeService {
     @Value("${stripe.secret-key:}")
     private String secretKey;
 
+    // Precios antiguos por usuario: solo para reconocer suscripciones que ya existían
     @Value("${stripe.price.pro:}")
-    private String pricePro;
-
+    private String precioAntiguoPro;
     @Value("${stripe.price.agency:}")
-    private String priceAgency;
-
-    // Packs de créditos de IA (pago único). eurHint es solo para mostrar; el cargo real
-    // es el del precio de Stripe. Configura los precios para que coincidan.
-    @Value("${stripe.price.credits-s:}")
-    private String priceCreditsS;
-    @Value("${stripe.price.credits-m:}")
-    private String priceCreditsM;
-    @Value("${stripe.price.credits-l:}")
-    private String priceCreditsL;
+    private String precioAntiguoAgency;
 
     @Value("${app.base-url:https://inmobiliapro.es}")
     private String baseUrl;
 
     private final SupabaseService supabase;
-
-    public record CreditPack(String key, int credits, int eurHint, String priceId, boolean configured) {}
-
-    /** Definición de un pack por su clave (s/m/l). Null si la clave no es válida. */
-    public CreditPack packFor(String key) {
-        return switch (key == null ? "" : key) {
-            case "s" -> new CreditPack("s",  100,   9, priceCreditsS, notBlank(priceCreditsS));
-            case "m" -> new CreditPack("m",  500,  39, priceCreditsM, notBlank(priceCreditsM));
-            case "l" -> new CreditPack("l", 2000, 129, priceCreditsL, notBlank(priceCreditsL));
-            default -> null;
-        };
-    }
-
-    /** Los 3 packs para pintar en la UI. */
-    public java.util.List<CreditPack> creditPacks() {
-        return java.util.List.of(packFor("s"), packFor("m"), packFor("l"));
-    }
-
-    private static boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
     @PostConstruct
     public void init() {
@@ -83,13 +67,92 @@ public class StripeService {
         return secretKey != null && !secretKey.isBlank();
     }
 
-    /** Resuelve el priceId según el plan. */
-    public String priceIdFor(String plan) {
-        return switch (plan) {
-            case "pro" -> pricePro;
-            case "agency" -> priceAgency;
-            default -> null;
-        };
+    // ─── Catálogo de precios ────────────────────────────────────────────
+
+    static final String PREFIJO = "inmobilia_";
+    /** Extras que se suman a la suscripción. */
+    public static final String ACTIVO_EXTRA = "activo_extra";
+    public static final String SOCIEDAD_EXTRA = "sociedad_extra";
+
+    /** Un precio de Stripe: producto, importe en céntimos e intervalo ("month", "year" o null = pago único). */
+    record Precio(String clave, String producto, String nombre, long centimos, String intervalo) {
+        String lookupKey() { return PREFIJO + clave; }
+    }
+
+    /**
+     * Precio para una clave: plan_pro_mensual, plan_business_anual, activo_extra_mensual,
+     * modulo_futureproof_anual, creditos_100… Pagando el año, el plan sale un 20 % más barato
+     * (PlanService); los extras anuales son 12 meses de su precio mensual.
+     */
+    static Precio catalogo(String clave) {
+        boolean anual = clave.endsWith("_anual");
+        String intervalo = anual ? "year" : "month";
+        String base = clave.replaceAll("_(mensual|anual)$", "");
+        if (base.startsWith("plan_")) {
+            String plan = base.substring(5);
+            if (!PlanService.PLANES_DE_PAGO.contains(plan)) return null;
+            PlanService.PlanLimits l = PlanService.PLANS.get(plan);
+            long euros = anual ? 12L * l.annualMonthlyPriceEur() : l.monthlyPriceEur();
+            return new Precio(clave, base, "InmobilIA Pro · Plan " + l.label(), euros * 100, intervalo);
+        }
+        if (base.equals(ACTIVO_EXTRA)) {
+            return new Precio(clave, base, "InmobilIA Pro · Activo adicional", (anual ? 12L : 1L) * PlanService.PRECIO_ACTIVO_EXTRA * 100, intervalo);
+        }
+        if (base.equals(SOCIEDAD_EXTRA)) {
+            return new Precio(clave, base, "InmobilIA Pro · Sociedad adicional", (anual ? 12L : 1L) * PlanService.PRECIO_SOCIEDAD_EXTRA * 100, intervalo);
+        }
+        if (base.startsWith("modulo_")) {
+            PlanService.Modulo m = PlanService.modulo(base.substring(7));
+            if (m == null) return null;
+            return new Precio(clave, base, "InmobilIA Pro · " + m.nombre(), (anual ? 12L : 1L) * m.precioMensual() * 100, intervalo);
+        }
+        if (clave.equals("creditos_" + PlanService.PACK_CREDITOS)) {
+            return new Precio(clave, "creditos", "InmobilIA Pro · " + PlanService.PACK_CREDITOS + " créditos de IA",
+                    PlanService.PRECIO_PACK_CREDITOS * 100L, null);
+        }
+        return null;
+    }
+
+    private final Map<String, String> precios = new ConcurrentHashMap<>();
+
+    /** Id del precio de Stripe para una clave del catálogo (lo crea si hace falta). */
+    String priceId(String clave) throws StripeException {
+        String cacheado = precios.get(clave);
+        if (cacheado != null) return cacheado;
+        Precio p = catalogo(clave);
+        if (p == null) throw new IllegalArgumentException("Precio desconocido: " + clave);
+        synchronized (this) {
+            cacheado = precios.get(clave);
+            if (cacheado != null) return cacheado;
+            for (Price existente : Price.list(PriceListParams.builder().addLookupKey(p.lookupKey()).setActive(true).build()).getData()) {
+                String intervalo = existente.getRecurring() == null ? null : existente.getRecurring().getInterval();
+                if (Objects.equals(existente.getUnitAmount(), p.centimos()) && Objects.equals(intervalo, p.intervalo())) {
+                    precios.put(clave, existente.getId());
+                    return existente.getId();
+                }
+            }
+            String producto = PREFIJO + p.producto();
+            try {
+                Product.retrieve(producto);
+            } catch (StripeException noExiste) {
+                Product.create(ProductCreateParams.builder().setId(producto).setName(p.nombre()).build());
+            }
+            PriceCreateParams.Builder b = PriceCreateParams.builder()
+                    .setProduct(producto)
+                    .setCurrency("usd")
+                    .setUnitAmount(p.centimos())
+                    .setLookupKey(p.lookupKey())
+                    .setTransferLookupKey(true);   // si el importe cambió, la clave pasa al precio nuevo
+            if (p.intervalo() != null) {
+                b.setRecurring(PriceCreateParams.Recurring.builder()
+                        .setInterval("year".equals(p.intervalo()) ? PriceCreateParams.Recurring.Interval.YEAR : PriceCreateParams.Recurring.Interval.MONTH)
+                        .build());
+            }
+            Price creado = Price.create(b.build());
+            log.info("Creado en Stripe el precio {} ({} céntimos): {}", p.lookupKey(), p.centimos(), creado.getId());
+            precios.put(clave, creado.getId());
+            return creado.getId();
+        }
     }
 
     /** Crea/recupera el customer de Stripe asociado al usuario. */
@@ -116,12 +179,11 @@ public class StripeService {
         return c.getId();
     }
 
-    // ─── IVA ────────────────────────────────────────────────────────────
+    // ─── Impuestos ─────────────────────────────────────────────────────
     // Clientes en Latinoamérica, precios en USD: no se añade ningún impuesto automáticamente.
     // Si hace falta uno, se configura su id de Stripe en STRIPE_TAX_RATE_IVA=txr_...
     @Value("${stripe.tax-rate.iva:}")
     private String ivaTaxRateConfigured;
-    private volatile String ivaTaxRateCache;
 
     /** Id del tipo impositivo configurado en Stripe, o null si no hay ninguno. */
     String ivaTaxRateId() {
@@ -141,31 +203,27 @@ public class StripeService {
     }
 
     private SessionCreateParams.LineItem lineaConIva(String priceId) {
-        return lineaConIva(priceId, 1);
-    }
-
-    private SessionCreateParams.LineItem lineaConIva(String priceId, int cantidad) {
         SessionCreateParams.LineItem.Builder item = SessionCreateParams.LineItem.builder()
                 .setPrice(priceId)
-                .setQuantity((long) Math.max(1, cantidad));
+                .setQuantity(1L);
         String iva = ivaTaxRateId();
         if (iva != null) item.addTaxRate(iva);
         return item.build();
     }
 
+    // ─── Suscripción ────────────────────────────────────────────────────
+
     /**
-     * Crea sesión de Stripe Checkout para suscripción nueva, con tantas unidades como usuarios
-     * tenga la inmobiliaria: los precios de Stripe (STRIPE_PRICE_PRO / STRIPE_PRICE_AGENCY) son
-     * POR USUARIO y mes. Después PlazasService ajusta la cantidad al invitar o desactivar.
+     * Checkout de una suscripción nueva a Pro o Business, mensual o anual. Si aún le quedan días
+     * de la prueba gratis (más de 2: es lo mínimo que acepta Stripe), no se cobra hasta que acabe.
+     * Los extras (activos adicionales, módulos) se añaden después desde Facturación.
      */
-    public String createCheckoutSession(Map<String, Object> user, String plan, int usuarios) throws StripeException {
-        String priceId = priceIdFor(plan);
-        if (priceId == null || priceId.isBlank()) {
-            throw new IllegalArgumentException("Plan no válido o priceId no configurado: " + plan);
+    public String createCheckoutSession(Map<String, Object> user, String plan, boolean anual) throws StripeException {
+        if (!PlanService.PLANES_DE_PAGO.contains(plan)) {
+            throw new IllegalArgumentException("Plan no válido: " + plan);
         }
+        String priceId = priceId("plan_" + plan + (anual ? "_anual" : "_mensual"));
         String customerId = getOrCreateCustomer(user);
-        // Los 14 días gratis solo la primera vez: quien ya se suscribió antes paga desde el día 1.
-        boolean conPrueba = !PlanService.haSuscritoAlgunaVez(user);
 
         SessionCreateParams.Builder b = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
@@ -174,96 +232,119 @@ public class StripeService {
                 .setCancelUrl(baseUrl + "/billing/cancel")
                 .setAllowPromotionCodes(true)
                 .setLocale(SessionCreateParams.Locale.ES_419)
-                .addLineItem(lineaConIva(priceId, usuarios))
+                .addLineItem(lineaConIva(priceId))
                 .putMetadata("user_id", String.valueOf(user.get("id")))
                 .putMetadata("plan", plan)
-                .putMetadata("usuarios", String.valueOf(Math.max(1, usuarios)))
-                // Tarjeta por adelantado siempre.
+                .putMetadata("periodo", anual ? "anual" : "mensual")
                 .setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
                 // Desactivar Managed Payments (merchant of record, +3,5% y exige tax code).
-                // Usamos el checkout estándar; gestionamos el IVA nosotros.
+                // Usamos el checkout estándar; los impuestos los gestionamos nosotros.
                 .putExtraParam("managed_payments[enabled]", false);
-        if (conPrueba) {
-            // 14 días gratis: no se cobra nada hasta que acaba la prueba.
-            b.setSubscriptionData(SessionCreateParams.SubscriptionData.builder()
-                    .setTrialPeriodDays(14L)
-                    .build());
+        Long finPrueba = finDePruebaParaStripe(user);
+        if (finPrueba != null) {
+            b.setSubscriptionData(SessionCreateParams.SubscriptionData.builder().setTrialEnd(finPrueba).build());
         }
         datosFiscales(b);
+        return Session.create(b.build()).getUrl();
+    }
 
-        Session session = Session.create(b.build());
-        return session.getUrl();
+    /** Fin de la prueba de la aprobación (epoch) si quedan más de 2 días y nunca se suscribió; si no, null. */
+    static Long finDePruebaParaStripe(Map<String, Object> user) {
+        if (PlanService.haSuscritoAlgunaVez(user)) return null;
+        OffsetDateTime fin = com.inmobilia.util.Fechas.leer(user.get("trial_ends_at"));
+        return fin != null && fin.isAfter(OffsetDateTime.now().plusDays(2)) ? fin.toEpochSecond() : null;
+    }
+
+    /** Lo que cobra una suscripción, leído de sus precios. plan = null si no es de un plan conocido. */
+    public record EstadoSuscripcion(String plan, boolean anual, int activosExtra, int sociedadesExtra, Set<String> modulos) {}
+
+    public EstadoSuscripcion leer(Subscription sub) {
+        String plan = null;
+        boolean anual = false;
+        int activosExtra = 0, sociedadesExtra = 0;
+        Set<String> modulos = new LinkedHashSet<>();
+        if (sub != null && sub.getItems() != null && sub.getItems().getData() != null) {
+            for (SubscriptionItem item : sub.getItems().getData()) {
+                Price price = item.getPrice();
+                if (price == null) continue;
+                String lk = price.getLookupKey() == null ? "" : price.getLookupKey();
+                int cantidad = item.getQuantity() == null ? 1 : item.getQuantity().intValue();
+                String clave = lk.startsWith(PREFIJO) ? lk.substring(PREFIJO.length()).replaceAll("_(mensual|anual)$", "") : "";
+                if (clave.startsWith("plan_")) {
+                    plan = clave.substring(5);
+                    anual = lk.endsWith("_anual");
+                } else if (clave.equals(ACTIVO_EXTRA)) {
+                    activosExtra = cantidad;
+                } else if (clave.equals(SOCIEDAD_EXTRA)) {
+                    sociedadesExtra = cantidad;
+                } else if (clave.startsWith("modulo_")) {
+                    modulos.add(clave.substring(7));
+                } else if (price.getId().equals(precioAntiguoPro)) {
+                    plan = PlanService.PRO;
+                } else if (price.getId().equals(precioAntiguoAgency)) {
+                    plan = PlanService.BUSINESS;
+                }
+            }
+        }
+        return new EstadoSuscripcion(plan, anual, activosExtra, sociedadesExtra, modulos);
     }
 
     /**
-     * Pone en la suscripción tantas unidades como usuarios. Stripe prorratea: un usuario que
-     * entra a mitad de mes se cobra la parte proporcional en la siguiente factura, y uno que sale
-     * deja saldo a favor. Devuelve la cantidad que había antes, o -1 si no se cambió nada
-     * (ya coincidía, o la suscripción es de un precio antiguo que no es por usuario).
+     * Pone en la suscripción la cantidad de un extra: "activo_extra" o "sociedad_extra" (unidades) o "modulo_xxx"
+     * (1 = activado). 0 lo quita. Mismo intervalo que el plan (mensual o anual: Stripe no mezcla)
+     * y prorrateado: lo añadido a mitad de periodo se cobra en proporción en la siguiente factura.
      */
-    public long actualizarUsuarios(String subscriptionId, int usuarios) throws StripeException {
-        com.stripe.model.Subscription sub = com.stripe.model.Subscription.retrieve(subscriptionId);
-        if (sub.getItems() == null || sub.getItems().getData() == null || sub.getItems().getData().isEmpty()) return -1;
-        com.stripe.model.SubscriptionItem item = sub.getItems().getData().get(0);
-        String priceId = item.getPrice() == null ? null : item.getPrice().getId();
-        if (planForPrice(priceId) == null) {
-            log.warn("Suscripción {} con un precio que no es por usuario ({}): no se ajusta la cantidad", subscriptionId, priceId);
-            return -1;
+    public void ajustarExtra(String subscriptionId, String extra, int cantidad) throws StripeException {
+        Subscription sub = Subscription.retrieve(subscriptionId);
+        boolean anual = leer(sub).anual();
+        SubscriptionItem actual = null;
+        for (SubscriptionItem item : sub.getItems().getData()) {
+            String lk = item.getPrice() == null || item.getPrice().getLookupKey() == null ? "" : item.getPrice().getLookupKey();
+            if (lk.startsWith(PREFIJO + extra + "_")) actual = item;
         }
-        long antes = item.getQuantity() == null ? 1 : item.getQuantity();
-        long ahora = Math.max(1, usuarios);
-        if (antes == ahora) return -1;
-        item.update(com.stripe.param.SubscriptionItemUpdateParams.builder()
-                .setQuantity(ahora)
-                .setProrationBehavior(com.stripe.param.SubscriptionItemUpdateParams.ProrationBehavior.CREATE_PRORATIONS)
-                .build());
-        log.info("Suscripción {}: {} → {} usuarios", subscriptionId, antes, ahora);
-        return antes;
+        if (cantidad <= 0) {
+            if (actual != null) {
+                actual.delete(SubscriptionItemDeleteParams.builder()
+                        .setProrationBehavior(SubscriptionItemDeleteParams.ProrationBehavior.CREATE_PRORATIONS).build());
+            }
+            return;
+        }
+        if (actual != null) {
+            if (actual.getQuantity() == null || actual.getQuantity() != cantidad) {
+                actual.update(SubscriptionItemUpdateParams.builder()
+                        .setQuantity((long) cantidad)
+                        .setProrationBehavior(SubscriptionItemUpdateParams.ProrationBehavior.CREATE_PRORATIONS).build());
+            }
+            return;
+        }
+        SubscriptionItemCreateParams.Builder b = SubscriptionItemCreateParams.builder()
+                .setSubscription(subscriptionId)
+                .setPrice(priceId(extra + (anual ? "_anual" : "_mensual")))
+                .setQuantity((long) cantidad)
+                .setProrationBehavior(SubscriptionItemCreateParams.ProrationBehavior.CREATE_PRORATIONS);
+        String iva = ivaTaxRateId();
+        if (iva != null) b.addTaxRate(iva);
+        SubscriptionItem.create(b.build());
+        log.info("Suscripción {}: {} × {}", subscriptionId, extra, cantidad);
     }
 
-    /** Usuarios (unidades) que se están cobrando en la suscripción, o -1 si no se puede leer. */
-    public long usuariosFacturados(String subscriptionId) {
-        try {
-            var items = com.stripe.model.Subscription.retrieve(subscriptionId).getItems();
-            if (items == null || items.getData().isEmpty() || items.getData().get(0).getQuantity() == null) return -1;
-            return items.getData().get(0).getQuantity();
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-    /** Plan ("pro"/"agency") que corresponde a un price de Stripe, o null si no es de un plan. */
-    public String planForPrice(String priceId) {
-        if (priceId == null) return null;
-        if (priceId.equals(pricePro)) return "pro";
-        if (priceId.equals(priceAgency)) return "agency";
-        return null;
-    }
-
-    /** Crea sesión de Stripe Checkout de PAGO ÚNICO para un pack de créditos de IA. */
-    public String createCreditCheckoutSession(Map<String, Object> user, String packKey) throws StripeException {
-        CreditPack pack = packFor(packKey);
-        if (pack == null || !pack.configured()) {
-            throw new IllegalArgumentException("Pack no válido o priceId no configurado: " + packKey);
-        }
+    /** Checkout de PAGO ÚNICO del pack de créditos de IA. */
+    public String createCreditCheckoutSession(Map<String, Object> user) throws StripeException {
         String customerId = getOrCreateCustomer(user);
-
         SessionCreateParams.Builder b = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setCustomer(customerId)
                 .setSuccessUrl(baseUrl + "/billing/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(baseUrl + "/creditos")
                 .setLocale(SessionCreateParams.Locale.ES_419)
-                .addLineItem(lineaConIva(pack.priceId()))
+                .addLineItem(lineaConIva(priceId("creditos_" + PlanService.PACK_CREDITOS)))
                 .putMetadata("user_id", String.valueOf(user.get("id")))
                 .putMetadata("type", "credits")
-                .putMetadata("credits", String.valueOf(pack.credits()))
+                .putMetadata("credits", String.valueOf(PlanService.PACK_CREDITOS))
                 // Pago único: que Stripe emita factura (las suscripciones ya la generan solas).
                 .setInvoiceCreation(SessionCreateParams.InvoiceCreation.builder().setEnabled(true).build())
-                // Desactivar Managed Payments también en la compra de créditos.
                 .putExtraParam("managed_payments[enabled]", false);
         datosFiscales(b);
-
         return Session.create(b.build()).getUrl();
     }
 

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Comandos de voz</title></head>
+<body>
+<div layout:fragment="content">
+<script>
+function comandosVoz() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    return {
+        soportado: !!SR, escuchando: false, pensando: false, escrito: '', mensajes: [], rec: null,
+        estado: SR ? 'Pulsa el micrófono y habla' : 'Escribe la orden',
+        escuchar() {
+            this.rec = new SR();
+            this.rec.lang = 'es-ES';
+            this.rec.interimResults = false;
+            this.rec.onresult = e => this.enviar(e.results[0][0].transcript);
+            this.rec.onerror = e => { this.estado = e.error === 'not-allowed' ? 'Permite el micrófono en el navegador' : 'No te he oído bien, prueba otra vez'; };
+            this.rec.onend = () => { this.escuchando = false; if (!this.pensando && this.estado === 'Te escucho…') this.estado = 'Pulsa el micrófono y habla'; };
+            this.escuchando = true;
+            this.estado = 'Te escucho…';
+            this.rec.start();
+        },
+        parar() { if (this.rec) this.rec.stop(); },
+        enviar(texto) {
+            texto = (texto || '').trim();
+            if (!texto) return;
+            this.mensajes.push({ yo: true, texto });
+            this.pensando = true;
+            this.estado = 'Un momento…';
+            const d = new FormData(); d.append('texto', texto);
+            fetch('/herramientas/comandos-voz/ejecutar', { method: 'POST', body: d })
+                .then(r => r.json())
+                .then(j => {
+                    this.mensajes.push({ yo: false, texto: j.texto, enlace: j.enlace });
+                    if ('speechSynthesis' in window) {
+                        const u = new SpeechSynthesisUtterance(j.texto); u.lang = 'es-ES'; speechSynthesis.speak(u);
+                    }
+                })
+                .catch(() => this.mensajes.push({ yo: false, texto: 'No he podido contactar con el servidor.' }))
+                .finally(() => { this.pensando = false; this.estado = this.soportado ? 'Pulsa el micrófono y habla' : 'Escribe la orden'; });
+        }
+    };
+}
+</script>
+<div class="max-w-2xl mx-auto space-y-5" x-data="comandosVoz()">
+
+    <div class="rounded-xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-5">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i data-lucide="mic" class="h-5 w-5"></i> Comandos de voz</h1>
+        <p class="text-sm text-white/80 mt-1">Consulta tus datos o crea tareas hablando, también desde el móvil mientras visitas un activo.</p>
+    </div>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 text-center">
+        <button type="button" @click="escuchando ? parar() : escuchar()" :disabled="!soportado || pensando"
+                class="mx-auto h-24 w-24 rounded-full flex items-center justify-center text-white shadow-card-lg transition disabled:opacity-40"
+                :class="escuchando ? 'bg-red-600 animate-pulse' : 'bg-brand-800 hover:bg-brand-900'" title="Hablar">
+            <i data-lucide="mic" class="h-10 w-10"></i>
+        </button>
+        <p class="mt-3 text-sm text-slate-600 dark:text-slate-400" x-text="estado"></p>
+        <p x-show="!soportado" class="mt-2 text-xs text-amber-700">Tu navegador no reconoce la voz (usa Chrome, Edge o Safari). Puedes escribir la orden abajo.</p>
+
+        <form @submit.prevent="enviar(escrito); escrito = ''" class="mt-4 flex gap-2">
+            <input type="text" x-model="escrito" placeholder="…o escribe la orden" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+            <button class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium" :disabled="pensando">Enviar</button>
+        </form>
+    </div>
+
+    <!-- Conversación -->
+    <div class="space-y-2" x-show="mensajes.length">
+        <template x-for="(m, i) in mensajes" :key="i">
+            <div class="rounded-xl p-3 text-sm" :class="m.yo ? 'bg-slate-100 dark:bg-neutral-800 ml-10' : 'bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 mr-10'">
+                <p x-text="m.texto"></p>
+                <a x-show="m.enlace" :href="m.enlace" class="text-xs text-brand-700 hover:underline">Abrir →</a>
+            </div>
+        </template>
+    </div>
+
+    <div class="rounded-xl bg-slate-50 dark:bg-neutral-800/60 p-4 text-sm text-slate-600 dark:text-slate-400">
+        <p class="font-semibold text-slate-800 dark:text-slate-200 mb-2">Prueba a decir:</p>
+        <ul class="space-y-1 list-disc pl-5">
+            <li>«Recuérdame llamar al fontanero mañana»</li>
+            <li>«Crea una tarea para revisar la caldera de la nave el viernes»</li>
+            <li>«¿Cuántos activos tengo?»</li>
+            <li>«¿Qué contratos vencen pronto?»</li>
+            <li>«¿Quién me debe recibos?»</li>
+            <li>«¿Hay incidencias abiertas?»</li>
+            <li>«¿Qué tareas tengo hoy?» · «¿Cuánto cobro de renta al mes?»</li>
+        </ul>
+        <p class="mt-2 text-xs">Estas órdenes no gastan créditos. Cualquier otra se la pasa al asistente de IA (1 crédito).
+            El paso de voz a texto lo hace tu navegador.</p>
+    </div>
+</div>
+</div>
+</body>
+</html>

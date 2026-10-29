@@ -10,26 +10,22 @@
         <h3>⚡ Créditos de IA</h3>
         <p>Saldo actual: <strong th:text="${saldo}">0</strong> créditos.</p>
         <p style="color:#64748b;font-size:14px">
-            Cada acción de IA (descripciones, lead scoring, transcripciones, staging virtual…) consume créditos.
-            Recarga cuando quieras — se suman al instante tras el pago.
+            Tu plan trae un saldo cada mes. Las herramientas de IA (escáner de documentos, informes, asistente…)
+            consumen créditos según el uso. El saldo del plan se renueva cada mes; los packs comprados no caducan.
         </p>
         <p th:unless="${stripeConfigured}" class="info-banner">
-            Los packs estarán disponibles en cuanto se configure el pago (Stripe).
+            El pack estará disponible en cuanto se configure el pago (Stripe).
         </p>
     </section>
 
-    <div class="form-grid cols-2">
-        <section class="form-card" th:each="p : ${packs}" style="text-align:center">
-            <h3 th:text="|${#numbers.formatInteger(p.credits(), 0, 'DEFAULT')} créditos|">créditos</h3>
-            <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|≈ ${p.eurHint()} ${mon}|">[[${mon}]]</p>
-            <form method="post" th:action="@{/billing/credits/{k}(k=${p.key()})}">
-                <button class="btn btn-primary" th:disabled="${!stripeConfigured or !p.configured()}">Comprar</button>
-            </form>
-            <p th:if="${stripeConfigured and !p.configured()}" style="color:#b45309;font-size:12px;margin-top:8px">
-                Falta configurar el precio de este pack en Stripe.
-            </p>
-        </section>
-    </div>
+    <section class="form-card" style="text-align:center;max-width:360px">
+        <h3 th:text="|Pack de ${packCreditos} créditos|">Pack de 100 créditos</h3>
+        <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|US$${packPrecio}|">US$10</p>
+        <p style="color:#64748b;font-size:13px;margin-bottom:12px">Pago único · impuestos no incluidos · no caducan</p>
+        <form method="post" th:action="@{/billing/credits/{k}(k=${packCreditos})}">
+            <button class="btn btn-primary" th:disabled="${!stripeConfigured}">Comprar</button>
+        </form>
+    </section>
 
 </div>
 </body>

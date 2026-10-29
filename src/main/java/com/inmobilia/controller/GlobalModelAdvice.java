@@ -102,9 +102,6 @@ public class GlobalModelAdvice {
         // páginas públicas fija el país de la inmobiliaria dueña de la página)
         model.addAttribute("paises", com.inmobilia.util.Pais.todos());
         model.addAttribute("ciudadesPorPais", com.inmobilia.util.Ciudad.porPais());
-        // Precio por usuario y mes de los planes (USD) para la web, la facturación y los términos
-        model.addAttribute("precioPro", PlanService.PRECIO_PRO_USD);
-        model.addAttribute("precioAgency", PlanService.PRECIO_AGENCY_USD);
         model.addAttribute("flash", SessionUtils.consumeFlash(session));
         model.addAttribute("saludo", FormatUtils.saludo());
         model.addAttribute("fechaLarga", FormatUtils.fechaLarga());

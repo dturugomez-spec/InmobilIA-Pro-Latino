@@ -208,11 +208,8 @@ public class AuthController {
             return "redirect:/seguridad";
         }
 
-        // Cliente sin suscripción → primero la pantalla de pago (tarjeta + 14 días gratis)
-        if (planService.requierePago(orgUid)) {
-            SessionUtils.flash(session, "👋 Activa tu suscripción para empezar: 14 días gratis, no se te cobra nada hasta que terminen. Cancela cuando quieras.");
-            return "redirect:/upgrade";
-        }
+        // Sin suscripción ya no se bloquea: acabada la prueba, la cuenta sigue en Free.
+        // Si un empleado no cabe en el plan, el candado de usuarios lo lleva a /upgrade.
         if (pwCorta) {
             SessionUtils.flash(session, "🔐 Tu contraseña es corta. Cámbiala por una de al menos "
                     + AuthService.MIN_PASSWORD + " caracteres en Seguridad.");
@@ -311,7 +308,7 @@ public class AuthController {
         try {
             notifications.create(reg.get("id"), "info", "🎉",
                     "¡Bienvenido a InmobilIA Pro!",
-                    "Tienes 14 días de Plan Agency gratis. Configura tu cuenta para empezar.",
+                    "Tienes 14 días del plan Business gratis. Configura tu cuenta para empezar.",
                     "/welcome");
         } catch (Exception ignored) {}
 
