@@ -65,7 +65,7 @@ public class OnlineReservationController {
     /** Página pública para reservar. */
     @GetMapping("/p/{propId}")
     public String form(@PathVariable String propId, Model model) {
-        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + propId);
+        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + propId + "&publicada=is.true");   // solo inmuebles publicados
         if (rows.isEmpty()) { model.addAttribute("error", true); return "online_reservation_public"; }
         Map<String, Object> p = rows.get(0);
         paises.usar(String.valueOf(p.get("user_id")));  // moneda y formato del país de la inmobiliaria
@@ -78,7 +78,7 @@ public class OnlineReservationController {
 
     @PostMapping("/p/{propId}")
     public String reservar(@PathVariable String propId, @RequestParam Map<String, String> form, Model model) {
-        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + propId);
+        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + propId + "&publicada=is.true");   // solo inmuebles publicados
         if (rows.isEmpty()) return "redirect:/";
         Map<String, Object> p = rows.get(0);
         paises.usar(String.valueOf(p.get("user_id")));

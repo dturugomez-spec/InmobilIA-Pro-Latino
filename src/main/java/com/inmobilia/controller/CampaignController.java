@@ -148,10 +148,12 @@ public class CampaignController {
     public String launch(@PathVariable String id, HttpSession session) {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
+        // Solo campañas de la propia inmobiliaria: antes se podía lanzar la de otra con su id
+        if (supabase.selectOwned("campanas", id, uid).isEmpty()) return "redirect:/campanas";
         supabase.update("campanas", id, Map.of(
                 "estado", "programada",
                 "enviar_at", OffsetDateTime.now().toString()
-        ));
+        ), uid);
         // Lanzar inmediatamente en background
         campaignService.enviarCampana(id);
         SessionUtils.flash(session, "🚀 Campaña lanzándose en segundo plano");

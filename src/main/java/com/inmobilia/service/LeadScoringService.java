@@ -191,6 +191,8 @@ public class LeadScoringService {
     @Async
     public void registrarInteraccion(String leadId, String tipo, String detalle, String userId) {
         try {
+            // Solo en leads de la propia inmobiliaria (antes se podía puntuar el lead de otra con su id)
+            if (supabase.selectOwned("leads", leadId, userId).isEmpty()) return;
             int valor = valorScore(tipo);
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("lead_id", leadId);
@@ -259,7 +261,8 @@ public class LeadScoringService {
 
     /** Pide a la IA un análisis profundo + sugerencias accionables. */
     public String analisisAI(String leadId, String userId) {
-        List<Map<String, Object>> leads = supabase.selectFilter("leads", "id=eq." + leadId);
+        // Solo leads de la propia inmobiliaria: antes la IA analizaba (y contaba) el lead de otra
+        List<Map<String, Object>> leads = supabase.selectOwned("leads", leadId, userId);
         if (leads.isEmpty()) return "Lead no encontrado";
         Map<String, Object> lead = leads.get(0);
 

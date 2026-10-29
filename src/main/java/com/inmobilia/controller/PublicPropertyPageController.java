@@ -28,9 +28,15 @@ public class PublicPropertyPageController {
     @org.springframework.beans.factory.annotation.Value("${app.base-url:https://inmobiliapro.es}")
     private String baseUrl;
 
+    /**
+     * Solo inmuebles marcados como publicados: antes cualquier inmueble de cualquier inmobiliaria
+     * se veía con su id (y el sitemap los listaba todos), aunque fuera cartera privada.
+     */
+    static final String PUBLICADA = "&publicada=is.true";
+
     @GetMapping("/propiedad/{id}")
     public String publica(@PathVariable String id, Model model) {
-        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + id);
+        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + id + PUBLICADA);
         if (rows.isEmpty()) {
             model.addAttribute("error", "Propiedad no encontrada");
             return "property_public_page";
@@ -48,7 +54,7 @@ public class PublicPropertyPageController {
 
         // Propiedades similares (mismo tipo, misma agencia)
         StringBuilder qs = new StringBuilder("user_id=eq.").append(uid)
-                .append("&id=neq.").append(id).append("&limit=4");
+                .append("&id=neq.").append(id).append(PUBLICADA).append("&limit=4");
         if (p.get("type") != null) qs.append("&type=eq.").append(p.get("type"));
         List<Map<String, Object>> similares = supabase.selectFilter("propiedades", qs.toString());
 
@@ -70,7 +76,7 @@ public class PublicPropertyPageController {
 
     @PostMapping("/propiedad/{id}/contactar")
     public String contactar(@PathVariable String id, @RequestParam Map<String, String> form, Model model) {
-        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + id);
+        List<Map<String, Object>> rows = supabase.selectFilter("propiedades", "id=eq." + id + PUBLICADA);
         if (rows.isEmpty()) return "redirect:/";
         Map<String, Object> p = rows.get(0);
 

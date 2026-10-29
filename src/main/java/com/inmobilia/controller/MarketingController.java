@@ -54,8 +54,9 @@ public class MarketingController {
         // Fichas públicas de propiedades: que Google/Bing las descubran e indexen
         // (la plantilla pública ya lleva og:image + Schema.org RealEstateListing).
         try {
+            // Solo los publicados: antes salían los de todas las inmobiliarias, también la cartera privada
             List<Map<String, Object>> props = supabase.selectFilter(
-                    "propiedades", "order=created_at.desc&limit=5000");
+                    "propiedades", "select=id&publicada=is.true&order=created_at.desc&limit=5000");
             for (Map<String, Object> p : props) {
                 Object id = p.get("id");
                 if (id != null) xml.append(urlEntry("/propiedad/" + id));

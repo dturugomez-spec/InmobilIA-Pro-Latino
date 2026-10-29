@@ -80,11 +80,12 @@ public class AgentExpensesController {
     public String aprobar(@PathVariable String id, HttpSession session) {
         String realUid = SessionUtils.realUid(session);
         if (realUid == null) return "redirect:/login";
+        // Solo gastos de la propia inmobiliaria (antes se podía aprobar el de otra con su id)
         supabase.update("gastos_agente", id, Map.of(
                 "estado", "aprobado",
                 "aprobado_por", realUid,
                 "aprobado_at", OffsetDateTime.now().toString()
-        ));
+        ), SessionUtils.uid(session));
         return "redirect:/gastos-agente";
     }
 
