@@ -103,18 +103,18 @@ public class AgentActionService {
         try {
             raw = aiService.call(null, prompt, SYSTEM, 600, uid);
         } catch (Exception e) {
-            return resp("El asistente IA no está disponible ahora mismo (falta configurar OPENAI_API_KEY_PLATFORM).");
+            log.warn("Asistente IA: {}", e.getMessage());
+            return resp(aiService.motivoSinRespuesta(uid));
         }
-        // aiService.call devuelve null si no hay clave o si la llamada falló: mensaje claro en vez de respuesta vacía.
+        // aiService.call devuelve null si no hay clave o si la llamada falló. Lo técnico (qué variable
+        // falta) va al registro del servidor; el cliente ve un mensaje normal, nunca "Railway" ni "sk-...".
         if (raw == null || raw.isBlank()) {
             if (!aiService.hasPlatformKey()) {
                 int lp = envOpenAiPlatform == null ? 0 : envOpenAiPlatform.trim().length();
                 int lk = envOpenAiPlain == null ? 0 : envOpenAiPlain.trim().length();
-                return resp("⚠️ Falta la clave de OpenAI. El servidor ve OPENAI_API_KEY_PLATFORM(len=" + lp
-                        + ") y OPENAI_API_KEY(len=" + lk + "). Pon tu clave sk-... en una de ellas en Railway"
-                        + " y aplica/redeploya. (len=0 significa que la variable no llega a la app).");
+                log.warn("Asistente IA sin clave: OPENAI_API_KEY_PLATFORM(len={}) OPENAI_API_KEY(len={})", lp, lk);
             }
-            return resp("⚠️ La clave de OpenAI está configurada, pero la llamada falló (clave inválida, sin saldo o problema de red). Revisa la clave y el saldo en platform.openai.com.");
+            return resp(aiService.motivoSinRespuesta(uid));
         }
 
         Map<String, Object> json = parseJson(raw);
