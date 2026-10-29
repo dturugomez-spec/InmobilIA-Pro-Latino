@@ -38,6 +38,8 @@ public class DemoLocalController {
     private final FakeSupabase bd;
     private final EjemplosService ejemplos;
     private volatile boolean listo;
+    /** Día en que se cargaron los ejemplos: sus fechas (visitas de mañana, cobros del mes…) cuentan desde ahí. */
+    private volatile java.time.LocalDate cargadoEl;
 
     @EventListener(ApplicationReadyEvent.class)
     public void preparar() {
@@ -61,15 +63,28 @@ public class DemoLocalController {
         } catch (Exception e) {
             log.error("Demo local: no se pudieron cargar los ejemplos: {}", e.getMessage(), e);
         } finally {
+            cargadoEl = java.time.LocalDate.now();
             listo = true;
         }
     }
 
     public boolean listo() { return listo; }
 
+    /**
+     * Si la demo lleva abierta desde otro día, vuelve a empezar con los ejemplos de hoy: así no salen
+     * tareas vencidas ni visitas "de mañana" que ya pasaron delante de un cliente.
+     */
+    synchronized void alDia() {
+        if (!listo || java.time.LocalDate.now().equals(cargadoEl)) return;
+        listo = false;
+        bd.vaciar();
+        preparar();
+    }
+
     /** Entra directamente en la inmobiliaria de ejemplo (sin contraseña: solo existe en la demo local). */
     @GetMapping("/entrar")
     public ResponseEntity<String> entrar(HttpServletRequest req, HttpSession session) {
+        alDia();
         if (!listo) {
             return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body("""
                     <!doctype html><html lang="es"><meta charset="utf-8"><meta http-equiv="refresh" content="1">

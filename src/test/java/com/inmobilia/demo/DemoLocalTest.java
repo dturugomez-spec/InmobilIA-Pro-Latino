@@ -66,6 +66,21 @@ class DemoLocalTest {
     }
 
     @Test
+    void alDiaSiguienteVuelveAEmpezarConLosEjemplosDeHoy() throws Exception {
+        bd.tabla("leads").add(new java.util.LinkedHashMap<>(java.util.Map.of("id", java.util.UUID.randomUUID().toString(),
+                "user_id", DemoLocalController.ORG, "nombre", "Cambio hecho ayer en la demo")));
+        org.springframework.test.util.ReflectionTestUtils.setField(demo, "cargadoEl", java.time.LocalDate.now().minusDays(1));
+
+        MockHttpSession s = new MockHttpSession();
+        assertEquals("/dashboard", mvc.perform(get("/entrar").session(s)).andReturn().getResponse().getRedirectedUrl());
+        assertTrue(bd.tabla("leads").stream().noneMatch(l -> "Cambio hecho ayer en la demo".equals(l.get("nombre"))),
+                "lo cambiado otro día se borra");
+        assertTrue(bd.tabla("leads").size() > 5, "y vuelven los ejemplos, con fechas de hoy");
+        assertEquals(java.time.LocalDate.now(), org.springframework.test.util.ReflectionTestUtils.getField(demo, "cargadoEl"));
+        assertEquals(200, mvc.perform(get("/dashboard").session(s)).andReturn().getResponse().getStatus());
+    }
+
+    @Test
     void lasFotosSubidasSeVenSinSalirDelOrdenador() throws Exception {
         byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0, 1, 2, (byte) 0xff};
         String url = storage.upload(png, "image/png", ".png", "fotos");
