@@ -21,7 +21,8 @@ import java.util.*;
 
 /**
  * Sistema de solicitudes de cuenta con aprobación manual (prueba de Business; luego Free, Pro, Business o Enterprise).
- * El plan Free → registro directo desde /register?plan=free
+ * No hay registro libre: toda cuenta pasa por aquí. Los planes de pago se activan después en
+ * /admin/clientes al recibir la transferencia o el efectivo (CobroManualService).
  */
 @Controller
 @RequiredArgsConstructor
@@ -155,10 +156,10 @@ public class AccountRequestsController {
                 String html = String.format(
                         "<h2>👋 ¡Gracias, %s!</h2>" +
                         "<p>Hemos recibido tu solicitud de cuenta InmobilIA Pro para <strong>%s</strong>.</p>" +
-                        "<p>Vamos a revisarla y te enviaremos un email en <strong>menos de 24h laborables</strong> con tus credenciales de acceso.</p>" +
-                        "<p>Mientras tanto, si quieres puedes <a href='%s/register?plan=free'>crear una cuenta Free gratuita</a> para ir probando la plataforma.</p>" +
+                        "<p>Vamos a revisarla y te enviaremos un email en <strong>menos de 24h laborables</strong> con un enlace para crear tu contraseña y entrar.</p>" +
+                        "<p>Empiezas con 14 días del plan Business sin tarjeta. Si después te quedas en un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
                         "<p>— Equipo InmobilIA Pro</p>",
-                        form.get("nombre"), form.get("empresa"), BASE_URL);
+                        esc(form.get("nombre")), esc(form.get("empresa")));
                 emailService.send(null, String.valueOf(data.get("email")),
                         "✅ Hemos recibido tu solicitud InmobilIA Pro", html);
             } catch (Exception ignored) {}
@@ -285,10 +286,9 @@ public class AccountRequestsController {
                     "<h2>Hola %s</h2>" +
                     "<p>Gracias por tu interés en InmobilIA Pro. Por el momento no podemos darte de alta porque:</p>" +
                     "<blockquote style='border-left:3px solid #94a3b8;padding-left:10px;color:#475569'>%s</blockquote>" +
-                    "<p>Si crees que es un error, contesta a este email o pruébanos con una <a href='%s/register?plan=free'>cuenta Free gratis</a>.</p>" +
+                    "<p>Si crees que es un error, contesta a este email.</p>" +
                     "<p>— Equipo InmobilIA Pro</p>",
-                    s.get("nombre"), motivo != null ? motivo : "Tu solicitud no encaja en este momento",
-                    BASE_URL);
+                    esc(s.get("nombre")), esc(motivo != null ? motivo : "Tu solicitud no encaja en este momento"));
                 emailService.send(null, String.valueOf(s.get("email")),
                         "Tu solicitud InmobilIA Pro", html);
             }
@@ -314,7 +314,7 @@ public class AccountRequestsController {
             String html = String.format(
                 "<div style='font-family:sans-serif;max-width:600px;margin:auto'>" +
                 "  <h2>🎉 ¡Bienvenido a InmobilIA Pro, %s!</h2>" +
-                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s, sin tarjeta. Al terminar, si no eliges plan, tu cuenta pasa al plan Free y conservas tus datos.</p>" +
+                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s, sin tarjeta. Al terminar, si no eliges plan, tu cuenta pasa al plan Free y conservas tus datos. Si eliges un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
                 "  <p>Para entrar, crea tu contraseña con este botón (el enlace sirve una sola vez y caduca en 7 días):</p>" +
                 "  <p style='text-align:center;margin:30px 0'>" +
                 "    <a href='%s' style='display:inline-block;padding:14px 28px;background:#0f172a;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>Crear mi contraseña →</a>" +

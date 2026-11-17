@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Clientes y cobros</title></head>
+<body><div layout:fragment="content">
+
+<div class="rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 p-6 mb-5 text-white">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="wallet" class="h-6 w-6"></i> Clientes y cobros</h2>
+    <p class="text-sm text-white/80 mt-1">Activa el plan de cada cliente, apunta los cobros por transferencia o en efectivo y haz la factura. Solo lo ven los propietarios de la plataforma.</p>
+</div>
+
+<!-- Datos de cobro sin rellenar -->
+<div th:if="${#strings.isEmpty(datosCobro.get('iban'))}" class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4 mb-5 text-sm text-amber-900">
+    <strong>Falta tu IBAN.</strong> Los clientes ven los datos para la transferencia en «Plan y facturación» y en los avisos de vencimiento.
+    Se toman de <a href="/business" class="underline font-semibold">Mi negocio</a> de esta cuenta (razón social, identificador fiscal y cuenta bancaria). Son también los datos con los que se emiten las facturas.
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500">Cobrado este mes</p>
+        <p class="text-2xl font-bold mt-1" th:text="${#numbers.formatDecimal(cobradoMes, 1, 'POINT', 2, 'COMMA') + ' USD'}">0 USD</p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+        <p class="text-[10px] uppercase text-slate-500">Cobrado este año</p>
+        <p class="text-2xl font-bold mt-1" th:text="${#numbers.formatDecimal(cobradoAnio, 1, 'POINT', 2, 'COMMA') + ' USD'}">0 USD</p>
+    </div>
+    <a href="/admin/solicitudes?estado=pendiente" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4 hover:bg-slate-50">
+        <p class="text-[10px] uppercase text-slate-500">Peticiones de plan sin atender</p>
+        <p class="text-2xl font-bold mt-1" th:text="${#lists.size(peticiones)}">0</p>
+        <p class="text-xs text-brand-700 mt-1">Solicitudes de acceso nuevas →</p>
+    </a>
+</div>
+
+<!-- Peticiones pendientes -->
+<div th:if="${!#lists.isEmpty(peticiones)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-amber-300 p-5 mb-5">
+    <h3 class="text-sm font-semibold mb-3">Peticiones de los clientes</h3>
+    <div class="divide-y divide-slate-100 dark:divide-neutral-800">
+        <div th:each="p : ${peticiones}" class="py-2.5 flex items-start gap-3 flex-wrap">
+            <div class="flex-1 min-w-0 text-sm">
+                <a th:href="@{|/admin/clientes/${p.get('cliente_id')}|}" class="font-semibold text-brand-700 hover:underline" th:text="${p.get('cliente')}">Cliente</a>
+                <span class="text-slate-600" th:text="${'· ' + p.get('resumen')}">· Plan Pro mensual</span>
+                <p th:if="${p.get('mensaje') != null}" class="text-xs text-slate-500 italic" th:text="${p.get('mensaje')}">Mensaje</p>
+            </div>
+            <form th:action="@{|/admin/peticiones/${p.get('id')}/atendida|}" method="post">
+                <button class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-xs font-semibold">Hecho</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clientes -->
+<div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-x-auto mb-5">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-neutral-800/60 text-left text-xs text-slate-500">
+            <tr><th class="px-4 py-2">Cliente</th><th class="px-4 py-2">Plan</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2"></th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:if="${#lists.isEmpty(clientes)}"><td colspan="4" class="px-4 py-6 text-center text-slate-500">Aún no hay clientes. Llegan aprobando las solicitudes de acceso.</td></tr>
+            <tr th:each="c : ${clientes}">
+                <td class="px-4 py-2.5">
+                    <div class="font-medium" th:text="${c.get('nombre')}">Empresa</div>
+                    <div class="text-xs text-slate-500" th:text="${c.get('email')}">email</div>
+                </td>
+                <td class="px-4 py-2.5" th:text="${c.get('planEfectivo')}">Pro</td>
+                <td class="px-4 py-2.5 text-xs"
+                    th:classappend="${#strings.startsWith(c.get('estado'), 'Pendiente') or #strings.startsWith(c.get('estado'), 'Sin pagar') ? 'text-red-700 font-semibold' : (#strings.contains(c.get('estado'), 'renovar') ? 'text-blue-700 font-semibold' : 'text-slate-600')}"
+                    th:text="${c.get('estado')}">Pagado hasta…</td>
+                <td class="px-4 py-2.5 text-right"><a th:href="@{|/admin/clientes/${c.get('id')}|}" class="text-brand-700 hover:underline text-xs font-semibold">Abrir</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Últimos cobros -->
+<div th:if="${!#lists.isEmpty(ultimos)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+    <h3 class="text-sm font-semibold mb-3">Últimos cobros</h3>
+    <table class="w-full text-sm">
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+            <tr th:each="p : ${ultimos}">
+                <td class="py-2 whitespace-nowrap" th:text="${p.get('fecha')}">2026-11-01</td>
+                <td class="py-2"><a th:href="@{|/admin/clientes/${p.get('cliente_id')}|}" class="hover:underline" th:text="${p.get('cliente')}">Cliente</a></td>
+                <td class="py-2 text-slate-600" th:text="${p.get('metodo')}">transferencia</td>
+                <td class="py-2 text-right font-mono" th:text="${#numbers.formatDecimal(p.get('total'), 1, 'POINT', 2, 'COMMA') + ' USD'}">59,29 USD</td>
+                <td class="py-2 text-right text-xs" th:text="${p.get('factura_id') != null ? 'Facturado' : 'Sin factura'}"
+                    th:classappend="${p.get('factura_id') != null ? 'text-emerald-700' : 'text-amber-700'}">Sin factura</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</div></body>
+</html>

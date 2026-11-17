@@ -33,6 +33,11 @@ public class InvoiceController {
     private final SupabaseService supabase;
     private final PermissionService permissions;
     private final com.inmobilia.service.WorkflowEngine workflows;
+    private final com.inmobilia.service.CobroManualService cobroManual;
+
+    /** Campos que puede traer rellenos la factura de un cobro (Clientes y cobros). */
+    private static final List<String> CAMPOS_PREPARADOS = List.of("cliente_nombre", "cliente_nif", "cliente_direccion",
+            "cliente_email", "concepto", "base_imponible", "iva_pct", "status", "metodo_pago", "notas");
 
     // ─── LISTADO ───
     @GetMapping
@@ -79,8 +84,13 @@ public class InvoiceController {
         var inquilinos = supabase.query("inquilinos", uid);
         var propiedades = supabase.query("propiedades", uid);
 
+        Map<String, Object> inv = new HashMap<>();
+        // Factura de un cobro apuntado en Clientes y cobros: llega rellena para revisarla
+        Map<String, Object> preparada = com.inmobilia.service.CobroManualService.facturaPreparada(session);
+        if (preparada != null) for (String k : CAMPOS_PREPARADOS) if (preparada.get(k) != null) inv.put(k, preparada.get(k));
+
         model.addAttribute("page", "Nueva factura");
-        model.addAttribute("inv", new HashMap<>());
+        model.addAttribute("inv", inv);
         model.addAttribute("editing", false);
         model.addAttribute("inquilinos", inquilinos);
         model.addAttribute("propiedades", propiedades);
@@ -177,15 +187,22 @@ public class InvoiceController {
         data.put("total", total);
 
         if (id == null || id.isBlank()) {
-            data.put("created_at", OffsetDateTime.now().toString());
-
-            Map<String, Object> saved = supabase.insert("invoices", data);
+            // Numerada en la app (como en la versión española): no depende del trigger de la base
+            Map<String, Object> saved = null;
+            synchronized (cerrojos.computeIfAbsent(uid + "|" + data.get("serie"), k -> new Object())) {
+                for (int intento = 0; intento < 3 && (saved == null || saved.isEmpty()); intento++) {
+                    data.put("numero", siguienteNumero(uid, String.valueOf(data.get("serie"))));
+                    data.put("created_at", OffsetDateTime.now().toString());
+                    saved = supabase.insert("invoices", data);
+                }
+            }
             if (saved == null || saved.isEmpty()) {
                 String err = supabase.lastError();
                 SessionUtils.flash(session, "ERROR creando factura: " + (err != null ? err : "desconocido"));
                 return "redirect:/invoices/new";
             }
 
+            cobroManual.facturaEmitida(session, uid, SessionUtils.email(session), saved.get("id"));
             workflows.triggerEvent(uid, "factura_creada", saved);
             SessionUtils.flash(session, "Factura " + saved.get("full_number") + " creada");
             return "redirect:/invoices/" + saved.get("id");
@@ -195,6 +212,14 @@ public class InvoiceController {
             SessionUtils.flash(session, ok ? "Factura actualizada" : "ERROR actualizando factura");
             return "redirect:/invoices/" + id;
         }
+    }
+
+    private final Map<String, Object> cerrojos = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private int siguienteNumero(String uid, String serie) {
+        List<Map<String, Object>> r = supabase.selectFilter("invoices",
+                "user_id=eq." + uid + "&serie=eq." + serie + "&order=numero.desc&limit=1");
+        return r.isEmpty() || r.get(0).get("numero") == null ? 1 : ((Number) r.get(0).get("numero")).intValue() + 1;
     }
 
     @PostMapping("/{id}/status")

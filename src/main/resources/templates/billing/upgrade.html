@@ -25,8 +25,18 @@
         </div>
     </div>
 
-    <!-- Ya suscrito: cambios y cancelación por el portal de Stripe -->
-    <div th:if="${suscrito}" class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4 mb-6 flex items-center gap-3 flex-wrap">
+    <!-- Plan pagado a mano: hasta cuándo -->
+    <div th:if="${planStatus.pagadoHasta != null}" class="rounded-xl p-4 mb-6 flex items-center gap-3 ring-1"
+         th:classappend="${planStatus.pagoPendiente or planStatus.pagoCaducado ? 'bg-red-50 dark:bg-red-950/30 ring-red-200 dark:ring-red-900/40' : 'bg-emerald-50 dark:bg-emerald-950/30 ring-emerald-200 dark:ring-emerald-900/40'}">
+        <i data-lucide="calendar-check" class="h-5 w-5 flex-shrink-0" th:classappend="${planStatus.pagoPendiente or planStatus.pagoCaducado ? 'text-red-700' : 'text-emerald-700'}"></i>
+        <div class="text-sm">
+            <p class="font-semibold" th:text="${planStatus.pagoCaducado ? 'Plan sin pagar: tu cuenta funciona como Free' : (planStatus.pagoPendiente ? 'Plan pendiente de pago' : 'Tu plan está pagado')}">Tu plan está pagado</p>
+            <p th:text="${'Pagado hasta el ' + #temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy') + (planStatus.pagoPendiente ? '. Lo mantenemos hasta el ' + #temporals.format(planStatus.finMargen, 'dd/MM/yyyy') + '.' : '.') + ' Para renovar o cambiar de plan, pídelo aquí o en Plan y facturación.'}">Pagado hasta…</p>
+        </div>
+    </div>
+
+    <!-- Ya suscrito con Stripe: cambios y cancelación por su portal -->
+    <div th:if="${suscrito and cobroOnline}" class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4 mb-6 flex items-center gap-3 flex-wrap">
         <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-700 flex-shrink-0"></i>
         <div class="text-sm flex-1">
             <p class="font-semibold text-emerald-900 dark:text-emerald-200">Tu suscripción está activa</p>
@@ -42,7 +52,8 @@
         <i data-lucide="zap" class="h-5 w-5 text-amber-600 flex-shrink-0"></i>
         <div class="text-sm">
             <p class="font-semibold text-amber-900 dark:text-amber-200">Estás probando el plan Business</p>
-            <p class="text-amber-800 dark:text-amber-300">Te quedan <strong th:text="${planStatus.trialDaysLeft}">14</strong> días. Si no eliges plan, tu cuenta pasará a Free y conservarás tus datos. Si te suscribes ahora, no se cobra nada hasta que acabe la prueba.</p>
+            <p class="text-amber-800 dark:text-amber-300">Te quedan <strong th:text="${planStatus.trialDaysLeft}">14</strong> días. Si no eliges plan, tu cuenta pasará a Free y conservarás tus datos.
+                <span th:text="${cobroOnline ? 'Si te suscribes ahora, no se cobra nada hasta que acabe la prueba.' : 'Si pides tu plan ahora, lo dejamos activo al terminar la prueba: pagas por transferencia o en efectivo y te enviamos la factura.'}"></span></p>
         </div>
     </div>
 
@@ -50,7 +61,8 @@
     <div class="text-center mb-6">
         <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">El precio depende de cuántos activos gestionas</h1>
-        <p class="text-slate-600 dark:text-slate-400">No del número de usuarios. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.</p>
+        <p class="text-slate-600 dark:text-slate-400">No del número de usuarios. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.
+            <span th:unless="${cobroOnline}">Pago por transferencia o en efectivo, con factura.</span></p>
         <p class="text-sm text-slate-500 mt-1">Ahora tienes <strong th:text="${activosUsados}">0</strong> activos y <strong th:text="${usuarios}">1</strong>
             <span th:text="${usuarios == 1 ? 'usuario' : 'usuarios'}">usuario</span>.</p>
     </div>
@@ -63,8 +75,8 @@
         </div>
     </div>
 
-    <!-- Sin Stripe configurado -->
-    <div th:unless="${stripeConfigured}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-start gap-3">
+    <!-- Sin Stripe configurado (solo si se cobra con tarjeta) -->
+    <div th:if="${cobroOnline and !stripeConfigured}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-start gap-3">
         <i data-lucide="alert-triangle" class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
         <div class="text-sm">
             <p class="font-semibold text-amber-900 dark:text-amber-200">Pagos aún no activados</p>
@@ -131,11 +143,21 @@
             <button th:if="${suscrito and planActual == clave}" disabled
                     class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold cursor-default"
                     th:classappend="${destacado ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-neutral-800 text-slate-500'}">Tu plan actual</button>
-            <form th:if="${suscrito and planActual != clave}" action="/billing/portal" method="post">
+            <form th:if="${cobroOnline and suscrito and planActual != clave}" action="/billing/portal" method="post">
                 <button type="submit" class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors"
                         th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}">Cambiar en el portal</button>
             </form>
-            <form th:unless="${suscrito}" th:action="@{|/billing/checkout/${clave}|}" method="post">
+            <!-- Cobro manual: se pide; nos llega por correo y enviamos la factura -->
+            <form th:if="${!cobroOnline and !(suscrito and planActual == clave)}" action="/billing/solicitar" method="post">
+                <input type="hidden" name="plan" th:value="${clave}">
+                <input type="hidden" name="volver" value="/upgrade">
+                <input type="hidden" name="periodo" :value="anual ? 'anual' : 'mensual'" value="mensual">
+                <button type="submit"
+                        class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors"
+                        th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}"
+                        th:text="${'Pedir ' + l.label()}">Pedir</button>
+            </form>
+            <form th:if="${cobroOnline and !suscrito}" th:action="@{|/billing/checkout/${clave}|}" method="post">
                 <input type="hidden" name="periodo" :value="anual ? 'anual' : 'mensual'" value="mensual">
                 <button type="submit" th:disabled="${!stripeConfigured}"
                         class="w-full text-center px-4 py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold transition-colors"
@@ -156,7 +178,12 @@
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Onboarding, migración de datos y soporte prioritario</li>
             </ul>
             <button th:if="${planActual == 'enterprise'}" disabled class="w-full text-center px-4 py-2.5 rounded-lg bg-white/60 text-amber-900 text-sm font-bold cursor-default">Tu plan actual</button>
-            <a th:unless="${planActual == 'enterprise'}" href="mailto:inmobilia.support@gmail.com?subject=Plan%20Enterprise" class="block w-full text-center px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold">Hablemos</a>
+            <form th:unless="${planActual == 'enterprise'}" action="/billing/solicitar" method="post">
+                <input type="hidden" name="plan" value="enterprise">
+                <input type="hidden" name="volver" value="/upgrade">
+                <input type="hidden" name="mensaje" value="Quiero hablar del plan Enterprise.">
+                <button type="submit" class="block w-full text-center px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold">Hablemos</button>
+            </form>
         </div>
     </div>
 
@@ -168,14 +195,17 @@
                 <tr><td class="py-2">Activo adicional</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioActivoExtra + '/mes por activo'}">US$4/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Planes de pago</td></tr>
                 <tr th:each="m : ${modulos}"><td class="py-2" th:text="${m.nombre()}">Módulo</td><td class="py-2 text-right font-semibold" th:text="${'US$' + m.precioMensual() + '/mes'}">US$29/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Pro (incluido en Business)</td></tr>
                 <tr><td class="py-2">Sociedad adicional (multi-empresa)</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioSociedadExtra + '/mes por sociedad'}">US$15/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Business y Enterprise</td></tr>
-                <tr><td class="py-2">Pack de 100 créditos de IA</td><td class="py-2 text-right font-semibold">US$10 (pago único)</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Todos los planes · <a href="/creditos" class="text-brand-700 hover:underline">Comprar</a></td></tr>
+                <tr><td class="py-2">Pack de 100 créditos de IA</td><td class="py-2 text-right font-semibold">US$10 (pago único)</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Todos los planes · <a href="/creditos" class="text-brand-700 hover:underline" th:text="${cobroOnline ? 'Comprar' : 'Pedir'}">Pedir</a></td></tr>
             </tbody>
         </table>
-        <p class="mt-3 text-xs text-slate-500">Se añaden desde <a href="/billing" class="text-brand-700 hover:underline">Facturación</a> una vez suscrito. Pagando el año, los extras se facturan también al año (12 meses de su precio).</p>
+        <p class="mt-3 text-xs text-slate-500"><span th:text="${cobroOnline ? 'Se añaden desde Facturación una vez suscrito.' : 'Se piden desde'}">Se piden desde</span>
+            <a th:unless="${cobroOnline}" href="/billing" class="text-brand-700 hover:underline">Plan y facturación</a><span th:unless="${cobroOnline}">.</span>
+            Pagando el año, los extras se facturan también al año (12 meses de su precio).</p>
     </div>
 
     <div class="mt-8 text-center text-xs text-slate-500 dark:text-neutral-400">
-        <p>Pago seguro con <strong>Stripe</strong>. Factura en dólares (USD). Si bajas de plan, tus datos se mantienen.</p>
+        <p th:if="${cobroOnline}">Pago seguro con <strong>Stripe</strong>. Factura en dólares (USD). Si bajas de plan, tus datos se mantienen.</p>
+        <p th:unless="${cobroOnline}">Pago por <strong>transferencia bancaria o en efectivo</strong>. Te enviamos la factura. Sin tarjeta y sin permanencia; si bajas de plan, tus datos se mantienen.</p>
     </div>
 
 </div>

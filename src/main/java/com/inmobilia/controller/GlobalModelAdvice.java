@@ -123,6 +123,9 @@ public class GlobalModelAdvice {
             this.propietarioPlataforma = propietarioPlataforma;
         }
 
+        /** ¿Es uno de los propietarios de la plataforma (clientes, cobros, solicitudes)? */
+        public boolean plataforma() { return propietarioPlataforma; }
+
         public boolean ve(String href) {
             // Ejemplos para demos y "Entrar a la demo": solo en la cuenta del propietario de la plataforma
             if (href != null && (href.startsWith("/ejemplos") || href.equals("/demo"))) return propietarioPlataforma && "admin".equals(role);

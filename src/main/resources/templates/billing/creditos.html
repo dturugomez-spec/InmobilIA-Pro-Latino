@@ -11,9 +11,9 @@
         <p>Saldo actual: <strong th:text="${saldo}">0</strong> créditos.</p>
         <p style="color:#64748b;font-size:14px">
             Tu plan trae un saldo cada mes. Las herramientas de IA (escáner de documentos, informes, asistente…)
-            consumen créditos según el uso. El saldo del plan se renueva cada mes; los packs comprados no caducan.
+            consumen créditos según el uso. El saldo del plan se renueva cada mes; los packs no caducan.
         </p>
-        <p th:unless="${stripeConfigured}" class="info-banner">
+        <p th:if="${cobroOnline and !stripeConfigured}" class="info-banner">
             El pack estará disponible en cuanto se configure el pago (Stripe).
         </p>
     </section>
@@ -22,8 +22,17 @@
         <h3 th:text="|Pack de ${packCreditos} créditos|">Pack de 100 créditos</h3>
         <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|US$${packPrecio}|">US$10</p>
         <p style="color:#64748b;font-size:13px;margin-bottom:12px">Pago único · impuestos no incluidos · no caducan</p>
-        <form method="post" th:action="@{/billing/credits/{k}(k=${packCreditos})}">
+        <form th:if="${cobroOnline}" method="post" th:action="@{/billing/credits/{k}(k=${packCreditos})}">
             <button class="btn btn-primary" th:disabled="${!stripeConfigured}">Comprar</button>
+        </form>
+        <!-- Cobro manual: se pide y se paga por transferencia o en efectivo -->
+        <form th:unless="${cobroOnline}" method="post" action="/billing/solicitar">
+            <input type="hidden" name="volver" value="/creditos">
+            <label style="display:block;font-size:13px;color:#64748b;margin-bottom:6px">Packs
+                <input type="number" name="packsCreditos" min="1" max="20" value="1" style="width:70px;margin-left:6px">
+            </label>
+            <button class="btn btn-primary">Pedir</button>
+            <p style="color:#64748b;font-size:12px;margin-top:10px">Te enviamos la factura; los créditos se añaden en cuanto recibimos la transferencia o el pago en efectivo.</p>
         </form>
     </section>
 

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<head><title>Cliente</title></head>
+<body><div layout:fragment="content">
+
+<a href="/admin/clientes" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 mb-4"><i data-lucide="arrow-left" class="h-4 w-4"></i> Clientes y cobros</a>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- Ficha -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-2 text-sm">
+        <h2 class="text-lg font-bold" th:text="${nombre}">Empresa</h2>
+        <p class="text-slate-500" th:text="${c.get('email')}">email</p>
+        <p><span class="text-slate-500">Estado:</span> <strong th:text="${estado}">Pagado hasta…</strong></p>
+        <p><span class="text-slate-500">Funciona como:</span> <strong th:text="${planEfectivo}">Pro</strong></p>
+        <p><span class="text-slate-500">Activos:</span> <span th:text="${maxActivos < 0 ? activosUsados + ' (ilimitados)' : activosUsados + ' de ' + maxActivos}">0 de 15</span></p>
+        <p><span class="text-slate-500">Usuarios:</span> <span th:text="${usuarios}">1</span></p>
+        <p><span class="text-slate-500">Créditos de IA:</span> <span th:text="${creditos}">0</span></p>
+        <div class="pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <p class="text-xs font-semibold text-slate-500 uppercase mb-1">Datos para la factura (su «Mi negocio»)</p>
+            <p th:text="${negocio.get('legal_name') ?: '— sin razón social —'}">Razón social</p>
+            <p th:text="${negocio.get('tax_id') ?: '— sin identificador fiscal —'}" th:classappend="${negocio.get('tax_id') == null ? 'text-red-700' : ''}">Id. fiscal</p>
+            <p class="text-slate-600" th:text="${negocio.get('address')}">Dirección</p>
+            <p th:if="${negocio.get('tax_id') == null}" class="text-xs text-red-700 mt-1">Sin identificador fiscal del cliente la factura no es completa: pídeselo o que lo rellene en Mi negocio.</p>
+        </div>
+        <form th:action="@{|/admin/clientes/${c.get('id')}/creditos|}" method="post" class="pt-3 border-t border-slate-100 dark:border-neutral-800 flex items-end gap-2">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Añadir créditos de IA</label>
+                <input type="number" name="cantidad" min="1" max="100000" value="100" class="w-28 px-2 py-1.5 rounded-lg border border-slate-200 text-sm">
+            </div>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Añadir</button>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 space-y-5">
+
+        <!-- Plan -->
+        <form th:action="@{|/admin/clientes/${c.get('id')}/plan|}" method="post"
+              class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 space-y-3">
+            <h3 class="text-sm font-semibold">Plan</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <label>Plan
+                    <select name="plan" class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200">
+                        <option th:each="e : ${plans}" th:value="${e.key}" th:text="${e.value.label()}" th:selected="${e.key == planActual}">Pro</option>
+                    </select>
+                </label>
+                <label>Pago
+                    <select name="periodo" class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200">
+                        <option value="mensual" th:selected="${!anual}">Mensual</option>
+                        <option value="anual" th:selected="${anual}">Anual</option>
+                    </select>
+                </label>
+                <label>Pagado hasta
+                    <input type="date" name="pagadoHasta" th:value="${pagadoHasta}" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Activos adicionales
+                    <input type="number" name="activosExtra" min="0" max="1000" th:value="${activosExtra}" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Sociedades adicionales (Business)
+                    <input type="number" name="sociedadesExtra" min="0" max="100" th:value="${sociedadesExtra}" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <div>Módulos (Pro)
+                    <label th:each="m : ${modulos}" class="flex items-center gap-2 mt-1">
+                        <input type="checkbox" name="modulos" th:value="${m.clave()}" th:checked="${modulosCliente.contains(m.clave())}" class="rounded">
+                        <span th:text="${m.nombre()}">Módulo</span>
+                    </label>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500">Guardar deja la cuenta activa con este plan (si estaba en prueba, la prueba termina). «Pagado hasta» vacío = sin fecha de fin.
+                Pasada la fecha hay 10 días de margen; después funciona como Free hasta el siguiente cobro, sin perder datos.</p>
+            <button class="px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold">Guardar plan</button>
+        </form>
+
+        <!-- Apuntar cobro -->
+        <form th:action="@{|/admin/clientes/${c.get('id')}/cobros|}" method="post"
+              class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-emerald-300 p-5 space-y-3"
+              x-data="{ base: 0, iva: 21 }" th:attr="x-data=|{ base: ${baseSugerida}, iva: 21 }|">
+            <h3 class="text-sm font-semibold">Apuntar un cobro</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <label>Fecha del cobro
+                    <input type="date" name="fecha" th:value="${hoy}" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Método
+                    <select name="metodo" class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200">
+                        <option th:each="m : ${metodos}" th:value="${m}" th:text="${#strings.capitalize(m)}">transferencia</option>
+                    </select>
+                </label>
+                <label>Referencia (opcional)
+                    <input type="text" name="referencia" maxlength="120" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Base sin impuestos (USD)
+                    <input type="number" step="0.01" min="0" name="base" x-model.number="base" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Impuesto (%)
+                    <input type="number" step="0.01" min="0" max="30" name="ivaPct" x-model.number="iva" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <div>Total cobrado
+                    <p class="mt-2 text-lg font-bold font-mono" x-text="(Math.round(base * (1 + iva / 100) * 100) / 100).toLocaleString('es-MX', { minimumFractionDigits: 2 }) + ' €'">0 €</p>
+                </div>
+                <label class="md:col-span-2">Concepto (vacío = el plan actual)
+                    <input type="text" name="concepto" maxlength="200" class="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-200">
+                </label>
+                <label>Alarga el plan
+                    <select name="meses" class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200">
+                        <option value="0">No (créditos, extra suelto…)</option>
+                        <option value="1" th:selected="${mesesSugeridos == 1}">1 mes</option>
+                        <option value="3">3 meses</option>
+                        <option value="6">6 meses</option>
+                        <option value="12" th:selected="${mesesSugeridos == 12}">12 meses</option>
+                    </select>
+                </label>
+            </div>
+            <p class="text-xs text-slate-500">La base sugerida es la de un periodo de su plan y sus extras. Si alarga el plan, cuenta desde el
+                <span th:text="${#temporals.format(periodoDesde, 'dd/MM/yyyy')}">01/12/2026</span>.</p>
+            <div class="flex gap-2 flex-wrap">
+                <button name="factura" value="true" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold">Apuntar y hacer la factura</button>
+                <button name="factura" value="false" class="px-4 py-2 rounded-lg bg-white ring-1 ring-slate-300 hover:bg-slate-50 text-sm font-semibold">Solo apuntar</button>
+            </div>
+        </form>
+
+        <!-- Cobros -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Cobros de este cliente</h3>
+            <p th:if="${#lists.isEmpty(pagosCliente)}" class="text-sm text-slate-500">Aún no hay cobros.</p>
+            <table th:unless="${#lists.isEmpty(pagosCliente)}" class="w-full text-sm">
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="p : ${pagosCliente}">
+                        <td class="py-2 whitespace-nowrap" th:text="${p.get('fecha')}">2026-11-01</td>
+                        <td class="py-2">
+                            <div th:text="${p.get('concepto')}">Plan Pro</div>
+                            <div class="text-xs text-slate-500" th:text="${p.get('metodo') + (p.get('periodo_hasta') != null ? ' · hasta ' + p.get('periodo_hasta') : '') + (p.get('referencia') != null ? ' · ' + p.get('referencia') : '')}">transferencia</div>
+                        </td>
+                        <td class="py-2 text-right font-mono whitespace-nowrap" th:text="${#numbers.formatDecimal(p.get('total'), 1, 'POINT', 2, 'COMMA') + ' USD'}">59,29 USD</td>
+                        <td class="py-2 text-right whitespace-nowrap">
+                            <a th:if="${p.get('factura_id') != null}" th:href="@{|/invoices/${p.get('factura_id')}|}" class="text-emerald-700 text-xs font-semibold hover:underline">Ver factura</a>
+                            <form th:if="${p.get('factura_id') == null}" th:action="@{|/admin/clientes/${c.get('id')}/cobros/${p.get('id')}/factura|}" method="post" class="inline">
+                                <button class="text-brand-700 text-xs font-semibold hover:underline">Hacer factura</button>
+                            </form>
+                            <form th:if="${p.get('factura_id') == null}" th:action="@{|/admin/clientes/${c.get('id')}/cobros/${p.get('id')}/borrar|}" method="post" class="inline ml-2"
+                                  onsubmit="return confirm('¿Borrar este cobro? No cambia la fecha de pagado hasta.')">
+                                <button class="text-red-600 text-xs hover:underline">Borrar</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Peticiones -->
+        <div th:if="${!#lists.isEmpty(peticiones)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Lo que ha pedido</h3>
+            <div class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <div th:each="p : ${peticiones}" class="py-2 flex items-start gap-3 text-sm">
+                    <div class="flex-1">
+                        <span th:text="${p.get('resumen')}">Plan Pro mensual</span>
+                        <span class="text-xs text-slate-500" th:text="${' · ' + #strings.substring(p.get('created_at'), 0, 10)}"></span>
+                        <p th:if="${p.get('mensaje') != null}" class="text-xs text-slate-500 italic" th:text="${p.get('mensaje')}">Mensaje</p>
+                    </div>
+                    <span th:if="${p.get('estado') != 'pendiente'}" class="text-xs text-emerald-700">Atendida</span>
+                    <form th:if="${p.get('estado') == 'pendiente'}" th:action="@{|/admin/peticiones/${p.get('id')}/atendida|}" method="post">
+                        <input type="hidden" name="volver" th:value="${'/admin/clientes/' + c.get('id')}">
+                        <button class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-xs font-semibold">Hecho</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div></body>
+</html>

@@ -30,6 +30,17 @@ public class BillingController {
     private final StripeService stripeService;
     private final PlanService planService;
     private final AIService aiService;
+    private final com.inmobilia.service.CobroManualService cobroManual;
+
+    /** Mientras se cobra por transferencia o en efectivo, nada se paga con tarjeta en la app. */
+    private static final String SIN_PAGO_ONLINE = "Ahora el pago es por transferencia o en efectivo, con factura. "
+            + "Pídenos el plan o el extra desde «Plan y facturación» y te enviamos los datos.";
+
+    private boolean sinPagoOnline(HttpSession session) {
+        if (cobroManual.cobroOnline()) return false;
+        SessionUtils.flash(session, SIN_PAGO_ONLINE);
+        return true;
+    }
 
     /** Página de planes (upgrade desde dentro de la app). */
     @GetMapping("/upgrade")
@@ -46,6 +57,8 @@ public class BillingController {
         model.addAttribute("precioActivoExtra", PlanService.PRECIO_ACTIVO_EXTRA);
         model.addAttribute("precioSociedadExtra", PlanService.PRECIO_SOCIEDAD_EXTRA);
         model.addAttribute("stripeConfigured", stripeService.isConfigured());
+        model.addAttribute("cobroOnline", cobroManual.cobroOnline());
+        model.addAttribute("datosCobro", cobroManual.datosCobro());
         model.addAttribute("suscrito", planService.tieneSuscripcionActiva(user));
         model.addAttribute("planActual", planService.planEfectivo(user));
         model.addAttribute("activosUsados", planService.activosUsados(org));
@@ -86,7 +99,69 @@ public class BillingController {
         model.addAttribute("precioSociedadExtra", PlanService.PRECIO_SOCIEDAD_EXTRA);
         model.addAttribute("sociedadesBusiness", PlanService.SOCIEDADES_BUSINESS);
         model.addAttribute("planActual", plan);
+        model.addAttribute("plans", PlanService.PLANS);
+        model.addAttribute("cobroOnline", cobroManual.cobroOnline());
+        model.addAttribute("datosCobro", cobroManual.datosCobro());
+        // Cobros recibidos de esta cuenta y peticiones aún sin atender
+        List<Map<String, Object>> misCobros = supabase.selectFilter("cobros_plataforma",
+                "select=id,fecha,concepto,total,metodo,periodo_desde,periodo_hasta,factura_id&cliente_id=eq." + org
+                + "&order=fecha.desc&limit=50");
+        for (Map<String, Object> c : misCobros) c.put("fecha_txt", com.inmobilia.service.CobroManualService.dmy(c.get("fecha")));
+        model.addAttribute("misCobros", misCobros);
+        model.addAttribute("misPeticiones", supabase.selectFilter("peticiones_plan",
+                "select=id,plan,periodo,created_at&cliente_id=eq." + org + "&estado=eq.pendiente&order=created_at.desc&limit=10"));
         return "billing/index";
+    }
+
+    /**
+     * Pedir un plan, extras o créditos: no se paga en la web. Nos llega por correo; activamos el plan
+     * y enviamos la factura con los datos para pagar por transferencia o en efectivo.
+     */
+    @PostMapping("/billing/solicitar")
+    public String solicitar(@RequestParam(required = false) String plan,
+                            @RequestParam(required = false) String periodo,
+                            @RequestParam(required = false) Integer activosExtra,
+                            @RequestParam(required = false) Integer sociedadesExtra,
+                            @RequestParam(required = false) List<String> modulos,
+                            @RequestParam(defaultValue = "0") int packsCreditos,
+                            @RequestParam(required = false) String mensaje,
+                            @RequestParam(defaultValue = "/billing") String volver,
+                            HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        String destino = Set.of("/billing", "/upgrade", "/creditos").contains(volver) ? volver : "/billing";
+        String error = cobroManual.pedir(SessionUtils.uid(session), SessionUtils.realUid(session),
+                new com.inmobilia.service.CobroManualService.Peticion(plan, periodo, activosExtra, sociedadesExtra,
+                        modulos, packsCreditos, mensaje));
+        SessionUtils.flash(session, error != null ? error
+                : "Petición enviada. Te escribimos en menos de 24 horas laborables con la factura y los datos para pagar "
+                  + "por transferencia o en efectivo. Lo activamos en cuanto recibamos el pago.");
+        return "redirect:" + (error != null ? destino : "/billing");
+    }
+
+    /**
+     * Factura que la plataforma ha emitido a esta cuenta por uno de sus cobros. Solo la de un cobro
+     * suyo: el cobro lo apunta el propietario de la plataforma y la factura queda vinculada al emitirla.
+     */
+    @GetMapping("/billing/facturas/{cobroId}")
+    public String miFactura(@PathVariable String cobroId, HttpSession session, Model model) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (!cobroId.matches("[0-9a-fA-F-]{36}")) return "redirect:/billing";
+        String org = SessionUtils.uid(session);
+        List<Map<String, Object>> c = supabase.selectFilter("cobros_plataforma",
+                "select=factura_id&id=eq." + cobroId + "&cliente_id=eq." + org + "&limit=1");
+        Object facturaId = c.isEmpty() ? null : c.get(0).get("factura_id");
+        if (facturaId == null || !String.valueOf(facturaId).matches("[0-9a-fA-F-]{36}")) {
+            SessionUtils.flash(session, "Esa factura aún no está disponible.");
+            return "redirect:/billing";
+        }
+        List<Map<String, Object>> f = supabase.selectFilter("invoices", "id=eq." + facturaId + "&limit=1");
+        if (f.isEmpty()) return "redirect:/billing";
+        Map<String, Object> inv = f.get(0);
+        model.addAttribute("canWrite", false);
+        model.addAttribute("volver", "/billing");
+        model.addAttribute("page", "Factura " + inv.get("full_number"));
+        model.addAttribute("inv", inv);
+        return "invoice_view";
     }
 
     /** Página de compra del pack de créditos de IA. */
@@ -98,6 +173,7 @@ public class BillingController {
         model.addAttribute("packCreditos", PlanService.PACK_CREDITOS);
         model.addAttribute("packPrecio", PlanService.PRECIO_PACK_CREDITOS);
         model.addAttribute("stripeConfigured", stripeService.isConfigured());
+        model.addAttribute("cobroOnline", cobroManual.cobroOnline());
         return "billing/creditos";
     }
 
@@ -105,6 +181,7 @@ public class BillingController {
     @PostMapping("/billing/credits/{pack}")
     public String buyCredits(@PathVariable String pack, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (sinPagoOnline(session)) return "redirect:/creditos";
         if (!stripeService.isConfigured()) {
             SessionUtils.flash(session, "Stripe no está configurado. Contacta con soporte.");
             return "redirect:/creditos";
@@ -124,6 +201,7 @@ public class BillingController {
                            @RequestParam(defaultValue = "mensual") String periodo,
                            HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (sinPagoOnline(session)) return "redirect:/upgrade";
         if (!stripeService.isConfigured()) {
             SessionUtils.flash(session, "Stripe no está configurado. Contacta con soporte.");
             return "redirect:/upgrade";
@@ -151,6 +229,7 @@ public class BillingController {
     @PostMapping("/billing/extras/activos")
     public String activosExtra(@RequestParam int cantidad, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (sinPagoOnline(session)) return "redirect:/billing";
         Map<String, Object> user = currentUser(session);
         String sub = suscripcionParaExtras(user, session);
         if (sub == null) return "redirect:/billing";
@@ -180,6 +259,7 @@ public class BillingController {
     @PostMapping("/billing/extras/sociedades")
     public String sociedadesExtra(@RequestParam int cantidad, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (sinPagoOnline(session)) return "redirect:/billing";
         Map<String, Object> user = currentUser(session);
         if (!PlanService.BUSINESS.equals(planService.planEfectivo(user))) {
             SessionUtils.flash(session, "Las sociedades adicionales se añaden al plan Business (en Enterprise son ilimitadas).");
@@ -212,6 +292,7 @@ public class BillingController {
     @PostMapping("/billing/modulos/{clave}")
     public String modulo(@PathVariable String clave, @RequestParam boolean activo, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (sinPagoOnline(session)) return "redirect:/billing";
         PlanService.Modulo m = PlanService.modulo(clave);
         Map<String, Object> user = currentUser(session);
         if (m == null) return "redirect:/billing";

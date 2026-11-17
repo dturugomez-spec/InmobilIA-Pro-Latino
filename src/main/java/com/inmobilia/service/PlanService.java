@@ -23,8 +23,11 @@ import java.util.regex.Pattern;
  * Prueba: 14 días de Business sin tarjeta (al aprobar la solicitud). Al acabar, si no ha elegido
  * plan, la cuenta pasa a Free y conserva sus datos (TrialExpiryService).
  *
- * Tras comprar, users.plan, periodo_facturacion, activos_extra y modulos se actualizan vía el
- * webhook de Stripe.
+ * Cobro: mientras haya pocos clientes, por transferencia o en efectivo con factura (V94). El
+ * propietario de la plataforma activa el plan en /admin/clientes y apunta hasta qué día está pagado
+ * (users.pagado_hasta). Pasada esa fecha hay DIAS_GRACIA días de margen; después la cuenta funciona
+ * como Free, sin perder datos, hasta el siguiente cobro. Con COBRO_ONLINE=true vuelve el pago con
+ * Stripe y entonces el plan, el periodo y los extras se actualizan vía su webhook.
  */
 @Service
 @RequiredArgsConstructor
@@ -81,6 +84,41 @@ public class PlanService {
     public static final int PRECIO_PACK_CREDITOS = 10;
     /** Días de prueba con Business al aprobar una solicitud. */
     public static final int DIAS_PRUEBA = 14;
+    /** Días de margen tras users.pagado_hasta antes de pasar a Free (cobro manual). */
+    public static final int DIAS_GRACIA = 10;
+    /** Precio de un mes en un pago anual: 12 meses al precio anual. */
+    public static final int MESES_ANUAL = 12;
+
+    /**
+     * Base sin impuestos (USD) de un periodo (un mes o un año) de un plan con sus extras: lo que hay que
+     * cobrar a mano. Enterprise es a medida: 0 (lo pone quien cobra).
+     */
+    public static double importeBase(String plan, boolean anual, int activosExtra, int sociedadesExtra, Collection<String> modulos) {
+        String p = normalizar(plan);
+        if (FREE.equals(p) || ENTERPRISE.equals(p)) return 0;
+        int meses = anual ? MESES_ANUAL : 1;
+        double mes = precioMensual(p, anual) + Math.max(0, activosExtra) * PRECIO_ACTIVO_EXTRA;
+        if (BUSINESS.equals(p)) mes += Math.max(0, sociedadesExtra) * PRECIO_SOCIEDAD_EXTRA;
+        if (PRO.equals(p) && modulos != null)
+            for (String m : new LinkedHashSet<>(modulos)) { Modulo mod = modulo(m); if (mod != null) mes += mod.precioMensual(); }
+        return mes * meses;
+    }
+
+    /** Fecha hasta la que está pagado el plan (cobro manual), o null si no tiene. */
+    public static java.time.LocalDate pagadoHasta(Map<String, Object> user) {
+        if (user == null || !presente(user.get("pagado_hasta"))) return null;
+        try { return java.time.LocalDate.parse(String.valueOf(user.get("pagado_hasta")).substring(0, 10)); }
+        catch (Exception e) { return null; }
+    }
+
+    /**
+     * Plan de pago cobrado a mano cuyo pago venció hace más de DIAS_GRACIA días: funciona como
+     * Free hasta que se apunte el siguiente cobro. Las suscripciones de Stripe van por su webhook.
+     */
+    public static boolean pagoCaducado(Map<String, Object> user, java.time.LocalDate hoy) {
+        java.time.LocalDate hasta = pagadoHasta(user);
+        return hasta != null && !tieneSuscripcionStripe(user) && hoy.isAfter(hasta.plusDays(DIAS_GRACIA));
+    }
 
     /** Herramienta avanzada que en Pro se puede añadir suelta (en Business viene incluida). */
     public record Modulo(String clave, String nombre, int precioMensual) {}
@@ -180,7 +218,7 @@ public class PlanService {
     public boolean tieneSuscripcionActiva(Map<String, Object> user) {
         if (user == null || FREE.equals(normalizar(str(user.get("plan"))))) return false;
         String st = str(user.get("plan_status")).toLowerCase();
-        if ("active".equals(st)) return true;
+        if ("active".equals(st)) return !pagoCaducado(user, java.time.LocalDate.now());
         return tieneSuscripcionStripe(user) && ("trialing".equals(st) || "past_due".equals(st));
     }
 
@@ -234,6 +272,7 @@ public class PlanService {
             return isTrialExpired(user) ? FREE : BUSINESS;
         }
         if ("canceled".equals(status) || "expired".equals(status)) return FREE;
+        if (pagoCaducado(user, java.time.LocalDate.now())) return FREE;
         return normalizar(str(user.get("plan")));
     }
 
@@ -333,7 +372,7 @@ public class PlanService {
         Map<String, Object> user = getUser(orgId);
         PlanLimits l = limitsFor(user);
         String extra = FREE.equals(l.name()) ? "Mejora a Pro (hasta 15 activos)."
-                : "Mejora el plan o añade activos adicionales (" + PRECIO_ACTIVO_EXTRA + " USD/mes cada uno) en Facturación.";
+                : "Mejora el plan o pide activos adicionales (" + PRECIO_ACTIVO_EXTRA + " USD/mes cada uno) en Plan y facturación.";
         return "Tu plan " + l.label() + " incluye " + maxActivos(user) + " activos y ya los tienes todos. " + extra;
     }
 
@@ -429,6 +468,18 @@ public class PlanService {
         out.put("maxSociedades", maxSociedades(user));
         out.put("sociedadesExtra", user == null ? 0 : sociedadesExtra(user));
         out.put("limits", l);
+        // Cobro manual: hasta cuándo está pagado y si toca renovar
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        java.time.LocalDate hasta = tieneSuscripcionStripe(user) ? null : pagadoHasta(user);
+        boolean dePago = hasta != null && !FREE.equals(normalizar(str(user.get("plan"))));
+        long dias = hasta == null ? 0 : java.time.temporal.ChronoUnit.DAYS.between(hoy, hasta);
+        out.put("pagadoHasta", dePago ? hasta : null);
+        out.put("diasPagados", dias);
+        // Vencido pero aún dentro del margen: sigue con su plan y se le avisa
+        out.put("pagoPendiente", dePago && hoy.isAfter(hasta) && !pagoCaducado(user, hoy));
+        out.put("pagoCaducado", dePago && pagoCaducado(user, hoy));
+        out.put("finMargen", dePago ? hasta.plusDays(DIAS_GRACIA) : null);
+        out.put("renovarPronto", dePago && dias >= 0 && dias <= 7);
         return out;
     }
 

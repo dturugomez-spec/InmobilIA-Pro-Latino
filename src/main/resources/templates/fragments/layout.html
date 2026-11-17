@@ -616,6 +616,15 @@
                     <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Plan y facturación</span>
                 </a>
+                <!-- Solo los propietarios de la plataforma (ADMIN_EMAILS) -->
+                <a th:if="${nav.plataforma()}" href="/admin/clientes" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Clientes y cobros">
+                    <i data-lucide="wallet" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Clientes y cobros</span>
+                </a>
+                <a th:if="${nav.plataforma()}" href="/admin/solicitudes" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Solicitudes de acceso">
+                    <i data-lucide="inbox" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Solicitudes de acceso</span>
+                </a>
                 <a th:if="${nav.ve('/account')}" href="/account" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Mi cuenta">
                     <i data-lucide="user-circle" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Mi cuenta</span>
@@ -795,11 +804,26 @@
             <span class="text-sm text-amber-800 dark:text-amber-300 flex-1">
                 Tu período de prueba acaba en <strong th:text="${planStatus.trialDaysLeft}">3</strong>
                 <span th:text="${planStatus.trialDaysLeft == 1 ? 'día' : 'días'}">días</span>.
-                Suscríbete para mantener todas las funciones.
+                Elige tu plan para mantener todas las funciones.
             </span>
             <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium transition-colors flex-shrink-0">
-                Suscribirme
+                Ver planes
                 <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </a>
+        </div>
+
+        <!-- Plan pagado a mano: renovar pronto, pendiente de pago o ya en Free por falta de pago -->
+        <div th:if="${planStatus != null and planStatus.pagadoHasta != null and (planStatus.renovarPronto or planStatus.pagoPendiente or planStatus.pagoCaducado)}"
+             class="px-4 lg:px-8 py-2.5 border-b flex items-center gap-3"
+             th:classappend="${planStatus.renovarPronto ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/40' : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/40'}">
+            <i data-lucide="calendar-clock" class="h-4 w-4 flex-shrink-0" th:classappend="${planStatus.renovarPronto ? 'text-blue-700' : 'text-red-600'}"></i>
+            <span class="text-sm flex-1" th:classappend="${planStatus.renovarPronto ? 'text-blue-900 dark:text-blue-300' : 'text-red-800 dark:text-red-300'}"
+                  th:text="${planStatus.pagoCaducado ? 'No hemos recibido el pago de tu plan: tu cuenta funciona como Free. No se ha borrado nada; en cuanto llegue el pago vuelves a tener tu plan.'
+                           : (planStatus.pagoPendiente ? 'Tu plan está pendiente de pago desde el ' + #temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy') + '. Lo mantenemos hasta el ' + #temporals.format(planStatus.finMargen, 'dd/MM/yyyy') + '.'
+                           : 'Tu plan está pagado hasta el ' + #temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy') + '. Puedes renovarlo por transferencia o en efectivo.')}">Aviso de pago</span>
+            <a th:if="${nav.ve('/billing')}" href="/billing" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-white text-xs font-medium transition-colors flex-shrink-0"
+               th:classappend="${planStatus.renovarPronto ? 'bg-blue-700 hover:bg-blue-800' : 'bg-red-600 hover:bg-red-700'}">
+                Cómo pagar
             </a>
         </div>
 
@@ -822,7 +846,7 @@
              class="px-4 lg:px-8 py-2.5 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40 flex items-center gap-3">
             <i data-lucide="alert-circle" class="h-4 w-4 text-red-600 flex-shrink-0"></i>
             <span class="text-sm text-red-800 dark:text-red-300 flex-1">
-                Tu período de prueba ha terminado. Suscríbete para seguir usando todas las funciones.
+                Tu período de prueba ha terminado: tu cuenta sigue en Free con tus datos. Elige un plan para recuperar todas las funciones.
             </span>
             <a href="/upgrade" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors flex-shrink-0">
                 Ver planes

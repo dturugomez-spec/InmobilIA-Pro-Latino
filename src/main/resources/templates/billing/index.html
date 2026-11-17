@@ -29,7 +29,21 @@
                                 <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
                                 Prueba gratis · primer cobro automático en <strong th:text="${planStatus.stripeTrialDaysLeft}">14</strong> días
                             </span>
-                            <span th:if="${!planStatus.isTrialing and planStatus.subscribed and planStatus.status == 'active'}" class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                            <!-- Pagado a mano -->
+                            <span th:if="${planStatus.pagadoHasta != null and !planStatus.pagoPendiente and !planStatus.pagoCaducado}" class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                Pagado hasta el <strong th:text="${#temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy')}">31/12/2026</strong>
+                            </span>
+                            <span th:if="${planStatus.pagoPendiente}" class="inline-flex items-center gap-1.5 text-red-700 dark:text-red-400">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                Pendiente de pago: venció el <span th:text="${#temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy')}"></span>.
+                                Lo mantenemos hasta el <strong th:text="${#temporals.format(planStatus.finMargen, 'dd/MM/yyyy')}"></strong>.
+                            </span>
+                            <span th:if="${planStatus.pagoCaducado}" class="inline-flex items-center gap-1.5 text-red-700 dark:text-red-400">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                Sin pagar desde el <span th:text="${#temporals.format(planStatus.pagadoHasta, 'dd/MM/yyyy')}"></span>: funciona como Free y conservas tus datos.
+                            </span>
+                            <span th:if="${planStatus.pagadoHasta == null and !planStatus.isTrialing and planStatus.subscribed and planStatus.status == 'active'}" class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                                 Activo
                             </span>
@@ -48,7 +62,7 @@
                             <i data-lucide="arrow-up-circle" class="h-4 w-4"></i>
                             Ver planes
                         </a>
-                        <form action="/billing/portal" method="post" th:if="${conStripe}">
+                        <form action="/billing/portal" method="post" th:if="${conStripe and cobroOnline}">
                             <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white dark:bg-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-700 ring-1 ring-slate-200 dark:ring-neutral-700 text-sm font-medium">
                                 <i data-lucide="external-link" class="h-4 w-4"></i>
                                 Portal de cliente
@@ -79,14 +93,105 @@
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Créditos IA/mes</div>
                         <div class="text-lg font-bold font-mono mt-0.5" th:text="${#numbers.formatInteger(creditosMes, 0, 'POINT')}">20</div>
-                        <a href="/creditos" class="text-xs text-brand-700 hover:underline">Comprar 100 por US$10</a>
+                        <a href="/creditos" class="text-xs text-brand-700 hover:underline" th:text="${cobroOnline ? 'Comprar 100 por US$10' : 'Pedir 100 por US$10'}">Pedir 100 por US$10</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Extras: activos adicionales y módulos -->
-        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <!-- Cómo se paga (cobro manual) -->
+        <div th:unless="${cobroOnline}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"><i data-lucide="landmark" class="h-4 w-4 text-brand-600"></i> Cómo se paga</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">Por <strong>transferencia bancaria</strong> o <strong>en efectivo</strong>. Pide aquí tu plan o tus extras: te enviamos la factura y lo activamos en cuanto recibimos el pago. Sin tarjeta y sin permanencia.</p>
+            <div th:if="${!#strings.isEmpty(datosCobro.get('iban'))}" class="mt-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60 p-3 text-sm">
+                <div><span class="text-slate-500">Titular:</span> <strong th:text="${datosCobro.get('titular')}">Grupo Kivasa</strong></div>
+                <div><span class="text-slate-500">Cuenta:</span> <strong class="font-mono" th:text="${datosCobro.get('iban')}">ES00…</strong></div>
+                <div><span class="text-slate-500">Concepto:</span> el nombre de tu empresa</div>
+            </div>
+            <p th:if="${#strings.isEmpty(datosCobro.get('iban'))}" class="mt-2 text-xs text-slate-500">Los datos para la transferencia van en la factura que te enviamos.</p>
+        </div>
+
+        <!-- Pedir plan o extras (cobro manual) -->
+        <div th:unless="${cobroOnline}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5" x-data="{ plan: '' }">
+            <h3 class="text-sm font-semibold mb-1 flex items-center gap-2"><i data-lucide="send" class="h-4 w-4 text-brand-600"></i> Pedir un plan, extras o créditos</h3>
+            <p class="text-xs text-slate-500 mb-4">No se cobra nada al pedirlo. Te respondemos en menos de 24 horas laborables.</p>
+            <div th:if="${!#lists.isEmpty(misPeticiones)}" class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-3 text-sm text-amber-900 dark:text-amber-200">
+                Tienes <strong th:text="${#lists.size(misPeticiones)}">1</strong> <span th:text="${#lists.size(misPeticiones) == 1 ? 'petición' : 'peticiones'}">petición</span> en curso. Te escribiremos pronto.
+            </div>
+            <form action="/billing/solicitar" method="post" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Plan</label>
+                        <select name="plan" x-model="plan" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                            <option value="">Mantener mi plan</option>
+                            <option value="pro" th:text="${'Pro · ' + plans.get('pro').monthlyPriceEur() + ' USD/mes (' + plans.get('pro').annualMonthlyPriceEur() + ' USD pagando el año)'}">Pro</option>
+                            <option value="business" th:text="${'Business · ' + plans.get('business').monthlyPriceEur() + ' USD/mes (' + plans.get('business').annualMonthlyPriceEur() + ' USD pagando el año)'}">Business</option>
+                            <option value="enterprise">Enterprise · a medida</option>
+                            <option value="free">Bajar a Free</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Pago</label>
+                        <select name="periodo" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                            <option value="mensual" th:selected="${!planStatus.anual}">Cada mes</option>
+                            <option value="anual" th:selected="${planStatus.anual}">Un pago al año (−20 %)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Activos adicionales
+                            (US$<span th:text="${precioActivoExtra}">4</span>/mes cada uno; vacío = no cambiar)</label>
+                        <input type="number" name="activosExtra" min="0" max="1000" th:placeholder="${planStatus.activosExtra}"
+                               class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Packs de 100 créditos de IA (US$10 cada uno)</label>
+                        <input type="number" name="packsCreditos" min="0" max="20" value="0"
+                               class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    </div>
+                    <div th:if="${planActual == 'business'}">
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Sociedades adicionales
+                            (US$<span th:text="${precioSociedadExtra}">15</span>/mes cada una; tu plan incluye <span th:text="${sociedadesBusiness}">3</span>)</label>
+                        <input type="number" name="sociedadesExtra" min="0" max="100" th:placeholder="${planStatus.sociedadesExtra}"
+                               class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
+                    </div>
+                </div>
+                <div th:unless="${modulosIncluidos}" class="text-sm">
+                    <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Módulos para Pro (en Business ya vienen incluidos)</p>
+                    <label th:each="m : ${modulos}" class="flex items-center gap-2 py-0.5">
+                        <input type="checkbox" name="modulos" th:value="${m.clave()}" th:checked="${planStatus.modulos.contains(m.clave())}" class="rounded">
+                        <span th:text="${m.nombre() + ' · ' + 'US$' + m.precioMensual() + '/mes'}">Módulo</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Comentario (opcional)</label>
+                    <textarea name="mensaje" rows="2" maxlength="1000" placeholder="Por ejemplo: prefiero pagar en efectivo, o necesito la factura a nombre de otra sociedad."
+                              class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"></textarea>
+                </div>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-semibold">Enviar petición</button>
+            </form>
+        </div>
+
+        <!-- Mis pagos y facturas (cobro manual) -->
+        <div th:if="${!#lists.isEmpty(misCobros)}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"><i data-lucide="receipt" class="h-4 w-4 text-brand-600"></i> Tus pagos y facturas</h3>
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-xs text-slate-500"><th class="py-1.5">Fecha</th><th>Concepto</th><th class="text-right">Importe</th><th class="text-right">Factura</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                    <tr th:each="p : ${misCobros}">
+                        <td class="py-2 whitespace-nowrap" th:text="${p.get('fecha_txt')}">01/11/2026</td>
+                        <td class="py-2" th:text="${p.get('concepto')}">Plan Pro</td>
+                        <td class="py-2 text-right font-mono whitespace-nowrap" th:text="${#numbers.formatDecimal(p.get('total'), 1, 'POINT', 2, 'COMMA') + ' USD'}">59,29 USD</td>
+                        <td class="py-2 text-right">
+                            <a th:if="${p.get('factura_id') != null}" th:href="@{|/billing/facturas/${p.get('id')}|}" class="text-brand-700 hover:underline">Ver</a>
+                            <span th:if="${p.get('factura_id') == null}" class="text-xs text-slate-400">En preparación</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Extras con Stripe (solo si se cobra con tarjeta) -->
+        <div th:if="${cobroOnline}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
             <h3 class="text-sm font-semibold mb-1 flex items-center gap-2"><i data-lucide="plus-circle" class="h-4 w-4 text-brand-600"></i> Módulos y extras</h3>
             <p th:unless="${puedeExtras}" class="text-sm text-slate-600 dark:text-slate-400">Los activos adicionales y los módulos se añaden a una suscripción de Pro o Business.
                 <a href="/upgrade" class="text-brand-700 hover:underline">Ver planes</a></p>
@@ -135,8 +240,8 @@
             </div>
         </div>
 
-        <!-- Métodos de pago / facturas -->
-        <div th:if="${conStripe}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+        <!-- Métodos de pago / facturas de Stripe -->
+        <div th:if="${conStripe and cobroOnline}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
             <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"><i data-lucide="credit-card" class="h-4 w-4 text-brand-600"></i> Método de pago y facturas</h3>
             <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 Gestiona tu tarjeta, descarga facturas anteriores y cambia/cancela tu suscripción desde el portal de Stripe.
