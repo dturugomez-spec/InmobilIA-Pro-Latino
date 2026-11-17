@@ -27,6 +27,7 @@ public class AdminClientesController {
     private final PlanService planService;
     private final CobroManualService cobros;
     private final AIService aiService;
+    private final com.inmobilia.service.Promociones promociones;
 
     private boolean propietario(HttpSession session) {
         return SessionUtils.isLoggedIn(session) && planService.esAdminPlataforma(SessionUtils.email(session));
@@ -39,6 +40,7 @@ public class AdminClientesController {
 
         List<Map<String, Object>> filas = new ArrayList<>();
         LocalDate hoy = LocalDate.now();
+        Set<String> fundadores = new HashSet<>(com.inmobilia.service.Promociones.fundadores(supabase));
         for (Map<String, Object> u : supabase.selectFilter("users",
                 "select=id,email,name,empresa,plan,plan_status,trial_ends_at,pagado_hasta,periodo_facturacion,stripe_subscription_id,created_at"
                 + "&organization_id=is.null&order=created_at.desc&limit=2000")) {
@@ -48,6 +50,7 @@ public class AdminClientesController {
             f.put("nombre", CobroManualService.nombreCliente(u, null));
             f.put("planEfectivo", PlanService.PLANS.get(planService.planEfectivo(u)).label());
             f.put("estado", estado(u, hoy));
+            f.put("fundador", fundadores.contains(String.valueOf(u.get("id"))));
             filas.add(f);
         }
         List<Map<String, Object>> peticiones = supabase.selectFilter("peticiones_plan",
@@ -76,6 +79,7 @@ public class AdminClientesController {
         model.addAttribute("cobradoAnio", anio);
         model.addAttribute("datosCobro", cobros.datosCobro());
         model.addAttribute("cobroOnline", cobros.cobroOnline());
+        model.addAttribute("fundadoresUsados", fundadores.size());
         return "admin_clientes";
     }
 
@@ -125,6 +129,9 @@ public class AdminClientesController {
                 "cliente_id=eq." + id + "&order=fecha.desc,created_at.desc&limit=100"));
         model.addAttribute("peticiones", peticiones);
         model.addAttribute("hoy", LocalDate.now());
+        model.addAttribute("fundador", com.inmobilia.service.Promociones.esFundador(u));
+        model.addAttribute("fundadoresUsados", com.inmobilia.service.Promociones.fundadores(supabase).size());
+        model.addAttribute("yaSuscrito", PlanService.haSuscritoAlgunaVez(u));
         return "admin_cliente";
     }
 
@@ -270,6 +277,49 @@ public class AdminClientesController {
 
     private static double numero(Object o) {
         try { return o == null ? 0 : Double.parseDouble(String.valueOf(o)); } catch (Exception e) { return 0; }
+    }
+
+    /**
+     * Marca o quita a un cliente como socio fundador (máximo Promociones.FUNDADOR_PLAZAS). El descuento lo pone
+     * Stripe al suscribirse; a quien ya tenía suscripción hay que ponérselo a mano en Stripe.
+     */
+    @PostMapping("/admin/clientes/{id}/fundador")
+    public String fundador(@PathVariable String id, @RequestParam(defaultValue = "false") boolean activar, HttpSession session) {
+        if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
+        if (!propietario(session)) return "redirect:/dashboard";
+        Map<String, Object> u = cobros.cliente(id);
+        if (u == null) {
+            SessionUtils.flash(session, "Ese cliente no existe.");
+            return "redirect:/admin/clientes";
+        }
+        if (!activar) {
+            boolean ok = supabase.update("users", id, new LinkedHashMap<>(Map.of("socio_fundador", false)));
+            SessionUtils.flash(session, ok ? "Ya no es socio fundador. Si ya se había suscrito, el descuento sigue en Stripe hasta que acabe."
+                    : "No se pudo guardar. " + Objects.toString(supabase.lastError(), ""));
+            return "redirect:/admin/clientes/" + id;
+        }
+        if (com.inmobilia.service.Promociones.esFundador(u)) {
+            SessionUtils.flash(session, "Ya es socio fundador.");
+            return "redirect:/admin/clientes/" + id;
+        }
+        if (com.inmobilia.service.Promociones.fundadores(supabase).size() >= com.inmobilia.service.Promociones.FUNDADOR_PLAZAS) {
+            SessionUtils.flash(session, "Las " + com.inmobilia.service.Promociones.FUNDADOR_PLAZAS + " plazas de socio fundador ya están ocupadas.");
+            return "redirect:/admin/clientes/" + id;
+        }
+        Map<String, Object> d = new LinkedHashMap<>();
+        d.put("socio_fundador", true);
+        d.put("socio_fundador_at", java.time.OffsetDateTime.now().toString());
+        if (!supabase.update("users", id, d)) {
+            SessionUtils.flash(session, "No se pudo guardar (¿falta ejecutar la migración V120 en Supabase?). " + Objects.toString(supabase.lastError(), ""));
+        } else if (PlanService.haSuscritoAlgunaVez(u)) {
+            SessionUtils.flash(session, "Marcado como socio fundador. Ya tenía una suscripción en Stripe, así que el descuento no se aplica solo: "
+                    + "en Stripe, abre su suscripción y añádele el cupón " + com.inmobilia.service.Promociones.cuponId(com.inmobilia.service.Promociones.FUNDADOR_COBROS)
+                    + " (si aún no existe, créalo: " + com.inmobilia.service.Promociones.FUNDADOR_PCT + " %, duración " + com.inmobilia.service.Promociones.FUNDADOR_COBROS + " meses).");
+        } else {
+            SessionUtils.flash(session, "Marcado como socio fundador: al suscribirse tendrá un " + com.inmobilia.service.Promociones.FUNDADOR_PCT
+                    + " % de descuento en sus " + com.inmobilia.service.Promociones.FUNDADOR_COBROS + " primeros cobros.");
+        }
+        return "redirect:/admin/clientes/" + id;
     }
 
     private static final java.time.format.DateTimeFormatter DMY = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");

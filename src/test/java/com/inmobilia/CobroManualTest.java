@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
         "supabase.key=clave-de-prueba",
         "spring.main.allow-bean-definition-overriding=true",
         "ADMIN_EMAILS=dueno@inmobiliapro.example.com",
+        "app.cobro-online=false",
         "LOG_APP=WARN"
 })
 @AutoConfigureMockMvc
@@ -117,9 +118,8 @@ class CobroManualTest {
     @Test
     void laWebYLaAppNoCobranConTarjeta() throws Exception {
         String web = html(mvc.perform(get("/")).andReturn());
-        assertTrue(web.contains("transferencia bancaria o en efectivo"), "la web dice cómo se paga");
-        assertTrue(web.contains("action=\"/solicitar-cuenta\""), "y dónde se pide el acceso");
-        assertTrue(web.contains("US$149") && web.contains("US$49") && web.contains("US$399"), "con los precios");
+        assertTrue(web.contains("action=\"/solicitar-cuenta\""), "la web dice dónde se pide el acceso");
+        assertTrue(web.contains("3,050 MXN") && web.contains("1,000 MXN") && web.contains("8,160 MXN"), "con los precios del país por defecto");
         assertFalse(web.contains("/billing/checkout"));
 
         String planes = html(mvc.perform(get("/upgrade").session(cliente())).andReturn());

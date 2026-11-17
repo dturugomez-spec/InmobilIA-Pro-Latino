@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InmobilIA Pro · CRM inmobiliario con IA · Latinoamérica</title>
-    <meta name="description" th:content="|Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización. Plan Free gratis y planes por número de activos desde US$39 al mes.|" content="Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización.">
+    <meta name="description" th:content="|Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización. Plan Free gratis y planes por número de activos desde ${tarifa?.plan_pro} al mes, sin permanencia.|" content="Plataforma integral para inmobiliarias de Latinoamérica: CRM, cobros, firma electrónica, inteligencia artificial y automatización.">
     <meta property="og:title" content="InmobilIA Pro · Software para inmobiliarias">
     <meta property="og:description" content="Gestiona propiedades, leads, contratos, visitas y facturación desde un único panel. Con IA y adaptado a tu país.">
     <meta property="og:type" content="website">
@@ -245,7 +245,7 @@
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="globe" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">17 países</h4><p class="text-xs text-slate-500">México, Colombia, Argentina, Chile, Perú…</p></div>
-            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="coins" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Multimoneda</h4><p class="text-xs text-slate-500">MXN, COP, ARS, CLP, PEN o USD</p></div>
+            <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="coins" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Multimoneda</h4><p class="text-xs text-slate-500">MXN, COP, ARS, CLP, PEN o USD, y pagas el plan en la moneda de tu país</p></div>
             <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="receipt" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Impuestos locales</h4><p class="text-xs text-slate-500">IVA, IGV, ITBIS, ITBMS, ISV</p></div>
             <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="id-card" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Identificaciones</h4><p class="text-xs text-slate-500">RFC, NIT, CUIT, RUT, RUC, cédula…</p></div>
             <div class="border border-slate-200 rounded-xl p-6 text-center bg-white hover:shadow-sm transition"><div class="text-2xl mb-2"><i data-lucide="shield" style="width:1em;height:1em" class="inline-block align-[-2px]"></i></div><h4 class="display font-bold text-sm mb-1">Protección de datos</h4><p class="text-xs text-slate-500">LFPDPPP, Ley 1581, Ley 25.326…</p></div>
@@ -261,14 +261,20 @@
         <div class="max-w-3xl mx-auto text-center mb-16">
             <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Planes y precios</p>
             <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Pagas por los activos que gestionas.</h2>
-            <p class="text-lg text-slate-600">No por el número de usuarios. Prueba un mes gratis el plan Business con todo incluido, sin tarjeta: al terminar eliges plan o sigues gratis en Free con tus datos. Pagando el año completo ahorras un 20 %. Precios en dólares (USD), impuestos locales no incluidos.</p>
-            <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm text-slate-700"><i data-lucide="landmark" class="h-4 w-4 text-emerald-600"></i> Pago por transferencia bancaria o en efectivo, con factura. Nada de tarjetas en la web.</p>
+            <p class="text-lg text-slate-600">No por el número de usuarios. Prueba un mes gratis el plan Business con todo incluido, sin tarjeta: al terminar eliges plan o sigues gratis en Free con tus datos. Pago mensual y sin permanencia, en la moneda de tu país. Impuestos locales no incluidos.</p>
+            <p class="mt-4 text-sm text-slate-600"><label for="pais-precios">Precios para</label>
+                <select id="pais-precios" class="ml-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm"
+                        onchange="location.href='/?pais=' + this.value + '#planes'">
+                    <option th:each="pp : ${paisesPrecios}" th:value="${pp.codigo}" th:selected="${pais != null and pp.codigo == pais.codigo()}"
+                            th:text="${pp.bandera + ' ' + pp.nombre + ' · ' + pp.moneda}">🇲🇽 México · MXN</option>
+                </select></p>
+            <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm text-slate-700"><i data-lucide="credit-card" class="h-4 w-4 text-emerald-600"></i> Pago mensual con tarjeta, seguro con Stripe. Cancelas cuando quieras.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-7xl mx-auto">
             <!-- ─── FREE ─── -->
             <div class="bg-white rounded-2xl p-7 border border-slate-200 flex flex-col">
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Free</p><p class="text-xs text-slate-500">Propietarios que quieren probar con su cartera real</p></div>
-                <div><span class="display text-4xl font-extrabold">US$0</span></div>
+                <div><span class="display text-4xl font-extrabold" th:text="${'0 ' + tarifa?.moneda}">0 MXN</span></div>
                 <p class="text-xs text-slate-500 font-medium mt-1 mb-6">Para siempre</p>
                 <a href="#contacto" data-plan="free" class="block text-center px-4 py-2.5 rounded-lg border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white font-semibold text-sm mb-6 transition">Solicitar acceso</a>
                 <ul class="space-y-2.5 text-sm text-slate-700">
@@ -283,8 +289,8 @@
             <!-- ─── PRO ─── -->
             <div class="bg-white rounded-2xl p-7 border border-slate-200 flex flex-col">
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Pro</p><p class="text-xs text-slate-500">Pequeños inversores con varias naves o locales</p></div>
-                <div><span class="display text-4xl font-extrabold">US$49</span><span class="text-slate-500 text-sm">/mes</span></div>
-                <p class="text-xs text-emerald-700 font-medium mt-1 mb-6">US$39/mes pagando el año</p>
+                <div><span class="display text-4xl font-extrabold" th:text="${tarifa?.plan_pro}">1,000 MXN</span><span class="text-slate-500 text-sm">/mes</span></div>
+                <p class="text-xs text-emerald-700 font-medium mt-1 mb-6">Pago mensual · sin permanencia</p>
                 <a href="#contacto" data-plan="pro" class="block text-center px-4 py-2.5 rounded-lg border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white font-semibold text-sm mb-6 transition">Solicitar acceso</a>
                 <ul class="space-y-2.5 text-sm text-slate-700">
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-600"></i> Hasta 15 activos · 2 usuarios</li>
@@ -303,8 +309,8 @@
             <div class="bg-slate-900 text-white rounded-2xl p-7 relative shadow-2xl shadow-slate-900/20 flex flex-col">
                 <div class="absolute -top-3 left-7 px-3 py-1 bg-amber-400 text-amber-950 rounded-full text-xs font-bold">RECOMENDADO</div>
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Business</p><p class="text-xs text-slate-400">Gestores de patrimonio y carteras profesionales</p></div>
-                <div><span class="display text-4xl font-extrabold">US$149</span><span class="text-slate-400 text-sm">/mes</span></div>
-                <p class="text-xs text-emerald-300 font-medium mt-1 mb-6">US$119/mes pagando el año</p>
+                <div><span class="display text-4xl font-extrabold" th:text="${tarifa?.plan_business}">3,050 MXN</span><span class="text-slate-400 text-sm">/mes</span></div>
+                <p class="text-xs text-emerald-300 font-medium mt-1 mb-6">Pago mensual · sin permanencia</p>
                 <a href="#contacto" data-plan="business" class="block text-center px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm mb-6 transition">Solicitar acceso →</a>
                 <ul class="space-y-2.5 text-sm">
                     <li class="flex gap-2"><i data-lucide="check" class="inline-block h-4 w-4 align-[-2px] flex-shrink-0 text-emerald-400"></i> Hasta 50 activos · 5 usuarios</li>
@@ -321,7 +327,7 @@
             <!-- ─── ENTERPRISE ─── -->
             <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-7 border border-amber-300 flex flex-col">
                 <div class="mb-5"><p class="display font-bold text-lg mb-1">Enterprise</p><p class="text-xs text-amber-800">Family offices, fondos inmobiliarios y carteras grandes</p></div>
-                <div><span class="text-sm text-amber-800">Desde </span><span class="display text-4xl font-extrabold">US$399</span><span class="text-amber-800 text-sm">/mes</span></div>
+                <div><span class="text-sm text-amber-800">Desde </span><span class="display text-4xl font-extrabold" th:text="${tarifa?.plan_enterprise}">8,160 MXN</span><span class="text-amber-800 text-sm">/mes</span></div>
                 <p class="text-xs text-amber-800 font-medium mt-1 mb-6">A medida</p>
                 <a href="#contacto" data-plan="enterprise" class="block text-center px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm mb-6 transition">Hablemos →</a>
                 <ul class="space-y-2.5 text-sm text-amber-950">
@@ -333,10 +339,11 @@
                 </ul>
             </div>
         </div>
-        <p class="text-center text-sm text-slate-500 mt-10">¿Más activos sin cambiar de plan? Cada activo adicional cuesta US$4/mes. En Pro puedes añadir suelto Future-Proof Score (US$29/mes). Sociedad adicional en Business: US$15/mes. Pack de 100 créditos de IA: US$10.</p>
+        <p class="text-center text-sm text-slate-500 mt-10">¿Más activos sin cambiar de plan? Cada activo adicional cuesta <span th:text="${tarifa?.activo_extra}">82 MXN</span>/mes. En Pro puedes añadir suelto Future-Proof Score (<span th:text="${tarifa?.modulo_futureproof}">593 MXN</span>/mes). Sociedad adicional en Business: <span th:text="${tarifa?.sociedad_extra}">307 MXN</span>/mes. Pack de 100 créditos de IA: <span th:text="${tarifa?.creditos_100}">204 MXN</span>.</p>
         <p class="text-center text-sm text-slate-500 mt-3">Sin permanencia: cambia de plan o cancela cuando quieras. Al bajar de plan, tus datos se mantienen.</p>
-        <p class="text-center text-sm text-slate-500 mt-3"><strong>Cómo funciona:</strong> nos pides acceso con el formulario de abajo, te damos de alta y entras con tu correo y tu contraseña. Cuando eliges plan, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>
-        <p class="text-center text-sm text-slate-500 mt-3"><strong>Socio Fundador:</strong> los primeros clientes tienen un precio reducido de por vida a cambio de su opinión sobre el producto. <a href="#contacto" class="text-slate-900 font-semibold hover:underline">Pregúntanos por las plazas →</a></p>
+        <p class="text-center text-sm text-slate-500 mt-3"><strong>Cómo funciona:</strong> nos pides acceso con el formulario de abajo, te damos de alta y entras con tu correo y tu contraseña. Cuando eliges plan, lo pagas cada mes con tarjeta (Stripe), en la moneda de tu país.</p>
+        <p th:if="${promos != null and promos.activa()}" class="text-center text-sm text-slate-500 mt-3"><strong>Oferta de lanzamiento:</strong> <span th:text="${'si te suscribes antes del ' + promos.primerCobroTexto() + ', no pagas nada hasta ese día.'}">si te suscribes antes del 1 de febrero de 2027, no pagas nada hasta ese día.</span></p>
+        <p th:if="${promos != null}" class="text-center text-sm text-slate-500 mt-3"><strong>Socio fundador:</strong> <span th:text="${'las ' + promos.fundadorPlazas() + ' primeras inmobiliarias tienen un ' + promos.fundadorPct() + ' % de descuento en sus ' + promos.fundadorCobros() + ' primeros cobros (Pro ' + promos.precioFundador('plan_pro') + ', Business ' + promos.precioFundador('plan_business') + '), a cambio de su opinión sobre el producto.'}">las 10 primeras inmobiliarias tienen un 20 % de descuento en sus 4 primeros cobros, a cambio de su opinión sobre el producto.</span> <a href="#contacto" class="text-slate-900 font-semibold hover:underline">Pregúntanos por las plazas →</a></p>
     </div>
 </section>
 
@@ -379,7 +386,7 @@
         <div class="text-center mb-12">
             <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Solicitar acceso</p>
             <h2 class="display text-4xl md:text-5xl font-extrabold mb-6">Empieza en menos de 24 horas.</h2>
-            <p class="text-lg text-slate-600">Trabajamos por invitación. Solicita tu acceso y nos pondremos en contacto contigo para una demo personalizada. No te pedimos tarjeta: si te quedas, pagas por transferencia o en efectivo, con factura.</p>
+            <p class="text-lg text-slate-600">Trabajamos por invitación. Solicita tu acceso y nos pondremos en contacto contigo para una demo personalizada. La prueba es sin tarjeta: si te quedas, pagas cada mes con tarjeta y sin permanencia.</p>
         </div>
         <form action="/solicitar-cuenta" method="post" class="bg-white rounded-2xl p-8 md:p-10 border border-slate-200 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
@@ -395,7 +402,7 @@
                                 th:text="|Otra ciudad de ${p.nombre()}|">Otra ciudad</option>
                     </optgroup>
                 </select></div>
-                                <div><label class="block text-sm font-semibold mb-2">Plan de interés</label><select name="plan" id="plan-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="free">Free · US$0 · hasta 3 activos</option><option value="pro">Pro · US$49/mes (US$39 pagando el año) · hasta 15 activos</option><option value="business" selected>Business · US$149/mes (US$119 pagando el año) · hasta 50 activos</option><option value="enterprise">Enterprise · desde US$399/mes · a medida</option></select></div>
+                                <div><label class="block text-sm font-semibold mb-2">Plan de interés</label><select name="plan" id="plan-select" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="free">Free · gratis · hasta 3 activos</option><option value="pro" th:text="${'Pro · ' + tarifa?.plan_pro + '/mes · hasta 15 activos'}">Pro · 1,000 MXN/mes · hasta 15 activos</option><option value="business" selected th:text="${'Business · ' + tarifa?.plan_business + '/mes · hasta 50 activos'}">Business · 3,050 MXN/mes · hasta 50 activos</option><option value="enterprise" th:text="${'Enterprise · desde ' + tarifa?.plan_enterprise + '/mes · a medida'}">Enterprise · desde 8,160 MXN/mes · a medida</option></select></div>
                 <div><label class="block text-sm font-semibold mb-2">Tamaño de cartera</label><select name="num_propiedades" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition"><option value="1-20">1 a 20 propiedades</option><option value="21-50">21 a 50</option><option value="51-100">51 a 100</option><option value="101+">Más de 100</option></select></div>
             </div>
             <div class="mb-6"><label class="block text-sm font-semibold mb-2">¿Qué buscas mejorar en tu inmobiliaria?</label><textarea name="mensaje" rows="4" placeholder="Cuéntanos brevemente tu situación actual y qué herramienta estás evaluando." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-900 focus:outline-none transition resize-none"></textarea></div>

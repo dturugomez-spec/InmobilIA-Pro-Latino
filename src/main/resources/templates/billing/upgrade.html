@@ -4,7 +4,18 @@
       layout:decorate="~{fragments/layout}">
 <head><title>Planes y precios</title></head>
 <body>
-<div layout:fragment="content" x-data="{ anual: false }" th:attr="x-data=|{ anual: ${anual} }|">
+<div layout:fragment="content">
+    <!--/* Oferta de lanzamiento y socio fundador (solo con Stripe y para la primera suscripción) */-->
+    <div th:if="${cobroOnline and !suscrito and primeraSuscripcion and promos != null and (promos.activa() or socioFundador)}" class="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 p-4 mb-6 flex items-start gap-3">
+        <i data-lucide="gift" class="h-5 w-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
+        <div class="text-sm space-y-1">
+            <p th:if="${promos.activa()}" class="font-semibold text-emerald-900 dark:text-emerald-200"
+               th:text="${'Oferta de lanzamiento: si te suscribes ahora, no pagas nada hasta el ' + promos.primerCobroTexto() + '.'}">Oferta de lanzamiento: si te suscribes ahora, no pagas nada hasta el 1 de febrero de 2027.</p>
+            <p th:if="${socioFundador}" class="text-emerald-800 dark:text-emerald-300"
+               th:text="${'Eres socio fundador: ' + promos.fundadorPct() + ' % de descuento en tus ' + promos.fundadorCobros() + ' primeros cobros (Pro ' + promos.precioFundador('plan_pro') + ', Business ' + promos.precioFundador('plan_business') + ' al mes, impuestos locales no incluidos). Se aplica solo al suscribirte.'}">Eres socio fundador: 20 % de descuento en tus 4 primeros cobros.</p>
+        </div>
+    </div>
+
 
     <!-- Empleado de una cuenta con más personas de las que incluye su plan -->
     <div th:if="${limiteUsuarios}" class="rounded-xl bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-900/40 p-4 mb-6 flex items-center gap-3">
@@ -21,7 +32,7 @@
         <div class="text-sm">
             <p class="font-semibold text-blue-950 dark:text-blue-200"><span th:text="${herramienta}">Herramienta</span> está en el plan <span th:text="${herramientaPlan}">Business</span></p>
             <p th:if="${herramientaModulo}" class="text-blue-900 dark:text-blue-300">Si estás en Pro, puedes añadirla suelta por
-                <strong th:text="${'US$' + herramientaModulo.precioMensual() + '/mes'}">US$29/mes</strong> en Facturación, sin pasarte a Business.</p>
+                <strong th:text="${tarifa['modulo_' + herramientaModulo.clave()] + '/mes'}">593 MXN/mes</strong> en Facturación, sin pasarte a Business.</p>
         </div>
     </div>
 
@@ -61,18 +72,10 @@
     <div class="text-center mb-6">
         <div class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">Planes y precios</div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">El precio depende de cuántos activos gestionas</h1>
-        <p class="text-slate-600 dark:text-slate-400">No del número de usuarios. Sin permanencia. Precios en dólares (USD), impuestos locales no incluidos.
+        <p class="text-slate-600 dark:text-slate-400">No del número de usuarios. Sin permanencia. Pago mensual en <span th:text="${tarifa.moneda}">MXN</span>, impuestos locales no incluidos.
             <span th:unless="${cobroOnline}">Pago por transferencia o en efectivo, con factura.</span></p>
         <p class="text-sm text-slate-500 mt-1">Ahora tienes <strong th:text="${activosUsados}">0</strong> activos y <strong th:text="${usuarios}">1</strong>
             <span th:text="${usuarios == 1 ? 'usuario' : 'usuarios'}">usuario</span>.</p>
-    </div>
-
-    <!-- Mensual / anual -->
-    <div class="flex justify-center mb-8">
-        <div class="inline-flex rounded-lg bg-slate-100 dark:bg-neutral-800 p-1 text-sm">
-            <button type="button" @click="anual = false" :class="!anual ? 'bg-white dark:bg-neutral-900 shadow-card font-semibold' : 'text-slate-500'" class="px-4 py-1.5 rounded-md">Mensual</button>
-            <button type="button" @click="anual = true" :class="anual ? 'bg-white dark:bg-neutral-900 shadow-card font-semibold' : 'text-slate-500'" class="px-4 py-1.5 rounded-md">Anual <span class="text-emerald-600 font-semibold">−20 %</span></button>
-        </div>
     </div>
 
     <!-- Sin Stripe configurado (solo si se cobra con tarjeta) -->
@@ -91,7 +94,7 @@
         <div class="rounded-2xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-6 flex flex-col">
             <h3 class="font-bold text-lg">Free</h3>
             <p class="text-xs text-slate-500 mt-1 mb-4">Para probar la herramienta con tu cartera real</p>
-            <div class="mb-4"><span class="text-4xl font-bold tracking-tight">US$0</span></div>
+            <div class="mb-4"><span class="text-4xl font-bold tracking-tight" th:text="${'0 ' + tarifa.moneda}">0 MXN</span></div>
             <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 mb-6 flex-1">
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> Hasta 3 activos · 1 usuario</li>
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0"></i> 20 créditos de IA al mes</li>
@@ -110,13 +113,11 @@
             <p class="text-xs mt-1 mb-4" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}"
                th:text="${destacado ? 'Gestores de patrimonio y carteras profesionales' : 'Pequeños inversores con varias naves o locales'}">Para quién</p>
             <div class="mb-1">
-                <span class="text-4xl font-bold tracking-tight" x-show="!anual" th:text="${'US$' + l.monthlyPriceEur()}">US$49</span>
-                <span class="text-4xl font-bold tracking-tight" x-show="anual" x-cloak th:text="${'US$' + l.annualMonthlyPriceEur()}">US$39</span>
+                <span class="text-4xl font-bold tracking-tight" th:text="${tarifa['plan_' + clave]}">1,000 MXN</span>
                 <span class="text-sm" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}">/mes</span>
             </div>
             <p class="text-xs mb-5" th:classappend="${destacado ? 'text-white/70' : 'text-slate-500'}">
-                <span x-show="!anual">Pagando el año: <span th:text="${'US$' + l.annualMonthlyPriceEur() + '/mes'}">US$39/mes</span></span>
-                <span x-show="anual" x-cloak th:text="${'Un pago de US$' + (l.annualMonthlyPriceEur() * 12) + ' al año'}">US$468 al año</span>
+                Pago mensual · sin permanencia
             </p>
             <ul class="space-y-2 text-sm mb-6 flex-1" th:classappend="${destacado ? 'text-white/90' : 'text-slate-600 dark:text-slate-400'}">
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0" th:classappend="${destacado ? 'text-emerald-300' : 'text-emerald-500'}"></i>
@@ -151,14 +152,14 @@
             <form th:if="${!cobroOnline and !(suscrito and planActual == clave)}" action="/billing/solicitar" method="post">
                 <input type="hidden" name="plan" th:value="${clave}">
                 <input type="hidden" name="volver" value="/upgrade">
-                <input type="hidden" name="periodo" :value="anual ? 'anual' : 'mensual'" value="mensual">
+                <input type="hidden" name="periodo" value="mensual">
                 <button type="submit"
                         class="w-full text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors"
                         th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}"
                         th:text="${'Pedir ' + l.label()}">Pedir</button>
             </form>
             <form th:if="${cobroOnline and !suscrito}" th:action="@{|/billing/checkout/${clave}|}" method="post">
-                <input type="hidden" name="periodo" :value="anual ? 'anual' : 'mensual'" value="mensual">
+                <input type="hidden" name="periodo" value="mensual">
                 <button type="submit" th:disabled="${!stripeConfigured}"
                         class="w-full text-center px-4 py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold transition-colors"
                         th:classappend="${destacado ? 'bg-white hover:bg-slate-100 text-brand-800' : 'bg-slate-900 hover:bg-slate-800 text-white'}"
@@ -170,7 +171,7 @@
         <div class="rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 ring-1 ring-amber-300 dark:ring-amber-900/40 p-6 flex flex-col">
             <h3 class="font-bold text-lg">Enterprise</h3>
             <p class="text-xs text-amber-800 dark:text-amber-300 mt-1 mb-4">Family offices, fondos inmobiliarios y carteras grandes</p>
-            <div class="mb-4"><span class="text-sm text-amber-800 dark:text-amber-300">Desde</span> <span class="text-4xl font-bold tracking-tight">US$399</span><span class="text-sm text-amber-800 dark:text-amber-300">/mes</span></div>
+            <div class="mb-4"><span class="text-sm text-amber-800 dark:text-amber-300">Desde</span> <span class="text-4xl font-bold tracking-tight" th:text="${tarifa.plan_enterprise}">8,160 MXN</span><span class="text-sm text-amber-800 dark:text-amber-300">/mes</span></div>
             <ul class="space-y-2 text-sm text-amber-950 dark:text-amber-100 mb-6 flex-1">
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Activos y usuarios ilimitados</li>
                 <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0"></i> Todo lo de Business</li>
@@ -192,19 +193,18 @@
         <h3 class="text-sm font-semibold mb-3">Módulos y extras</h3>
         <table class="w-full text-sm">
             <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
-                <tr><td class="py-2">Activo adicional</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioActivoExtra + '/mes por activo'}">US$4/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Planes de pago</td></tr>
-                <tr th:each="m : ${modulos}"><td class="py-2" th:text="${m.nombre()}">Módulo</td><td class="py-2 text-right font-semibold" th:text="${'US$' + m.precioMensual() + '/mes'}">US$29/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Pro (incluido en Business)</td></tr>
-                <tr><td class="py-2">Sociedad adicional (multi-empresa)</td><td class="py-2 text-right font-semibold" th:text="${'US$' + precioSociedadExtra + '/mes por sociedad'}">US$15/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Business y Enterprise</td></tr>
-                <tr><td class="py-2">Pack de 100 créditos de IA</td><td class="py-2 text-right font-semibold">US$10 (pago único)</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Todos los planes · <a href="/creditos" class="text-brand-700 hover:underline" th:text="${cobroOnline ? 'Comprar' : 'Pedir'}">Pedir</a></td></tr>
+                <tr><td class="py-2">Activo adicional</td><td class="py-2 text-right font-semibold" th:text="${tarifa.activo_extra + '/mes por activo'}">82 MXN/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Planes de pago</td></tr>
+                <tr th:each="m : ${modulos}"><td class="py-2" th:text="${m.nombre()}">Módulo</td><td class="py-2 text-right font-semibold" th:text="${tarifa['modulo_' + m.clave()] + '/mes'}">593 MXN/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Pro (incluido en Business)</td></tr>
+                <tr><td class="py-2">Sociedad adicional (multi-empresa)</td><td class="py-2 text-right font-semibold" th:text="${tarifa.sociedad_extra + '/mes por sociedad'}">307 MXN/mes</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Business y Enterprise</td></tr>
+                <tr><td class="py-2">Pack de 100 créditos de IA</td><td class="py-2 text-right font-semibold" th:text="${tarifa.creditos_100 + ' (pago único)'}">204 MXN (pago único)</td><td class="py-2 pl-4 text-right text-xs text-slate-500">Todos los planes · <a href="/creditos" class="text-brand-700 hover:underline" th:text="${cobroOnline ? 'Comprar' : 'Pedir'}">Pedir</a></td></tr>
             </tbody>
         </table>
         <p class="mt-3 text-xs text-slate-500"><span th:text="${cobroOnline ? 'Se añaden desde Facturación una vez suscrito.' : 'Se piden desde'}">Se piden desde</span>
-            <a th:unless="${cobroOnline}" href="/billing" class="text-brand-700 hover:underline">Plan y facturación</a><span th:unless="${cobroOnline}">.</span>
-            Pagando el año, los extras se facturan también al año (12 meses de su precio).</p>
+            <a th:unless="${cobroOnline}" href="/billing" class="text-brand-700 hover:underline">Plan y facturación</a><span th:unless="${cobroOnline}">.</span></p>
     </div>
 
     <div class="mt-8 text-center text-xs text-slate-500 dark:text-neutral-400">
-        <p th:if="${cobroOnline}">Pago seguro con <strong>Stripe</strong>. Factura en dólares (USD). Si bajas de plan, tus datos se mantienen.</p>
+        <p th:if="${cobroOnline}">Pago mensual con tarjeta, seguro con <strong>Stripe</strong>, en <span th:text="${tarifa.moneda}">MXN</span>. Sin permanencia: cancelas cuando quieras y, si bajas de plan, tus datos se mantienen.</p>
         <p th:unless="${cobroOnline}">Pago por <strong>transferencia bancaria o en efectivo</strong>. Te enviamos la factura. Sin tarjeta y sin permanencia; si bajas de plan, tus datos se mantienen.</p>
     </div>
 

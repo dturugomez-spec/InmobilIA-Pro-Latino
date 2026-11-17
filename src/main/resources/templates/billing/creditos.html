@@ -20,7 +20,7 @@
 
     <section class="form-card" style="text-align:center;max-width:360px">
         <h3 th:text="|Pack de ${packCreditos} créditos|">Pack de 100 créditos</h3>
-        <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="|US$${packPrecio}|">US$10</p>
+        <p style="font-size:26px;font-weight:800;margin:6px 0" th:text="${tarifa.creditos_100}">204 MXN</p>
         <p style="color:#64748b;font-size:13px;margin-bottom:12px">Pago único · impuestos no incluidos · no caducan</p>
         <form th:if="${cobroOnline}" method="post" th:action="@{/billing/credits/{k}(k=${packCreditos})}">
             <button class="btn btn-primary" th:disabled="${!stripeConfigured}">Comprar</button>

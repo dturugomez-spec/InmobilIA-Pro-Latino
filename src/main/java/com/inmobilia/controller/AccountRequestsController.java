@@ -154,7 +154,7 @@ public class AccountRequestsController {
                         "<h2>👋 ¡Gracias, %s!</h2>" +
                         "<p>Hemos recibido tu solicitud de cuenta InmobilIA Pro para <strong>%s</strong>.</p>" +
                         "<p>Vamos a revisarla y te enviaremos un email en <strong>menos de 24h laborables</strong> con un enlace para crear tu contraseña y entrar.</p>" +
-                        "<p>Empiezas con un mes gratis del plan Business, sin tarjeta. Si después te quedas en un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
+                        "<p>Empiezas con un mes gratis del plan Business, sin tarjeta. Si después te quedas en un plan de pago, lo pagas cada mes con tarjeta, en la moneda de tu país y sin permanencia.</p>" +
                         "<p>— Equipo InmobilIA Pro</p>",
                         esc(form.get("nombre")), esc(form.get("empresa")));
                 emailService.send(null, String.valueOf(data.get("email")),
@@ -311,7 +311,7 @@ public class AccountRequestsController {
             String html = String.format(
                 "<div style='font-family:sans-serif;max-width:600px;margin:auto'>" +
                 "  <h2>🎉 ¡Bienvenido a InmobilIA Pro, %s!</h2>" +
-                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s, sin tarjeta. Al terminar, si no eliges plan, tu cuenta pasa al plan Free y conservas tus datos. Si eliges un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
+                "  <p>Tu cuenta para <strong>%s</strong> está lista. Tienes <strong>%d días gratis</strong> del plan %s, sin tarjeta. Al terminar, si no eliges plan, tu cuenta pasa al plan Free y conservas tus datos. Si eliges un plan de pago, lo pagas cada mes con tarjeta, en la moneda de tu país, y puedes cancelar cuando quieras.</p>" +
                 "  <p>Para entrar, crea tu contraseña con este botón (el enlace sirve una sola vez y caduca en 7 días):</p>" +
                 "  <p style='text-align:center;margin:30px 0'>" +
                 "    <a href='%s' style='display:inline-block;padding:14px 28px;background:#0f172a;color:white;text-decoration:none;border-radius:8px;font-weight:bold'>Crear mi contraseña →</a>" +

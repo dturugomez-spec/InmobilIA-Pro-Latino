@@ -55,8 +55,7 @@ public class TrialExpiryService {
                                 + "<p>Tu prueba gratis del plan Business ha terminado. <strong>Tu cuenta sigue activa en el plan Free y conserva todos tus datos.</strong></p>"
                                 + "<p>Free incluye 3 activos, 1 usuario y 20 créditos de IA al mes. Si gestionas más activos o trabajas en equipo, elige el plan que te encaje:</p>"
                                 + boton("Ver planes", BASE_URL + "/upgrade")
-                                + "<p>Pro desde US$39/mes y Business desde US$119/mes pagando el año (impuestos locales no incluidos). Sin permanencia. "
-                                + "Lo pides desde la app y lo pagas por transferencia o en efectivo; te enviamos la factura.</p>"
+                                + "<p>Pago mensual con tarjeta, en la moneda de tu país y sin permanencia (impuestos locales no incluidos).</p>"
                                 + "<p>— Equipo InmobilIA Pro</p>");
                     }
                 } else if (diasRestantes == 3 || diasRestantes == 1) {
@@ -65,7 +64,7 @@ public class TrialExpiryService {
                             String.format("<h2>Hola</h2>"
                                 + "<p>Tu prueba gratis del plan Business acaba en <strong>%d %s</strong>.</p>"
                                 + "<p>Si no eliges un plan, tu cuenta pasará al plan Free (3 activos y 1 usuario) y conservarás tus datos. "
-                                + "Para seguir con todo, pide tu plan antes (se paga por transferencia o en efectivo, con factura):</p>%s<p>— Equipo InmobilIA Pro</p>",
+                                + "Para seguir con todo, elige tu plan antes (pago mensual con tarjeta, en la moneda de tu país, sin permanencia):</p>%s<p>— Equipo InmobilIA Pro</p>",
                                 diasRestantes, diasRestantes == 1 ? "día" : "días", boton("Elegir plan", BASE_URL + "/upgrade")));
                 }
             }

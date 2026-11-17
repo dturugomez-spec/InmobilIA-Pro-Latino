@@ -34,6 +34,7 @@ public class GlobalModelAdvice {
     private final PermissionService permissions;
     private final PlanService planService;
     private final SupabaseService supabase;
+    private final com.inmobilia.service.Promociones promociones;
 
     private static final List<Map<String, String>> PALETTE = buildPalette();
 
@@ -59,6 +60,7 @@ public class GlobalModelAdvice {
         model.addAttribute("cellTone", new CellTone());
         model.addAttribute("paletteTools", PALETTE);
         model.addAttribute("officialLinks", officialLinks);
+        model.addAttribute("promos", promociones);
         model.addAttribute("platformAiEnabled", aiService.hasPlatformKey());
 
         boolean logged = SessionUtils.isLoggedIn(session);

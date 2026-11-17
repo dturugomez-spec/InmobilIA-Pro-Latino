@@ -104,7 +104,8 @@ class PlanesEnLaAppTest {
         assertEquals(200, planes.getResponse().getStatus());
         String html = planes.getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertTrue(html.contains("está en el plan <span>Business</span>"), "dice qué plan la incluye");
-        assertTrue(html.contains("US$149") && html.contains("US$119") && html.contains("US$399"));
+        assertTrue(html.contains("3,050 MXN") && html.contains("8,160 MXN"), "precios en la moneda de la inmobiliaria");
+        assertFalse(html.contains("US$") || html.contains("Pagando el año"), "ni dólares fijos ni precio anual");
 
         MvcResult facturacion = mvc.perform(get("/billing").session(sesion(ORG, "admin"))).andReturn();
         assertEquals(200, facturacion.getResponse().getStatus());

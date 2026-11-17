@@ -63,7 +63,7 @@
                 <button class="px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white text-sm font-medium">Crear sociedad</button>
             </form>
             <p th:unless="${puedeCrear}" class="text-xs text-slate-500 border-t border-slate-100 dark:border-neutral-800 pt-4">
-                Has llegado a las sociedades de tu plan. Puedes añadir más por US$<span th:text="${precioSociedadExtra}">15</span>/mes cada una en
+                Has llegado a las sociedades de tu plan. Puedes añadir más por <span th:text="${tarifa.sociedad_extra}">307 MXN</span>/mes cada una en
                 <a href="/billing" class="text-brand-700 hover:underline">Facturación</a>.</p>
         </div>
 

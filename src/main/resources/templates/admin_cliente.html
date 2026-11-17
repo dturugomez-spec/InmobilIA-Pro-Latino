@@ -23,6 +23,16 @@
             <p class="text-slate-600" th:text="${negocio.get('address')}">Dirección</p>
             <p th:if="${negocio.get('tax_id') == null}" class="text-xs text-red-700 mt-1">Sin identificador fiscal del cliente la factura no es completa: pídeselo o que lo rellene en Mi negocio.</p>
         </div>
+        <div class="pt-3 border-t border-slate-100 dark:border-neutral-800">
+            <p class="text-xs font-semibold text-slate-500 uppercase mb-1">Socio fundador</p>
+            <p class="text-xs text-slate-500 mb-2" th:text="${promos.fundadorPct() + ' % en sus ' + promos.fundadorCobros() + ' primeros cobros · plazas ocupadas: ' + fundadoresUsados + ' de ' + promos.fundadorPlazas()}">20 % en sus 4 primeros cobros · plazas ocupadas: 0 de 10</p>
+            <form th:action="@{|/admin/clientes/${c.get('id')}/fundador|}" method="post">
+                <input type="hidden" name="activar" th:value="${!fundador}">
+                <button th:if="${!fundador}" th:disabled="${fundadoresUsados ge promos.fundadorPlazas()}" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold disabled:opacity-50">Marcar como socio fundador</button>
+                <button th:if="${fundador}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 text-xs">Es socio fundador · quitar</button>
+            </form>
+            <p th:if="${fundador and yaSuscrito}" class="text-xs text-amber-700 mt-1">Ya tenía suscripción en Stripe: el cupón hay que ponérselo a mano allí.</p>
+        </div>
         <form th:action="@{|/admin/clientes/${c.get('id')}/creditos|}" method="post" class="pt-3 border-t border-slate-100 dark:border-neutral-800 flex items-end gap-2">
             <div>
                 <label class="block text-xs text-slate-500 mb-1">Añadir créditos de IA</label>

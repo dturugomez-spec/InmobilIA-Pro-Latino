@@ -83,20 +83,25 @@ class PlanesPorActivosTest {
 
     @Test
     void preciosDeStripeSalenDeLaHoja() {
-        assertEquals(4900, StripeService.catalogo("plan_pro_mensual").centimos());
+        // Un precio por concepto con todas las monedas (céntimos; CLP y PYG sin decimales)
+        assertEquals(5400L, StripeService.catalogo("plan_pro_mensual").importes().get("usd"));
+        assertEquals(100000L, StripeService.catalogo("plan_pro_mensual").importes().get("mxn"));
+        assertEquals(53900L, StripeService.catalogo("plan_pro_mensual").importes().get("clp"));
+        assertEquals(14, StripeService.catalogo("plan_pro_mensual").importes().size());
+        assertEquals("inmobilia_latam_plan_pro_mensual", StripeService.catalogo("plan_pro_mensual").lookupKey());
         assertEquals("month", StripeService.catalogo("plan_pro_mensual").intervalo());
-        assertEquals(39 * 12 * 100, StripeService.catalogo("plan_pro_anual").centimos());
-        assertEquals("year", StripeService.catalogo("plan_pro_anual").intervalo());
-        assertEquals(119 * 12 * 100, StripeService.catalogo("plan_business_anual").centimos());
-        assertEquals(400, StripeService.catalogo("activo_extra_mensual").centimos());
-        assertEquals(4800, StripeService.catalogo("activo_extra_anual").centimos());
-        assertEquals(2900, StripeService.catalogo("modulo_futureproof_mensual").centimos());
+        assertNull(StripeService.catalogo("plan_pro_anual"), "solo pago mensual");
+        assertEquals(16400L, StripeService.catalogo("plan_business_mensual").importes().get("usd"));
+        assertEquals(450L, StripeService.catalogo("activo_extra_mensual").importes().get("usd"));
+        assertNull(StripeService.catalogo("activo_extra_anual"));
+        assertEquals(3200L, StripeService.catalogo("modulo_futureproof_mensual").importes().get("usd"));
         assertNull(StripeService.catalogo("modulo_holding_mensual"), "el holding es solo de la versión española");
-        assertEquals(1000, StripeService.catalogo("creditos_100").centimos());
+        assertEquals(1100L, StripeService.catalogo("creditos_100").importes().get("usd"));
+        assertEquals(68200L, StripeService.catalogo("creditos_100").importes().get("pyg"));
         assertNull(StripeService.catalogo("creditos_100").intervalo(), "pago único");
         assertNull(StripeService.catalogo("plan_enterprise_mensual"), "Enterprise se pacta por correo");
         assertNull(StripeService.catalogo("plan_free_mensual"));
-        assertEquals("inmobilia_plan_business_mensual", StripeService.catalogo("plan_business_mensual").lookupKey());
+        assertEquals("inmobilia_latam_plan_business_mensual", StripeService.catalogo("plan_business_mensual").lookupKey(), "claves propias de Latino");
     }
 
     @Test

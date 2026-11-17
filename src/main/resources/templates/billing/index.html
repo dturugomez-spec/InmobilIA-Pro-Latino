@@ -93,7 +93,7 @@
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/60">
                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Créditos IA/mes</div>
                         <div class="text-lg font-bold font-mono mt-0.5" th:text="${#numbers.formatInteger(creditosMes, 0, 'POINT')}">20</div>
-                        <a href="/creditos" class="text-xs text-brand-700 hover:underline" th:text="${cobroOnline ? 'Comprar 100 por US$10' : 'Pedir 100 por US$10'}">Pedir 100 por US$10</a>
+                        <a href="/creditos" class="text-xs text-brand-700 hover:underline" th:text="${(cobroOnline ? 'Comprar 100 por ' : 'Pedir 100 por ') + tarifa.creditos_100}">Comprar 100 por 204 MXN</a>
                     </div>
                 </div>
             </div>
@@ -200,7 +200,7 @@
                 <form action="/billing/extras/activos" method="post" class="flex items-end gap-3 flex-wrap">
                     <div>
                         <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Activos adicionales
-                            (US$<span th:text="${precioActivoExtra}">4</span>/mes cada uno<span th:if="${planStatus.anual}">, facturados al año</span>)</label>
+                            (<span th:text="${tarifa.activo_extra}">82 MXN</span>/mes cada uno)</label>
                         <input type="number" name="cantidad" min="0" max="1000" th:value="${planStatus.activosExtra}"
                                class="w-28 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
                     </div>
@@ -211,7 +211,7 @@
                 <form th:if="${planActual == 'business'}" action="/billing/extras/sociedades" method="post" class="flex items-end gap-3 flex-wrap border-t border-slate-100 dark:border-neutral-800 pt-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Sociedades adicionales de la gestión multi-empresa
-                            (US$<span th:text="${precioSociedadExtra}">15</span>/mes cada una; tu plan incluye <span th:text="${sociedadesBusiness}">3</span>)</label>
+                            (<span th:text="${tarifa.sociedad_extra}">307 MXN</span>/mes cada una; tu plan incluye <span th:text="${sociedadesBusiness}">3</span>)</label>
                         <input type="number" name="cantidad" min="0" max="100" th:value="${planStatus.sociedadesExtra}"
                                class="w-28 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm">
                     </div>
@@ -226,7 +226,7 @@
                         <div th:each="m : ${modulos}" class="flex items-center justify-between gap-3">
                             <div class="text-sm">
                                 <span class="font-medium" th:text="${m.nombre()}">Módulo</span>
-                                <span class="text-slate-500" th:text="${'· US$' + m.precioMensual() + '/mes'}">· US$29/mes</span>
+                                <span class="text-slate-500" th:text="${'· ' + tarifa['modulo_' + m.clave()] + '/mes'}">· 593 MXN/mes</span>
                             </div>
                             <form th:action="@{|/billing/modulos/${m.clave()}|}" method="post">
                                 <input type="hidden" name="activo" th:value="${!planStatus.modulos.contains(m.clave())}">

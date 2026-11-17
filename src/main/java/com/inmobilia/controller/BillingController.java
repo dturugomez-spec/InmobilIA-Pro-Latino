@@ -64,6 +64,9 @@ public class BillingController {
         model.addAttribute("activosUsados", planService.activosUsados(org));
         model.addAttribute("usuarios", planService.usuariosActivos(org));
         model.addAttribute("anual", "anual".equals(user == null ? null : String.valueOf(user.get("periodo_facturacion"))));
+        // Promociones al suscribirse con Stripe: solo para quien nunca ha tenido una suscripción
+        model.addAttribute("primeraSuscripcion", !PlanService.haSuscritoAlgunaVez(user));
+        model.addAttribute("socioFundador", com.inmobilia.service.Promociones.esFundador(user) && !PlanService.haSuscritoAlgunaVez(user));
         // Viene de una herramienta que su plan no incluye: decir qué plan (o módulo) la trae
         PlanService.Herramienta h = PlanService.HERRAMIENTAS.stream()
                 .filter(x -> x.nombre().equals(herramienta)).findFirst().orElse(null);
@@ -217,7 +220,7 @@ public class BillingController {
             return "redirect:/billing";
         }
         try {
-            return "redirect:" + stripeService.createCheckoutSession(user, plan, "anual".equals(periodo));
+            return "redirect:" + stripeService.createCheckoutSession(user, plan, false);   // solo mensual
         } catch (Exception e) {
             log.error("Error creando checkout: {}", e.getMessage());
             SessionUtils.flash(session, "ERROR: " + e.getMessage());
@@ -225,7 +228,7 @@ public class BillingController {
         }
     }
 
-    /** Activos adicionales (4 USD/mes cada uno) sobre la suscripción. 0 los quita. */
+    /** Activos adicionales (precio por activo en la moneda del país) sobre la suscripción. 0 los quita. */
     @PostMapping("/billing/extras/activos")
     public String activosExtra(@RequestParam int cantidad, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
@@ -246,8 +249,8 @@ public class BillingController {
             stripeService.ajustarExtra(sub, StripeService.ACTIVO_EXTRA, n);
             supabase.update("users", org, Map.of("activos_extra", n), org);
             SessionUtils.flash(session, n == 0 ? "Activos adicionales quitados."
-                    : "Ahora tienes " + n + " activos adicionales (" + n * PlanService.PRECIO_ACTIVO_EXTRA
-                      + " USD/mes + impuestos, prorrateado este mes).");
+                    : "Ahora tienes " + n + " activos adicionales (" + com.inmobilia.util.PreciosPlataforma.texto(com.inmobilia.util.PreciosPlataforma.ACTIVO_EXTRA, n)
+                      + "/mes + impuestos, prorrateado este mes).");
         } catch (Exception e) {
             log.error("Error ajustando activos adicionales: {}", e.getMessage());
             SessionUtils.flash(session, "ERROR: " + e.getMessage());
@@ -255,7 +258,7 @@ public class BillingController {
         return "redirect:/billing";
     }
 
-    /** Sociedades adicionales de la gestión multi-empresa (15 USD/mes cada una, sobre Business). */
+    /** Sociedades adicionales de la gestión multi-empresa (precio por sociedad en la moneda del país, sobre Business). */
     @PostMapping("/billing/extras/sociedades")
     public String sociedadesExtra(@RequestParam int cantidad, HttpSession session) {
         if (!SessionUtils.isLoggedIn(session)) return "redirect:/login";
@@ -279,8 +282,8 @@ public class BillingController {
             stripeService.ajustarExtra(sub, StripeService.SOCIEDAD_EXTRA, n);
             supabase.update("users", org, Map.of("sociedades_extra", n), org);
             SessionUtils.flash(session, n == 0 ? "Sociedades adicionales quitadas."
-                    : "Ahora tienes " + n + " sociedades adicionales (" + n * PlanService.PRECIO_SOCIEDAD_EXTRA
-                      + " USD/mes + impuestos, prorrateado este mes).");
+                    : "Ahora tienes " + n + " sociedades adicionales (" + com.inmobilia.util.PreciosPlataforma.texto(com.inmobilia.util.PreciosPlataforma.SOCIEDAD_EXTRA, n)
+                      + "/mes + impuestos, prorrateado este mes).");
         } catch (Exception e) {
             log.error("Error ajustando sociedades adicionales: {}", e.getMessage());
             SessionUtils.flash(session, "ERROR: " + e.getMessage());
@@ -308,7 +311,7 @@ public class BillingController {
             Set<String> modulos = new LinkedHashSet<>(PlanService.modulosComprados(user));
             if (activo) modulos.add(m.clave()); else modulos.remove(m.clave());
             supabase.update("users", org, Map.of("modulos", new ArrayList<>(modulos)), org);
-            SessionUtils.flash(session, activo ? m.nombre() + " añadido (" + m.precioMensual() + " USD/mes + impuestos, prorrateado este mes)."
+            SessionUtils.flash(session, activo ? m.nombre() + " añadido (" + com.inmobilia.util.PreciosPlataforma.texto("modulo_" + m.clave()) + "/mes + impuestos, prorrateado este mes)."
                                                : m.nombre() + " quitado.");
         } catch (Exception e) {
             log.error("Error con el módulo {}: {}", clave, e.getMessage());

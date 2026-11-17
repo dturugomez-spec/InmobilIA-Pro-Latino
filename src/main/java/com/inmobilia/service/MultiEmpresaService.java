@@ -74,7 +74,7 @@ public class MultiEmpresaService {
         if (max >= 0 && ahora >= max) {
             return new Resultado(false, max == 0 ? "La gestión multi-empresa está en el plan Business."
                     : "Tu plan incluye " + max + " sociedades y ya las tienes. Añade sociedades adicionales ("
-                      + PlanService.PRECIO_SOCIEDAD_EXTRA + " USD/mes cada una) en Facturación.");
+                      + com.inmobilia.util.PreciosPlataforma.texto(com.inmobilia.util.PreciosPlataforma.SOCIEDAD_EXTRA) + "/mes cada una) en Facturación.");
         }
         Map<String, Object> fila = new LinkedHashMap<>();
         fila.put("user_id", org);

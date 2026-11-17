@@ -372,7 +372,7 @@ public class PlanService {
         Map<String, Object> user = getUser(orgId);
         PlanLimits l = limitsFor(user);
         String extra = FREE.equals(l.name()) ? "Mejora a Pro (hasta 15 activos)."
-                : "Mejora el plan o pide activos adicionales (" + PRECIO_ACTIVO_EXTRA + " USD/mes cada uno) en Plan y facturación.";
+                : "Mejora el plan o pide activos adicionales (" + com.inmobilia.util.PreciosPlataforma.texto(com.inmobilia.util.PreciosPlataforma.ACTIVO_EXTRA) + "/mes cada uno) en Plan y facturación.";
         return "Tu plan " + l.label() + " incluye " + maxActivos(user) + " activos y ya los tienes todos. " + extra;
     }
 

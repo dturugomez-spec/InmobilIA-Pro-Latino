@@ -76,7 +76,8 @@ class HerramientasHojaTest {
         assertEquals(5, planes.maxSociedades(Map.of("email", "a@b.es", "plan", "business", "plan_status", "active", "sociedades_extra", 2)));
         assertEquals(-1, planes.maxSociedades(Map.of("email", "a@b.es", "plan", "enterprise", "plan_status", "active")));
         assertEquals(0, planes.maxSociedades(Map.of("email", "a@b.es", "plan", "pro", "plan_status", "active")));
-        assertEquals(1500, StripeService.catalogo("sociedad_extra_mensual").centimos());
+        assertEquals(1650L, StripeService.catalogo("sociedad_extra_mensual").importes().get("usd"));
+        assertEquals(30700L, StripeService.catalogo("sociedad_extra_mensual").importes().get("mxn"));
         assertEquals("business", PlanService.herramientaDe("/herramientas/multi-empresa").planMinimo());
         assertEquals("business", PlanService.herramientaDe("/herramientas/negociacion/abc").planMinimo());
         assertEquals("pro", PlanService.herramientaDe("/herramientas/autopilot-comunicacion/enviar").planMinimo());

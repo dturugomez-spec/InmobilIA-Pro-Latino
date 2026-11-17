@@ -51,13 +51,14 @@
 <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 overflow-x-auto mb-5">
     <table class="w-full text-sm">
         <thead class="bg-slate-50 dark:bg-neutral-800/60 text-left text-xs text-slate-500">
-            <tr><th class="px-4 py-2">Cliente</th><th class="px-4 py-2">Plan</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2"></th></tr>
+            <tr><th class="px-4 py-2">Cliente <span class="font-normal" th:text="${'· socios fundadores: ' + fundadoresUsados + ' de ' + promos.fundadorPlazas()}"></span></th><th class="px-4 py-2">Plan</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2"></th></tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
             <tr th:if="${#lists.isEmpty(clientes)}"><td colspan="4" class="px-4 py-6 text-center text-slate-500">Aún no hay clientes. Llegan aprobando las solicitudes de acceso.</td></tr>
             <tr th:each="c : ${clientes}">
                 <td class="px-4 py-2.5">
-                    <div class="font-medium" th:text="${c.get('nombre')}">Empresa</div>
+                    <div class="font-medium"><span th:text="${c.get('nombre')}">Empresa</span>
+                        <span th:if="${c.get('fundador')}" class="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-semibold align-middle">Socio fundador</span></div>
                     <div class="text-xs text-slate-500" th:text="${c.get('email')}">email</div>
                 </td>
                 <td class="px-4 py-2.5" th:text="${c.get('planEfectivo')}">Pro</td>
