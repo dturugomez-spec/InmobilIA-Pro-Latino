@@ -36,6 +36,7 @@ public class CrudController {
     private final com.inmobilia.service.TrashService trash;
     private final com.inmobilia.service.WorkflowEngine workflows;
     private final com.inmobilia.service.MatchingEngine matching;
+    private final com.inmobilia.service.RespuestaLeadsService respuestasLeads;
 
     /** Ejemplos reales por campo (declarado ANTES que TABLES para evitar NPE en clinit). */
     private static final Map<String, String> PLACEHOLDERS = Map.ofEntries(
@@ -478,6 +479,9 @@ public class CrudController {
     }
 
     private void eventosAlActualizar(String table, String uid, Map<String, Object> antes, Map<String, Object> cambios) {
+        // Sacar un lead de «Nuevo» cuenta como haberle contestado (tiempo de respuesta)
+        if ("leads".equals(table) && cambios.get("etapa") instanceof String nueva)
+            respuestasLeads.alCambiarEtapa(uid, String.valueOf(antes.get("id")), antes.get("etapa"), nueva);
         String evento = eventoAlActualizar(table, antes, cambios);
         if (evento == null) return;
         Map<String, Object> datos = new LinkedHashMap<>(antes);

@@ -33,6 +33,7 @@ public class AgentAutopilotService {
     private final NotificationService notif;
     private final ObjectMapper mapper = new ObjectMapper();
     private final com.inmobilia.service.PaisService paises;
+    private final RespuestaLeadsService respuestas;
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
 
@@ -340,10 +341,12 @@ public class AgentAutopilotService {
 
     private String ejecutarContactado(String uid, Map<String, Object> a) {
         supabase.update("leads", String.valueOf(a.get("lead_id")), Map.of("etapa", "Contactado"));
+        respuestas.marcarRespuesta(uid, String.valueOf(a.get("lead_id")), "agente");
         return "✅ Lead marcado como contactado";
     }
 
     private void registrarInteraccion(String uid, String leadId, String tipo, String detalle) {
+        respuestas.marcarRespuesta(uid, leadId, "agente");
         try {
             Map<String, Object> nota = new LinkedHashMap<>();
             nota.put("lead_id", leadId);

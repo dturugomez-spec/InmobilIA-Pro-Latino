@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Respuesta a leads</title></head>
+<body>
+<div layout:fragment="content" class="max-w-5xl mx-auto space-y-5">
+
+    <div class="rounded-xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-5">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i data-lucide="zap" class="h-5 w-5"></i> Respuesta a leads</h1>
+        <p class="text-sm text-white/80 mt-1">El contacto que no recibe respuesta en minutos llama a la siguiente agencia.
+            Aquí ves cuánto tardáis en contestar y la respuesta automática que sale sola al instante.</p>
+    </div>
+
+    <!-- Interruptor -->
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 p-5 flex items-start gap-4 flex-wrap"
+         th:classappend="${activa ? 'ring-emerald-300' : 'ring-amber-300'}">
+        <div class="flex-1 min-w-[16rem] text-sm">
+            <p class="font-semibold" th:text="${activa ? 'Respuesta automática encendida' : 'Respuesta automática apagada'}">Respuesta automática</p>
+            <p class="text-slate-600 dark:text-slate-400 mt-1">A cada contacto nuevo de un portal o de la página de un inmueble le llega al momento un correo con el inmueble,
+                huecos de visita libres de tu agenda, otros inmuebles parecidos y tu teléfono. Si te contesta, el correo te llega a ti.
+                Si solo dejó teléfono, se crea una tarea urgente para llamarle.</p>
+            <p th:if="${!#lists.isEmpty(huecos)}" class="text-xs text-slate-500 mt-2" th:text="${'Huecos que se ofrecerían ahora: ' + #strings.listJoin(huecos, ' · ')}">Huecos</p>
+        </div>
+        <form th:if="${puedeCambiar}" method="post" action="/respuesta-leads/auto">
+            <input type="hidden" name="activar" th:value="${!activa}">
+            <button class="px-4 py-2 rounded-lg text-sm font-semibold"
+                    th:classappend="${activa ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-emerald-700 hover:bg-emerald-800 text-white'}"
+                    th:text="${activa ? 'Apagar' : 'Encender'}">Encender</button>
+        </form>
+    </div>
+
+    <!-- Números de los últimos 30 días -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Leads (30 días)</p><p class="text-2xl font-bold mt-1" th:text="${m.recibidos()}">0</p></div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Tiempo de respuesta (mediana)</p><p class="text-2xl font-bold mt-1" th:text="${mediana}">—</p></div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500" th:text="${'Contestados en ' + objetivo + ' min o menos'}">En 5 min</p>
+            <p class="text-2xl font-bold mt-1" th:classappend="${m.pctObjetivo() >= 80 ? 'text-emerald-700' : 'text-amber-700'}" th:text="${m.pctObjetivo() + ' %'}">0 %</p></div>
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-4">
+            <p class="text-[10px] uppercase text-slate-500">Contestados</p><p class="text-2xl font-bold mt-1" th:text="${m.pctRespondidos() + ' %'}">0 %</p>
+            <p class="text-xs text-slate-500" th:text="${m.automaticas() + ' con la respuesta automática'}"></p></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Sin contestar -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Sin contestar todavía</h3>
+            <p th:if="${#lists.isEmpty(m.sinResponder())}" class="text-sm text-emerald-700">Ninguno. Todos los contactos de los últimos 30 días tienen respuesta.</p>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800 text-sm">
+                <li th:each="l : ${m.sinResponder()}" class="py-2 flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                        <a th:href="@{|/entity/lead/${l.get('id')}|}" class="font-medium hover:underline" th:text="${l.get('nombre') ?: 'Sin nombre'}">Lead</a>
+                        <span class="text-xs text-slate-500" th:text="${' · ' + (l.get('origen') ?: 'sin origen')}"></span>
+                    </div>
+                    <span class="text-xs text-red-700 whitespace-nowrap" th:text="${'esperando ' + l.get('esperando')}">esperando 2 h</span>
+                </li>
+            </ul>
+            <a href="/bandeja" class="inline-block mt-3 text-sm text-brand-700 hover:underline">Contestar desde la bandeja →</a>
+        </div>
+
+        <!-- Por origen -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Por origen</h3>
+            <p th:if="${#lists.isEmpty(m.origenes())}" class="text-sm text-slate-500">Aún no hay leads en los últimos 30 días.</p>
+            <table th:unless="${#lists.isEmpty(m.origenes())}" class="w-full text-sm">
+                <thead class="text-xs text-slate-500 text-left"><tr><th class="py-1">Origen</th><th class="text-right">Leads</th><th class="text-right">Contestados</th><th class="text-right">Mediana</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-neutral-800">
+                <tr th:each="o : ${m.origenes()}">
+                    <td class="py-2" th:text="${o.origen()}">idealista</td>
+                    <td class="py-2 text-right" th:text="${o.recibidos()}">0</td>
+                    <td class="py-2 text-right" th:text="${o.respondidos()}">0</td>
+                    <td class="py-2 text-right" th:text="${o.medianaMin() == null ? '—' : o.medianaMin() + ' min'}">—</td>
+                </tr>
+                </tbody>
+            </table>
+            <p class="text-xs text-slate-500 mt-3">Cuenta como contestado cuando sale la respuesta automática, cuando alguien lo marca como contactado o lo pasa de «Nuevo» a otra etapa,
+                o cuando le escribe el agente o el seguimiento automático.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

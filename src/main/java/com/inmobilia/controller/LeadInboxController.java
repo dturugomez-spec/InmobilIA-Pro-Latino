@@ -26,6 +26,7 @@ public class LeadInboxController {
     private final SupabaseService supabase;
     private final AIService aiService;
     private final BrandingService branding;
+    private final com.inmobilia.service.RespuestaLeadsService respuestas;
 
     @GetMapping("/bandeja")
     public String inbox(HttpSession session, Model model,
@@ -119,7 +120,10 @@ public class LeadInboxController {
         String uid = SessionUtils.uid(session);
         if (uid == null) return "redirect:/login";
         List<Map<String, Object>> rows = supabase.selectFilter("leads", "id=eq." + id + "&user_id=eq." + uid);
-        if (!rows.isEmpty()) supabase.update("leads", id, Map.of("etapa", "Contactado"), uid);
+        if (!rows.isEmpty()) {
+            supabase.update("leads", id, Map.of("etapa", "Contactado"), uid);
+            respuestas.marcarRespuesta(uid, id, "agente");
+        }
         return "redirect:/bandeja";
     }
 

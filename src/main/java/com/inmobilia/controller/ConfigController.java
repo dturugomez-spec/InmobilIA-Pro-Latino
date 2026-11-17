@@ -64,6 +64,7 @@ public class ConfigController {
         String uid = SessionUtils.uid(session);
         try {
             supabase.update("users", uid, Map.of("auto_respuesta_leads", activar));
+            supabase.update("users", uid, Map.of("auto_respuesta_cambiada_at", java.time.Instant.now().toString()));
         } catch (Exception ignored) {}
         SessionUtils.flash(session, activar
                 ? "⚡ Auto-respuesta a leads ACTIVADA. Los nuevos contactos recibirán respuesta al instante."
@@ -77,10 +78,10 @@ public class ConfigController {
                     "id=eq." + uid + "&select=auto_respuesta_leads&limit=1");
             if (!us.isEmpty()) {
                 Object v = us.get(0).get("auto_respuesta_leads");
-                return Boolean.TRUE.equals(v) || "true".equalsIgnoreCase(String.valueOf(v));
+                return com.inmobilia.service.LeadAutoResponderService.activa(v);
             }
         } catch (Exception ignored) {}
-        return false;
+        return true;   // encendida por defecto
     }
 
     @PostMapping("/api-key")

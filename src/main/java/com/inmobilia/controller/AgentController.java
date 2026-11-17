@@ -28,6 +28,7 @@ public class AgentController {
     private final AgentActionService actionService;
     private final AIService aiService;
     private final SupabaseService supabase;
+    private final com.inmobilia.service.RespuestaLeadsService respuestas;
 
     @GetMapping
     public String panel(HttpSession session, Model model) {
@@ -138,6 +139,7 @@ public class AgentController {
         var rows = supabase.selectFilter("leads", "id=eq." + leadId);
         if (rows.isEmpty() || !uid.equals(String.valueOf(rows.get(0).get("user_id")))) return Map.of("ok", false);
         supabase.update("leads", leadId, Map.of("etapa", "Contactado"));
+        respuestas.marcarRespuesta(uid, leadId, "agente");
         return Map.of("ok", true, "msg", "✅ Marcado como contactado");
     }
 

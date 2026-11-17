@@ -93,7 +93,7 @@ public class PublicPropertyPageController {
         Map<String, Object> guardado = supabase.insert("leads", lead);
 
         // ⚡ Speed-to-lead: respuesta instantánea (si la agencia lo tiene activado)
-        try { autoResponder.responder(String.valueOf(p.get("user_id")), lead, p); } catch (Exception ignored) {}
+        try { autoResponder.responder(String.valueOf(p.get("user_id")), guardado != null ? guardado : lead, p); } catch (Exception ignored) {}
         if (guardado != null) {
             Map<String, Object> evento = new LinkedHashMap<>(guardado);
             evento.put("propiedad_id", id);

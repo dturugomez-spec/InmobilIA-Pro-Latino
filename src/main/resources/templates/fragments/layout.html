@@ -255,6 +255,10 @@
                     <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform" :class="open ? '' : '-rotate-90'"></i>
                 </button>
                 <div x-show="open || sidebarCollapsed" class="space-y-0.5 mt-0.5">
+                <a th:if="${nav.ve('/respuesta-leads')}" href="/respuesta-leads" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Respuesta a leads">
+                    <i data-lucide="zap" class="h-4 w-4 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" class="truncate">Respuesta a leads</span>
+                </a>
                 <a th:if="${nav.ve('/bandeja')}" href="/bandeja" :class="sidebarCollapsed ? 'justify-center' : ''" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors group" title="Bandeja de leads">
                     <i data-lucide="inbox" class="h-4 w-4 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" class="truncate">Bandeja de leads</span>

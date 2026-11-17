@@ -31,6 +31,7 @@ public class SeguimientoService {
     private final NotificationService notif;
     private final ObjectMapper mapper = new ObjectMapper();
     private final com.inmobilia.service.PaisService paises;
+    private final RespuestaLeadsService respuestas;
 
     public record Paso(int dia, String canal, String proposito) {}
 
@@ -258,6 +259,7 @@ public class SeguimientoService {
             n.put("detalle", detalle); n.put("created_at", OffsetDateTime.now().toString());
             supabase.insert("lead_interacciones", n);
         } catch (Exception ignored) {}
+        respuestas.marcarRespuesta(uid, leadId, "seguimiento");
     }
     private static String resumen(String s) { return s == null ? "" : (s.length() > 60 ? s.substring(0, 60) + "…" : s); }
     private static double nd(Object o) { try { return o == null ? 0 : Double.parseDouble(String.valueOf(o).replace(",", ".")); } catch (Exception e) { return 0; } }

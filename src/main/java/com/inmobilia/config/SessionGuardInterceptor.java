@@ -189,7 +189,7 @@ public class SessionGuardInterceptor implements HandlerInterceptor {
             java.util.Map.entry("whatsapp", "leads"), java.util.Map.entry("sms", "leads"),
             java.util.Map.entry("matches", "leads"), java.util.Map.entry("chatbot", "leads"),
             java.util.Map.entry("portal-comprador", "leads"), java.util.Map.entry("notas-voz", "ia"),
-            java.util.Map.entry("valoracion", "leads"),
+            java.util.Map.entry("valoracion", "leads"), java.util.Map.entry("agente-crm", "leads"), java.util.Map.entry("respuesta-leads", "leads"),
             // Oportunidades y embudo de ventas
             java.util.Map.entry("oportunidades", "oportunidades"), java.util.Map.entry("kanban", "oportunidades"),
             java.util.Map.entry("pipelines", "oportunidades"), java.util.Map.entry("cobroking", "oportunidades"),
