@@ -53,6 +53,12 @@
                             <i data-lucide="qr-code" class="h-3.5 w-3.5"></i>
                             <span>Cartel QR</span>
                         </a>
+                        <!-- Fotos, plano, reforma, limpieza… a un colaborador de confianza -->
+                        <a th:href="@{|/colaboradores?propiedad=${prop.get('id')}|}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur ring-1 ring-white/20 text-white text-sm font-medium transition-colors">
+                            <i data-lucide="handshake" class="h-3.5 w-3.5"></i>
+                            <span>Pedir un servicio</span>
+                        </a>
                         <a href="/crud/propiedades"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/70 hover:text-white text-sm font-medium transition-colors">
                             <i data-lucide="arrow-left" class="h-3.5 w-3.5"></i>

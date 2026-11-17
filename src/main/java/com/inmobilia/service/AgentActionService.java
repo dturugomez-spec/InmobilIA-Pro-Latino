@@ -371,7 +371,7 @@ public class AgentActionService {
             try {
                 var leads = supabase.selectFilter("leads", "user_id=eq." + uid + "&nombre=ilike.*" + enc(leadNombre) + "*&limit=1");
                 if (!leads.isEmpty() && leads.get(0).get("telefono") != null) {
-                    String tel = String.valueOf(leads.get(0).get("telefono")).replaceAll("[\\s+\\-]", "");
+                    String tel = com.inmobilia.util.PaisActual.get().telefonoInternacional(String.valueOf(leads.get(0).get("telefono")));
                     s.append("\n\n👉 Enviar ahora: https://wa.me/").append(tel).append("?text=")
                      .append(java.net.URLEncoder.encode(cuerpo, java.nio.charset.StandardCharsets.UTF_8));
                 }

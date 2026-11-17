@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Colaboradores</title></head>
+<body>
+<div layout:fragment="content" class="max-w-6xl mx-auto space-y-5">
+
+    <div class="rounded-xl bg-gradient-to-br from-brand-800 to-brand-950 text-white p-5">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i data-lucide="handshake" class="h-5 w-5"></i> Colaboradores</h1>
+        <p class="text-sm text-white/80 mt-1">Tu técnico de certificados, tu fotógrafo, tu empresa de reformas o de limpieza. Pídeles un trabajo desde aquí o desde la ficha del inmueble:
+            reciben un enlace, lo aceptan con precio y fecha y suben el resultado. Sin llamadas ni perseguir a nadie.</p>
+    </div>
+
+    <!-- Pedir un trabajo -->
+    <form th:if="${!#lists.isEmpty(activos)}" method="post" action="/colaboradores/encargos"
+          class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-emerald-300 p-5 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm items-end">
+        <h3 class="md:col-span-4 font-semibold">Pedir un trabajo</h3>
+        <label>Colaborador
+            <select name="colaborador" required class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <option th:each="c : ${activos}" th:value="${c.get('id')}" th:text="${c.get('_servicio') + ' · ' + c.get('nombre')}">Certificado · Ana</option>
+            </select></label>
+        <label>Inmueble
+            <select name="propiedad" class="w-full mt-1 px-2 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <option value="">—</option>
+                <option th:each="p : ${propiedades}" th:value="${p.get('id')}" th:text="${p.get('name')}" th:selected="${p.get('id') + '' == propiedadSel}">Inmueble</option>
+            </select></label>
+        <label>Para cuándo <input type="date" name="fecha_deseada" th:min="${hoy}" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"></label>
+        <label>Con quién queda para entrar <input name="contacto" placeholder="Nombre y teléfono" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"></label>
+        <label class="md:col-span-3">Qué hay que hacer <input name="descripcion" placeholder="Por ejemplo: fotos profesionales para publicar; piso de 90 m² con llaves en la agencia." class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"></label>
+        <button class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold">Enviar encargo</button>
+    </form>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Colaboradores -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Tus colaboradores</h3>
+            <p th:if="${#lists.isEmpty(colaboradores)}" class="text-sm text-slate-500 mb-3">Aún no has añadido ninguno. Empieza por quien te hace los certificados energéticos y las fotos.</p>
+            <div class="space-y-2 mb-4">
+                <details th:each="c : ${colaboradores}" class="rounded-lg ring-1 ring-slate-200 dark:ring-neutral-700 p-3" th:classappend="${c.get('activo') == false ? 'opacity-60' : ''}">
+                    <summary class="cursor-pointer text-sm flex items-center gap-2 flex-wrap">
+                        <span class="font-medium" th:text="${c.get('nombre')}">Nombre</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" th:text="${c.get('_servicio')}">Servicio</span>
+                        <span class="text-xs text-slate-500" th:text="${c.get('_hechos') + ' hechos' + (c.get('_nota') != null ? ' · ' + c.get('_nota') + ' de 5' : '')}">3 hechos</span>
+                        <span th:if="${c.get('activo') == false}" class="text-xs text-slate-500">(inactivo)</span>
+                    </summary>
+                    <form method="post" action="/colaboradores" class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        <input type="hidden" name="id" th:value="${c.get('id')}">
+                        <input name="nombre" th:value="${c.get('nombre')}" required class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <select name="servicio" class="px-2 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                            <option th:each="s : ${servicios}" th:value="${s.key}" th:text="${s.value}" th:selected="${s.key == c.get('servicio')}">Servicio</option>
+                        </select>
+                        <input name="email" th:value="${c.get('email')}" placeholder="Correo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <input name="telefono" th:value="${c.get('telefono')}" placeholder="Teléfono" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <input name="zona" th:value="${c.get('zona')}" placeholder="Zona" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <input name="precio_orientativo" th:value="${c.get('precio_orientativo')}" placeholder="Precio orientativo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <input name="notas" th:value="${c.get('notas')}" placeholder="Notas" class="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <button class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">Guardar</button>
+                    </form>
+                    <form method="post" th:action="@{|/colaboradores/${c.get('id')}/activo|}" class="mt-2">
+                        <input type="hidden" name="activo" th:value="${c.get('activo') == false}">
+                        <button class="text-xs text-slate-600 hover:underline" th:text="${c.get('activo') == false ? 'Volver a activar' : 'Dejar de usar'}">Dejar de usar</button>
+                    </form>
+                </details>
+            </div>
+            <form method="post" action="/colaboradores" class="grid grid-cols-2 gap-2 text-sm border-t border-slate-100 dark:border-neutral-800 pt-4">
+                <p class="col-span-2 text-xs font-semibold text-slate-600 dark:text-slate-300">Añadir colaborador</p>
+                <input name="nombre" required placeholder="Nombre o empresa" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <select name="servicio" class="px-2 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                    <option th:each="s : ${servicios}" th:value="${s.key}" th:text="${s.value}">Servicio</option>
+                </select>
+                <input name="email" type="email" placeholder="Correo (para enviarle los encargos)" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <input name="telefono" placeholder="Teléfono (para enviárselo por WhatsApp)" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <input name="zona" placeholder="Zona en la que trabaja" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <input name="precio_orientativo" placeholder="Precio orientativo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <button class="px-3.5 py-2 rounded-lg bg-brand-800 hover:bg-brand-900 text-white font-medium">Añadir</button>
+            </form>
+        </div>
+
+        <!-- Encargos -->
+        <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5">
+            <h3 class="text-sm font-semibold mb-3">Encargos</h3>
+            <p th:if="${#lists.isEmpty(encargos)}" class="text-sm text-slate-500">Aún no has pedido ningún trabajo.</p>
+            <ul class="divide-y divide-slate-100 dark:divide-neutral-800 text-sm">
+                <li th:each="e : ${encargos}" class="py-2.5 flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                        <a th:href="@{|/colaboradores/encargos/${e.get('id')}|}" class="font-medium hover:underline" th:text="${e.get('_servicio') + ' · ' + e.get('_colaborador')}">Certificado · Ana</a>
+                        <p class="text-xs text-slate-500 truncate" th:text="${e.get('_inmueble')}">Inmueble</p>
+                    </div>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          th:classappend="${e.get('estado') == 'hecho' ? 'bg-emerald-100 text-emerald-700' : (e.get('estado') == 'aceptado' ? 'bg-blue-100 text-blue-700' : (e.get('estado') == 'enviado' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'))}"
+                          th:text="${e.get('estado')}">enviado</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

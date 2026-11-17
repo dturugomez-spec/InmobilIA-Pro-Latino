@@ -311,7 +311,7 @@ public class AgentAutopilotService {
             emailService.send(email, String.valueOf(payload.getOrDefault("asunto", "Mensaje de tu agencia")), texto.replace("\n", "<br>"));
             return "📧 Email enviado a " + lead.getOrDefault("nombre", "");
         } else {
-            String tel = String.valueOf(lead.getOrDefault("telefono", "")).replaceAll("[\\s+\\-]", "");
+            String tel = com.inmobilia.util.PaisActual.get().telefonoInternacional(String.valueOf(lead.getOrDefault("telefono", "")));
             String url = "https://wa.me/" + tel + "?text=" + java.net.URLEncoder.encode(texto, java.nio.charset.StandardCharsets.UTF_8);
             return "WHATSAPP:" + url;  // el controlador lo convierte en enlace para abrir
         }

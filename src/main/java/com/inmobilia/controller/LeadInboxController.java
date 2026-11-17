@@ -101,9 +101,8 @@ public class LeadInboxController {
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("ok", true);
         out.put("mensaje", mensaje);
-        String tel = digits(str(l.get("telefono")));
+        String tel = com.inmobilia.util.PaisActual.get().telefonoInternacional(str(l.get("telefono")));
         if (!tel.isBlank()) {
-            if (tel.length() == 9) tel = "34" + tel;
             out.put("whatsapp", "https://wa.me/" + tel + "?text=" + enc(mensaje));
         }
         String email = str(l.get("email"));

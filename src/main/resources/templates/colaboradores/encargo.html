@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head><title>Encargo</title></head>
+<body>
+<div layout:fragment="content" class="max-w-3xl mx-auto space-y-5">
+    <a href="/colaboradores" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900"><i data-lucide="arrow-left" class="h-4 w-4"></i> Colaboradores</a>
+
+    <div class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-sm space-y-2">
+        <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-lg font-bold" th:text="${servicio}">Servicio</h2>
+            <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                  th:classappend="${e.get('estado') == 'hecho' ? 'bg-emerald-100 text-emerald-700' : (e.get('estado') == 'aceptado' ? 'bg-blue-100 text-blue-700' : (e.get('estado') == 'enviado' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'))}"
+                  th:text="${e.get('estado')}">enviado</span>
+        </div>
+        <p><span class="text-slate-500">Colaborador:</span> <strong th:text="${col.get('nombre') ?: '—'}">Nombre</strong>
+            <span class="text-slate-500" th:text="${(col.get('telefono') != null ? ' · ' + col.get('telefono') : '') + (col.get('email') != null ? ' · ' + col.get('email') : '')}"></span></p>
+        <p th:if="${e.get('direccion') != null}"><span class="text-slate-500">Inmueble:</span> <span th:text="${e.get('direccion')}">Dirección</span></p>
+        <p th:if="${e.get('descripcion') != null}"><span class="text-slate-500">Encargo:</span> <span th:text="${e.get('descripcion')}">Descripción</span></p>
+        <p th:if="${e.get('fecha_deseada') != null}"><span class="text-slate-500">Para el:</span> <span th:text="${e.get('fecha_deseada')}">fecha</span></p>
+        <p th:if="${e.get('contacto') != null}"><span class="text-slate-500">Acceso:</span> <span th:text="${e.get('contacto')}">Contacto</span></p>
+    </div>
+
+    <!-- Respuesta del colaborador -->
+    <div th:if="${e.get('respondido_at') != null or e.get('hecho_at') != null}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-sm space-y-2">
+        <h3 class="font-semibold">Respuesta del colaborador</h3>
+        <p th:if="${e.get('precio') != null}"><span class="text-slate-500">Precio:</span> <strong th:text="${#numbers.formatDecimal(e.get('precio'), 1, 'DEFAULT', 2, 'DEFAULT') + ' ' + mon}">120</strong></p>
+        <p th:if="${e.get('fecha_prevista') != null}"><span class="text-slate-500">Lo hará el:</span> <span th:text="${e.get('fecha_prevista')}">fecha</span></p>
+        <p th:if="${e.get('respuesta') != null}" class="italic text-slate-700 dark:text-slate-300" th:text="${e.get('respuesta')}">Mensaje</p>
+        <div th:if="${e.get('entrega_ruta') != null}" class="flex items-center gap-3 flex-wrap">
+            <a th:href="@{|/colaboradores/encargos/${e.get('id')}/entrega|}" target="_blank" class="text-brand-700 hover:underline font-medium" th:text="${e.get('entrega_nombre') ?: 'Ver lo entregado'}">entrega.pdf</a>
+        </div>
+        <dl th:if="${e.get('entrega_datos') != null}" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <th:block th:each="kv : ${e.get('entrega_datos')}">
+                <dt class="text-slate-500" th:text="${#strings.replace(kv.key, '_', ' ')}">clave</dt>
+                <dd th:text="${kv.value}">valor</dd>
+            </th:block>
+        </dl>
+    </div>
+
+    <!-- Enlace del colaborador -->
+    <div th:if="${enlace != null}" class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-sm space-y-2">
+        <h3 class="font-semibold">Enlace del colaborador</h3>
+        <p class="text-xs text-slate-500">Desde este enlace ve el encargo, lo acepta con su precio y sube el resultado. No necesita cuenta.</p>
+        <input readonly th:value="${enlace}" onclick="this.select()" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-xs font-mono">
+        <div class="flex gap-3 items-center">
+            <a th:if="${whatsapp != null}" th:href="${whatsapp}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Enviar por WhatsApp</a>
+            <form th:action="@{|/colaboradores/encargos/${e.get('id')}/cancelar|}" method="post" onsubmit="return confirm('¿Cancelar el encargo? El enlace dejará de funcionar.')">
+                <button class="text-xs text-red-600 hover:underline">Cancelar encargo</button></form>
+        </div>
+    </div>
+
+    <!-- Valoración -->
+    <form th:if="${e.get('estado') == 'hecho'}" th:action="@{|/colaboradores/encargos/${e.get('id')}/valorar|}" method="post"
+          class="rounded-xl bg-white dark:bg-neutral-900 ring-1 ring-slate-200 dark:ring-neutral-800 p-5 text-sm flex items-end gap-3 flex-wrap">
+        <label>¿Qué tal ha ido?
+            <select name="valoracion" class="block mt-1 px-2 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                <option th:each="n : ${#numbers.sequence(5, 1)}" th:value="${n}" th:text="${n + ' de 5'}" th:selected="${e.get('valoracion') != null and e.get('valoracion') == n}">5 de 5</option>
+            </select></label>
+        <label class="flex-1 min-w-[12rem]">Comentario <input name="nota" th:value="${e.get('valoracion_nota')}" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"></label>
+        <button class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold">Guardar valoración</button>
+    </form>
+</div>
+</body>
+</html>

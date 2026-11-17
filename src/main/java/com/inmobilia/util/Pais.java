@@ -116,6 +116,23 @@ public record Pais(String codigo, String nombre, String bandera, String moneda, 
                 prefijo, c.zonaEfectiva(), leyDatos, portales, nombreCiudad);
     }
 
+    /**
+     * Teléfono en formato internacional, solo cifras (para wa.me y la API de WhatsApp).
+     * "+57 300 123 4567" y "0057…" se respetan; un número nacional ("55 1234 5678", "011 4321 0000")
+     * recibe el prefijo del país de la inmobiliaria, sin el 0 inicial de larga distancia.
+     */
+    public String telefonoInternacional(String tel) {
+        if (tel == null || tel.isBlank()) return "";
+        String t = tel.trim();
+        String d = t.replaceAll("\\D", "");
+        if (t.startsWith("+")) return d;
+        if (d.startsWith("00")) return d.substring(2);
+        String codigo = prefijo.replaceAll("\\D", "");
+        if (d.startsWith(codigo) && d.length() > 10) return d;   // ya lleva el prefijo
+        if (d.startsWith("0")) d = d.substring(1);
+        return d.isEmpty() ? "" : codigo + d;
+    }
+
     /** "Guadalajara, México" o "México" si no hay ciudad. */
     public String ubicacion() { return ciudad == null ? nombre : ciudad + ", " + nombre; }
 

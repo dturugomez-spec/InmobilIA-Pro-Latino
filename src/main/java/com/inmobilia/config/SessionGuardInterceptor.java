@@ -197,6 +197,7 @@ public class SessionGuardInterceptor implements HandlerInterceptor {
             java.util.Map.entry("propiedades", "propiedades"), java.util.Map.entry("tours-360", "propiedades"),
             java.util.Map.entry("precios-historico", "propiedades"), java.util.Map.entry("comparar", "propiedades"),
             java.util.Map.entry("promociones", "propiedades"), java.util.Map.entry("cee", "propiedades"),
+            java.util.Map.entry("colaboradores", "propiedades"),
             java.util.Map.entry("rentabilidad", "propiedades"), java.util.Map.entry("marketplace", "propiedades"),
             java.util.Map.entry("feeds", "email_templates"), // publicación en portales: marketing
             java.util.Map.entry("inquilinos", "inquilinos"),

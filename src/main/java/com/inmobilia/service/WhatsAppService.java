@@ -135,9 +135,7 @@ public class WhatsAppService {
     }
 
     private String normalizar(String tel) {
-        String clean = tel.replaceAll("[\\s+\\-()]", "");
-        if (!clean.startsWith("34") && clean.length() == 9) clean = "34" + clean;
-        return clean;
+        return com.inmobilia.util.PaisActual.get().telefonoInternacional(tel);   // prefijo del país de la inmobiliaria
     }
 
     private void guardarMensaje(String userId, String numero, String dir, String tipo,

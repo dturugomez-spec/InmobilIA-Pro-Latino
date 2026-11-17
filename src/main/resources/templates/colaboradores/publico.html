@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Encargo</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f1f5f9; color: #0f172a; }
+        .caja { max-width: 560px; margin: 32px auto; background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        h2 { font-size: 15px; margin: 22px 0 6px; }
+        p { line-height: 1.5; margin: 6px 0; }
+        .gris { color: #64748b; font-size: 14px; }
+        .dato { font-size: 15px; }
+        label { display: block; font-size: 14px; margin: 12px 0 4px; }
+        input, textarea { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+        button { margin-top: 14px; width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #0f172a; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button.sec { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+        .aviso { background: #ecfdf5; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #065f46; }
+        .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+<div class="caja">
+    <th:block th:if="${caducado}">
+        <h1>Este enlace ya no está activo</h1>
+        <p class="gris">El encargo se ha cerrado, se ha cancelado o el enlace ha caducado. Habla con la inmobiliaria.</p>
+    </th:block>
+    <th:block th:if="${hecho}">
+        <h1>Recibido, gracias</h1>
+        <p class="gris" th:text="${agencia + ' ya tiene el aviso de que el trabajo está terminado.'}">Gracias.</p>
+    </th:block>
+    <th:block th:if="${rechazado}">
+        <h1>Gracias por avisar</h1>
+        <p class="gris" th:text="${'Le hemos dicho a ' + agencia + ' que no puedes hacer este encargo.'}">Gracias.</p>
+    </th:block>
+    <th:block th:if="${e != null and caducado == null and hecho == null and rechazado == null}">
+        <p class="gris" th:text="${agencia + ' te pide un trabajo'}">La inmobiliaria te pide un trabajo</p>
+        <h1 th:text="${servicio}">Certificado energético</h1>
+        <p th:if="${mensaje != null}" class="aviso" th:text="${mensaje}"></p>
+        <p class="dato" th:if="${e.get('direccion') != null}"><strong>Dónde:</strong> <span th:text="${e.get('direccion')}">Dirección</span></p>
+        <p class="dato" th:if="${e.get('descripcion') != null}"><strong>Qué:</strong> <span th:text="${e.get('descripcion')}">Descripción</span></p>
+        <p class="dato" th:if="${e.get('fecha_deseada') != null}"><strong>Para el:</strong> <span th:text="${e.get('fecha_deseada')}">fecha</span></p>
+        <p class="dato" th:if="${e.get('contacto') != null}"><strong>Acceso:</strong> <span th:text="${e.get('contacto')}">Contacto</span></p>
+        <p class="gris" th:if="${telefonoAgencia != null}" th:text="${'Dudas: ' + telefonoAgencia}"></p>
+
+        <!-- Aún sin contestar -->
+        <form th:if="${e.get('estado') == 'enviado'}" method="post" th:action="@{|/encargo/${token}/responder|}">
+            <h2>¿Puedes hacerlo?</h2>
+            <div class="fila">
+                <div><label>Tu precio ([[${mon}]], sin impuestos)</label><input name="precio" inputmode="decimal"></div>
+                <div><label>Cuándo lo harías</label><input type="date" name="fecha_prevista"></div>
+            </div>
+            <label>Mensaje (opcional)</label>
+            <textarea name="respuesta" rows="2"></textarea>
+            <button name="decision" value="aceptar">Aceptar el encargo</button>
+            <button name="decision" value="rechazar" class="sec">No puedo hacerlo</button>
+        </form>
+
+        <!-- Aceptado: entregar -->
+        <form th:if="${e.get('estado') == 'aceptado'}" method="post" th:action="@{|/encargo/${token}/entregar|}" enctype="multipart/form-data">
+            <h2>Cuando termines</h2>
+            <label>Sube el resultado (PDF o foto), si lo hay</label>
+            <input type="file" name="archivo" accept="application/pdf,image/jpeg,image/png">
+            <label>Comentario (opcional)</label>
+            <textarea name="respuesta" rows="2"></textarea>
+            <button>Trabajo terminado</button>
+        </form>
+    </th:block>
+</div>
+</body>
+</html>
