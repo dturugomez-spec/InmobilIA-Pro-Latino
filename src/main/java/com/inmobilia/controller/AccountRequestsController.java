@@ -35,6 +35,7 @@ public class AccountRequestsController {
     private final NotificationService notif;
     private final DefaultAutomationsSeeder automationsSeeder;
     private final com.inmobilia.service.PlanService planService;
+    private final com.inmobilia.service.CobroManualService cobroManual;
 
     /** Validez del enlace de bienvenida para crear la contraseña. */
     private static final java.time.Duration VALIDEZ_BIENVENIDA = java.time.Duration.ofDays(7);
@@ -59,9 +60,6 @@ public class AccountRequestsController {
     }
 
     private static final String BASE_URL = com.inmobilia.util.UrlBase.BASE;
-    private static final String[] ADMIN_EMAILS = (
-            System.getenv().getOrDefault("ADMIN_EMAILS", "")
-    ).split(",");
 
     // ═══════════════════════════════════════════════════════════════
     // ENDPOINT PÚBLICO: recibir solicitud desde la landing
@@ -140,12 +138,11 @@ public class AccountRequestsController {
                     esc(form.getOrDefault("mensaje", "(sin mensaje)")),
                     aprobarUrl, rechazarUrl, BASE_URL);
 
-                for (String adminEmail : ADMIN_EMAILS) {
-                    if (!adminEmail.isBlank()) {
-                        emailService.send(null, adminEmail.trim(),
-                                "🆕 Nueva solicitud: " + form.get("empresa") + " (" + form.get("plan") + ")",
-                                adminHtml);
-                    }
+                // Los mismos propietarios de la plataforma que ve el resto de la app (ADMIN_EMAILS)
+                for (String adminEmail : cobroManual.emailsAdmin()) {
+                    emailService.send(null, adminEmail,
+                            "🆕 Nueva solicitud: " + form.get("empresa") + " (" + form.get("plan") + ")",
+                            adminHtml);
                 }
             } catch (Exception e) {
                 log.warn("Notif admin solicitud falló: {}", e.getMessage());

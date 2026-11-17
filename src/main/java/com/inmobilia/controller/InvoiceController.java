@@ -85,6 +85,17 @@ public class InvoiceController {
         var propiedades = supabase.query("propiedades", uid);
 
         Map<String, Object> inv = new HashMap<>();
+        Map<String, Object> negocio = negocio(uid);
+        if (negocio != null) {
+            // Los datos del emisor salen de «Mi negocio»
+            inv.put("emisor_nombre", negocio.get("legal_name"));
+            inv.put("emisor_nif", negocio.get("tax_id"));
+            inv.put("emisor_direccion", String.join(", ", Arrays.asList(
+                    Objects.toString(negocio.get("address"), ""), Objects.toString(negocio.get("postal_code"), ""),
+                    Objects.toString(negocio.get("city"), ""))).replaceAll("(, )+$|^(, )+", "").replaceAll("(, ){2,}", ", "));
+            inv.put("emisor_email", negocio.get("contact_email"));
+            inv.put("emisor_iban", negocio.get("iban"));
+        }
         // Factura de un cobro apuntado en Clientes y cobros: llega rellena para revisarla
         Map<String, Object> preparada = com.inmobilia.service.CobroManualService.facturaPreparada(session);
         if (preparada != null) for (String k : CAMPOS_PREPARADOS) if (preparada.get(k) != null) inv.put(k, preparada.get(k));
@@ -212,6 +223,11 @@ public class InvoiceController {
             SessionUtils.flash(session, ok ? "Factura actualizada" : "ERROR actualizando factura");
             return "redirect:/invoices/" + id;
         }
+    }
+
+    private Map<String, Object> negocio(String uid) {
+        List<Map<String, Object>> r = supabase.selectFilter("business_profile", "org_id=eq." + uid + "&limit=1");
+        return r.isEmpty() ? null : r.get(0);
     }
 
     private final Map<String, Object> cerrojos = new java.util.concurrent.ConcurrentHashMap<>();

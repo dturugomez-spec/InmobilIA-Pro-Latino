@@ -22,7 +22,9 @@ class AccionesProtegidasTest {
             "/chatbot/api|/descubre|/m/\\{|/p/\\{|/propiedad/\\{|/codigo/|/publico/|/responder/|/tasacion|/calculadora"
             + "|/comparador-hipotecas|/convertir|/suscribir|/forgot|/reset|/login|/register|/solicitar-cuenta|/email-action"
             + "|/webhook|/stripe|/firmar|/f/|/consultar-|/dcf|/future-proof|/calcular|/extraer|/track|/c/\\{|/h/|/v/"
-            + "|/tenant|/portal/|/mi-inmueble|/informe/|/feedback-publico/|/api/v1/|/api/v2/");
+            + "|/tenant|/portal/|/mi-inmueble|/informe/|/feedback-publico/|/api/v1/|/api/v2/"
+            // Página con enlace de un solo encargo: el colaborador no tiene cuenta
+            + "|/encargo/\\{token");
 
     private static final Pattern COMPRUEBA_SESION = Pattern.compile(
             "isLoggedIn|uid\\(session\\)|realUid\\(session\\)|esAdminPlataforma|DEBUG_TOKEN|authenticate\\(req\\)");
