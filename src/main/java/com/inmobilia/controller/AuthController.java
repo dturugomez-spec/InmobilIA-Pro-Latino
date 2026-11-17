@@ -308,7 +308,7 @@ public class AuthController {
         try {
             notifications.create(reg.get("id"), "info", "🎉",
                     "¡Bienvenido a InmobilIA Pro!",
-                    "Tienes 14 días del plan Business gratis. Configura tu cuenta para empezar.",
+                    "Tienes un mes del plan Business gratis. Configura tu cuenta para empezar.",
                     "/welcome");
         } catch (Exception ignored) {}
 

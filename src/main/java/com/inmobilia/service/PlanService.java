@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * Future-Proof Score (29 USD/mes), incluido en Business. (El optimizador fiscal de holding es solo
  * de la versión española: calcula con impuestos de España.)
  *
- * Prueba: 14 días de Business sin tarjeta (al aprobar la solicitud). Al acabar, si no ha elegido
+ * Prueba: un mes (30 días) de Business sin tarjeta (al aprobar la solicitud). Al acabar, si no ha elegido
  * plan, la cuenta pasa a Free y conserva sus datos (TrialExpiryService).
  *
  * Cobro: mientras haya pocos clientes, por transferencia o en efectivo con factura (V94). El
@@ -83,7 +83,7 @@ public class PlanService {
     public static final int PACK_CREDITOS = 100;
     public static final int PRECIO_PACK_CREDITOS = 10;
     /** Días de prueba con Business al aprobar una solicitud. */
-    public static final int DIAS_PRUEBA = 14;
+    public static final int DIAS_PRUEBA = 30;
     /** Días de margen tras users.pagado_hasta antes de pasar a Free (cobro manual). */
     public static final int DIAS_GRACIA = 10;
     /** Precio de un mes en un pago anual: 12 meses al precio anual. */

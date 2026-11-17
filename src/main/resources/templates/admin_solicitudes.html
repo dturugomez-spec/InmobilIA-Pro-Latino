@@ -55,8 +55,7 @@
                 <form th:action="@{|/admin/solicitudes/${s.get('id')}/aprobar|}" method="post" class="flex flex-col gap-1.5" onsubmit="return confirm('Aprobar cuenta y enviar credenciales por email?')">
                     <!-- Prueba del plan Business sin tarjeta; al acabar, la cuenta pasa a Free -->
                     <select name="dias" title="Días de prueba de Business" class="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs">
-                        <option value="14" selected>Prueba de 14 días</option>
-                        <option value="30">30 días</option>
+                        <option value="30" selected>Un mes gratis (30 días)</option>
                         <option value="45">45 días (socio fundador)</option>
                         <option value="60">60 días (socio fundador)</option>
                     </select>

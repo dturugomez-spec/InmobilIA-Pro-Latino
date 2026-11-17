@@ -157,7 +157,7 @@ public class AccountRequestsController {
                         "<h2>👋 ¡Gracias, %s!</h2>" +
                         "<p>Hemos recibido tu solicitud de cuenta InmobilIA Pro para <strong>%s</strong>.</p>" +
                         "<p>Vamos a revisarla y te enviaremos un email en <strong>menos de 24h laborables</strong> con un enlace para crear tu contraseña y entrar.</p>" +
-                        "<p>Empiezas con 14 días del plan Business sin tarjeta. Si después te quedas en un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
+                        "<p>Empiezas con un mes gratis del plan Business, sin tarjeta. Si después te quedas en un plan de pago, te enviamos la factura y lo pagas por transferencia o en efectivo.</p>" +
                         "<p>— Equipo InmobilIA Pro</p>",
                         esc(form.get("nombre")), esc(form.get("empresa")));
                 emailService.send(null, String.valueOf(data.get("email")),
@@ -200,12 +200,12 @@ public class AccountRequestsController {
         return "admin_solicitudes";
     }
 
-    /** Días de prueba que se pueden dar al aprobar: 14 normal, más para los socios fundadores. */
-    static final java.util.List<Integer> DIAS_PRUEBA = java.util.List.of(PlanService.DIAS_PRUEBA, 30, 45, 60);
+    /** Días de prueba que se pueden dar al aprobar: un mes (30) normal, más para los socios fundadores. */
+    static final java.util.List<Integer> DIAS_PRUEBA = java.util.List.of(PlanService.DIAS_PRUEBA, 45, 60);
 
     @PostMapping("/admin/solicitudes/{id}/aprobar")
     public String aprobar(@PathVariable String id,
-                          @RequestParam(defaultValue = "14") int dias,
+                          @RequestParam(defaultValue = "30") int dias,
                           HttpSession session) {
         int diasPrueba = DIAS_PRUEBA.contains(dias) ? dias : PlanService.DIAS_PRUEBA;
         String adminUid = SessionUtils.uid(session);

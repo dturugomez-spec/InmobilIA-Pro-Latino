@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
- * Fin de la prueba gratis (14 días de Business sin tarjeta, desde la aprobación).
+ * Fin de la prueba gratis (un mes de Business sin tarjeta, desde la aprobación).
  *
  *  - 3 días y 1 día antes: aviso por correo.
  *  - Al acabar, si no ha elegido plan: la cuenta pasa a Free y CONSERVA sus datos. Free incluye
