@@ -23,9 +23,13 @@ public class CurrencyService {
 
     private static final long CADUCIDAD_MS = 3_600_000;
 
+    /** Las que se ven en el conversor: las de Latinoamérica y el dólar. */
     private static final List<String> DIVISAS = List.of(
             "USD", "MXN", "COP", "ARS", "CLP", "PEN", "UYU", "PYG", "BOB", "CRC", "GTQ", "HNL", "NIO", "DOP",
-            "BRL", "EUR");
+            "BRL");
+
+    /** Las que se actualizan: las de arriba y el euro, que solo se usa por dentro (los datos de ejemplo están en euros). */
+    private static final List<String> ACTUALIZADAS = java.util.stream.Stream.concat(DIVISAS.stream(), java.util.stream.Stream.of("EUR")).toList();
 
     /** Valores aproximados por si la API no responde (unidades por 1 USD). */
     private static final Map<String, Double> FALLBACK = Map.ofEntries(
@@ -59,9 +63,13 @@ public class CurrencyService {
 
     public List<String> divisas() { return DIVISAS; }
 
+    /** Tipos de las monedas del conversor (unidades por 1 USD), en el orden de la lista. */
     public Map<String, Double> tiposActuales() {
         refrescarSiCaducado();
-        return new LinkedHashMap<>(tipos);
+        Map<String, Double> t = tipos;
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (String d : DIVISAS) out.put(d, t.getOrDefault(d, FALLBACK.get(d)));
+        return out;
     }
 
     private void refrescarSiCaducado() {
@@ -81,7 +89,7 @@ public class CurrencyService {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> rates = (Map<String, Object>) resp.get("rates");
                 Map<String, Double> nuevos = new HashMap<>(FALLBACK);
-                for (String d : DIVISAS) {
+                for (String d : ACTUALIZADAS) {
                     Object v = rates.get(d);
                     if (v != null) nuevos.put(d, Double.parseDouble(v.toString()));
                 }

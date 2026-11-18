@@ -53,7 +53,8 @@ public class AIToolsController {
                 Notas adicionales: %s
                 Entrega: yield bruto, yield neto estimado, 3 riesgos clave, 3 puntos fuertes,
                 recomendacion GO/NO-GO con justificacion cuantitativa.
-                """.formatted(contexto, precio, rentaMensual, notas);
+                """.formatted(contexto, precio, rentaMensual, notas)
+                .replace(" EUR", " " + com.inmobilia.util.PaisActual.moneda());
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un director de inversiones inmobiliarias.", 1500, SessionUtils.uid(session));
         model.addAttribute("page", "Analizador de Operaciones IA");
@@ -178,7 +179,8 @@ public class AIToolsController {
                 Estructura: Resumen ejecutivo, Activo y ubicacion, Mercado,
                 Estructura financiera, Analisis financiero (IRR/NPV/Cap Rate),
                 Riesgos y mitigantes, Plan de valor, Recomendacion.
-                """.formatted(propiedad, zona, precio, rentaMensual, tesis);
+                """.formatted(propiedad, zona, precio, rentaMensual, tesis)
+                .replace(" EUR", " " + com.inmobilia.util.PaisActual.moneda());
         String res = ai.call(SessionUtils.apiKey(session), prompt,
                 "Eres un portfolio manager de fondos inmobiliarios.", 2500, SessionUtils.uid(session));
         model.addAttribute("page", "Informe de Inversion");
